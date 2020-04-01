@@ -35,6 +35,7 @@ struct
   module SER = SR
   module EER = ER
   module SASyntax = ScillaSyntax (SR) (ER)
+  module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
   module TU = TypeUtilities
   open SASyntax
 
@@ -120,6 +121,8 @@ struct
 
   type conditionals = Cond.t
 
+  type dependencies = conditionals
+
   type expr_type = source_precision * contributions * conditionals
 
   let et_top = (Exactly, Contrib.empty, Cond.empty)
@@ -169,7 +172,9 @@ struct
     | Read of pseudofield
     | Write of pseudofield * expr_type
     | AcceptMoney
-    | SendMessages
+    | ConditionOn of dependencies
+    | EmitEvent of dependencies
+    | SendMessages of dependencies
     (* Top element -- in case of ambiguity, be conservative *)
     | AlwaysExclusive
 
@@ -179,7 +184,9 @@ struct
     | Write ((field, opt_keys), et) ->
         "Write " ^ pp_pseudofield field opt_keys ^ " (" ^ pp_expr_type et ^ ")"
     | AcceptMoney -> "AcceptMoney"
-    | SendMessages -> "SendMessages"
+    | ConditionOn conds -> "ConditionOn " ^ pp_conditionals conds
+    | EmitEvent conds -> "EmitEvent " ^ pp_conditionals conds
+    | SendMessages conds -> "SendMessages " ^ pp_conditionals conds
     | AlwaysExclusive -> "AlwaysExclusive"
 
   module OrderedComponentOperation = struct
@@ -220,7 +227,7 @@ struct
   let pp_sig k sgn =
     match sgn with
     | ComponentSig (comp_params, comp_summ) ->
-        let ns = "State footprint for " ^ k in
+        let ns = "Effect footprint for " ^ k in
         let ps =
           String.concat ", " @@ List.map (fun (i, _) -> get_id i) comp_params
         in
@@ -522,20 +529,59 @@ struct
         Write ((f, Some (map_keys keys)), translate_comp_et et)
     | _ -> op
 
+  (* Return the parameters actually used to in the given ComponentSig summary *)
+  let parameters_in_summary (proc_sig : signature) =
+    let parameters_in_set deps =
+      List.flatten
+      @@ List.map
+           (fun k ->
+             match k with Pseudofield (f, Some keys) -> keys | _ -> [])
+           (Cond.elements deps)
+    in
+    let parameters_in_op op =
+      match op with
+      | Read (f, Some keys) -> keys
+      | Write ((f, Some keys), _) -> keys
+      | ConditionOn deps | EmitEvent deps | SendMessages deps ->
+          parameters_in_set deps
+      | _ -> []
+    in
+    match proc_sig with
+    | ComponentSig (_, proc_summ) ->
+        let params_in_summ =
+          List.sort_uniq compare_id @@ List.flatten
+          @@ List.map parameters_in_op (ComponentSummary.elements proc_summ)
+        in
+        pure @@ params_in_summ
+    | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
+
   let procedure_call_summary senv (proc_sig : signature) arglist =
-    let can_summarise = all_keys_are_parameters senv arglist in
-    if can_summarise then
-      match proc_sig with
-      | ComponentSig (proc_params, proc_summ) ->
-          let proc_params, _ = List.split proc_params in
+    let implicit_params, _ = List.split @@ SCU.append_implict_comp_params [] in
+    let arglist = implicit_params @ arglist in
+    match proc_sig with
+    | ComponentSig (proc_params, proc_summ) ->
+        let proc_params = implicit_params @ fst @@ List.split proc_params in
+        let%bind proc_params_in_summary = parameters_in_summary proc_sig in
+        let%bind args_in_summary =
+          mapM
+            ( List.filter (fun k ->
+                  match k with Some _ -> true | None -> false)
+            @@ List.map2
+                 (fun p a ->
+                   if List.mem p proc_params_in_summary then Some a else None)
+                 proc_params arglist )
+            ~f:(fun k -> match k with Some a -> pure @@ a | None -> fail0 "")
+        in
+        let can_summarise = all_keys_are_parameters senv args_in_summary in
+        if can_summarise then
           pure
           @@ ComponentSummary.map
                (fun op -> translate_op op proc_params arglist)
                proc_summ
-      | _ ->
-          (* If this occurs, it's a bug. *)
-          fail0 "Sharding analysis: procedure summary is not of the right type"
-    else pure @@ ComponentSummary.singleton AlwaysExclusive
+        else pure @@ ComponentSummary.singleton AlwaysExclusive
+    | _ ->
+        (* If this occurs, it's a bug. *)
+        fail0 "Sharding analysis: procedure summary is not of the right type"
 
   let get_ident_et senv i =
     let%bind isig = SAEnv.resolvS senv (get_id i) in
@@ -543,6 +589,17 @@ struct
     | IdentSig (_, _, c) -> pure @@ c
     (* If this happens, it's a bug *)
     | _ -> fail0 "Sharding analysis: ident does not have a signature"
+
+  let dependencies_of senv i =
+    let%bind isig = SAEnv.resolvS senv (get_id i) in
+    match isig with
+    | IdentSig (_, _, (_, contrs, conds)) ->
+        let deps =
+          Cond.of_list @@ fst @@ List.split @@ Contrib.bindings contrs
+        in
+        pure @@ Cond.union deps conds
+    | _ ->
+        fail0 "Sharding analysis: trying to get dependencies, but no IdentSig"
 
   (* Add a new identifier to the environment, keeping track of whether it
      shadows a component parameter *)
@@ -707,8 +764,7 @@ struct
         in
         let app_conds = List.fold_left Cond.union Cond.empty conds_pairwise in
         pure @@ (app_ps, app_contrib, app_conds)
-    (* TODO: be defensive about unsupported instructions *)
-    | _ -> pure @@ et_top
+    | _ -> fail0 @@ "Sharding analysis: unsupported instruction " ^ pp_expr e
 
   (* Precondition: senv contains the component parameters, appropriately marked *)
   let rec sa_stmt senv summary (stmts : stmt_annot list) =
@@ -764,18 +820,20 @@ struct
             in
             cont_op op summary sts
         | AcceptPayment -> cont_op AcceptMoney summary sts
-        | SendMsgs i -> cont_op SendMessages summary sts
+        | SendMsgs i ->
+            let%bind deps = dependencies_of senv i in
+            cont_op (SendMessages deps) summary sts
+        | CreateEvnt i ->
+            let%bind deps = dependencies_of senv i in
+            cont_op (EmitEvent deps) summary sts
         (* TODO: Do we want to track blockchain reads? *)
         | ReadFromBC (x, _) -> cont_ident x et_top summary sts
         | Bind (x, expr) ->
             let%bind expr_contrib = sa_expr senv 0 expr in
-            let e, rep = expr in
-            (* print_endline @@ pp_expr e ^ "
-               " ^ pp_contribs expr_contrib ^ "
-               "; *)
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
+            let _, xcontr, xcond = xc in
             let summarise_clause (pattern, cl_sts) =
               let binders = get_pattern_bounds pattern in
               let senv' =
@@ -786,14 +844,26 @@ struct
               in
               sa_stmt senv' summary cl_sts
             in
+            let match_conds =
+              let this_cond =
+                Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
+              in
+              Cond.union this_cond xcond
+            in
+            let conds_op = ConditionOn match_conds in
             let%bind cl_summaries = mapM summarise_clause clauses in
+            let summary_with_conds =
+              (* Can condition on constants or blockchain reads *)
+              if Cond.cardinal match_conds > 0 then
+                ComponentSummary.add conds_op summary
+              else summary
+            in
             (* TODO: LUB *)
-            (* summaries are composed via set union *)
             let%bind summary' =
               foldM
                 (fun acc_summ cl_summ ->
                   pure @@ ComponentSummary.union acc_summ cl_summ)
-                summary cl_summaries
+                summary_with_conds cl_summaries
             in
             cont senv summary' sts
         | CallProc (p, arglist) -> (
@@ -810,20 +880,11 @@ struct
                 fail1
                   "Sharding analysis: calling procedure that was not analysed"
                   (SR.get_loc (get_rep p)) )
-        (* FIXME: be defensive about unsupported instructions *)
-        | _ -> cont senv summary sts )
+        | _ -> fail0 @@ "Sharding analysis: unsupported statement " ^ pp_stmt s
+        )
 
   let sa_component_summary senv (comp : component) =
-    let open PrimTypes in
-    let si a t = ER.mk_id (mk_ident a) t in
-    let all_params =
-      [
-        ( si ContractUtil.MessagePayload.sender_label (bystrx_typ 20),
-          bystrx_typ 20 );
-        (si ContractUtil.MessagePayload.amount_label uint128_typ, uint128_typ);
-      ]
-      @ comp.comp_params
-    in
+    let all_params = SCU.append_implict_comp_params comp.comp_params in
     (* Add component parameters to the analysis environment *)
     let senv' =
       env_bind_ident_list senv
@@ -849,6 +910,27 @@ struct
   let sa_module (cmod : cmodule) (elibs : libtree list) =
     (* Stage 1: determine state footprint of components *)
     let senv = SAEnv.mk () in
+
+    (* Analyze external libraries  *)
+    let%bind senv =
+      let rec recurser libl =
+        foldM
+          ~f:(fun senv lib ->
+            let%bind senv_deps = recurser lib.deps in
+            let%bind senv_lib = sa_libentries senv_deps lib.libn.lentries in
+            (* Retain only _this_ library's entries in env, not the deps' *)
+            let senv_lib' =
+              SAEnv.filterS senv_lib ~f:(fun name ->
+                  List.exists
+                    (function
+                      | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
+                    lib.libn.lentries)
+            in
+            pure @@ SAEnv.appendS senv senv_lib')
+          ~init:senv libl
+      in
+      recurser elibs
+    in
 
     (* Analyze contract libraries *)
     let%bind senv =
