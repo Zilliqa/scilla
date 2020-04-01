@@ -811,6 +811,9 @@ struct
         let%bind lhs_et = sa_expr senv fp_count lhs in
         let senv' = env_new_ident i lhs_et senv in
         sa_expr senv' fp_count rhs
+    (* Our expr_types do not depend on Scilla types; just analyse as if monomorphic *)
+    | TFun (_, body) -> sa_expr senv fp_count body
+    | TApp (tf, _) -> get_ident_et senv tf
     | Fun (formal, _, body) ->
         (* Formal parameters are given a linear contribution when producing
            function summaries. Arguments (see App) might be nonlinear. *)
