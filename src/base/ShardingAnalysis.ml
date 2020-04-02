@@ -741,10 +741,10 @@ struct
         | None -> none)
       arg_contribs
 
-  (* TODO: define a wrapper for sa_expr *)
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
-  let rec sa_expr senv (fp_count : int) (erep : expr_annot) =
+  let rec sa_expr senv fp_count (erep : expr_annot) =
+    let cont senv' expr = sa_expr senv' fp_count expr in
     let e, rep = erep in
     match e with
     | Literal l -> pure @@ et_top
@@ -791,7 +791,7 @@ struct
                 (fun env_acc id -> env_new_ident id xc env_acc)
               senv binders
           in
-          sa_expr senv' fp_count cl_expr
+          cont senv' cl_expr
         in
         let%bind cl_ets = mapM clause_et clauses in
         let cl_pss, cl_contribs, cl_conds = et_list_split cl_ets in
@@ -820,11 +820,12 @@ struct
         in
         pure @@ (match_ps, match_contribs, match_cond)
     | Let (i, _, lhs, rhs) ->
-        let%bind lhs_et = sa_expr senv fp_count lhs in
+        (* We are introducing a new binder, so LHS is a new scope *)
+        let%bind lhs_et = sa_expr senv 0 lhs in
         let senv' = env_new_ident i lhs_et senv in
-        sa_expr senv' fp_count rhs
+        cont senv' rhs
     (* Our expr_types do not depend on Scilla types; just analyse as if monomorphic *)
-    | TFun (_, body) -> sa_expr senv fp_count body
+    | TFun (_, body) -> cont senv body
     | TApp (tf, _) -> get_ident_et senv tf
     | Fun (formal, _, body) ->
         (* Formal parameters are given a linear contribution when producing
@@ -870,6 +871,8 @@ struct
         let app_conds = List.fold_left Cond.union Cond.empty conds_pairwise in
         pure @@ (app_ps, app_contrib, app_conds)
     | _ -> fail0 @@ "Sharding analysis: unsupported instruction " ^ pp_expr e
+
+  let sa_expr_wrapper senv erep = sa_expr senv 0 erep
 
   (* Precondition: senv contains the component parameters, appropriately marked *)
   let rec sa_stmt senv summary (stmts : stmt_annot list) =
@@ -940,7 +943,7 @@ struct
         (* TODO: Do we want to track blockchain reads? *)
         | ReadFromBC (x, _) -> cont_ident x et_top summary sts
         | Bind (x, expr) ->
-            let%bind expr_contrib = sa_expr senv 0 expr in
+            let%bind expr_contrib = sa_expr_wrapper senv expr in
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
@@ -1029,7 +1032,7 @@ struct
       ~f:(fun senv le ->
         match le with
         | LibVar (lname, _, lexp) ->
-            let%bind esig = sa_expr senv 0 lexp in
+            let%bind esig = sa_expr_wrapper senv lexp in
             let e, rep = lexp in
             let pcms = pcm_unit senv e in
             pure
