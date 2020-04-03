@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
+open Names
 open MonadUtil
 open ErrorUtils
 open Stdint
@@ -28,28 +29,33 @@ exception SyntaxError of string * loc
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 6, 0)
 
-type 'rep ident = Ident of string * 'rep [@@deriving sexp]
+module ScillaIdentifiers (Names : QualifiedNames) = struct
+  type 'rep ident = Ident of Names.name * 'rep [@@deriving sexp]
 
-let asId i = Ident (i, dummy_loc)
+  let asId i = Ident (i, dummy_loc)
 
-let asIdL i loc = Ident (i, loc)
+  let asIdL i loc = Ident (i, loc)
 
-let get_id i = match i with Ident (x, _) -> x
+  let get_id i = match i with Ident (x, _) -> x
 
-let get_rep i = match i with Ident (_, l) -> l
+  let get_rep i = match i with Ident (_, l) -> l
 
-type bigint = Big_int.big_int
+  type bigint = Big_int.big_int
 
-let mk_ident s = Ident (s, dummy_loc)
+  let mk_ident s = Ident (s, dummy_loc)
 
-(* A few utilities on id. *)
-let equal_id a b = String.(get_id a = get_id b)
+  (* A few utilities on id. *)
+  let equal_id a b = Names.equal_name (get_id a) (get_id b)
 
-let compare_id a b = String.(compare (get_id a) (get_id b))
+  let compare_id a b = Names.compare_name (get_id a) (get_id b)
 
-let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+  let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
 
-let is_mem_id i l = List.exists l ~f:(equal_id i)
+  let is_mem_id i l = List.exists l ~f:(equal_id i)
+
+  let as_string i = Names.as_string (get_id i)
+
+end
 
 (*******************************************************)
 (*                         Types                       *)
@@ -89,231 +95,376 @@ let sexp_of_prim_typ = function
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
-type typ =
-  | PrimType of prim_typ
-  | MapType of typ * typ
-  | FunType of typ * typ
-  | ADT of loc ident * typ list
-  | TypeVar of string
-  | PolyFun of string * typ
-  | Unit
-[@@deriving sexp]
+module ScillaTypes (Names : QualifiedNames) = struct
 
-let int_bit_width_to_string = function
-  | Bits32 -> "32"
-  | Bits64 -> "64"
-  | Bits128 -> "128"
-  | Bits256 -> "256"
+  module TypeIdentifiers = ScillaIdentifiers (Names)
+  open TypeIdentifiers
+  
+  type typ =
+    | PrimType of prim_typ
+    | MapType of typ * typ
+    | FunType of typ * typ
+    | ADT of loc ident * typ list
+    | TypeVar of string
+    | PolyFun of string * typ
+    | Unit
+  [@@deriving sexp]
 
-let pp_prim_typ = function
-  | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
-  | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
-  | String_typ -> "String"
-  | Bnum_typ -> "BNum"
-  | Msg_typ -> "Message"
-  | Event_typ -> "Event"
-  | Exception_typ -> "Exception"
-  | Bystr_typ -> "ByStr"
-  | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+  let int_bit_width_to_string = function
+    | Bits32 -> "32"
+    | Bits64 -> "64"
+    | Bits128 -> "128"
+    | Bits256 -> "256"
 
-let rec pp_typ = function
-  | PrimType t -> pp_prim_typ t
-  | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
-  | ADT (name, targs) ->
-      let elems =
-        get_id name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
-      in
-      String.concat ~sep:" " elems
-  | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
-  | TypeVar tv -> tv
-  | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
-  | Unit -> sprintf "()"
+  let pp_prim_typ = function
+    | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
+    | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
+    | String_typ -> "String"
+    | Bnum_typ -> "BNum"
+    | Msg_typ -> "Message"
+    | Event_typ -> "Event"
+    | Exception_typ -> "Exception"
+    | Bystr_typ -> "ByStr"
+    | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 
-and with_paren t =
-  match t with
-  | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
-  | _ -> pp_typ t
+  let rec pp_typ = function
+    | PrimType t -> pp_prim_typ t
+    | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
+    | ADT (name, targs) ->
+        let elems =
+          as_string name ::
+          List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+        in
+        String.concat ~sep:" " elems
+    | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
+    | TypeVar tv -> tv
+    | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
+    | Unit -> sprintf "()"
+
+  and with_paren t =
+    match t with
+    | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
+    | _ -> pp_typ t
+
+  (****************************************************************)
+  (*         Type substitutions on unannotated syntax             *)
+  (****************************************************************)
+
+  (* Return free tvars in tp
+      The return list doesn't contain duplicates *)
+  let free_tvars tp =
+    let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
+    let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
+    let rec go t acc =
+      match t with
+      | PrimType _ | Unit -> acc
+      | MapType (kt, vt) -> go kt acc |> go vt
+      | FunType (at, rt) -> go at acc |> go rt
+      | TypeVar n -> add acc n
+      | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
+      | PolyFun (arg, bt) ->
+          let acc' = go bt acc in
+          rem acc' arg
+    in
+    go tp []
+
+  let mk_fresh_var taken init =
+    let tmp = ref init in
+    let counter = ref 1 in
+    while List.mem taken !tmp ~equal:String.( = ) do
+      tmp := init ^ Int.to_string !counter;
+      Int.incr counter
+    done;
+    !tmp
+
+  (* tm[tvar := tp] *)
+  let rec subst_type_in_type tvar tp tm =
+    match tm with
+    | PrimType _ | Unit -> tm
+    (* Make sure the map's type is still primitive! *)
+    | MapType (kt, vt) ->
+        let kts = subst_type_in_type tvar tp kt in
+        let vts = subst_type_in_type tvar tp vt in
+        MapType (kts, vts)
+    | FunType (at, rt) ->
+        let ats = subst_type_in_type tvar tp at in
+        let rts = subst_type_in_type tvar tp rt in
+        FunType (ats, rts)
+    | TypeVar n -> if String.(tvar = n) then tp else tm
+    | ADT (s, ts) ->
+        let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
+        ADT (s, ts')
+    | PolyFun (arg, t) ->
+        if String.(tvar = arg) then tm
+        else PolyFun (arg, subst_type_in_type tvar tp t)
+
+  (* note: this is sequential substitution of multiple variables,
+            _not_ simultaneous substitution *)
+  let subst_types_in_type sbst tm =
+    List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) ->
+        subst_type_in_type tvar tp acc)
+
+  let rename_bound_vars mk_new_name update_taken =
+    let rec recursor t taken =
+      match t with
+      | MapType (kt, vt) -> MapType (kt, recursor vt taken)
+      | FunType (at, rt) -> FunType (recursor at taken, recursor rt taken)
+      | ADT (n, ts) ->
+          let ts' = List.map ts ~f:(fun w -> recursor w taken) in
+          ADT (n, ts')
+      | PrimType _ | TypeVar _ | Unit -> t
+      | PolyFun (arg, bt) ->
+          let arg' = mk_new_name taken arg in
+          let tv_new = TypeVar arg' in
+          let bt1 = subst_type_in_type arg tv_new bt in
+          let bt2 = recursor bt1 (update_taken arg' taken) in
+          PolyFun (arg', bt2)
+    in
+    recursor
+
+  let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
+
+  let canonicalize_tfun t =
+    (* The parser doesn't allow type names to begin with '_'. *)
+    let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
+    rename_bound_vars mk_new_name (const @@ Int.succ) t 1
+
+  (* Type equivalence *)
+  let equal_typ t1 t2 =
+    let t1' = canonicalize_tfun t1 in
+    let t2' = canonicalize_tfun t2 in
+    let rec equiv t1 t2 =
+      match (t1, t2) with
+      | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
+      | TypeVar v1, TypeVar v2 -> String.equal v1 v2
+      | Unit, Unit -> true
+      | ADT (tname1, tl1), ADT (tname2, tl2) ->
+          equal_id tname1 tname2
+          (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
+          && List.length tl1 = List.length tl2
+          && List.for_all2_exn ~f:equiv tl1 tl2
+      | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
+      | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
+          equiv t1_1 t2_1 && equiv t1_2 t2_2
+      | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+          String.equal v1 v2 && equiv t1'' t2''
+      | _ -> false
+    in
+    equiv t1' t2'
+
+  (* The same as above, but for a variable with locations *)
+  let subst_type_in_type' tv = subst_type_in_type (as_string tv)
+
+end
 
 (*******************************************************)
 (*                      Literals                       *)
 (*******************************************************)
 
-(* The first component is a primitive type *)
-type mtype = typ * typ [@@deriving sexp]
+module ScillaLiterals (Names : QualifiedNames) = struct
 
-let pp_mtype (kt, vt) = pp_typ (MapType (kt, vt))
+  module Types = ScillaTypes (Names)
+  open Types
 
-let address_length = 20
+  (* The first component is a primitive type *)
+  type mtype = typ * typ [@@deriving sexp]
 
-let hash_length = 32
+  let pp_mtype (kt, vt) = pp_typ (MapType (kt, vt))
 
-open Integer256
+  let address_length = 20
 
-let equal_int128 x y = Int128.compare x y = 0
+  let hash_length = 32
 
-let equal_int256 x y = Int256.compare x y = 0
+  open Integer256
 
-type int_lit =
-  | Int32L of int32
-  | Int64L of int64
-  | Int128L of int128
-  | Int256L of int256
-[@@deriving equal]
+  let equal_int128 x y = Int128.compare x y = 0
 
-let sexp_of_int_lit = function
-  | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
-  | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
-  | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
-  | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
+  let equal_int256 x y = Int256.compare x y = 0
 
-let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
+  type int_lit =
+    | Int32L of int32
+    | Int64L of int64
+    | Int128L of int128
+    | Int256L of int256
+  [@@deriving equal]
 
-let equal_uint32 x y = Uint32.compare x y = 0
+  let sexp_of_int_lit = function
+    | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
+    | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
+    | Int128L i' -> Sexp.Atom ("Int128 " ^ Int128.to_string i')
+    | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
 
-let equal_uint64 x y = Uint64.compare x y = 0
+  let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
 
-let equal_uint128 x y = Uint128.compare x y = 0
+  let equal_uint32 x y = Uint32.compare x y = 0
 
-let equal_uint256 x y = Uint256.compare x y = 0
+  let equal_uint64 x y = Uint64.compare x y = 0
 
-type uint_lit =
-  | Uint32L of uint32
-  | Uint64L of uint64
-  | Uint128L of uint128
-  | Uint256L of uint256
-[@@deriving equal]
+  let equal_uint128 x y = Uint128.compare x y = 0
 
-let sexp_of_uint_lit = function
-  | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
-  | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Uint64.to_string i')
-  | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
-  | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
+  let equal_uint256 x y = Uint256.compare x y = 0
 
-let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
+  type uint_lit =
+    | Uint32L of uint32
+    | Uint64L of uint64
+    | Uint128L of uint128
+    | Uint256L of uint256
+  [@@deriving equal]
 
-module type BYSTR = sig
-  type t [@@deriving sexp]
+  let sexp_of_uint_lit = function
+    | Uint32L i' -> Sexp.Atom ("Uint32 " ^ Uint32.to_string i')
+    | Uint64L i' -> Sexp.Atom ("Uint64 " ^ Uint64.to_string i')
+    | Uint128L i' -> Sexp.Atom ("Uint128 " ^ Uint128.to_string i')
+    | Uint256L i' -> Sexp.Atom ("Uint256 " ^ Integer256.Uint256.to_string i')
 
-  val width : t -> int
+  let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
-  val parse_hex : string -> t
+  module type BYSTR = sig
+    type t [@@deriving sexp]
 
-  val hex_encoding : t -> string
+    val width : t -> int
 
-  val to_raw_bytes : t -> string
+    val parse_hex : string -> t
 
-  val of_raw_bytes : int -> string -> t option
+    val hex_encoding : t -> string
 
-  val equal : t -> t -> bool
+    val to_raw_bytes : t -> string
 
-  val concat : t -> t -> t
+    val of_raw_bytes : int -> string -> t option
+
+    val equal : t -> t -> bool
+
+    val concat : t -> t -> t
+  end
+
+  module Bystr : BYSTR = struct
+    type t = string [@@deriving sexp]
+
+    let width = String.length
+
+    let parse_hex s =
+      if not (String.equal (String.prefix s 2) "0x") then
+        raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
+      else
+        let s_nopref = String.drop_prefix s 2 in
+        if String.length s_nopref = 0 then
+          raise @@ Invalid_argument "hex conversion: empty byte sequence"
+        else Hex.to_string (`Hex s_nopref)
+
+    let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
+
+    let to_raw_bytes = Fn.id
+
+    let of_raw_bytes expected_width raw =
+      Option.some_if (String.length raw = expected_width) raw
+
+    let equal = String.equal
+
+    let concat = ( ^ )
+  end
+
+  module type BYSTRX = sig
+    type t [@@deriving sexp]
+
+    val width : t -> int
+
+    val parse_hex : string -> t
+
+    val hex_encoding : t -> string
+
+    val to_raw_bytes : t -> string
+
+    val of_raw_bytes : int -> string -> t option
+
+    val equal : t -> t -> bool
+
+    val concat : t -> t -> t
+
+    val to_bystr : t -> Bystr.t
+  end
+
+  module Bystrx : BYSTRX = struct
+    include Bystr
+
+    let to_bystr = Fn.id
+  end
+
+  (* [Specialising the Return Type of Closures]
+
+     The syntax for literals implements a _shallow embedding_ of
+     closures and type abstractions (cf. constructors `Clo` and `TAbs`).
+     Since our computations are all in CPS (cf. [Evaluation in CPS]), so
+     should be the computations, encapsulated by those two forms.
+     However, for the time being, we want to keep the type `literal`
+     non-parametric. This is at odds with the priniciple of keeping
+     computations in CPS parametric in their result type.
+
+     Therefore, for now we have a compromise of fixing the result of
+     evaluating expressions to be as below. In order to restore the
+     genericity enabled by CPS, we provide an "impedance matcher",
+     described in [Continuation for Expression Evaluation]. 
+
+  *)
+  type literal =
+    | StringLit of string
+    (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
+    | IntLit of int_lit
+    | UintLit of uint_lit
+    | BNum of string
+    (* Byte string with a statically known length. *)
+    | ByStrX of Bystrx.t
+    (* Byte string without a statically known length. *)
+    | ByStr of Bystr.t
+    (* Message: an associative array *)
+    | Msg of (string * literal) list
+    (* A dynamic map of literals *)
+    | Map of mtype * (literal, literal) Hashtbl.t
+    (* A constructor in HNF *)
+    | ADTValue of string * typ list * literal list
+    (* An embedded closure *)
+    | Clo of
+        (literal ->
+         ( literal,
+           scilla_error list,
+           uint64 ->
+           ( (literal * (string * literal) list) * uint64,
+             scilla_error list * uint64 )
+             result )
+           CPSMonad.t)
+    (* A type abstraction *)
+    | TAbs of
+        (typ ->
+         ( literal,
+           scilla_error list,
+           uint64 ->
+           ( (literal * (string * literal) list) * uint64,
+             scilla_error list * uint64 )
+             result )
+           CPSMonad.t)
+  [@@deriving sexp]
+
+  let rec subst_type_in_literal tvar tp l =
+    match l with
+    | Map ((kt, vt), ls) ->
+        let kts = subst_type_in_type' tvar tp kt in
+        let vts = subst_type_in_type' tvar tp vt in
+        let ls' = Hashtbl.create (Hashtbl.length ls) in
+        let _ =
+          Hashtbl.iter
+            (fun k v ->
+               let k' = subst_type_in_literal tvar tp k in
+               let v' = subst_type_in_literal tvar tp v in
+               Hashtbl.add ls' k' v')
+            ls
+        in
+        Map ((kts, vts), ls')
+    | ADTValue (n, ts, ls) ->
+        let ts' = List.map ts ~f:(subst_type_in_type' tvar tp) in
+        let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
+        ADTValue (n, ts', ls')
+    | _ -> l
+
 end
-
-module Bystr : BYSTR = struct
-  type t = string [@@deriving sexp]
-
-  let width = String.length
-
-  let parse_hex s =
-    if not (String.equal (String.prefix s 2) "0x") then
-      raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
-    else
-      let s_nopref = String.drop_prefix s 2 in
-      if String.length s_nopref = 0 then
-        raise @@ Invalid_argument "hex conversion: empty byte sequence"
-      else Hex.to_string (`Hex s_nopref)
-
-  let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
-
-  let to_raw_bytes = Fn.id
-
-  let of_raw_bytes expected_width raw =
-    Option.some_if (String.length raw = expected_width) raw
-
-  let equal = String.equal
-
-  let concat = ( ^ )
-end
-
-module type BYSTRX = sig
-  type t [@@deriving sexp]
-
-  val width : t -> int
-
-  val parse_hex : string -> t
-
-  val hex_encoding : t -> string
-
-  val to_raw_bytes : t -> string
-
-  val of_raw_bytes : int -> string -> t option
-
-  val equal : t -> t -> bool
-
-  val concat : t -> t -> t
-
-  val to_bystr : t -> Bystr.t
-end
-
-module Bystrx : BYSTRX = struct
-  include Bystr
-
-  let to_bystr = Fn.id
-end
-
-(* [Specialising the Return Type of Closures]
-
-   The syntax for literals implements a _shallow embedding_ of
-   closures and type abstractions (cf. constructors `Clo` and `TAbs`).
-   Since our computations are all in CPS (cf. [Evaluation in CPS]), so
-   should be the computations, encapsulated by those two forms.
-   However, for the time being, we want to keep the type `literal`
-   non-parametric. This is at odds with the priniciple of keeping
-   computations in CPS parametric in their result type.
-
-   Therefore, for now we have a compromise of fixing the result of
-   evaluating expressions to be as below. In order to restore the
-   genericity enabled by CPS, we provide an "impedance matcher",
-   described in [Continuation for Expression Evaluation]. 
-
-*)
-type literal =
-  | StringLit of string
-  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
-  | IntLit of int_lit
-  | UintLit of uint_lit
-  | BNum of string
-  (* Byte string with a statically known length. *)
-  | ByStrX of Bystrx.t
-  (* Byte string without a statically known length. *)
-  | ByStr of Bystr.t
-  (* Message: an associative array *)
-  | Msg of (string * literal) list
-  (* A dynamic map of literals *)
-  | Map of mtype * (literal, literal) Hashtbl.t
-  (* A constructor in HNF *)
-  | ADTValue of string * typ list * literal list
-  (* An embedded closure *)
-  | Clo of
-      (literal ->
-      ( literal,
-        scilla_error list,
-        uint64 ->
-        ( (literal * (string * literal) list) * uint64,
-          scilla_error list * uint64 )
-        result )
-      CPSMonad.t)
-  (* A type abstraction *)
-  | TAbs of
-      (typ ->
-      ( literal,
-        scilla_error list,
-        uint64 ->
-        ( (literal * (string * literal) list) * uint64,
-          scilla_error list * uint64 )
-        result )
-      CPSMonad.t)
-[@@deriving sexp]
 
 (* Builtins *)
 type builtin =
@@ -461,135 +612,6 @@ let parse_builtin s loc =
   | "to_nat" -> Builtin_to_nat
   | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc))
 
-(****************************************************************)
-(*         Type substitutions on unannotated syntax             *)
-(****************************************************************)
-
-(* Return free tvars in tp
-    The return list doesn't contain duplicates *)
-let free_tvars tp =
-  let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
-  let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
-  let rec go t acc =
-    match t with
-    | PrimType _ | Unit -> acc
-    | MapType (kt, vt) -> go kt acc |> go vt
-    | FunType (at, rt) -> go at acc |> go rt
-    | TypeVar n -> add acc n
-    | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
-    | PolyFun (arg, bt) ->
-        let acc' = go bt acc in
-        rem acc' arg
-  in
-  go tp []
-
-let mk_fresh_var taken init =
-  let tmp = ref init in
-  let counter = ref 1 in
-  while List.mem taken !tmp ~equal:String.( = ) do
-    tmp := init ^ Int.to_string !counter;
-    Int.incr counter
-  done;
-  !tmp
-
-(* tm[tvar := tp] *)
-let rec subst_type_in_type tvar tp tm =
-  match tm with
-  | PrimType _ | Unit -> tm
-  (* Make sure the map's type is still primitive! *)
-  | MapType (kt, vt) ->
-      let kts = subst_type_in_type tvar tp kt in
-      let vts = subst_type_in_type tvar tp vt in
-      MapType (kts, vts)
-  | FunType (at, rt) ->
-      let ats = subst_type_in_type tvar tp at in
-      let rts = subst_type_in_type tvar tp rt in
-      FunType (ats, rts)
-  | TypeVar n -> if String.(tvar = n) then tp else tm
-  | ADT (s, ts) ->
-      let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
-      ADT (s, ts')
-  | PolyFun (arg, t) ->
-      if String.(tvar = arg) then tm
-      else PolyFun (arg, subst_type_in_type tvar tp t)
-
-(* note: this is sequential substitution of multiple variables,
-          _not_ simultaneous substitution *)
-let subst_types_in_type sbst tm =
-  List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) ->
-      subst_type_in_type tvar tp acc)
-
-let rename_bound_vars mk_new_name update_taken =
-  let rec recursor t taken =
-    match t with
-    | MapType (kt, vt) -> MapType (kt, recursor vt taken)
-    | FunType (at, rt) -> FunType (recursor at taken, recursor rt taken)
-    | ADT (n, ts) ->
-        let ts' = List.map ts ~f:(fun w -> recursor w taken) in
-        ADT (n, ts')
-    | PrimType _ | TypeVar _ | Unit -> t
-    | PolyFun (arg, bt) ->
-        let arg' = mk_new_name taken arg in
-        let tv_new = TypeVar arg' in
-        let bt1 = subst_type_in_type arg tv_new bt in
-        let bt2 = recursor bt1 (update_taken arg' taken) in
-        PolyFun (arg', bt2)
-  in
-  recursor
-
-let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
-
-let canonicalize_tfun t =
-  (* The parser doesn't allow type names to begin with '_'. *)
-  let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
-  rename_bound_vars mk_new_name (const @@ Int.succ) t 1
-
-(* Type equivalence *)
-let equal_typ t1 t2 =
-  let t1' = canonicalize_tfun t1 in
-  let t2' = canonicalize_tfun t2 in
-  let rec equiv t1 t2 =
-    match (t1, t2) with
-    | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
-    | TypeVar v1, TypeVar v2 -> String.equal v1 v2
-    | Unit, Unit -> true
-    | ADT (tname1, tl1), ADT (tname2, tl2) ->
-        equal_id tname1 tname2
-        (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
-        && List.length tl1 = List.length tl2
-        && List.for_all2_exn ~f:equiv tl1 tl2
-    | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
-    | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
-        equiv t1_1 t2_1 && equiv t1_2 t2_2
-    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
-        String.equal v1 v2 && equiv t1'' t2''
-    | _ -> false
-  in
-  equiv t1' t2'
-
-(* The same as above, but for a variable with locations *)
-let subst_type_in_type' tv = subst_type_in_type (get_id tv)
-
-let rec subst_type_in_literal tvar tp l =
-  match l with
-  | Map ((kt, vt), ls) ->
-      let kts = subst_type_in_type' tvar tp kt in
-      let vts = subst_type_in_type' tvar tp vt in
-      let ls' = Hashtbl.create (Hashtbl.length ls) in
-      let _ =
-        Hashtbl.iter
-          (fun k v ->
-            let k' = subst_type_in_literal tvar tp k in
-            let v' = subst_type_in_literal tvar tp v in
-            Hashtbl.add ls' k' v')
-          ls
-      in
-      Map ((kts, vts), ls')
-  | ADTValue (n, ts, ls) ->
-      let ts' = List.map ts ~f:(subst_type_in_type' tvar tp) in
-      let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
-      ADTValue (n, ts', ls')
-  | _ -> l
 
 (*******************************************************)
 (*               Types of components                   *)
@@ -611,15 +633,15 @@ module type Rep = sig
 
   val get_loc : rep -> loc
 
-  val mk_id_address : string -> rep ident
+  val address_type_rep : rep
 
-  val mk_id_uint128 : string -> rep ident
+  val uint128_type_rep : rep
 
-  val mk_id_uint32 : string -> rep ident
+  val uint32_type_rep : rep
 
-  val mk_id_bnum : string -> rep ident
+  val bnum_type_rep : rep
 
-  val mk_id_string : string -> rep ident
+  val string_type_rep : rep
 
   val rep_of_sexp : Sexp.t -> rep
 
@@ -636,7 +658,16 @@ end
 (*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module ScillaSyntax (SR : Rep) (ER : Rep) = struct
+module ScillaSyntax (SR : Rep) (ER : Rep) (Names : QualifiedNames) = struct
+
+  module Identifiers = ScillaIdentifiers (Names)
+  module Types = ScillaTypes (Names)
+  module Literals = ScillaLiterals (Names)
+
+  open Identifiers
+  open Types
+  open Literals
+  
   (*******************************************************)
   (*                   Expressions                       *)
   (*******************************************************)
@@ -794,7 +825,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let pp_cparams ps =
     let cs =
       List.map ps ~f:(fun (i, t) ->
-          get_id i ^ " : " ^ (sexp_of_typ t |> Sexplib.Sexp.to_string))
+          as_string i ^ " : " ^ (sexp_of_typ t |> Sexplib.Sexp.to_string))
     in
     "[" ^ String.concat ~sep:", " cs ^ "]"
 
@@ -902,71 +933,73 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                  Better error reporting                      *)
   (****************************************************************)
   let get_failure_msg erep phase opt =
+    let as_error_string i = Names.as_error_string (get_id i) in
     let e, rep = erep in
     let sloc = ER.get_loc rep in
     ( ( match e with
       | Literal _ -> sprintf "Type error in literal. %s\n" phase
-      | Var i -> sprintf "Type error in variable `%s`:\n" (get_id i)
+      | Var i -> sprintf "Type error in variable `%s`:\n" (as_error_string i)
       | Let (i, _, _, _) ->
-          sprintf "Type error in the initialiser of `%s`:\n" (get_id i)
+          sprintf "Type error in the initialiser of `%s`:\n" (as_error_string i)
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
-      | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
+      | App (f, _) -> sprintf "Type error in application of `%s`:\n" (as_error_string f)
       | Constr (s, _, _) ->
-          sprintf "Type error in constructor `%s`:\n" (get_id s)
+          sprintf "Type error in constructor `%s`:\n" (as_error_string s)
       | MatchExpr (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
-            (get_id x) opt
+            (as_error_string x) opt
       | Builtin ((i, _), _) ->
           sprintf "Type error in built-in application of `%s`:\n" (pp_builtin i)
       | TApp (tf, _) ->
-          sprintf "Type error in type application of `%s`:\n" (get_id tf)
+          sprintf "Type error in type application of `%s`:\n" (as_error_string tf)
       | TFun (tf, _) ->
-          sprintf "Type error in type function `%s`:\n" (get_id tf)
+          sprintf "Type error in type function `%s`:\n" (as_error_string tf)
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
-            (get_id f) ),
+            (as_error_string f) ),
       sloc )
 
   let get_failure_msg_stmt srep phase opt =
+    let as_error_string i = Names.as_error_string (get_id i) in
     let s, rep = srep in
     let sloc = SR.get_loc rep in
     ( ( match s with
       | Load (x, f) ->
           sprintf "Type error in reading value of `%s` into `%s`:\n %s"
-            (get_id f) (get_id x) phase
+            (as_error_string f) (as_error_string x) phase
       | Store (f, r) ->
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
-            (get_id r) (get_id f)
+            (as_error_string r) (as_error_string f)
       | Bind (x, _) ->
-          sprintf "Type error in the binding to into `%s`:\n" (get_id x)
+          sprintf "Type error in the binding to into `%s`:\n" (as_error_string x)
       | MapGet (_, m, keys, _) ->
-          sprintf "Type error in getting map value %s" (get_id m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
+          sprintf "Type error in getting map value %s" (as_error_string m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->
-          sprintf "Type error in updating map %s" (get_id m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
+          sprintf "Type error in updating map %s" (as_error_string m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MatchStmt (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
-            (get_id x) opt
+            (as_error_string x) opt
       | ReadFromBC (x, _) ->
           sprintf "Error in reading from blockchain state into `%s`:\n"
-            (get_id x)
+            (as_error_string x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
-            (get_id p) (get_id l)
-      | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
-      | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
+            (as_error_string p) (as_error_string l)
+      | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (as_error_string i)
+      | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
-          sprintf "Error in call of procedure '%s':\n" (get_id p)
+          sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | Throw i ->
           let is =
-            match i with Some id -> "of '" ^ get_id id ^ "'" | None -> ""
+            match i with Some id -> "of '" ^ as_error_string id ^ "'" | None -> ""
           in
           sprintf "Error in throw %s:\n" is ),
       sloc )
@@ -1010,15 +1043,15 @@ module ParserRep = struct
 
   let get_loc l = l
 
-  let mk_id_address s = Ident (s, dummy_loc)
+  let address_type_rep = dummy_loc
 
-  let mk_id_uint128 s = Ident (s, dummy_loc)
+  let uint128_type_rep = dummy_loc
 
-  let mk_id_uint32 s = Ident (s, dummy_loc)
+  let uint32_type_rep = dummy_loc
 
-  let mk_id_bnum s = Ident (s, dummy_loc)
+  let bnum_type_rep = dummy_loc
 
-  let mk_id_string s = Ident (s, dummy_loc)
+  let string_type_rep = dummy_loc
 
   let parse_rep _ = dummy_loc
 
@@ -1029,4 +1062,4 @@ end
 (*       Syntax as generated by the parser             *)
 (*******************************************************)
 
-module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep)
+module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep) (FlattenedNames)
