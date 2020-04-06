@@ -47,6 +47,8 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let provide_init_arg = false
 
+  let json_errors = true
+
   let tests = explist
 
   let exit_code : Unix.process_status = WEXITED 0
