@@ -28,6 +28,8 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let ignore_predef_args = false
 
+  let json_errors = true
+
   let gas_limit = Stdint.Uint64.of_int 8000
 
   let custom_args = [ "-cf"; "-contractinfo" ]
@@ -84,6 +86,8 @@ module CheckerTests = TestUtil.DiffBasedTests (struct
   let runner = "scilla-checker"
 
   let ignore_predef_args = false
+
+  let json_errors = true
 
   let gas_limit = Stdint.Uint64.of_int 8000
 
@@ -144,6 +148,8 @@ module InitArgTests = TestUtil.DiffBasedTests (struct
 
   let ignore_predef_args = false
 
+  let json_errors = true
+
   let gas_limit = Stdint.Uint64.of_int 8000
 
   let custom_args = []
@@ -165,6 +171,8 @@ module ShogiTests = TestUtil.DiffBasedTests (struct
   let runner = "scilla-checker"
 
   let ignore_predef_args = false
+
+  let json_errors = true
 
   let gas_limit = Stdint.Uint64.of_int 8000
 
@@ -189,6 +197,8 @@ module TypeInfoTests = TestUtil.DiffBasedTests (struct
   let runner = "scilla-checker"
 
   let ignore_predef_args = false
+
+  let json_errors = true
 
   let gas_limit = Stdint.Uint64.of_int 8000
 

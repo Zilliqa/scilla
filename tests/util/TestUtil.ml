@@ -133,6 +133,8 @@ module type TestSuiteInput = sig
 
   val ignore_predef_args : bool
 
+  val json_errors : bool
+
   val exit_code : Unix.process_status
 
   val additional_libdirs : string list list
@@ -168,11 +170,11 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             @ [
                 "-libdir";
                 path;
-                "-jsonerrors";
                 input_file;
                 "-gaslimit";
                 Stdint.Uint64.to_string gas_limit;
               ]
+            @ if json_errors then [ "-jsonerrors" ] else []
         in
         let args =
           if provide_init_arg then args' @ [ "-init"; init_file ] else args'

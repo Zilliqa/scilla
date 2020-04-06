@@ -46,6 +46,8 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let ignore_predef_args = true
 
+  let json_errors = true
+
   let gas_limit = Stdint.Uint64.of_int 4002000
 
   let custom_args = [ "-gua"; "-contractinfo" ]

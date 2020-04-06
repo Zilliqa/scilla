@@ -30,6 +30,8 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let ignore_predef_args = true
 
+  let json_errors = true
+
   let gas_limit = Stdint.Uint64.zero
 
   let custom_args = []
@@ -146,6 +148,8 @@ module LibTests = TestUtil.DiffBasedTests (struct
 
   let ignore_predef_args = true
 
+  let json_errors = true
+
   let gas_limit = Stdint.Uint64.zero
 
   let custom_args = []
@@ -188,6 +192,8 @@ module ExpTests = TestUtil.DiffBasedTests (struct
   let runner = "parser-dummy"
 
   let ignore_predef_args = true
+
+  let json_errors = true
 
   let gas_limit = Stdint.Uint64.zero
 
