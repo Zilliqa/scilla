@@ -18,11 +18,19 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Names
 open Syntax
 open Yojson
 open PrimTypes
 open ErrorUtils
 open Stdint
+
+module PPNames = FlattenedNames
+module PPTypes = ScillaTypes (PPNames)
+module PPPrimTypes = 
+module PPLiterals = ScillaLiterals (PPNames)
+open PPTypes
+open PPLiterals
 
 (****************************************************************)
 (*                    Exception wrappers                        *)

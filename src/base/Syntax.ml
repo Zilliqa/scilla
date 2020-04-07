@@ -29,6 +29,10 @@ exception SyntaxError of string * loc
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 6, 0)
 
+module type Identifiers = sig
+  type 'a ident
+end
+
 module ScillaIdentifiers (Names : QualifiedNames) = struct
   type 'rep ident = Ident of Names.name * 'rep [@@deriving sexp]
 
@@ -55,6 +59,7 @@ module ScillaIdentifiers (Names : QualifiedNames) = struct
 
   let as_string i = Names.as_string (get_id i)
 
+  let as_error_string i = Names.as_error_string (get_id i)
 end
 
 (*******************************************************)
@@ -95,10 +100,14 @@ let sexp_of_prim_typ = function
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
+module type Types = sig
+  type typ
+end
+
 module ScillaTypes (Names : QualifiedNames) = struct
 
-  module TypeIdentifiers = ScillaIdentifiers (Names)
-  open TypeIdentifiers
+  module Identifiers = ScillaIdentifiers (Names)
+  open Identifiers
   
   type typ =
     | PrimType of prim_typ
@@ -260,6 +269,9 @@ end
 (*******************************************************)
 (*                      Literals                       *)
 (*******************************************************)
+module type Literals = sig
+  type literal
+end
 
 module ScillaLiterals (Names : QualifiedNames) = struct
 
@@ -933,7 +945,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Names : QualifiedNames) = struct
   (*                  Better error reporting                      *)
   (****************************************************************)
   let get_failure_msg erep phase opt =
-    let as_error_string i = Names.as_error_string (get_id i) in
+    let as_error_string i = as_error_string i in
     let e, rep = erep in
     let sloc = ER.get_loc rep in
     ( ( match e with

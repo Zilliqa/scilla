@@ -20,6 +20,11 @@ open Syntax
 open ErrorUtils
 open Core_kernel
 
+module BITypes : Types
+module BILiterals : Literals
+open BITypes
+open BILiterals
+
 module UsefulLiterals : sig
   val true_lit : literal
 

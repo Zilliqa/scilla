@@ -20,6 +20,11 @@ open Syntax
 open ErrorUtils
 open Core_kernel
 
+module DTTypes : Types
+module DTLiterals : Literals
+open DTTypes
+open DTLiterals
+
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)

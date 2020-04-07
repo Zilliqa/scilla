@@ -20,6 +20,13 @@ open Core_kernel
 open ErrorUtils
 open Syntax
 
+module TUIdentifiers : Identifiers
+module TUTypes : Types
+module TULiterals : Literals
+open TUIdentifiers
+open TUTypes
+open TULiterals
+
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = { tp : typ; qual : 'rep } [@@deriving sexp]
 
