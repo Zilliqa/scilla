@@ -22,7 +22,7 @@
 open OUnit2
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Syntax
+open Types
 open Yojson
 
 let parse_typ_wrapper t =

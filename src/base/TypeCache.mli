@@ -21,6 +21,7 @@
 (*****************************************************************)
 
 open Identifiers
+open Types
 open Syntax
 open TypeUtil
 

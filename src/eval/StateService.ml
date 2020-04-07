@@ -22,6 +22,7 @@ open Result.Let_syntax
 open MonadUtil
 open TypeUtil
 open Identifiers
+open Types
 open Syntax
 module ER = ParserRep
 module SR = ParserRep

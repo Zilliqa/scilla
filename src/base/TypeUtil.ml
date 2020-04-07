@@ -21,6 +21,7 @@ open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Sexplib.Std
 open Identifiers
+open Types
 open Syntax
 open MonadUtil
 open Result.Let_syntax

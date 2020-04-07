@@ -20,6 +20,7 @@
 open Core_kernel.Result.Let_syntax
 open TypeUtil
 open Identifiers
+open Types
 open Syntax
 open ErrorUtils
 open MonadUtil

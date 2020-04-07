@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Types
 open Syntax
 open ErrorUtils
 open Core_kernel

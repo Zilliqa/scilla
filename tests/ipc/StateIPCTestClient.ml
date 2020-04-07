@@ -18,7 +18,7 @@
 
 open Core
 open! Int.Replace_polymorphic_compare
-open Syntax
+open Types
 open TypeUtil
 open StateIPCIdl
 open OUnit2

@@ -17,6 +17,7 @@
 *)
 
 open Identifiers
+open Types
 open Syntax
 open Core_kernel
 open! Int.Replace_polymorphic_compare

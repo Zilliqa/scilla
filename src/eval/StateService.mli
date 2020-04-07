@@ -20,6 +20,7 @@
  * and update state variables on demand. *)
 
 open Identifiers
+open Types
 open Syntax
 open ParsedSyntax
 open ErrorUtils

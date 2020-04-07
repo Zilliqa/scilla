@@ -3,6 +3,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open TypeUtil
 open Identifiers
+open Types
 open Syntax
 open ContractUtil.MessagePayload
 open MonadUtil
