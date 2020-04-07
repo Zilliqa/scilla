@@ -16,25 +16,23 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
 open ErrorUtils
 
 type 'rep ident = Ident of string * 'rep [@@deriving sexp]
 
-let asId i = Ident (i, dummy_loc)
+val asId : string -> loc ident
 
-let asIdL i loc = Ident (i, loc)
+val asIdL : string -> 'a -> 'a ident
 
-let get_id i = match i with Ident (x, _) -> x
+val get_id : 'a ident -> string
 
-let get_rep i = match i with Ident (_, l) -> l
+val get_rep : 'a ident -> 'a
 
 (* A few utilities on id. *)
-let equal_id a b = String.(get_id a = get_id b)
+val equal_id : 'a ident -> 'b ident -> bool
 
-let compare_id a b = String.(compare (get_id a) (get_id b))
+val compare_id : 'a ident -> 'b ident -> int
 
-let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+val dedup_id_list : 'a ident list -> 'a ident list
 
-let is_mem_id i l = List.exists l ~f:(equal_id i)
-
+val is_mem_id : 'a ident -> 'a ident list -> bool
