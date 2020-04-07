@@ -66,6 +66,7 @@ struct
      In the statement language, all contribution sources are pseudofields, i.e.
      identifier contributions are reduced after every statement *)
   type contrib_source =
+    | UnknownSource
     | Pseudofield of pseudofield
     | FormalParameter of de_bruijn_level * int
 
@@ -78,6 +79,7 @@ struct
 
   let pp_contrib_source cs =
     match cs with
+    | UnknownSource -> "unknown_source"
     | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
     | FormalParameter (depth, i) ->
         let depth_str = if depth > 0 then string_of_int depth ^ "." else "" in
@@ -129,31 +131,46 @@ struct
 
   type dependencies = conditionals
 
-  type expr_type =
+  type known_expr_type =
     de_bruijn_level * source_precision * contributions * conditionals
 
-  let et_top = (0, Exactly, Contrib.empty, Cond.empty)
+  type expr_type = KnownET of known_expr_type | UnknownET
+
+  let et_nothing = KnownET (0, Exactly, Contrib.empty, Cond.empty)
 
   let min_precision ua ub =
     match (ua, ub) with Exactly, Exactly -> Exactly | _ -> SubsetOf
 
-  let et_list_split (etl : expr_type list) =
+  let ket_list_split (etl : known_expr_type list) =
     let ls, ps = List.split @@ List.map (fun (a, b, _, _) -> (a, b)) etl in
     let cs, conds = List.split @@ List.map (fun (_, _, a, b) -> (a, b)) etl in
     (ls, ps, cs, conds)
 
-  let et_equal (a : expr_type) (b : expr_type) =
-    let la, psa, contra, condsa = a in
-    let lb, psb, contrb, condsb = b in
-    let l_eq = la = lb in
-    let ps_eq = psa = psb in
-    let contr_eq =
-      Contrib.equal
-        (fun (cca, copa) (ccb, copb) -> cca = ccb && ContribOps.equal copa copb)
-        contra contrb
+  let et_to_ket (etl : expr_type list) : known_expr_type list option =
+    let ket =
+      mapM
+        (fun et ->
+          match et with UnknownET -> fail0 "Bad" | KnownET et -> pure @@ et)
+        etl
     in
-    let conds_eq = Cond.equal condsa condsb in
-    l_eq && ps_eq && contr_eq && conds_eq
+    match ket with Ok ket -> Some ket | Error _ -> None
+
+  let et_equal (a : expr_type) (b : expr_type) =
+    match (a, b) with
+    | KnownET a, KnownET b ->
+        let la, psa, contra, condsa = a in
+        let lb, psb, contrb, condsb = b in
+        let l_eq = la = lb in
+        let ps_eq = psa = psb in
+        let contr_eq =
+          Contrib.equal
+            (fun (cca, copa) (ccb, copb) ->
+              cca = ccb && ContribOps.equal copa copb)
+            contra contrb
+        in
+        let conds_eq = Cond.equal condsa condsb in
+        l_eq && ps_eq && contr_eq && conds_eq
+    | _ -> false
 
   let pp_contrib_summary (cs : contrib_summary) =
     let card, ops_set = cs in
@@ -177,16 +194,23 @@ struct
     String.concat " " @@ List.map pp_contrib_source sources
 
   let pp_expr_type (et : expr_type) =
-    let l, ps, cs, cond = et in
-    let show_level = l <> 0 in
-    let show_precision = Contrib.cardinal cs > 0 in
-    let show_cond = Cond.cardinal cond > 0 in
-    let level_str =
-      if show_level then "Level " ^ string_of_int l ^ " " else ""
-    in
-    let precision_str = if show_precision then pp_precision ps ^ " " else "" in
-    let cond_str = if show_cond then " cond? " ^ pp_conditionals cond else "" in
-    level_str ^ precision_str ^ pp_contribs cs ^ cond_str
+    match et with
+    | UnknownET -> "Unknown"
+    | KnownET et ->
+        let l, ps, cs, cond = et in
+        let show_level = l <> 0 in
+        let show_precision = Contrib.cardinal cs > 0 in
+        let show_cond = Cond.cardinal cond > 0 in
+        let level_str =
+          if show_level then "Level " ^ string_of_int l ^ " " else ""
+        in
+        let precision_str =
+          if show_precision then pp_precision ps ^ " " else ""
+        in
+        let cond_str =
+          if show_cond then " cond? " ^ pp_conditionals cond else ""
+        in
+        level_str ^ precision_str ^ pp_contribs cs ^ cond_str
 
   (* For each contract component, we keep track of the operations it performs.
      This gives us enough information to tell whether two transitions have disjoint
@@ -434,7 +458,9 @@ struct
             let cs =
               Contrib.singleton none_ps (LinearContrib, ContribOps.empty)
             in
-            let expected_et : expr_type = (0, Exactly, cs, Cond.empty) in
+            let expected_et : expr_type =
+              KnownET (0, Exactly, cs, Cond.empty)
+            in
             let good_et = et_equal xc expected_et in
             good_et
             &&
@@ -553,14 +579,17 @@ struct
     Contrib.union combine_seq a b
 
   let et_union (eta : expr_type) (etb : expr_type) =
-    let la, ufa, csa, cnda = eta in
-    let lb, ufb, csb, cndb = etb in
-    (* TODO: think about this? *)
-    let l = max la lb in
-    let uf = min_precision ufa ufb in
-    let cs = contrib_union csa csb in
-    let cnd = Cond.union cnda cndb in
-    (l, uf, cs, cnd)
+    match (eta, etb) with
+    | KnownET eta, KnownET etb ->
+        let la, ufa, csa, cnda = eta in
+        let lb, ufb, csb, cndb = etb in
+        (* TODO: think about this? *)
+        let l = max la lb in
+        let uf = min_precision ufa ufb in
+        let cs = contrib_union csa csb in
+        let cnd = Cond.union cnda cndb in
+        KnownET (l, uf, cs, cnd)
+    | _ -> UnknownET
 
   (* Combine contributions "in parallel", e.g. match *)
   let contrib_combine_par (carda, opsa) (cardb, opsb) =
@@ -630,8 +659,11 @@ struct
       Cond.of_seq (List.to_seq new_bindings)
     in
     let translate_comp_et (et : expr_type) =
-      let l, un, cs, cond = et in
-      (l, un, translate_comp_contribs cs, translate_comp_cond cond)
+      match et with
+      | KnownET et ->
+          let l, un, cs, cond = et in
+          KnownET (l, un, translate_comp_contribs cs, translate_comp_cond cond)
+      | UnknownET -> UnknownET
     in
 
     match op with
@@ -709,11 +741,12 @@ struct
   let dependencies_of senv i =
     let%bind isig = SAEnv.resolvS senv (get_id i) in
     match isig with
-    | IdentSig (_, _, (_, _, contrs, conds)) ->
+    | IdentSig (_, _, KnownET (_, _, contrs, conds)) ->
         let deps =
           Cond.of_list @@ fst @@ List.split @@ Contrib.bindings contrs
         in
         pure @@ Cond.union deps conds
+    | IdentSig (_, _, UnknownET) -> pure @@ Cond.singleton UnknownSource
     | _ ->
         fail0 "Sharding analysis: trying to get dependencies, but no IdentSig"
 
@@ -785,87 +818,123 @@ struct
     in
     closure_cs :: args_cs
 
+  (* Return UnknownET if argument is a higher-order function,
+      i.e. it takes a function as argument OR returns a function *)
+  let remove_ho (x : ER.rep Syntax.ident) (et : expr_type) =
+    let is_fun t = match t with FunType _ -> true | _ -> false in
+    let rec is_ho t =
+      match t with FunType (arg, ret) -> is_fun arg || is_ho ret | _ -> false
+    in
+    let xt = (ER.get_type (get_rep x)).tp in
+    match is_ho xt with true -> UnknownET | false -> et
+
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
   let rec sa_expr senv (fdepth, fp_count) (erep : expr_annot) =
-    let cont senv' expr = sa_expr senv' (fdepth, fp_count) expr in
+    let cont senv expr = sa_expr senv (fdepth, fp_count) expr in
     let e, rep = erep in
     match e with
-    | Literal l -> pure @@ et_top
+    | Literal l -> pure @@ et_nothing
     | Var i ->
         let%bind ic = get_ident_et senv i in
+        let ic = remove_ho i ic in
         pure @@ ic
     | Builtin ((b, _), actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        let et = List.fold_left et_union et_top arg_ets in
-        let _, uf, cs, cnds = et in
-        let cs_wops =
-          Contrib.map
-            (fun (co_cc, co_ops) ->
-              let co_ops' =
-                ContribOps.union co_ops (ContribOps.singleton (BuiltinOp b))
+        let et = List.fold_left et_union et_nothing arg_ets in
+        let new_et =
+          match et with
+          | UnknownET -> UnknownET
+          (* Add the builtin to all the contributions *)
+          | KnownET et ->
+              let _, uf, cs, cnds = et in
+              let cs_wops =
+                Contrib.map
+                  (fun (co_cc, co_ops) ->
+                    let co_ops' =
+                      ContribOps.union co_ops
+                        (ContribOps.singleton (BuiltinOp b))
+                    in
+                    (co_cc, co_ops'))
+                  cs
               in
-              (co_cc, co_ops'))
-            cs
+              KnownET (fdepth, uf, cs_wops, cnds)
         in
-        pure @@ (fdepth, uf, cs_wops, cnds)
+        pure @@ new_et
     | Message bs ->
         let get_payload_et pld =
           match pld with
-          | MLit l -> pure @@ et_top
+          | MLit l -> pure @@ et_nothing
           | MVar i ->
               let%bind ic = get_ident_et senv i in
               pure @@ ic
         in
         let _, plds = List.split bs in
         let%bind pld_ets = mapM get_payload_et plds in
-        pure @@ List.fold_left et_union et_top pld_ets
+        pure @@ List.fold_left et_union et_nothing pld_ets
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        pure @@ List.fold_left et_union et_top arg_ets
+        pure @@ List.fold_left et_union et_nothing arg_ets
     | MatchExpr (x, clauses) ->
         let%bind xc = get_ident_et senv x in
         let spurious = is_spurious_conditional_expr senv x clauses in
-        let _, _, xcontr, xcond = xc in
-        let clause_et (pattern, cl_expr) =
-          let binders = get_pattern_bounds pattern in
-          let senv' =
-            List.fold_left
-              (* Each binder in the pattern gets the full contributions of x *)
-                (fun env_acc id -> env_new_ident id xc env_acc)
-              senv binders
-          in
-          cont senv' cl_expr
-        in
-        let%bind cl_ets = mapM clause_et clauses in
-        let cl_l, cl_pss, cl_contribs, cl_conds = et_list_split cl_ets in
-        let fc = List.hd cl_contribs in
-        let all_equal = List.for_all (fun c -> c = fc) cl_contribs in
-        let cl_ps = List.fold_left min_precision Exactly cl_pss in
-        (* The precision of the match is: Exactly if all clauses are equal and
-           precise OR the conditional is spurious, otherwise SubsetOf *)
-        let match_ps =
-          min_precision
-            (if all_equal || spurious then Exactly else SubsetOf)
-            cl_ps
-        in
-        (* The match's contributions is the LUB of the clauses *)
-        let match_contribs =
-          List.fold_left contrib_upper_bound Contrib.empty cl_contribs
-        in
-        let match_cond =
-          let this_cond =
-            if spurious then Cond.empty
-            else Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
-          in
+        let%bind new_et =
+          match xc with
+          | UnknownET -> pure @@ UnknownET
+          | KnownET xc -> (
+              let _, _, xcontr, xcond = xc in
+              let clause_et (pattern, cl_expr) =
+                let binders = get_pattern_bounds pattern in
+                let senv' =
+                  List.fold_left
+                    (* Each binder in the pattern gets the full contributions of x *)
+                      (fun env_acc id -> env_new_ident id (KnownET xc) env_acc)
+                    senv binders
+                in
+                cont senv' cl_expr
+              in
+              let%bind cl_ets = mapM clause_et clauses in
+              let cl_kets = et_to_ket cl_ets in
+              match cl_kets with
+              (* If any of the clauses is Unknown, match is Unknown *)
+              | None -> pure @@ UnknownET
+              | Some cl_kets ->
+                  let cl_l, cl_pss, cl_contribs, cl_conds =
+                    ket_list_split cl_kets
+                  in
+                  let fc = List.hd cl_contribs in
+                  let all_equal = List.for_all (fun c -> c = fc) cl_contribs in
+                  let cl_ps = List.fold_left min_precision Exactly cl_pss in
+                  (* The precision of the match is: Exactly if all clauses are equal and
+                     precise OR the conditional is spurious, otherwise SubsetOf *)
+                  let match_ps =
+                    min_precision
+                      (if all_equal || spurious then Exactly else SubsetOf)
+                      cl_ps
+                  in
+                  (* The match's contributions is the LUB of the clauses *)
+                  let match_contribs =
+                    List.fold_left contrib_upper_bound Contrib.empty cl_contribs
+                  in
+                  let match_cond =
+                    let this_cond =
+                      if spurious then Cond.empty
+                      else
+                        Cond.of_list @@ fst @@ List.split
+                        @@ Contrib.bindings xcontr
+                    in
 
-          let this_cond = Cond.union this_cond xcond in
-          List.fold_left Cond.union this_cond cl_conds
+                    let this_cond = Cond.union this_cond xcond in
+                    List.fold_left Cond.union this_cond cl_conds
+                  in
+                  pure @@ KnownET (fdepth, match_ps, match_contribs, match_cond)
+              )
         in
-        pure @@ (fdepth, match_ps, match_contribs, match_cond)
+        pure @@ new_et
     | Let (i, _, lhs, rhs) ->
         (* We are introducing a new binder, so LHS is a new scope *)
         let%bind lhs_et = sa_expr senv (fdepth + 1, 0) lhs in
+        let lhs_et = remove_ho i lhs_et in
         let senv' = env_new_ident i lhs_et senv in
         cont senv' rhs
     (* Our expr_types do not depend on Scilla types; just analyse as if monomorphic *)
@@ -879,7 +948,7 @@ struct
             (FormalParameter (fdepth, fp_count))
             (LinearContrib, ContribOps.empty)
         in
-        let fp_et = (fdepth, Exactly, fp_contrib, Cond.empty) in
+        let fp_et = KnownET (fdepth, Exactly, fp_contrib, Cond.empty) in
         let senv' = env_new_ident formal fp_et senv in
         sa_expr senv' (fdepth, fp_count + 1) body
     | App (f, actuals) ->
@@ -891,41 +960,55 @@ struct
               fail0 "Sharding analysis: applied function does not have IdentSig"
         in
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        let _, arg_ps, arg_contribs, _ = et_list_split arg_ets in
-        (* f's summary has arguments named _0, _1, etc. *)
-        (* CAREFUL: don't rely on order of elements in map; Ord.compare may change *)
-        let%bind fp_ets = fun_sig f in
-        let fp_l, fp_ps, fp_contribs, fp_conds = fp_ets in
-        (* Distribute each argument's contributions over the respective formal
-           parameter's contribution *)
-        let contribs_pairwise =
-          tt_formal_parameters ~f:contrib_product ~none:Contrib.empty fp_l
-            fp_contribs arg_contribs
-        in
-        (* Which argument contributions flowed into conditionals in the function? *)
-        let conds_pairwise =
-          tt_conds
-            ~f:(fun argc _ ->
-              Cond.of_list @@ fst @@ List.split @@ Contrib.bindings argc)
-            ~none:Cond.empty fp_l fp_conds arg_contribs
-        in
-        let app_ps = List.fold_left min_precision fp_ps arg_ps in
-        let app_contrib =
-          List.fold_left contrib_union Contrib.empty contribs_pairwise
-        in
-        let app_conds = List.fold_left Cond.union Cond.empty conds_pairwise in
+        let%bind new_et =
+          let arg_kets = et_to_ket arg_ets in
+          match arg_kets with
+          | None -> pure @@ UnknownET
+          | Some arg_kets -> (
+              let _, arg_ps, arg_contribs, _ = ket_list_split arg_kets in
+              (* f's summary has arguments named _0, _1, etc. *)
+              (* CAREFUL: don't rely on order of elements in map; Ord.compare may change *)
+              let%bind fp_ets = fun_sig f in
+              match fp_ets with
+              | UnknownET -> pure @@ UnknownET
+              | KnownET fp_ets ->
+                  let fp_l, fp_ps, fp_contribs, fp_conds = fp_ets in
+                  (* Distribute each argument's contributions over the respective formal
+                     parameter's contribution *)
+                  let contribs_pairwise =
+                    tt_formal_parameters ~f:contrib_product ~none:Contrib.empty
+                      fp_l fp_contribs arg_contribs
+                  in
+                  (* Which argument contributions flowed into conditionals in the function? *)
+                  let conds_pairwise =
+                    tt_conds
+                      ~f:(fun argc _ ->
+                        Cond.of_list @@ fst @@ List.split
+                        @@ Contrib.bindings argc)
+                      ~none:Cond.empty fp_l fp_conds arg_contribs
+                  in
+                  let app_ps = List.fold_left min_precision fp_ps arg_ps in
+                  let app_contrib =
+                    List.fold_left contrib_union Contrib.empty contribs_pairwise
+                  in
+                  let app_conds =
+                    List.fold_left Cond.union Cond.empty conds_pairwise
+                  in
 
-        (* App result takes the max level of app_contrib + app_conds *)
-        (* Reasoning: if the result of the App (say, q) takes an argument at
-           level X, then q is a function of at least level X *)
-        let app_level =
-          let contrib_ml =
-            cs_max_depth @@ fst @@ List.split @@ Contrib.bindings app_contrib
-          in
-          let conds_ml = cs_max_depth @@ Cond.elements app_conds in
-          max contrib_ml conds_ml
+                  (* App result takes the max level of app_contrib + app_conds *)
+                  (* Reasoning: if the result of the App (say, q) takes an argument at
+                     level X, then q is a function of at least level X *)
+                  let app_level =
+                    let contrib_ml =
+                      cs_max_depth @@ fst @@ List.split
+                      @@ Contrib.bindings app_contrib
+                    in
+                    let conds_ml = cs_max_depth @@ Cond.elements app_conds in
+                    max contrib_ml conds_ml
+                  in
+                  pure @@ KnownET (app_level, app_ps, app_contrib, app_conds) )
         in
-        pure @@ (app_level, app_ps, app_contrib, app_conds)
+        pure @@ new_et
     | _ -> fail0 @@ "Sharding analysis: unsupported instruction " ^ pp_expr e
 
   let sa_expr_wrapper senv erep = sa_expr senv (0, 0) erep
@@ -958,7 +1041,7 @@ struct
         match s with
         | Load (x, f) ->
             cont_ident_op x
-              (et_pseudofield (f, None))
+              (KnownET (et_pseudofield (f, None)))
               (Read (f, None))
               summary sts
         | Store (f, i) ->
@@ -973,12 +1056,14 @@ struct
                   ( Some (ER.get_loc (get_rep m)),
                     pp_operation (Read (m, Some klist)) )
             in
-            cont_ident_op x (et_pseudofield (m, Some klist)) op summary sts
+            cont_ident_op x
+              (KnownET (et_pseudofield (m, Some klist)))
+              op summary sts
         | MapUpdate (m, klist, opt_i) ->
             let%bind ic =
               match opt_i with
               | Some i -> get_ident_et senv i
-              | None -> pure @@ et_top
+              | None -> pure @@ et_nothing
             in
             let op =
               if map_access_can_be_summarised senv m klist then
@@ -997,9 +1082,10 @@ struct
             let%bind deps = dependencies_of senv i in
             cont_op (EmitEvent deps) summary sts
         (* TODO: Do we want to track blockchain reads? *)
-        | ReadFromBC (x, _) -> cont_ident x et_top summary sts
+        | ReadFromBC (x, _) -> cont_ident x et_nothing summary sts
         | Bind (x, expr) ->
             let%bind expr_contrib = sa_expr_wrapper senv expr in
+            let expr_contrib = remove_ho x expr_contrib in
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
@@ -1014,48 +1100,60 @@ struct
               in
               sa_stmt senv' summary cl_sts
             in
-
-            (* Unusual case: match does not express "real" control flow, but
-               monadic operation on option; in this case, the summary is the
-               summary of the Some branch *)
-            if spurious then
-              let is_some (pattern, _) =
-                List.length (get_pattern_bounds pattern) = 1
-              in
-              let%bind some_summary =
-                mapM summarise_clause (List.filter is_some clauses)
-              in
-              let%bind summary' =
-                foldM
-                  (fun acc_summ cl_summ ->
-                    pure @@ ComponentSummary.union acc_summ cl_summ)
-                  summary some_summary
-              in
-              cont senv summary' sts (* This is the normal case *)
-            else
-              let _, _, xcontr, xcond = xc in
-              let match_conds =
-                let this_cond =
-                  Cond.of_list @@ fst @@ List.split @@ Contrib.bindings xcontr
+            let%bind new_summ =
+              (* Unusual case: match does not express "real" control flow, but
+                 monadic operation on option; in this case, the summary is the
+                 summary of the Some branch *)
+              if spurious then
+                let is_some (pattern, _) =
+                  List.length (get_pattern_bounds pattern) = 1
                 in
-                Cond.union this_cond xcond
-              in
-              let conds_op = ConditionOn match_conds in
-              let%bind cl_summaries = mapM summarise_clause clauses in
-              let summary_with_conds =
-                (* It's possible (and fine) to condition on constants or blockchain reads *)
-                if Cond.cardinal match_conds > 0 then
-                  ComponentSummary.add conds_op summary
-                else summary
-              in
-              (* TODO: LUB *)
-              let%bind summary' =
-                foldM
-                  (fun acc_summ cl_summ ->
-                    pure @@ ComponentSummary.union acc_summ cl_summ)
-                  summary_with_conds cl_summaries
-              in
-              cont senv summary' sts
+                let%bind some_summary =
+                  mapM summarise_clause (List.filter is_some clauses)
+                in
+                let%bind summary' =
+                  foldM
+                    (fun acc_summ cl_summ ->
+                      pure @@ ComponentSummary.union acc_summ cl_summ)
+                    summary some_summary
+                in
+                cont senv summary' sts (* This is the normal case *)
+              else
+                match xc with
+                | UnknownET ->
+                    pure
+                    @@ ComponentSummary.add
+                         (AlwaysExclusive
+                            ( Some (ER.get_loc (get_rep x)),
+                              "Condition on UnknownET" ))
+                         summary
+                | KnownET xc ->
+                    let _, _, xcontr, xcond = xc in
+                    let match_conds =
+                      let this_cond =
+                        Cond.of_list @@ fst @@ List.split
+                        @@ Contrib.bindings xcontr
+                      in
+                      Cond.union this_cond xcond
+                    in
+                    let conds_op = ConditionOn match_conds in
+                    let%bind cl_summaries = mapM summarise_clause clauses in
+                    let summary_with_conds =
+                      (* It's possible (and fine) to condition on constants or blockchain reads *)
+                      if Cond.cardinal match_conds > 0 then
+                        ComponentSummary.add conds_op summary
+                      else summary
+                    in
+                    (* TODO: LUB *)
+                    let%bind summary' =
+                      foldM
+                        (fun acc_summ cl_summ ->
+                          pure @@ ComponentSummary.union acc_summ cl_summ)
+                        summary_with_conds cl_summaries
+                    in
+                    cont senv summary' sts
+            in
+            pure @@ new_summ
         | CallProc (p, arglist) -> (
             let opt_proc_sig = SAEnv.lookupS senv (get_id p) in
             match opt_proc_sig with
@@ -1079,7 +1177,7 @@ struct
     let senv' =
       env_bind_ident_list senv
         (List.map (fun (i, _) -> i) all_params)
-        (IdentSig (ComponentParameter, PCMStatus.empty, et_top))
+        (IdentSig (ComponentParameter, PCMStatus.empty, et_nothing))
     in
     sa_stmt senv' ComponentSummary.empty comp.comp_body
 
@@ -1089,6 +1187,7 @@ struct
         match le with
         | LibVar (lname, _, lexp) ->
             let%bind esig = sa_expr_wrapper senv lexp in
+            let esig = remove_ho lname esig in
             let e, rep = lexp in
             let pcms = pcm_unit senv e in
             pure
@@ -1133,7 +1232,7 @@ struct
     let senv =
       let prs, _ = List.split cmod.contr.cparams in
       env_bind_ident_list senv prs
-        (IdentSig (DoesNotShadow, PCMStatus.empty, et_top))
+        (IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
     in
 
     (* This is a combined map and fold: fold for senv', map for summaries *)
