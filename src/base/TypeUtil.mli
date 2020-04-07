@@ -18,6 +18,7 @@
 
 open Core_kernel
 open ErrorUtils
+open Identifiers
 open Syntax
 
 (* An inferred type with possible qualifiers *)

@@ -21,6 +21,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open TypeUtil
+open Identifiers
 open Syntax
 module ER = ParserRep
 module SR = ParserRep

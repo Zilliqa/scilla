@@ -2,6 +2,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
+open Identifiers
 open Syntax
 open ParsedSyntax
 open PrimTypes

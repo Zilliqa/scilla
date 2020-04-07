@@ -17,6 +17,7 @@
 *)
 
 %{
+  open Identifiers
   open Syntax
   open ErrorUtils
   open ParsedSyntax

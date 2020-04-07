@@ -19,6 +19,7 @@ open Core
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
+open Identifiers
 open Syntax
 open JSON
 open TypeUtil

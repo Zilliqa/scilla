@@ -22,34 +22,12 @@ open Sexplib.Std
 open MonadUtil
 open ErrorUtils
 open Stdint
+open Identifiers
 
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 6, 0)
-
-type 'rep ident = Ident of string * 'rep [@@deriving sexp]
-
-let asId i = Ident (i, dummy_loc)
-
-let asIdL i loc = Ident (i, loc)
-
-let get_id i = match i with Ident (x, _) -> x
-
-let get_rep i = match i with Ident (_, l) -> l
-
-type bigint = Big_int.big_int
-
-let mk_ident s = Ident (s, dummy_loc)
-
-(* A few utilities on id. *)
-let equal_id a b = String.(get_id a = get_id b)
-
-let compare_id a b = String.(compare (get_id a) (get_id b))
-
-let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
-
-let is_mem_id i l = List.exists l ~f:(equal_id i)
 
 (*******************************************************)
 (*                         Types                       *)

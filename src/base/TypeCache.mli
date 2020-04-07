@@ -20,6 +20,7 @@
 (*                    Library type caching                       *)
 (*****************************************************************)
 
+open Identifiers
 open Syntax
 open TypeUtil
 
