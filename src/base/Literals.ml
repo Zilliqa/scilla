@@ -200,3 +200,28 @@ type literal =
       CPSMonad.t)
 [@@deriving sexp]
 
+(****************************************************************)
+(*                     Type substitutions                       *)
+(****************************************************************)
+
+let rec subst_type_in_literal tvar tp l =
+  match l with
+  | Map ((kt, vt), ls) ->
+      let kts = subst_type_in_type' tvar tp kt in
+      let vts = subst_type_in_type' tvar tp vt in
+      let ls' = Hashtbl.create (Hashtbl.length ls) in
+      let _ =
+        Hashtbl.iter
+          (fun k v ->
+            let k' = subst_type_in_literal tvar tp k in
+            let v' = subst_type_in_literal tvar tp v in
+            Hashtbl.add ls' k' v')
+          ls
+      in
+      Map ((kts, vts), ls')
+  | ADTValue (n, ts, ls) ->
+      let ts' = List.map ts ~f:(subst_type_in_type' tvar tp) in
+      let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
+      ADTValue (n, ts', ls')
+  | _ -> l
+

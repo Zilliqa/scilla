@@ -48,3 +48,23 @@ type typ =
 [@@deriving sexp]
 
 val pp_typ : typ -> string
+
+(****************************************************************)
+(*                     Type substitutions                       *)
+(****************************************************************)
+
+val free_tvars : typ -> string list
+
+val mk_fresh_var : string list -> string -> string
+
+val refresh_tfun : typ -> string list -> typ
+
+val canonicalize_tfun : typ -> typ
+
+val equal_typ : typ -> typ -> bool
+
+val subst_type_in_type : string -> typ -> typ -> typ
+
+val subst_types_in_type : (string * typ) list -> typ -> typ
+
+val subst_type_in_type' : 'a ident -> typ -> typ -> typ
