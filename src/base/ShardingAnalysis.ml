@@ -241,7 +241,10 @@ struct
           | Some loc -> "line " ^ string_of_int loc.lnum
           | None -> ""
         in
-        let msg_str = if String.length msg > 0 then ": " ^ msg else "" in
+        let msg_str =
+          (if String.length loc_str > 0 then ": " else "")
+          ^ if String.length msg > 0 then msg else ""
+        in
         "AlwaysExclusive (" ^ loc_str ^ msg_str ^ ")"
 
   module OrderedComponentOperation = struct
@@ -634,6 +637,15 @@ struct
 
   let map_access_can_be_summarised senv m klist =
     is_bottom_level_access m klist && all_keys_are_parameters senv klist
+
+  let conds_can_be_summarised senv (conds : Cond.t) =
+    let can_summarise c =
+      match c with
+      | Pseudofield (m, Some klist) -> map_access_can_be_summarised senv m klist
+      | Pseudofield (f, None) -> true
+      | UnknownSource | FormalParameter (_, _) -> false
+    in
+    Cond.for_all can_summarise conds
 
   let translate_op op old_params new_params =
     let old_names = List.map (fun p -> get_id p) old_params in
@@ -1151,7 +1163,13 @@ struct
                       in
                       Cond.union this_cond xcond
                     in
-                    let conds_op = ConditionOn match_conds in
+                    let conds_op =
+                      let co = ConditionOn match_conds in
+                      if conds_can_be_summarised senv match_conds then co
+                      else
+                        AlwaysExclusive
+                          (Some (ER.get_loc (get_rep x)), pp_operation co)
+                    in
                     let%bind cl_summaries = mapM summarise_clause clauses in
                     let summary_with_conds =
                       (* It's possible (and fine) to condition on constants or blockchain reads *)
@@ -1183,8 +1201,14 @@ struct
                 fail1
                   "Sharding analysis: calling procedure that was not analysed"
                   (SR.get_loc (get_rep p)) )
-        | _ -> fail0 @@ "Sharding analysis: unsupported statement " ^ pp_stmt s
-        )
+        | Iterate (l, _) ->
+            let op =
+              AlwaysExclusive (Some (ER.get_loc (get_rep l)), "Iterate")
+            in
+            cont_op op summary sts
+        | Throw i ->
+            let op = AlwaysExclusive (None, "Throw") in
+            cont_op op summary sts )
 
   let sa_component_summary senv (comp : component) =
     let all_params = SCU.append_implict_comp_params comp.comp_params in
@@ -1196,6 +1220,15 @@ struct
           IdentSig (ComponentParameter, PCMStatus.empty, et))
     in
     sa_stmt senv' ComponentSummary.empty comp.comp_body
+
+  let sa_analyze_folds senv =
+    let folds =
+      [ "nat_fold"; "nat_foldk"; "list_foldl"; "list_foldr"; "list_foldk" ]
+    in
+    List.fold_left
+      (fun senv s ->
+        SAEnv.addS senv s (IdentSig (DoesNotShadow, PCMStatus.empty, UnknownET)))
+      senv folds
 
   let sa_libentries senv (lel : lib_entry list) =
     foldM
@@ -1215,6 +1248,8 @@ struct
   let sa_module (cmod : cmodule) (elibs : libtree list) =
     (* Stage 1: determine state footprint of components *)
     let senv = SAEnv.mk () in
+
+    let senv = sa_analyze_folds senv in
 
     (* Analyze external libraries  *)
     let%bind senv =
@@ -1246,7 +1281,8 @@ struct
 
     (* Bind contract parameters *)
     let senv =
-      env_bind_ident_map senv cmod.contr.cparams (fun _ _ ->
+      let all_params = SCU.append_implict_contract_params cmod.contr.cparams in
+      env_bind_ident_map senv all_params (fun _ _ ->
           IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
     in
 
