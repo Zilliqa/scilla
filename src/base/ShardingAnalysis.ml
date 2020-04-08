@@ -437,7 +437,7 @@ struct
           (* e.g.
              opt_x <- map[key1][key2];
              match opt_x with
-               | Some x => q = PCM_op base diff; map[key1][key2] := q
+               | Some x => q = PCM_op x diff; map[key1][key2] := q
                | None => map[key1][key2] := diff
              Make sure you check it's map[key1][key2] in both branches! *)
           let ok = List.length none_stmts = 1 && List.length some_stmts = 2 in
@@ -549,9 +549,9 @@ struct
     let i = comp.comp_name in
     SAEnv.addS senv (get_id i) sgn
 
-  let env_bind_ident_list senv idlist (sgn : signature) =
+  let env_bind_ident_map senv idlist sgn =
     List.fold_left
-      (fun acc_senv i -> SAEnv.addS acc_senv (get_id i) sgn)
+      (fun acc_senv (i, t) -> SAEnv.addS acc_senv (get_id i) (sgn i t))
       senv idlist
 
   let contrib_pseudofield (f, opt_keys) =
@@ -818,15 +818,31 @@ struct
     in
     closure_cs :: args_cs
 
+  let is_fun t = match t with FunType _ -> true | _ -> false
+
   (* Return UnknownET if argument is a higher-order function,
       i.e. it takes a function as argument OR returns a function *)
-  let remove_ho (x : ER.rep Syntax.ident) (et : expr_type) =
-    let is_fun t = match t with FunType _ -> true | _ -> false in
-    let rec is_ho t =
-      match t with FunType (arg, ret) -> is_fun arg || is_ho ret | _ -> false
+  let remove_ho (x : ER.rep Syntax.ident) (et : expr_type) (ea : expr_annot) =
+    (* Determine whether it takes a function as argument *)
+    let rec takes_fun_arg t =
+      match t with
+      | FunType (arg, ret) -> is_fun arg || takes_fun_arg ret
+      | _ -> false
     in
     let xt = (ER.get_type (get_rep x)).tp in
-    match is_ho xt with true -> UnknownET | false -> et
+    (* Determine whether it returns a function, i.e. its type has more arrows
+       than the number of head-form binders. A less restricted version of this
+       would count all level 0 binders.
+    *)
+    let rec count_arrows t =
+      match t with FunType (arg, ret) -> 1 + count_arrows ret | _ -> 0
+    in
+    let rec count_hf_binders ea =
+      let e, erep = ea in
+      match e with Fun (formal, _, body) -> 1 + count_hf_binders body | _ -> 0
+    in
+    let is_ho = takes_fun_arg xt || count_arrows xt <> count_hf_binders ea in
+    if is_ho then UnknownET else et
 
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
@@ -837,7 +853,6 @@ struct
     | Literal l -> pure @@ et_nothing
     | Var i ->
         let%bind ic = get_ident_et senv i in
-        let ic = remove_ho i ic in
         pure @@ ic
     | Builtin ((b, _), actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
@@ -934,7 +949,7 @@ struct
     | Let (i, _, lhs, rhs) ->
         (* We are introducing a new binder, so LHS is a new scope *)
         let%bind lhs_et = sa_expr senv (fdepth + 1, 0) lhs in
-        let lhs_et = remove_ho i lhs_et in
+        let lhs_et = remove_ho i lhs_et lhs in
         let senv' = env_new_ident i lhs_et senv in
         cont senv' rhs
     (* Our expr_types do not depend on Scilla types; just analyse as if monomorphic *)
@@ -1085,7 +1100,7 @@ struct
         | ReadFromBC (x, _) -> cont_ident x et_nothing summary sts
         | Bind (x, expr) ->
             let%bind expr_contrib = sa_expr_wrapper senv expr in
-            let expr_contrib = remove_ho x expr_contrib in
+            let expr_contrib = remove_ho x expr_contrib expr in
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
@@ -1175,9 +1190,10 @@ struct
     let all_params = SCU.append_implict_comp_params comp.comp_params in
     (* Add component parameters to the analysis environment *)
     let senv' =
-      env_bind_ident_list senv
-        (List.map (fun (i, _) -> i) all_params)
-        (IdentSig (ComponentParameter, PCMStatus.empty, et_nothing))
+      env_bind_ident_map senv all_params (fun i t ->
+          (* Make sure functions given as arguments are marked as not analyzed *)
+          let et = if is_fun t then UnknownET else et_nothing in
+          IdentSig (ComponentParameter, PCMStatus.empty, et))
     in
     sa_stmt senv' ComponentSummary.empty comp.comp_body
 
@@ -1187,7 +1203,7 @@ struct
         match le with
         | LibVar (lname, _, lexp) ->
             let%bind esig = sa_expr_wrapper senv lexp in
-            let esig = remove_ho lname esig in
+            let esig = remove_ho lname esig lexp in
             let e, rep = lexp in
             let pcms = pcm_unit senv e in
             pure
@@ -1230,9 +1246,8 @@ struct
 
     (* Bind contract parameters *)
     let senv =
-      let prs, _ = List.split cmod.contr.cparams in
-      env_bind_ident_list senv prs
-        (IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
+      env_bind_ident_map senv cmod.contr.cparams (fun _ _ ->
+          IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
     in
 
     (* This is a combined map and fold: fold for senv', map for summaries *)
