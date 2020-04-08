@@ -7,4 +7,4 @@
  (libraries core angstrom yojson cryptokit fileutils scilla_base scilla_eval
    scilla_server_lib scilla_cpp_deps)
  (preprocess
-  (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx -conditional)))
+  (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx --conditional)))

@@ -22,5 +22,5 @@
    bitstring yojson fileutils scilla_cpp_deps menhirLib)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare bisect_ppx
-    -conditional))
+    --conditional))
  (synopsis "Scilla workbench implementation."))
