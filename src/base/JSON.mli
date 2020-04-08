@@ -74,7 +74,8 @@ module Message : sig
   "_tag", "_sender" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
 
-  val message_to_jstring : ?pp:bool -> (string * Literals.literal) list -> string
+  val message_to_jstring :
+    ?pp:bool -> (string * Literals.literal) list -> string
   (** 
    ** Prints a message (string, literal) as a json to the 
    ** and returns the string. pp enables pretty printing.

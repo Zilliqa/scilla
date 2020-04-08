@@ -224,4 +224,3 @@ let rec subst_type_in_literal tvar tp l =
       let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
       ADTValue (n, ts', ls')
   | _ -> l
-

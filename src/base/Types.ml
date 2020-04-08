@@ -213,4 +213,3 @@ let equal_typ t1 t2 =
 
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
-

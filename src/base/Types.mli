@@ -22,7 +22,7 @@ open Identifiers
 type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
 
 val int_bit_width_to_string : int_bit_width -> string
-  
+
 type prim_typ =
   | Int_typ of int_bit_width
   | Uint_typ of int_bit_width
