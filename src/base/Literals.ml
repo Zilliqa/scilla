@@ -48,8 +48,6 @@ open Types
 (* The first component is a primitive type *)
 type mtype = typ * typ [@@deriving sexp]
 
-let pp_mtype (kt, vt) = pp_typ (MapType (kt, vt))
-
 open Integer256
 
 let equal_int128 x y = Int128.compare x y = 0
