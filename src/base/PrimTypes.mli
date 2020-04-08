@@ -17,7 +17,7 @@
 *)
 
 open Types
-open Syntax
+open Literals
 
 (****************************************************************)
 (*                     PrimType utilities                       *)

@@ -23,6 +23,7 @@ open MonadUtil
 open TypeUtil
 open Identifiers
 open Types
+open Literals
 open Syntax
 module ER = ParserRep
 module SR = ParserRep

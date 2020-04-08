@@ -20,6 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifiers
 open Types
+open Literals
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -611,7 +612,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_nat ls _ =
       match ls with
       | [ UintLit (Uint32L n) ] ->
-          let rec nat_builder (i : Uint32.t) (acc : Syntax.literal) =
+          let rec nat_builder (i : Uint32.t) (acc : Literals.literal) =
             if [%equal: uint32] i Uint32.zero then acc
             else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [ acc ]))
           in

@@ -19,7 +19,7 @@
 open Core_kernel
 open Identifiers
 open Types
-open Syntax
+open Literals
 open Yojson
 module JSONTypeUtilities = TypeUtil.TypeUtilities
 

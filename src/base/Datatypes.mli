@@ -17,7 +17,7 @@
 *)
 
 open Types
-open Syntax
+open Literals
 open ErrorUtils
 open Core_kernel
 

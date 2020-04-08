@@ -18,7 +18,7 @@
 
 open Identifiers
 open Types
-open Syntax
+open Literals
 open ErrorUtils
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.

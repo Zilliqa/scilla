@@ -19,6 +19,7 @@
 %{
   open Identifiers
   open Types
+  open Literals
   open Syntax
   open ErrorUtils
   open ParsedSyntax

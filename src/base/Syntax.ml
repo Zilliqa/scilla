@@ -19,11 +19,10 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
-open MonadUtil
 open ErrorUtils
-open Stdint
 open Identifiers
 open Types
+open Literals
 
 exception SyntaxError of string * loc
 
@@ -35,14 +34,15 @@ let scilla_version = (0, 6, 0)
 (*******************************************************)
 
 (* The first component is a primitive type *)
-type mtype = typ * typ [@@deriving sexp]
+(* type mtype = typ * typ [@@deriving sexp]
 
 let pp_mtype (kt, vt) = pp_typ (MapType (kt, vt))
-
+*)
 let address_length = 20
 
 let hash_length = 32
 
+(* 
 open Integer256
 
 let equal_int128 x y = Int128.compare x y = 0
@@ -55,7 +55,7 @@ type int_lit =
   | Int128L of int128
   | Int256L of int256
 [@@deriving equal]
-
+    
 let sexp_of_int_lit = function
   | Int32L i' -> Sexp.Atom ("Int32 " ^ Int32.to_string i')
   | Int64L i' -> Sexp.Atom ("Int64 " ^ Int64.to_string i')
@@ -156,61 +156,7 @@ module Bystrx : BYSTRX = struct
 
   let to_bystr = Fn.id
 end
-
-(* [Specialising the Return Type of Closures]
-
-   The syntax for literals implements a _shallow embedding_ of
-   closures and type abstractions (cf. constructors `Clo` and `TAbs`).
-   Since our computations are all in CPS (cf. [Evaluation in CPS]), so
-   should be the computations, encapsulated by those two forms.
-   However, for the time being, we want to keep the type `literal`
-   non-parametric. This is at odds with the priniciple of keeping
-   computations in CPS parametric in their result type.
-
-   Therefore, for now we have a compromise of fixing the result of
-   evaluating expressions to be as below. In order to restore the
-   genericity enabled by CPS, we provide an "impedance matcher",
-   described in [Continuation for Expression Evaluation]. 
-
-*)
-type literal =
-  | StringLit of string
-  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
-  | IntLit of int_lit
-  | UintLit of uint_lit
-  | BNum of string
-  (* Byte string with a statically known length. *)
-  | ByStrX of Bystrx.t
-  (* Byte string without a statically known length. *)
-  | ByStr of Bystr.t
-  (* Message: an associative array *)
-  | Msg of (string * literal) list
-  (* A dynamic map of literals *)
-  | Map of mtype * (literal, literal) Hashtbl.t
-  (* A constructor in HNF *)
-  | ADTValue of string * typ list * literal list
-  (* An embedded closure *)
-  | Clo of
-      (literal ->
-      ( literal,
-        scilla_error list,
-        uint64 ->
-        ( (literal * (string * literal) list) * uint64,
-          scilla_error list * uint64 )
-        result )
-      CPSMonad.t)
-  (* A type abstraction *)
-  | TAbs of
-      (typ ->
-      ( literal,
-        scilla_error list,
-        uint64 ->
-        ( (literal * (string * literal) list) * uint64,
-          scilla_error list * uint64 )
-        result )
-      CPSMonad.t)
-[@@deriving sexp]
-
+                         *)
 (* Builtins *)
 type builtin =
   | Builtin_eq

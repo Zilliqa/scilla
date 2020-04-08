@@ -22,6 +22,7 @@ open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
 open Types
+open Literals
 open Syntax
 open TypeUtil
 open PrimTypes

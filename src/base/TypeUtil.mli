@@ -20,6 +20,7 @@ open Core_kernel
 open ErrorUtils
 open Identifiers
 open Types
+open Literals
 open Syntax
 
 (* An inferred type with possible qualifiers *)

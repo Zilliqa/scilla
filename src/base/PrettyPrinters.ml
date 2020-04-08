@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Types
+open Literals
 open Syntax
 open Yojson
 open PrimTypes

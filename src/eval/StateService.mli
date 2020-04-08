@@ -21,6 +21,7 @@
 
 open Identifiers
 open Types
+open Literals
 open Syntax
 open ParsedSyntax
 open ErrorUtils
