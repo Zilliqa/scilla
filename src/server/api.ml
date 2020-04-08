@@ -19,9 +19,9 @@
 open Idl
 open IPCUtil
 
-type args_t = string list [@@deriving rpcty, show]
 (** A type alias representing a list of arguments to
     be provided to the scilla-runner or scilla-checker *)
+type args_t = string list [@@deriving rpcty, show]
 
 module API (R : RPC) = struct
   open R
