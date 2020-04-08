@@ -41,8 +41,14 @@ open MonadUtil
 open ErrorUtils
 open Types
 
+(*******************************************************)
+(*                      Literals                       *)
+(*******************************************************)
+
 (* The first component is a primitive type *)
 type mtype = typ * typ [@@deriving sexp]
+
+let pp_mtype (kt, vt) = pp_typ (MapType (kt, vt))
 
 open Integer256
 
