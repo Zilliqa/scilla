@@ -21,8 +21,8 @@ open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
-open Types
-open Literals
+open Type
+open Literal
 open Syntax
 open TypeUtil
 open PrimTypes
@@ -161,13 +161,13 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
   type coster =
-    builtin -> literal list -> int -> (int, scilla_error list) result
+    builtin -> Literal.t list -> int -> (int, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
-  type builtin_record = builtin * typ list * coster * int
+  type builtin_record = builtin * Type.t list * coster * int
 
   (* a static coster that only looks at base cost. *)
-  let base_coster (_ : builtin) (_ : literal list) base = pure base
+  let base_coster (_ : builtin) (_ : Literal.t list) base = pure base
 
   let string_coster op args base =
     match (op, args) with
@@ -370,7 +370,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
-               [%equal: typ] t1 t2
+               [%equal: Type.t] t1 t2
                ||
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)

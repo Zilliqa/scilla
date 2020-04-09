@@ -19,7 +19,7 @@
 open Core_kernel
 open ErrorUtils
 
-type 'rep ident = Ident of string * 'rep [@@deriving sexp]
+type 'rep t = Ident of string * 'rep [@@deriving sexp]
 
 let asId i = Ident (i, dummy_loc)
 

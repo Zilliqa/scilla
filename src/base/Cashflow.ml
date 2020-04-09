@@ -18,8 +18,8 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
-open Identifiers
-open Types
+open Identifier
+open Type
 open Syntax
 open Datatypes
 open TypeUtil

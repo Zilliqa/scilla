@@ -18,9 +18,9 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifiers
-open Types
-open Literals
+open Identifier
+open Type
+open Literal
 open MonadUtil
 open Result.Let_syntax
 
@@ -48,7 +48,7 @@ type adt = {
   (* Mapping for constructors' types
      The arity of the constructor is the same as the length
      of the list, so the types are mapped correspondingly. *)
-  tmap : (string * typ list) list;
+  tmap : (string * Type.t list) list;
 }
 [@@deriving equal]
 
@@ -237,8 +237,8 @@ module SnarkTypes = struct
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: typ] pxt scalar_type
-           && [%equal: typ] pyt scalar_type
+      when [%equal: Type.t] pxt scalar_type
+           && [%equal: Type.t] pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -247,8 +247,8 @@ module SnarkTypes = struct
   let scilla_g2point_to_ocaml g2p =
     match g2p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: typ] pxt g2comp_type
-           && [%equal: typ] pyt g2comp_type
+      when [%equal: Type.t] pxt g2comp_type
+           && [%equal: Type.t] pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -271,8 +271,8 @@ module SnarkTypes = struct
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
           | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when [%equal: typ] g1pt g1point_type
-                 && [%equal: typ] g2pt g2point_type ->
+            when [%equal: Type.t] g1pt g1point_type
+                 && [%equal: Type.t] g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

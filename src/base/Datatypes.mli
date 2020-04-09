@@ -16,8 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Types
-open Literals
 open ErrorUtils
 open Core_kernel
 
@@ -36,7 +34,7 @@ type adt = {
   tname : string;
   tparams : string list;
   tconstr : constructor list;
-  tmap : (string * typ list) list;
+  tmap : (string * Type.t list) list;
 }
 [@@deriving equal]
 
@@ -57,7 +55,7 @@ module DataTypeDictionary : sig
     (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> typ list option
+  val constr_tmap : adt -> string -> Type.t list option
 
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
@@ -68,44 +66,45 @@ module DataTypeDictionary : sig
   val add_adt : adt -> loc -> (unit, scilla_error list) result
 
   (*  Built-in ADTs  *)
-  val bool_typ : typ
+  val bool_typ : Type.t
 
-  val nat_typ : typ
+  val nat_typ : Type.t
 
-  val option_typ : typ -> typ
+  val option_typ : Type.t -> Type.t
 
-  val list_typ : typ -> typ
+  val list_typ : Type.t -> Type.t
 
-  val pair_typ : typ -> typ -> typ
+  val pair_typ : Type.t -> Type.t -> Type.t
 end
 
-val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
+val scilla_list_to_ocaml :
+  Literal.t -> (Literal.t list, scilla_error list) result
 
 val scilla_list_to_ocaml_rev :
-  literal -> (literal list, scilla_error list) result
+  Literal.t -> (Literal.t list, scilla_error list) result
 
 open Snark
 
 module SnarkTypes : sig
-  val scalar_type : typ
+  val scalar_type : Type.t
 
-  val g1point_type : typ
+  val g1point_type : Type.t
 
-  val g2point_type : typ
+  val g2point_type : Type.t
 
-  val g2comp_type : typ
+  val g2comp_type : Type.t
 
-  val g1g2pair_type : typ
+  val g1g2pair_type : Type.t
 
-  val g1g2pair_list_type : typ
+  val g1g2pair_list_type : Type.t
 
-  val scilla_scalar_to_ocaml : literal -> (scalar, scilla_error list) result
+  val scilla_scalar_to_ocaml : Literal.t -> (scalar, scilla_error list) result
 
-  val scilla_g1point_to_ocaml : literal -> (g1point, scilla_error list) result
+  val scilla_g1point_to_ocaml : Literal.t -> (g1point, scilla_error list) result
 
   val scilla_g1g2pairlist_to_ocaml :
-    literal -> ((g1point * g2point) list, scilla_error list) result
+    Literal.t -> ((g1point * g2point) list, scilla_error list) result
 
   val ocaml_g1point_to_scilla_lit :
-    g1point -> (literal, scilla_error list) result
+    g1point -> (Literal.t, scilla_error list) result
 end

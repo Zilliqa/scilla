@@ -20,8 +20,6 @@
 (*                    Library type caching                       *)
 (*****************************************************************)
 
-open Identifiers
-open Types
 open Syntax
 open TypeUtil
 
@@ -36,10 +34,10 @@ module StdlibTypeCacher
     type ctr_def
 
     type lib_entry =
-      | LibVar of ER.rep ident * typ option * expr_annot
-      | LibTyp of ER.rep ident * ctr_def list
+      | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
+      | LibTyp of ER.rep Identifier.t * ctr_def list
 
-    type library = { lname : SR.rep ident; lentries : lib_entry list }
+    type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
   end
 
   type t = Q(R)(ER).TEnv.t

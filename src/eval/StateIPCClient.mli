@@ -16,41 +16,38 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Identifiers
-open Types
-open Literals
 open ErrorUtils
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
-  (literal option, scilla_error list) result
+  fname:loc Identifier.t ->
+  keys:Literal.t list ->
+  tp:Type.t ->
+  (Literal.t option, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  value:literal ->
-  tp:typ ->
+  fname:loc Identifier.t ->
+  keys:Literal.t list ->
+  value:Literal.t ->
+  tp:Type.t ->
   (unit, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
+  fname:loc Identifier.t ->
+  keys:Literal.t list ->
+  tp:Type.t ->
   (bool, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
+  fname:loc Identifier.t ->
+  keys:Literal.t list ->
+  tp:Type.t ->
   (unit, scilla_error list) result

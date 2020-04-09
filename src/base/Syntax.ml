@@ -20,9 +20,9 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open ErrorUtils
-open Identifiers
-open Types
-open Literals
+open Identifier
+open Type
+open Literal
 
 exception SyntaxError of string * loc
 
@@ -199,15 +199,15 @@ module type Rep = sig
 
   val get_loc : rep -> loc
 
-  val mk_id_address : string -> rep ident
+  val mk_id_address : string -> rep Identifier.t
 
-  val mk_id_uint128 : string -> rep ident
+  val mk_id_uint128 : string -> rep Identifier.t
 
-  val mk_id_uint32 : string -> rep ident
+  val mk_id_uint32 : string -> rep Identifier.t
 
-  val mk_id_bnum : string -> rep ident
+  val mk_id_bnum : string -> rep Identifier.t
 
-  val mk_id_string : string -> rep ident
+  val mk_id_string : string -> rep Identifier.t
 
   val rep_of_sexp : Sexp.t -> rep
 
@@ -229,31 +229,32 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                   Expressions                       *)
   (*******************************************************)
 
-  type payload = MLit of literal | MVar of ER.rep ident [@@deriving sexp]
+  type payload = MLit of Literal.t | MVar of ER.rep Identifier.t
+  [@@deriving sexp]
 
   type pattern =
     | Wildcard
-    | Binder of ER.rep ident
-    | Constructor of SR.rep ident * pattern list
+    | Binder of ER.rep Identifier.t
+    | Constructor of SR.rep Identifier.t * pattern list
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
 
   and expr =
-    | Literal of literal
-    | Var of ER.rep ident
-    | Let of ER.rep ident * typ option * expr_annot * expr_annot
+    | Literal of Literal.t
+    | Var of ER.rep Identifier.t
+    | Let of ER.rep Identifier.t * Type.t option * expr_annot * expr_annot
     | Message of (string * payload) list
-    | Fun of ER.rep ident * typ * expr_annot
-    | App of ER.rep ident * ER.rep ident list
-    | Constr of SR.rep ident * typ list * ER.rep ident list
-    | MatchExpr of ER.rep ident * (pattern * expr_annot) list
-    | Builtin of ER.rep builtin_annot * ER.rep ident list
+    | Fun of ER.rep Identifier.t * Type.t * expr_annot
+    | App of ER.rep Identifier.t * ER.rep Identifier.t list
+    | Constr of SR.rep Identifier.t * Type.t list * ER.rep Identifier.t list
+    | MatchExpr of ER.rep Identifier.t * (pattern * expr_annot) list
+    | Builtin of ER.rep builtin_annot * ER.rep Identifier.t list
     (* Advanced features: to be added in Scilla 0.2 *)
-    | TFun of ER.rep ident * expr_annot
-    | TApp of ER.rep ident * typ list
+    | TFun of ER.rep Identifier.t * expr_annot
+    | TApp of ER.rep Identifier.t * Type.t list
     (* Fixpoint combinator: used to implement recursion principles *)
-    | Fixpoint of ER.rep ident * typ * expr_annot
+    | Fixpoint of ER.rep Identifier.t * Type.t * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -274,24 +275,31 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type stmt_annot = stmt * SR.rep
 
   and stmt =
-    | Load of ER.rep ident * ER.rep ident
-    | Store of ER.rep ident * ER.rep ident
-    | Bind of ER.rep ident * expr_annot
+    | Load of ER.rep Identifier.t * ER.rep Identifier.t
+    | Store of ER.rep Identifier.t * ER.rep Identifier.t
+    | Bind of ER.rep Identifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
-    | MapUpdate of ER.rep ident * ER.rep ident list * ER.rep ident option
+    | MapUpdate of
+        ER.rep Identifier.t
+        * ER.rep Identifier.t list
+        * ER.rep Identifier.t option
     (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
-    | MapGet of ER.rep ident * ER.rep ident * ER.rep ident list * bool
-    | MatchStmt of ER.rep ident * (pattern * stmt_annot list) list
-    | ReadFromBC of ER.rep ident * string
+    | MapGet of
+        ER.rep Identifier.t
+        * ER.rep Identifier.t
+        * ER.rep Identifier.t list
+        * bool
+    | MatchStmt of ER.rep Identifier.t * (pattern * stmt_annot list) list
+    | ReadFromBC of ER.rep Identifier.t * string
     | AcceptPayment
     (* forall l p *)
-    | Iterate of ER.rep ident * SR.rep ident
-    | SendMsgs of ER.rep ident
-    | CreateEvnt of ER.rep ident
-    | CallProc of SR.rep ident * ER.rep ident list
-    | Throw of ER.rep ident option
+    | Iterate of ER.rep Identifier.t * SR.rep Identifier.t
+    | SendMsgs of ER.rep Identifier.t
+    | CreateEvnt of ER.rep Identifier.t
+    | CallProc of SR.rep Identifier.t * ER.rep Identifier.t list
+    | Throw of ER.rep Identifier.t option
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -307,21 +315,21 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (**************************************************)
   type stmt_eval_context =
     (* literal being loaded *)
-    | G_Load of literal
+    | G_Load of Literal.t
     (* literal being stored *)
-    | G_Store of literal
+    | G_Store of Literal.t
     (* none *)
     | G_Bind
     (* nesting depth, new value *)
-    | G_MapUpdate of int * literal option
+    | G_MapUpdate of int * Literal.t option
     (* nesting depth, literal retrieved *)
-    | G_MapGet of int * literal option
+    | G_MapGet of int * Literal.t option
     (* number of clauses *)
     | G_MatchStmt of int
     | G_ReadFromBC
     | G_AcceptPayment
-    | G_SendMsgs of literal list
-    | G_CreateEvnt of literal
+    | G_SendMsgs of Literal.t list
+    | G_CreateEvnt of Literal.t
     | G_CallProc
 
   (*******************************************************)
@@ -330,24 +338,24 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   type component = {
     comp_type : component_type;
-    comp_name : SR.rep ident;
-    comp_params : (ER.rep ident * typ) list;
+    comp_name : SR.rep Identifier.t;
+    comp_params : (ER.rep Identifier.t * Type.t) list;
     comp_body : stmt_annot list;
   }
 
-  type ctr_def = { cname : ER.rep ident; c_arg_types : typ list }
+  type ctr_def = { cname : ER.rep Identifier.t; c_arg_types : Type.t list }
 
   type lib_entry =
-    | LibVar of ER.rep ident * typ option * expr_annot
-    | LibTyp of ER.rep ident * ctr_def list
+    | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
+    | LibTyp of ER.rep Identifier.t * ctr_def list
 
-  type library = { lname : SR.rep ident; lentries : lib_entry list }
+  type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
 
   type contract = {
-    cname : SR.rep ident;
-    cparams : (ER.rep ident * typ) list;
+    cname : SR.rep Identifier.t;
+    cparams : (ER.rep Identifier.t * Type.t) list;
     cconstraint : expr_annot;
-    cfields : (ER.rep ident * typ * expr_annot) list;
+    cfields : (ER.rep Identifier.t * Type.t * expr_annot) list;
     ccomps : component list;
   }
 
@@ -355,11 +363,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type cmodule = {
     smver : int;
     (* Scilla major version of the contract. *)
-    cname : SR.rep ident;
+    cname : SR.rep Identifier.t;
     libs : library option;
     (* lib functions defined in the module *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (SR.rep ident * SR.rep ident option) list;
+    elibs : (SR.rep Identifier.t * SR.rep Identifier.t option) list;
     contr : contract;
   }
 
@@ -368,7 +376,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     smver : int;
     (* Scilla major version of the library. *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (SR.rep ident * SR.rep ident option) list;
+    elibs : (SR.rep Identifier.t * SR.rep Identifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
 
@@ -382,7 +390,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let pp_cparams ps =
     let cs =
       List.map ps ~f:(fun (i, t) ->
-          get_id i ^ " : " ^ (sexp_of_typ t |> Sexplib.Sexp.to_string))
+          get_id i ^ " : " ^ (Type.sexp_of_t t |> Sexplib.Sexp.to_string))
     in
     "[" ^ String.concat ~sep:", " cs ^ "]"
 

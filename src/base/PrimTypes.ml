@@ -18,8 +18,8 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Types
-open Literals
+open Type
+open Literal
 open Stdint
 open Integer256
 

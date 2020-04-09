@@ -19,8 +19,8 @@
 
 open Core_kernel.Result.Let_syntax
 open TypeUtil
-open Identifiers
-open Types
+open Identifier
+open Type
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -32,7 +32,7 @@ module ScillaGUA
 
       val get_type : rep -> PlainTypes.t inferred_type
 
-      val mk_id : loc ident -> typ -> rep ident
+      val mk_id : loc Identifier.t -> Type.t -> rep Identifier.t
     end) =
 struct
   module SER = SR
@@ -44,7 +44,7 @@ struct
 
   type sizeref =
     (* Refer to the size of a variable. *)
-    | Base of ER.rep ident
+    | Base of ER.rep Identifier.t
     (* For Lengths of Lists and Maps. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
@@ -62,17 +62,17 @@ struct
     | BApp of builtin * sizeref list
     (* The growth of accummulator (a recurrence) in list_foldr.
      * The semantics is similar to SApp, except that, the ressize of
-     * applying "ident" is taken as a recurence and solved for the
+     * applying "Identifier.t" is taken as a recurence and solved for the
      * length of the second sizeref (accumulator) actual. The first
      * sizeref actual is Element(list being folded). *)
-    | RFoldAcc of ER.rep ident * sizeref * sizeref
+    | RFoldAcc of ER.rep Identifier.t * sizeref * sizeref
     (* Same as RFoldAcc, but for list_foldl:
      * order of the two sizeref actuals are reversed. *)
-    | LFoldAcc of ER.rep ident * sizeref * sizeref
+    | LFoldAcc of ER.rep Identifier.t * sizeref * sizeref
     (* Lambda for unknown sizeref (from applying higher order functions). 
-     * TODO: Use "sizeref" instead of "ident" to handle applying wrapped functions,
+     * TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | SApp of ER.rep ident * sizeref list
+    | SApp of ER.rep Identifier.t * sizeref list
     (* When we cannot determine the size *)
     | Intractable of string
 
@@ -81,9 +81,9 @@ struct
     (* Gas use depends on size of a value *)
     | SizeOf of sizeref
     (* Applying a higher order argument (function) and its arguments. *)
-    (* TODO: Use "sizeref" instead of "ident" to handle applying wrapped functions,
+    (* TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | GApp of ER.rep ident * sizeref list
+    | GApp of ER.rep Identifier.t * sizeref list
     (* Gas usage polynomial which is known and needs to be expanded. 
      * When a GApp resolves successfully, we replace it with GPol. *)
     | GPol of guref polynomial
@@ -92,7 +92,7 @@ struct
    * The identifier list specifies the arguments which must be substituted.
    * Signatures that contain "GApp/SApp" will (recursively) be substituted for
    * the final signature to not have these lambdas. *)
-  type signature = ER.rep ident list * sizeref * guref polynomial
+  type signature = ER.rep Identifier.t list * sizeref * guref polynomial
 
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function

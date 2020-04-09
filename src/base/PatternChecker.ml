@@ -14,8 +14,8 @@
  * Reference: ML pattern match compilation and partial evaluation - Peter Sestoft
  *)
 
-open Identifiers
-open Types
+open Identifier
+open Type
 open Syntax
 open Core_kernel
 open! Int.Replace_polymorphic_compare

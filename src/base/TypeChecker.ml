@@ -18,8 +18,8 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifiers
-open Types
+open Identifier
+open Type
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -380,7 +380,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               List.Assoc.find CU.msg_mandatory_field_types fld
                 ~equal:String.( = )
             with
-            | Some fld_t when not ([%equal: typ] fld_t seen_type) ->
+            | Some fld_t when not ([%equal: Type.t] fld_t seen_type) ->
                 fail1
                   (sprintf
                      "Type mismatch for Message field %s. Expected %s but got \
@@ -487,7 +487,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   type stmt_tenv = {
     pure : TEnv.t;
     fields : TEnv.t;
-    procedures : (string * typ list) list;
+    procedures : (string * Type.t list) list;
   }
 
   let lookup_proc env pname =
@@ -870,7 +870,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     pure @@ ((new_p, new_stmts), remaining_gas)
 
   let type_component env0 tr remaining_gas :
-      ( (TypedSyntax.component * (string * typ list) list) * Stdint.uint64,
+      ( (TypedSyntax.component * (string * Type.t list) list) * Stdint.uint64,
         typeCheckerErrorType * scilla_error list * Stdint.uint64 )
       result =
     let { comp_type; comp_name; comp_params; comp_body } = tr in

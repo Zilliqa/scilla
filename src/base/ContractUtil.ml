@@ -18,8 +18,8 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifiers
-open Literals
+open Identifier
+open Literal
 open Syntax
 open MonadUtil
 open Stdint

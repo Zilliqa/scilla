@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open OUnit2
 open Bech32
-open Literals
+open Literal
 open Utils
 
 let hex_to_raw_bytes h = Bystr.parse_hex h |> Bystr.to_raw_bytes

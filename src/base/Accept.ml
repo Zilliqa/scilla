@@ -29,7 +29,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open TypeUtil
 open ErrorUtils
-open Identifiers
+open Identifier
 open Syntax
 
 module ScillaAcceptChecker

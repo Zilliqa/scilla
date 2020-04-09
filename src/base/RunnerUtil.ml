@@ -19,8 +19,8 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
-open Identifiers
-open Types
+open Identifier
+open Type
 open Syntax
 open ParsedSyntax
 open GlobalConfig
@@ -74,7 +74,10 @@ let import_lib id =
 (* An auxiliary data structure that is homomorphic to libtree, but for namespaces.
    Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
    to the type itself because we want to eliminate the idea of namespaces right here. *)
-type 'a nspace_tree = { nspace : 'a ident option; dep_ns : 'a nspace_tree list }
+type 'a nspace_tree = {
+  nspace : 'a Identifier.t option;
+  dep_ns : 'a nspace_tree list;
+}
 
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
