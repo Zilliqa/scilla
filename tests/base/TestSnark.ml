@@ -23,7 +23,7 @@ open Core_kernel
 open OUnit2
 open Snark
 open Integer256
-open Syntax
+open Literals
 
 (* Convert a decimal string to a binary string of 32 bytes. *)
 let dec2bystr32 s =

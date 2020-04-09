@@ -19,6 +19,9 @@
 (* This file describes function that communicate with the blockchain to fetch
  * and update state variables on demand. *)
 
+open Identifiers
+open Types
+open Literals
 open Syntax
 open ParsedSyntax
 open ErrorUtils

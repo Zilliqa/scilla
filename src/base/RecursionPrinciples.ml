@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Identifiers
+open Types
 open Syntax
 open Core_kernel
 open! Int.Replace_polymorphic_compare
@@ -39,11 +41,11 @@ let parse_type_wrapper expr =
 
 (* Folding over natural numbers *)
 module NatRec = struct
-  let g = mk_ident "g"
+  let g = asId "g"
 
-  let fn = mk_ident "fn"
+  let fn = asId "fn"
 
-  let tvar = mk_ident "'T"
+  let tvar = asId "'T"
 
   (* Adopted one, as fold_left and fold_right are equivalent for
    * natural numbers *)
@@ -70,7 +72,7 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "nat_fold"
+    let id = asId "nat_fold"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -104,7 +106,7 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "nat_foldk"
+    let id = asId "nat_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -118,13 +120,13 @@ end
 
 (* Folding over lists *)
 module ListRec = struct
-  let f = mk_ident "f"
+  let f = asId "f"
 
-  let g = mk_ident "g"
+  let g = asId "g"
 
-  let avar = mk_ident "'A"
+  let avar = asId "'A"
 
-  let bvar = mk_ident "'B"
+  let bvar = asId "'B"
 
   module Foldl = struct
     let f_type = parse_type_wrapper "'B -> 'A -> 'B"
@@ -150,7 +152,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldl"
+    let id = asId "list_foldl"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -185,7 +187,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldr"
+    let id = asId "list_foldr"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -222,7 +224,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldk"
+    let id = asId "list_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 

@@ -18,7 +18,9 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Syntax
+open Identifiers
+open Types
+open Literals
 open MonadUtil
 open Result.Let_syntax
 

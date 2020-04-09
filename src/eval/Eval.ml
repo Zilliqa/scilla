@@ -18,6 +18,9 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Identifiers
+open Types
+open Literals
 open Syntax
 open ErrorUtils
 open EvalUtil
@@ -379,8 +382,8 @@ let rec stmt_eval conf stmts =
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
-  let%bind sender_value = Configuration.lookup conf (mk_ident "_sender") in
-  let%bind amount_value = Configuration.lookup conf (mk_ident "_amount") in
+  let%bind sender_value = Configuration.lookup conf (asId "_sender") in
+  let%bind amount_value = Configuration.lookup conf (asId "_amount") in
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }

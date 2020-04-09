@@ -19,6 +19,8 @@
 
 open Core_kernel.Result.Let_syntax
 open TypeUtil
+open Identifiers
+open Types
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -773,7 +775,7 @@ struct
 
     let tvar a = TypeVar a in
     (* Make a simple identifier of type 'A *)
-    let si a = ER.mk_id (mk_ident a) (tvar "'A") in
+    let si a = ER.mk_id (asId a) (tvar "'A") in
     (* Make a simple polynomial from string a *)
     let sp a = single_simple_pn (SizeOf (Base (si a))) in
     let arg_err s = "Incorrect arguments to builtin " ^ pp_builtin s in
@@ -1084,12 +1086,12 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = ER.mk_id (mk_ident "a") (ADT (asId "List", [ TypeVar "'A" ])) in
+    let a = ER.mk_id (asId "a") (ADT (asId "List", [ TypeVar "'A" ])) in
     let g =
-      ER.mk_id (mk_ident "g")
+      ER.mk_id (asId "g")
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))
     in
-    let b = ER.mk_id (mk_ident "b") (TypeVar "'B") in
+    let b = ER.mk_id (asId "b") (TypeVar "'B") in
     let lendep = SizeOf (Length (Base a)) in
     (* The final result size is after applying the fold "Length(a)" times. *)
     let ressize = RFoldAcc (g, Base a, Base b) in
@@ -1208,7 +1210,7 @@ struct
 
   let gua_component genv (comp : component) =
     let open PrimTypes in
-    let si a t = ER.mk_id (mk_ident a) t in
+    let si a t = ER.mk_id (asId a) t in
     let all_params =
       [
         ( si ContractUtil.MessagePayload.sender_label (bystrx_typ 20),
@@ -1269,7 +1271,7 @@ struct
     in
 
     (* Bind contract parameters. *)
-    let si a t = ER.mk_id (mk_ident a) t in
+    let si a t = ER.mk_id (asId a) t in
     let all_cparams =
       [
         ( si ContractUtil.creation_block_label PrimTypes.bnum_typ,

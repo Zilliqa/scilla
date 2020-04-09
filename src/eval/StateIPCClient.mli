@@ -15,7 +15,10 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Syntax
+
+open Identifiers
+open Types
+open Literals
 open ErrorUtils
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
