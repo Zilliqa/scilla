@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifiers
-open Literals
+open Literal
 open Syntax
 open FrontEndParser
 open ErrorUtils

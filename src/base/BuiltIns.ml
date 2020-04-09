@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifiers
 open Types
-open Literals
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -612,7 +612,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_nat ls _ =
       match ls with
       | [ UintLit (Uint32L n) ] ->
-          let rec nat_builder (i : Uint32.t) (acc : Literals.literal) =
+          let rec nat_builder (i : Uint32.t) (acc : Literal.t) =
             if [%equal: uint32] i Uint32.zero then acc
             else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [ acc ]))
           in
@@ -1269,7 +1269,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     (* Takes the expected type as an argument to elaborate the result *)
     type built_in_executor =
-      literal list -> typ -> (literal, scilla_error list) result
+      Literal.t list -> typ -> (Literal.t, scilla_error list) result
 
     (* A built-in record type:
        * arity

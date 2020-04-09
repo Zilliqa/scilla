@@ -20,7 +20,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open Identifiers
-open Literals
+open Literal
 open Syntax
 open JSON
 open TypeUtil

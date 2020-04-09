@@ -18,7 +18,6 @@
 
 open Identifiers
 open Types
-open Literals
 open ErrorUtils
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
@@ -26,16 +25,16 @@ open ErrorUtils
 val fetch :
   socket_addr:string ->
   fname:loc ident ->
-  keys:literal list ->
+  keys:Literal.t list ->
   tp:typ ->
-  (literal option, scilla_error list) result
+  (Literal.t option, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->
   fname:loc ident ->
-  keys:literal list ->
-  value:literal ->
+  keys:Literal.t list ->
+  value:Literal.t ->
   tp:typ ->
   (unit, scilla_error list) result
 
@@ -43,7 +42,7 @@ val update :
 val is_member :
   socket_addr:string ->
   fname:loc ident ->
-  keys:literal list ->
+  keys:Literal.t list ->
   tp:typ ->
   (bool, scilla_error list) result
 
@@ -51,6 +50,6 @@ val is_member :
 val remove :
   socket_addr:string ->
   fname:loc ident ->
-  keys:literal list ->
+  keys:Literal.t list ->
   tp:typ ->
   (unit, scilla_error list) result

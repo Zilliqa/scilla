@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifiers
 open Types
-open Literals
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -64,12 +64,12 @@ module Env = struct
   type ident = string
 
   (* Environment *)
-  type t = (string * literal) list [@@deriving sexp]
+  type t = (string * Literal.t) list [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp_value = pp_literal
 
-  and pp ?(f = fun (_ : string * literal) -> true) e =
+  and pp ?(f = fun (_ : string * Literal.t) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f in
     let ps =
@@ -104,7 +104,7 @@ end
 (*                 Blockchain State               *)
 (**************************************************)
 module BlockchainState = struct
-  type t = (string * literal) list
+  type t = (string * Literal.t) list
 
   let lookup e k =
     match List.Assoc.find e k ~equal:String.( = ) with
@@ -143,9 +143,9 @@ module Configuration = struct
     (* The stack of procedure call, starting from the externally invoked transition. *)
     component_stack : ER.rep ident list;
     (* Emitted messages *)
-    emitted : literal list;
+    emitted : Literal.t list;
     (* Emitted events *)
-    events : literal list;
+    events : Literal.t list;
   }
 
   let pp conf =
@@ -390,7 +390,7 @@ end
 (*****************************************************)
 
 module ContractState = struct
-  type init_args = (string * literal) list
+  type init_args = (string * Literal.t) list
 
   (* Runtime contract configuration and operations with it *)
   type t = {

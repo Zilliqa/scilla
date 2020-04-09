@@ -23,7 +23,7 @@ open MonadUtil
 open TypeUtil
 open Identifiers
 open Types
-open Literals
+open Literal
 open Syntax
 module ER = ParserRep
 module SR = ParserRep
@@ -34,7 +34,7 @@ open EvalSyntax
 type ss_field = {
   fname : string;
   ftyp : typ;
-  fval : literal option; (* We may or may not have the value in memory. *)
+  fval : Literal.t option; (* We may or may not have the value in memory. *)
 }
 
 type service_mode =

@@ -24,7 +24,7 @@ open OUnit2
  * literals is by constructing them ourselves as there are checks
  * in both Scilla source parser and the JSON parser against
  * building bad literals. *)
-open Literals
+open Literal
 open PrimTypes
 open PrettyPrinters
 module TestTypeUtils = TypeUtil.TypeUtilities

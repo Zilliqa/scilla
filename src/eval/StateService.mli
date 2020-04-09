@@ -21,7 +21,6 @@
 
 open Identifiers
 open Types
-open Literals
 open Syntax
 open ParsedSyntax
 open ErrorUtils
@@ -29,7 +28,7 @@ open ErrorUtils
 type ss_field = {
   fname : string;
   ftyp : typ;
-  fval : literal option; (* Value may not be available (in IPC mode) *)
+  fval : Literal.t option; (* Value may not be available (in IPC mode) *)
 }
 
 type service_mode =
@@ -59,7 +58,7 @@ type service_mode =
 val initialize : sm:service_mode -> fields:ss_field list -> unit
 
 (* Expensive operation, use with care. *)
-val get_full_state : unit -> ((string * literal) list, scilla_error list) result
+val get_full_state : unit -> ((string * Literal.t) list, scilla_error list) result
 
 (* Finalize: no more queries. *)
 val finalize : unit -> (unit, scilla_error list) result
@@ -68,26 +67,26 @@ val finalize : unit -> (unit, scilla_error list) result
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
   fname:loc ident ->
-  keys:literal list ->
-  (literal option * stmt_eval_context, scilla_error list) result
+  keys:Literal.t list ->
+  (Literal.t option * stmt_eval_context, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   fname:loc ident ->
-  keys:literal list ->
-  value:literal ->
+  keys:Literal.t list ->
+  value:Literal.t ->
   (stmt_eval_context, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
   fname:loc ident ->
-  keys:literal list ->
+  keys:Literal.t list ->
   (bool * stmt_eval_context, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
   fname:loc ident ->
-  keys:literal list ->
+  keys:Literal.t list ->
   (stmt_eval_context, scilla_error list) result
 
 (* Should rarely be used, and is useful only when multiple StateService objects are required *)
@@ -95,28 +94,28 @@ module MakeStateService () : sig
   val initialize : sm:service_mode -> fields:ss_field list -> unit
 
   val get_full_state :
-    unit -> ((string * literal) list, scilla_error list) result
+    unit -> ((string * Literal.t) list, scilla_error list) result
 
   val finalize : unit -> (unit, scilla_error list) result
 
   val fetch :
     fname:loc ident ->
-    keys:literal list ->
-    (literal option * stmt_eval_context, scilla_error list) result
+    keys:Literal.t list ->
+    (Literal.t option * stmt_eval_context, scilla_error list) result
 
   val update :
     fname:loc ident ->
-    keys:literal list ->
-    value:literal ->
+    keys:Literal.t list ->
+    value:Literal.t ->
     (stmt_eval_context, scilla_error list) result
 
   val is_member :
     fname:loc ident ->
-    keys:literal list ->
+    keys:Literal.t list ->
     (bool * stmt_eval_context, scilla_error list) result
 
   val remove :
     fname:loc ident ->
-    keys:literal list ->
+    keys:Literal.t list ->
     (stmt_eval_context, scilla_error list) result
 end

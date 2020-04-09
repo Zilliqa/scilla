@@ -17,7 +17,6 @@
 *)
 
 open Types
-open Literals
 open ErrorUtils
 open Core_kernel
 
@@ -79,10 +78,10 @@ module DataTypeDictionary : sig
   val pair_typ : typ -> typ -> typ
 end
 
-val scilla_list_to_ocaml : literal -> (literal list, scilla_error list) result
+val scilla_list_to_ocaml : Literal.t -> (Literal.t list, scilla_error list) result
 
 val scilla_list_to_ocaml_rev :
-  literal -> (literal list, scilla_error list) result
+  Literal.t -> (Literal.t list, scilla_error list) result
 
 open Snark
 
@@ -99,13 +98,13 @@ module SnarkTypes : sig
 
   val g1g2pair_list_type : typ
 
-  val scilla_scalar_to_ocaml : literal -> (scalar, scilla_error list) result
+  val scilla_scalar_to_ocaml : Literal.t -> (scalar, scilla_error list) result
 
-  val scilla_g1point_to_ocaml : literal -> (g1point, scilla_error list) result
+  val scilla_g1point_to_ocaml : Literal.t -> (g1point, scilla_error list) result
 
   val scilla_g1g2pairlist_to_ocaml :
-    literal -> ((g1point * g2point) list, scilla_error list) result
+    Literal.t -> ((g1point * g2point) list, scilla_error list) result
 
   val ocaml_g1point_to_scilla_lit :
-    g1point -> (literal, scilla_error list) result
+    g1point -> (Literal.t, scilla_error list) result
 end

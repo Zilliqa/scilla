@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Datatypes
 open Identifiers
-open Literals
+open Literal
 open EvalUtil
 open MonadUtil
 open Result.Let_syntax

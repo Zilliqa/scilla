@@ -22,7 +22,7 @@ open ErrorUtils
 open Sexplib.Std
 open Identifiers
 open Types
-open Literals
+open Literal
 open Syntax
 open MonadUtil
 open Result.Let_syntax

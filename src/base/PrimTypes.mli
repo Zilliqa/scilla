@@ -17,7 +17,7 @@
 *)
 
 open Types
-open Literals
+open Literal
 
 (****************************************************************)
 (*                     PrimType utilities                       *)
@@ -70,7 +70,7 @@ val bystrx_width : typ -> int option
 (*            PrimType Literal utilities                        *)
 (****************************************************************)
 
-val build_prim_literal : prim_typ -> string -> literal option
+val build_prim_literal : prim_typ -> string -> Literal.t option
 
 (* Is string representation of integer valid for integer typ. *)
 val validate_int_string : prim_typ -> string -> bool

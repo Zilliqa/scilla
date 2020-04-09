@@ -22,7 +22,7 @@ open Sexplib.Std
 open ErrorUtils
 open Identifiers
 open Types
-open Literals
+open Literal
 
 exception SyntaxError of string * loc
 
@@ -229,7 +229,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                   Expressions                       *)
   (*******************************************************)
 
-  type payload = MLit of literal | MVar of ER.rep ident [@@deriving sexp]
+  type payload = MLit of Literal.t | MVar of ER.rep ident [@@deriving sexp]
 
   type pattern =
     | Wildcard
@@ -240,7 +240,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type expr_annot = expr * ER.rep
 
   and expr =
-    | Literal of literal
+    | Literal of Literal.t
     | Var of ER.rep ident
     | Let of ER.rep ident * typ option * expr_annot * expr_annot
     | Message of (string * payload) list
@@ -307,21 +307,21 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (**************************************************)
   type stmt_eval_context =
     (* literal being loaded *)
-    | G_Load of literal
+    | G_Load of Literal.t
     (* literal being stored *)
-    | G_Store of literal
+    | G_Store of Literal.t
     (* none *)
     | G_Bind
     (* nesting depth, new value *)
-    | G_MapUpdate of int * literal option
+    | G_MapUpdate of int * Literal.t option
     (* nesting depth, literal retrieved *)
-    | G_MapGet of int * literal option
+    | G_MapGet of int * Literal.t option
     (* number of clauses *)
     | G_MatchStmt of int
     | G_ReadFromBC
     | G_AcceptPayment
-    | G_SendMsgs of literal list
-    | G_CreateEvnt of literal
+    | G_SendMsgs of Literal.t list
+    | G_CreateEvnt of Literal.t
     | G_CallProc
 
   (*******************************************************)

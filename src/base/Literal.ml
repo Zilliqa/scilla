@@ -162,7 +162,7 @@ module Bystrx : BYSTRX = struct
   let to_bystr = Fn.id
 end
 
-type literal =
+type t =
   | StringLit of string
   (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
   | IntLit of int_lit
@@ -173,28 +173,28 @@ type literal =
   (* Byte string without a statically known length. *)
   | ByStr of Bystr.t
   (* Message: an associative array *)
-  | Msg of (string * literal) list
+  | Msg of (string * t) list
   (* A dynamic map of literals *)
-  | Map of mtype * (literal, literal) Hashtbl.t
+  | Map of mtype * (t, t) Hashtbl.t
   (* A constructor in HNF *)
-  | ADTValue of string * typ list * literal list
+  | ADTValue of string * typ list * t list
   (* An embedded closure *)
   | Clo of
-      (literal ->
-      ( literal,
+      (t ->
+      ( t,
         scilla_error list,
         uint64 ->
-        ( (literal * (string * literal) list) * uint64,
+        ( (t * (string * t) list) * uint64,
           scilla_error list * uint64 )
         result )
       CPSMonad.t)
   (* A type abstraction *)
   | TAbs of
       (typ ->
-      ( literal,
+      ( t,
         scilla_error list,
         uint64 ->
-        ( (literal * (string * literal) list) * uint64,
+        ( (t * (string * t) list) * uint64,
           scilla_error list * uint64 )
         result )
       CPSMonad.t)

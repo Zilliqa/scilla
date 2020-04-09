@@ -22,7 +22,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Yojson
 open Identifiers
-open Literals
+open Literal
 open Types
 open ErrorUtils
 open TypeUtil
@@ -57,7 +57,7 @@ let lookup_adt_name_exn name =
 
 type adt_parser_entry =
   | Incomplete (* Parser not completely constructed. *)
-  | Parser of (Basic.t -> literal)
+  | Parser of (Basic.t -> Literal.t)
 
 let adt_parsers =
   let open Caml in
@@ -84,7 +84,7 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : typ) : Basic.t -> literal =
+let gen_parser (t' : typ) : Basic.t -> Literal.t =
   let open Basic in
   let rec recurser t =
     match t with
