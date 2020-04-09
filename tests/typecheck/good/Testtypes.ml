@@ -37,7 +37,8 @@ let make_type_equiv_test st1 st2 eq =
                dummy_loc ))
   in
   let b, bs =
-    if eq then ([%equal: Type.t] t1 t2, "=") else (not ([%equal: Type.t] t1 t2), "<>")
+    if eq then ([%equal: Type.t] t1 t2, "=")
+    else (not ([%equal: Type.t] t1 t2), "<>")
   in
   let err_msg =
     "Assert " ^ pp_typ t1 ^ " " ^ bs ^ " " ^ pp_typ t2 ^ " test failed"

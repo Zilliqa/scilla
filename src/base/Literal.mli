@@ -104,9 +104,8 @@ type t =
       ( t,
         scilla_error list,
         uint64 ->
-        ( (t * (string * t) list) * uint64,
-          scilla_error list * uint64 )
-        result )
+        ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+      )
       CPSMonad.t)
   (* A type abstraction *)
   | TAbs of
@@ -114,9 +113,8 @@ type t =
       ( t,
         scilla_error list,
         uint64 ->
-        ( (t * (string * t) list) * uint64,
-          scilla_error list * uint64 )
-        result )
+        ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+      )
       CPSMonad.t)
 [@@deriving sexp]
 

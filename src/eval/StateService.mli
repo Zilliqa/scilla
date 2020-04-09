@@ -56,7 +56,8 @@ type service_mode =
 val initialize : sm:service_mode -> fields:ss_field list -> unit
 
 (* Expensive operation, use with care. *)
-val get_full_state : unit -> ((string * Literal.t) list, scilla_error list) result
+val get_full_state :
+  unit -> ((string * Literal.t) list, scilla_error list) result
 
 (* Finalize: no more queries. *)
 val finalize : unit -> (unit, scilla_error list) result

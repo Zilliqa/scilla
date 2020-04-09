@@ -229,7 +229,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                   Expressions                       *)
   (*******************************************************)
 
-  type payload = MLit of Literal.t | MVar of ER.rep Identifier.t [@@deriving sexp]
+  type payload = MLit of Literal.t | MVar of ER.rep Identifier.t
+  [@@deriving sexp]
 
   type pattern =
     | Wildcard
@@ -278,11 +279,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | Store of ER.rep Identifier.t * ER.rep Identifier.t
     | Bind of ER.rep Identifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
-    | MapUpdate of ER.rep Identifier.t * ER.rep Identifier.t list * ER.rep Identifier.t option
+    | MapUpdate of
+        ER.rep Identifier.t
+        * ER.rep Identifier.t list
+        * ER.rep Identifier.t option
     (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
-    | MapGet of ER.rep Identifier.t * ER.rep Identifier.t * ER.rep Identifier.t list * bool
+    | MapGet of
+        ER.rep Identifier.t
+        * ER.rep Identifier.t
+        * ER.rep Identifier.t list
+        * bool
     | MatchStmt of ER.rep Identifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep Identifier.t * string
     | AcceptPayment

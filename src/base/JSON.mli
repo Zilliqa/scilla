@@ -74,8 +74,7 @@ module Message : sig
   "_tag", "_sender" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
 
-  val message_to_jstring :
-    ?pp:bool -> (string * Literal.t) list -> string
+  val message_to_jstring : ?pp:bool -> (string * Literal.t) list -> string
   (** 
    ** Prints a message (string, literal) as a json to the 
    ** and returns the string. pp enables pretty printing.
@@ -137,10 +136,7 @@ module ContractInfo : sig
     int -> contract -> (string * (string * Type.t) list) list -> string
 
   val get_json :
-    int ->
-    contract ->
-    (string * (string * Type.t) list) list ->
-    Yojson.Basic.t
+    int -> contract -> (string * (string * Type.t) list) list -> Yojson.Basic.t
 end
 
 module Event : sig
@@ -156,8 +152,7 @@ end
 
 module TypeInfo : sig
   val type_info_to_json :
-    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list ->
-    Yojson.Basic.t
+    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list -> Yojson.Basic.t
 
   val type_info_to_jstring :
     ?pp:bool ->

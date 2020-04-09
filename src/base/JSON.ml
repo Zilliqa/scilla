@@ -311,7 +311,8 @@ module ContractState = struct
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
                   when [%equal: Type.t] t1 PrimTypes.string_typ
-                       && [%equal: Type.t] t2 (PrimTypes.bystrx_typ address_length)
+                       && [%equal: Type.t] t2
+                            (PrimTypes.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->

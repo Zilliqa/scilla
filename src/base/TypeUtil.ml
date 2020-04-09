@@ -713,7 +713,9 @@ module TypeUtilities = struct
           let res = ADT (asId tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid = List.for_all2_exn tmap arg_typs ~f:[%equal: Type.t] in
+          let args_valid =
+            List.for_all2_exn tmap arg_typs ~f:[%equal: Type.t]
+          in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"

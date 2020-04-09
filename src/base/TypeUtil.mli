@@ -179,7 +179,8 @@ module TypeUtilities : sig
     result
 
   (* Applying a function type *)
-  val fun_type_applies : Type.t -> Type.t list -> (Type.t, scilla_error list) result
+  val fun_type_applies :
+    Type.t -> Type.t list -> (Type.t, scilla_error list) result
 
   (* Applying a procedure "type" *)
   val proc_type_applies :
@@ -208,7 +209,8 @@ module TypeUtilities : sig
   val apply_type_subst : (string * Type.t) list -> Type.t -> Type.t
 
   (*  Get elaborated type for a constructor and list of type arguments *)
-  val elab_constr_type : string -> Type.t list -> (Type.t, scilla_error list) result
+  val elab_constr_type :
+    string -> Type.t list -> (Type.t, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking

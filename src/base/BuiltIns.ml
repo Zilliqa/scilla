@@ -1265,7 +1265,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   module BuiltInDictionary = struct
     (* Elaborates the operation type based on the arguments types *)
-    type elaborator = Type.t -> Type.t list -> (Type.t, scilla_error list) result
+    type elaborator =
+      Type.t -> Type.t list -> (Type.t, scilla_error list) result
 
     (* Takes the expected type as an argument to elaborate the result *)
     type built_in_executor =
