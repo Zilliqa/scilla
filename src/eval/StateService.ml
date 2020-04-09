@@ -21,7 +21,7 @@ open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
 open TypeUtil
-open Identifiers
+open Identifier
 open Types
 open Literal
 open Syntax

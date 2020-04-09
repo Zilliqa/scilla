@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open ErrorUtils
-open Identifiers
+open Identifier
 
 (*******************************************************)
 (*                         Types                       *)
@@ -64,7 +64,7 @@ type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
-  | ADT of loc ident * typ list
+  | ADT of loc Identifier.t * typ list
   | TypeVar of string
   | PolyFun of string * typ
   | Unit

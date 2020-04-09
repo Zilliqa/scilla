@@ -19,7 +19,6 @@
 open Stdint
 open MonadUtil
 open ErrorUtils
-open Identifiers
 open Types
 
 type mtype = typ * typ [@@deriving sexp]
@@ -122,4 +121,4 @@ type t =
       CPSMonad.t)
 [@@deriving sexp]
 
-val subst_type_in_literal : 'a ident -> typ -> t -> t
+val subst_type_in_literal : 'a Identifier.t -> typ -> t -> t

@@ -19,7 +19,6 @@
 (* This file describes function that communicate with the blockchain to fetch
  * and update state variables on demand. *)
 
-open Identifiers
 open Types
 open Syntax
 open ParsedSyntax
@@ -66,26 +65,26 @@ val finalize : unit -> (unit, scilla_error list) result
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
-  fname:loc ident ->
+  fname:loc Identifier.t ->
   keys:Literal.t list ->
   (Literal.t option * stmt_eval_context, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
-  fname:loc ident ->
+  fname:loc Identifier.t ->
   keys:Literal.t list ->
   value:Literal.t ->
   (stmt_eval_context, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
-  fname:loc ident ->
+  fname:loc Identifier.t ->
   keys:Literal.t list ->
   (bool * stmt_eval_context, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
-  fname:loc ident ->
+  fname:loc Identifier.t ->
   keys:Literal.t list ->
   (stmt_eval_context, scilla_error list) result
 
@@ -99,23 +98,23 @@ module MakeStateService () : sig
   val finalize : unit -> (unit, scilla_error list) result
 
   val fetch :
-    fname:loc ident ->
+    fname:loc Identifier.t ->
     keys:Literal.t list ->
     (Literal.t option * stmt_eval_context, scilla_error list) result
 
   val update :
-    fname:loc ident ->
+    fname:loc Identifier.t ->
     keys:Literal.t list ->
     value:Literal.t ->
     (stmt_eval_context, scilla_error list) result
 
   val is_member :
-    fname:loc ident ->
+    fname:loc Identifier.t ->
     keys:Literal.t list ->
     (bool * stmt_eval_context, scilla_error list) result
 
   val remove :
-    fname:loc ident ->
+    fname:loc Identifier.t ->
     keys:Literal.t list ->
     (stmt_eval_context, scilla_error list) result
 end

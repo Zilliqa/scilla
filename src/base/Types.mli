@@ -17,7 +17,6 @@
 *)
 
 open ErrorUtils
-open Identifiers
 
 type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
 
@@ -41,7 +40,7 @@ type typ =
   | PrimType of prim_typ
   | MapType of typ * typ
   | FunType of typ * typ
-  | ADT of loc ident * typ list
+  | ADT of loc Identifier.t * typ list
   | TypeVar of string
   | PolyFun of string * typ
   | Unit
@@ -67,4 +66,4 @@ val subst_type_in_type : string -> typ -> typ -> typ
 
 val subst_types_in_type : (string * typ) list -> typ -> typ
 
-val subst_type_in_type' : 'a ident -> typ -> typ -> typ
+val subst_type_in_type' : 'a Identifier.t -> typ -> typ -> typ

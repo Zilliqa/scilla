@@ -18,7 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifiers
+open Identifier
 open Types
 open Literal
 open Syntax
@@ -141,7 +141,7 @@ module Configuration = struct
        procedures available to p. *)
     procedures : EvalSyntax.component list;
     (* The stack of procedure call, starting from the externally invoked transition. *)
-    component_stack : ER.rep ident list;
+    component_stack : ER.rep Identifier.t list;
     (* Emitted messages *)
     emitted : Literal.t list;
     (* Emitted events *)

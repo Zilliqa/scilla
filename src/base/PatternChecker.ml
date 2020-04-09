@@ -14,7 +14,7 @@
  * Reference: ML pattern match compilation and partial evaluation - Peter Sestoft
  *)
 
-open Identifiers
+open Identifier
 open Types
 open Syntax
 open Core_kernel

@@ -18,7 +18,6 @@
 
 open Core_kernel
 open ErrorUtils
-open Identifiers
 open Types
 open Syntax
 
@@ -57,13 +56,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val mk : t
 
     (* Add to type environment *)
-    val addT : t -> R.rep ident -> typ -> t
+    val addT : t -> R.rep Identifier.t -> typ -> t
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep ident * typ) list -> t
+    val addTs : t -> (R.rep Identifier.t * typ) list -> t
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep ident -> t
+    val addV : t -> R.rep Identifier.t -> t
 
     (* Append env' to env in place. *)
     val append : t -> t -> t

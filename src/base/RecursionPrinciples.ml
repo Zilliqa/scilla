@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Identifiers
+open Identifier
 open Types
 open Syntax
 open Core_kernel

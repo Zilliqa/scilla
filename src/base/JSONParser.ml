@@ -21,7 +21,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Yojson
-open Identifiers
+open Identifier
 open Literal
 open Types
 open ErrorUtils

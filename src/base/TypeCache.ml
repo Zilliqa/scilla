@@ -18,7 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifiers
+open Identifier
 open Syntax
 open ErrorUtils
 open TypeUtil

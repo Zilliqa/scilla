@@ -17,7 +17,7 @@
 *)
 
 %{
-  open Identifiers
+  open Identifier
   open Types
   open Literal
   open Syntax

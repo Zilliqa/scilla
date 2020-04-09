@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
-open Identifiers
+open Identifier
 open Types
 open Syntax
 open TypeUtil

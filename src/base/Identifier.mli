@@ -18,21 +18,21 @@
 
 open ErrorUtils
 
-type 'rep ident = Ident of string * 'rep [@@deriving sexp]
+type 'rep t = Ident of string * 'rep [@@deriving sexp]
 
-val asId : string -> loc ident
+val asId : string -> loc t
 
-val asIdL : string -> 'a -> 'a ident
+val asIdL : string -> 'a -> 'a t
 
-val get_id : 'a ident -> string
+val get_id : 'a t -> string
 
-val get_rep : 'a ident -> 'a
+val get_rep : 'a t -> 'a
 
 (* A few utilities on id. *)
-val equal_id : 'a ident -> 'b ident -> bool
+val equal_id : 'a t -> 'b t -> bool
 
-val compare_id : 'a ident -> 'b ident -> int
+val compare_id : 'a t -> 'b t -> int
 
-val dedup_id_list : 'a ident list -> 'a ident list
+val dedup_id_list : 'a t list -> 'a t list
 
-val is_mem_id : 'a ident -> 'a ident list -> bool
+val is_mem_id : 'a t -> 'a t list -> bool
