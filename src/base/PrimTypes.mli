@@ -16,55 +16,55 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Types
+open Type
 open Literal
 
 (****************************************************************)
 (*                     PrimType utilities                       *)
 (****************************************************************)
 
-val is_prim_type : typ -> bool
+val is_prim_type : Type.t -> bool
 
-val is_int_type : typ -> bool
+val is_int_type : Type.t -> bool
 
-val is_uint_type : typ -> bool
+val is_uint_type : Type.t -> bool
 
-val is_bystrx_type : typ -> bool
+val is_bystrx_type : Type.t -> bool
 
-val int_width : typ -> int option
+val int_width : Type.t -> int option
 
-val int32_typ : typ
+val int32_typ : Type.t
 
-val int64_typ : typ
+val int64_typ : Type.t
 
-val int128_typ : typ
+val int128_typ : Type.t
 
-val int256_typ : typ
+val int256_typ : Type.t
 
-val uint32_typ : typ
+val uint32_typ : Type.t
 
-val uint64_typ : typ
+val uint64_typ : Type.t
 
-val uint128_typ : typ
+val uint128_typ : Type.t
 
-val uint256_typ : typ
+val uint256_typ : Type.t
 
-val string_typ : typ
+val string_typ : Type.t
 
-val bnum_typ : typ
+val bnum_typ : Type.t
 
-val msg_typ : typ
+val msg_typ : Type.t
 
-val event_typ : typ
+val event_typ : Type.t
 
-val exception_typ : typ
+val exception_typ : Type.t
 
-val bystr_typ : typ
+val bystr_typ : Type.t
 
-val bystrx_typ : int -> typ
+val bystrx_typ : int -> Type.t
 
 (* Given a ByStrX, return integer X *)
-val bystrx_width : typ -> int option
+val bystrx_width : Type.t -> int option
 
 (****************************************************************)
 (*            PrimType Literal utilities                        *)

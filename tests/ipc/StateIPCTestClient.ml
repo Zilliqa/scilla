@@ -18,7 +18,6 @@
 
 open Core
 open! Int.Replace_polymorphic_compare
-open Types
 open TypeUtil
 open StateIPCIdl
 open OUnit2
@@ -33,7 +32,7 @@ module IPCClient = IPCIdl (IDL.GenClient ())
  * with Scilla literals, which we cannot always parse from the JSONs. Parsing it requires the
  * definitions of custom ADTs that are only available in the source file. *)
 
-type state_info = (string * typ) list
+type state_info = (string * Type.t) list
 
 (* For persistance b/w multiple queries. *)
 let stateref = ref None

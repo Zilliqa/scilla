@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifier
-open Types
+open Type
 open Syntax
 open ErrorUtils
 open MonadUtil

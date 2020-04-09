@@ -39,14 +39,14 @@ open Sexplib.Std
 open Stdint
 open MonadUtil
 open ErrorUtils
-open Types
+open Type
 
 (*******************************************************)
 (*                      Literals                       *)
 (*******************************************************)
 
 (* The first component is a primitive type *)
-type mtype = typ * typ [@@deriving sexp]
+type mtype = Type.t * Type.t [@@deriving sexp]
 
 open Integer256
 
@@ -177,7 +177,7 @@ type t =
   (* A dynamic map of literals *)
   | Map of mtype * (t, t) Hashtbl.t
   (* A constructor in HNF *)
-  | ADTValue of string * typ list * t list
+  | ADTValue of string * Type.t list * t list
   (* An embedded closure *)
   | Clo of
       (t ->
@@ -190,7 +190,7 @@ type t =
       CPSMonad.t)
   (* A type abstraction *)
   | TAbs of
-      (typ ->
+      (Type.t ->
       ( t,
         scilla_error list,
         uint64 ->

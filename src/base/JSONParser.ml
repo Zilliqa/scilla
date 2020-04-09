@@ -23,7 +23,7 @@ open! Int.Replace_polymorphic_compare
 open Yojson
 open Identifier
 open Literal
-open Types
+open Type
 open ErrorUtils
 open TypeUtil
 open Datatypes
@@ -84,7 +84,7 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : typ) : Basic.t -> Literal.t =
+let gen_parser (t' : Type.t) : Basic.t -> Literal.t =
   let open Basic in
   let rec recurser t =
     match t with

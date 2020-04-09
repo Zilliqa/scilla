@@ -36,34 +36,34 @@ type prim_typ =
 
 val pp_prim_typ : prim_typ -> string
 
-type typ =
+type t =
   | PrimType of prim_typ
-  | MapType of typ * typ
-  | FunType of typ * typ
-  | ADT of loc Identifier.t * typ list
+  | MapType of t * t
+  | FunType of t * t
+  | ADT of loc Identifier.t * t list
   | TypeVar of string
-  | PolyFun of string * typ
+  | PolyFun of string * t
   | Unit
 [@@deriving sexp]
 
-val pp_typ : typ -> string
+val pp_typ : t -> string
 
 (****************************************************************)
 (*                     Type substitutions                       *)
 (****************************************************************)
 
-val free_tvars : typ -> string list
+val free_tvars : t -> string list
 
 val mk_fresh_var : string list -> string -> string
 
-val refresh_tfun : typ -> string list -> typ
+val refresh_tfun : t -> string list -> t
 
-val canonicalize_tfun : typ -> typ
+val canonicalize_tfun : t -> t
 
-val equal_typ : typ -> typ -> bool
+val equal : t -> t -> bool
 
-val subst_type_in_type : string -> typ -> typ -> typ
+val subst_type_in_type : string -> t -> t -> t
 
-val subst_types_in_type : (string * typ) list -> typ -> typ
+val subst_types_in_type : (string * t) list -> t -> t
 
-val subst_type_in_type' : 'a Identifier.t -> typ -> typ -> typ
+val subst_type_in_type' : 'a Identifier.t -> t -> t -> t

@@ -19,7 +19,6 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifier
-open Types
 open Literal
 open Syntax
 open ErrorUtils
@@ -126,7 +125,7 @@ module Configuration = struct
     (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * typ) list;
+    fields : (string * Type.t) list;
     (* Contract balance *)
     balance : uint128;
     (* Was incoming money accepted? *)
@@ -397,7 +396,7 @@ module ContractState = struct
     (* Immutable parameters *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * typ) list;
+    fields : (string * Type.t) list;
     (* Contract balance *)
     balance : uint128;
   }

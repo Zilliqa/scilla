@@ -21,7 +21,7 @@ open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open ErrorUtils
 open Identifier
-open Types
+open Type
 open Literal
 
 exception SyntaxError of string * loc
@@ -242,18 +242,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   and expr =
     | Literal of Literal.t
     | Var of ER.rep Identifier.t
-    | Let of ER.rep Identifier.t * typ option * expr_annot * expr_annot
+    | Let of ER.rep Identifier.t * Type.t option * expr_annot * expr_annot
     | Message of (string * payload) list
-    | Fun of ER.rep Identifier.t * typ * expr_annot
+    | Fun of ER.rep Identifier.t * Type.t * expr_annot
     | App of ER.rep Identifier.t * ER.rep Identifier.t list
-    | Constr of SR.rep Identifier.t * typ list * ER.rep Identifier.t list
+    | Constr of SR.rep Identifier.t * Type.t list * ER.rep Identifier.t list
     | MatchExpr of ER.rep Identifier.t * (pattern * expr_annot) list
     | Builtin of ER.rep builtin_annot * ER.rep Identifier.t list
     (* Advanced features: to be added in Scilla 0.2 *)
     | TFun of ER.rep Identifier.t * expr_annot
-    | TApp of ER.rep Identifier.t * typ list
+    | TApp of ER.rep Identifier.t * Type.t list
     (* Fixpoint combinator: used to implement recursion principles *)
-    | Fixpoint of ER.rep Identifier.t * typ * expr_annot
+    | Fixpoint of ER.rep Identifier.t * Type.t * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -331,23 +331,23 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type component = {
     comp_type : component_type;
     comp_name : SR.rep Identifier.t;
-    comp_params : (ER.rep Identifier.t * typ) list;
+    comp_params : (ER.rep Identifier.t * Type.t) list;
     comp_body : stmt_annot list;
   }
 
-  type ctr_def = { cname : ER.rep Identifier.t; c_arg_types : typ list }
+  type ctr_def = { cname : ER.rep Identifier.t; c_arg_types : Type.t list }
 
   type lib_entry =
-    | LibVar of ER.rep Identifier.t * typ option * expr_annot
+    | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
     | LibTyp of ER.rep Identifier.t * ctr_def list
 
   type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
 
   type contract = {
     cname : SR.rep Identifier.t;
-    cparams : (ER.rep Identifier.t * typ) list;
+    cparams : (ER.rep Identifier.t * Type.t) list;
     cconstraint : expr_annot;
-    cfields : (ER.rep Identifier.t * typ * expr_annot) list;
+    cfields : (ER.rep Identifier.t * Type.t * expr_annot) list;
     ccomps : component list;
   }
 
@@ -382,7 +382,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let pp_cparams ps =
     let cs =
       List.map ps ~f:(fun (i, t) ->
-          get_id i ^ " : " ^ (sexp_of_typ t |> Sexplib.Sexp.to_string))
+          get_id i ^ " : " ^ (Type.sexp_of_t t |> Sexplib.Sexp.to_string))
     in
     "[" ^ String.concat ~sep:", " cs ^ "]"
 

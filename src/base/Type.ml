@@ -60,13 +60,13 @@ let sexp_of_prim_typ = function
 
 let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
 
-type typ =
+type t =
   | PrimType of prim_typ
-  | MapType of typ * typ
-  | FunType of typ * typ
-  | ADT of loc Identifier.t * typ list
+  | MapType of t * t
+  | FunType of t * t
+  | ADT of loc Identifier.t * t list
   | TypeVar of string
-  | PolyFun of string * typ
+  | PolyFun of string * t
   | Unit
 [@@deriving sexp]
 
@@ -189,7 +189,7 @@ let canonicalize_tfun t =
   rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
 (* Type equivalence *)
-let equal_typ t1 t2 =
+let equal t1 t2 =
   let t1' = canonicalize_tfun t1 in
   let t2' = canonicalize_tfun t2 in
   let rec equiv t1 t2 =

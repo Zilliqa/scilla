@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Types
 open Syntax
 open ErrorUtils
 open Core_kernel
@@ -30,7 +29,7 @@ module UsefulLiterals : sig
 
   val some_lit : Literal.t -> (Literal.t, ErrorUtils.scilla_error list) result
 
-  val none_lit : typ -> Literal.t
+  val none_lit : Type.t -> Literal.t
 
   val pair_lit :
     Literal.t -> Literal.t -> (Literal.t, ErrorUtils.scilla_error list) result
@@ -39,7 +38,7 @@ end
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
     type built_in_executor =
-      Literal.t list -> typ -> (Literal.t, scilla_error list) result
+      Literal.t list -> Type.t -> (Literal.t, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool
@@ -48,10 +47,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
      *)
     val find_builtin_op :
       ER.rep builtin_annot ->
-      typ list ->
-      (typ * typ * built_in_executor, scilla_error list) result
+      Type.t list ->
+      (Type.t * Type.t * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
-  val elab_id : typ -> typ list -> (typ, scilla_error list) result
+  val elab_id : Type.t -> Type.t list -> (Type.t, scilla_error list) result
 end

@@ -19,9 +19,8 @@
 open Stdint
 open MonadUtil
 open ErrorUtils
-open Types
 
-type mtype = typ * typ [@@deriving sexp]
+type mtype = Type.t * Type.t [@@deriving sexp]
 
 open Integer256
 
@@ -98,7 +97,7 @@ type t =
   (* A dynamic map of literals *)
   | Map of mtype * (t, t) Hashtbl.t
   (* A constructor in HNF *)
-  | ADTValue of string * typ list * t list
+  | ADTValue of string * Type.t list * t list
   (* An embedded closure *)
   | Clo of
       (t ->
@@ -111,7 +110,7 @@ type t =
       CPSMonad.t)
   (* A type abstraction *)
   | TAbs of
-      (typ ->
+      (Type.t ->
       ( t,
         scilla_error list,
         uint64 ->
@@ -121,4 +120,4 @@ type t =
       CPSMonad.t)
 [@@deriving sexp]
 
-val subst_type_in_literal : 'a Identifier.t -> typ -> t -> t
+val subst_type_in_literal : 'a Identifier.t -> Type.t -> t -> t

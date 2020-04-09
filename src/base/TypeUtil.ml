@@ -21,7 +21,7 @@ open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Sexplib.Std
 open Identifier
-open Types
+open Type
 open Literal
 open Syntax
 open MonadUtil
@@ -33,7 +33,7 @@ open PrettyPrinters
 (*                Inferred types and qualifiers                 *)
 (****************************************************************)
 
-type 'rep inferred_type = { tp : typ; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp]
 
 module type QualifiedTypes = sig
   type t
@@ -42,7 +42,7 @@ module type QualifiedTypes = sig
 
   val sexp_of_t : t -> Sexp.t
 
-  val mk_qualified_type : typ -> t inferred_type
+  val mk_qualified_type : Type.t -> t inferred_type
 end
 
 module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
@@ -57,7 +57,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
   val rr_pp : resolve_result -> string
 
-  val mk_qual_tp : typ -> Q.t inferred_type
+  val mk_qual_tp : Type.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
@@ -66,10 +66,10 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val mk : t
 
     (* Add to type environment *)
-    val addT : t -> R.rep Identifier.t -> typ -> t
+    val addT : t -> R.rep Identifier.t -> Type.t -> t
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep Identifier.t * typ) list -> t
+    val addTs : t -> (R.rep Identifier.t * Type.t) list -> t
 
     (* Add type variable to the environment *)
     val addV : t -> R.rep Identifier.t -> t
@@ -81,7 +81,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val filterTs : t -> f:(string -> resolve_result -> bool) -> t
 
     (* Check type for well-formedness in the type environment *)
-    val is_wf_type : t -> typ -> (unit, scilla_error list) result
+    val is_wf_type : t -> Type.t -> (unit, scilla_error list) result
 
     (* Resolve the identifier *)
     val resolveT :
@@ -289,10 +289,10 @@ module TypeUtilities = struct
     List.length tlist1 = List.length tlist2
     && not
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not ([%equal: typ] t1 t2)))
+              not ([%equal: Type.t] t1 t2)))
 
   let assert_type_equiv expected given =
-    if [%equal: typ] expected given then pure ()
+    if [%equal: Type.t] expected given then pure ()
     else
       fail0
       @@ sprintf "Type mismatch: %s expected, but %s provided."
@@ -300,7 +300,7 @@ module TypeUtilities = struct
 
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
-    if [%equal: typ] expected given then pure remaining_gas
+    if [%equal: Type.t] expected given then pure remaining_gas
     else
       Error
         ( TypeError,
@@ -339,7 +339,7 @@ module TypeUtilities = struct
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
         PrimTypes.(
-          (not @@ [%equal: typ] t msg_typ) || [%equal: typ] t event_typ)
+          (not @@ [%equal: Type.t] t msg_typ) || [%equal: Type.t] t event_typ)
     | ADT (tname, ts) -> (
         if List.mem seen_adts tname ~equal:equal_id then true
           (* Inductive ADT - ignore this branch *)
@@ -610,7 +610,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail0 "Checking an empty type list."
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not ([%equal: typ] t t')) with
+        match List.find ts' ~f:(fun t' -> not ([%equal: Type.t] t t')) with
         | None -> pure ()
         | Some _ ->
             fail0
@@ -685,7 +685,7 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ ([%equal: typ] kt kt' && [%equal: typ] vt vt'))
+                  pure @@ ([%equal: Type.t] kt kt' && [%equal: Type.t] vt vt'))
               kv (pure true)
           in
           if not valid then
@@ -713,7 +713,7 @@ module TypeUtilities = struct
           let res = ADT (asId tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid = List.for_all2_exn tmap arg_typs ~f:[%equal: typ] in
+          let args_valid = List.for_all2_exn tmap arg_typs ~f:[%equal: Type.t] in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"

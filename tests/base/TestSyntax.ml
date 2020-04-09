@@ -3,7 +3,7 @@ open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
 open Identifier
-open Types
+open Type
 open Literal
 open Syntax
 open ParsedSyntax

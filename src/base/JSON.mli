@@ -43,7 +43,7 @@ module ContractState : sig
   val get_init_extlibs : string -> (string * string) list
 
   (* Convert a single JSON serialized literal back to its Scilla value. *)
-  val jstring_to_literal : string -> Types.typ -> Literal.t
+  val jstring_to_literal : string -> Type.t -> Literal.t
 end
 
 (*  Message json parsing and printing. A message json has three mandatory
@@ -134,12 +134,12 @@ module ContractInfo : sig
         }
   *)
   val get_string :
-    int -> contract -> (string * (string * Types.typ) list) list -> string
+    int -> contract -> (string * (string * Type.t) list) list -> string
 
   val get_json :
     int ->
     contract ->
-    (string * (string * Types.typ) list) list ->
+    (string * (string * Type.t) list) list ->
     Yojson.Basic.t
 end
 
@@ -156,12 +156,12 @@ end
 
 module TypeInfo : sig
   val type_info_to_json :
-    (string * Types.typ * ErrorUtils.loc * ErrorUtils.loc) list ->
+    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list ->
     Yojson.Basic.t
 
   val type_info_to_jstring :
     ?pp:bool ->
-    (string * Types.typ * ErrorUtils.loc * ErrorUtils.loc) list ->
+    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list ->
     string
 end
 

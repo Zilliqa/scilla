@@ -19,14 +19,13 @@
 (* This file describes function that communicate with the blockchain to fetch
  * and update state variables on demand. *)
 
-open Types
 open Syntax
 open ParsedSyntax
 open ErrorUtils
 
 type ss_field = {
   fname : string;
-  ftyp : typ;
+  ftyp : Type.t;
   fval : Literal.t option; (* Value may not be available (in IPC mode) *)
 }
 

@@ -20,7 +20,7 @@
 open Core_kernel.Result.Let_syntax
 open TypeUtil
 open Identifier
-open Types
+open Type
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -32,7 +32,7 @@ module ScillaGUA
 
       val get_type : rep -> PlainTypes.t inferred_type
 
-      val mk_id : loc Identifier.t -> typ -> rep Identifier.t
+      val mk_id : loc Identifier.t -> Type.t -> rep Identifier.t
     end) =
 struct
   module SER = SR

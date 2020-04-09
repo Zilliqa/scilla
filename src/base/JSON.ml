@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Identifier
-open Types
+open Type
 open Literal
 open Syntax
 open ErrorUtils
@@ -310,8 +310,8 @@ module ContractState = struct
             List.map lit' ~f:(fun sp ->
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when [%equal: typ] t1 PrimTypes.string_typ
-                       && [%equal: typ] t2 (PrimTypes.bystrx_typ address_length)
+                  when [%equal: Type.t] t1 PrimTypes.string_typ
+                       && [%equal: Type.t] t2 (PrimTypes.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
@@ -417,7 +417,7 @@ module ContractInfo = struct
   open Syntax.ParsedSyntax
 
   let get_json cmver (contr : contract)
-      (event_info : (string * (string * typ) list) list) =
+      (event_info : (string * (string * Type.t) list) list) =
     (* 0. contract version *)
     let verj = ("scilla_major_version", `String (Int.to_string cmver)) in
     (* 1. contract name *)
@@ -512,7 +512,7 @@ module ContractInfo = struct
     finalj
 
   let get_string cver (contr : contract)
-      (event_info : (string * (string * typ) list) list) =
+      (event_info : (string * (string * Type.t) list) list) =
     pretty_to_string (get_json cver contr event_info)
 end
 
