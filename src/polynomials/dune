@@ -1,5 +1,6 @@
 (library
  (name polynomials)
+ (public_name scilla.polynomials)
  (wrapped false)
  (synopsis "Utility to deal with multivariate polynomials")
  (libraries core))
