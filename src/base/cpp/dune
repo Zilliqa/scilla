@@ -1,5 +1,6 @@
 (library
  (name scilla_cpp_deps)
+ (public_name scilla.cpp_deps)
  (wrapped false)
  (libraries ctypes ctypes.foreign cryptokit)
  (preprocess

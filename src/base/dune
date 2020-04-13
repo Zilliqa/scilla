@@ -18,6 +18,7 @@
 (library
  (name scilla_base)
  (modes byte native)
+ (public_name scilla.base)
  (wrapped false)
  (libraries core num hex stdint angstrom polynomials cryptokit secp256k1
    bitstring yojson fileutils scilla_cpp_deps menhirLib)
