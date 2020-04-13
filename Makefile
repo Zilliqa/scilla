@@ -56,7 +56,7 @@ debug :
 	dune build --profile dev src/runners/scilla_checker.bc
 	dune build --profile dev src/runners/type_checker.bc
 	dune build --profile dev src/runners/eval_runner.bc
-	@echo "Note: LD_LIBRARY_PATH must be set to ${CPPLIB_DIR}  before execution"
+	@echo "Note: LD_LIBRARY_PATH must be set to ${CPPLIB_DIR} before execution"
 	@echo "Example: LD_LIBRARY_PATH=${CPPLIB_DIR} ocamldebug _build/default/src/runners/scilla_checker.bc -libdir src/stdlib -gaslimit 10000 tests/contracts/helloworld.scilla"
 
 # === TESTS (begin) ===========================================================
