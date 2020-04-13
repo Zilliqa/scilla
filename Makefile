@@ -2,6 +2,7 @@
 
 OCAML_VERSION_RECOMMENDED=4.07.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
+CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
 .PHONY: default release utop dev clean docker zilliqa-docker
 
@@ -48,6 +49,15 @@ test_install : install
 
 uninstall : release
 	dune uninstall
+
+# Debug with ocamldebug: Build byte code instead of native code.
+debug :
+	dune build --profile dev src/runners/scilla_runner.bc
+	dune build --profile dev src/runners/scilla_checker.bc
+	dune build --profile dev src/runners/type_checker.bc
+	dune build --profile dev src/runners/eval_runner.bc
+	@echo "Note: LD_LIBRARY_PATH must be set to ${CPPLIB_DIR} before execution"
+	@echo "Example: LD_LIBRARY_PATH=${CPPLIB_DIR} ocamldebug _build/default/src/runners/scilla_checker.bc -libdir src/stdlib -gaslimit 10000 tests/contracts/helloworld.scilla"
 
 # === TESTS (begin) ===========================================================
 # Build and run tests

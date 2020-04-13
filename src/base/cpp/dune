@@ -5,6 +5,7 @@
  (libraries ctypes ctypes.foreign cryptokit)
  (preprocess
   (pps ppx_compare))
+ (modes byte native)
  (foreign_stubs
   (language c)
   (names generate_dsa_nonce)

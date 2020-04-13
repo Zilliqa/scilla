@@ -171,6 +171,18 @@ dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
+#### Debugging
+To debug scilla-checker or scilla-runner, you must build `make debug`, which will generate
+the OCaml bytecode versions of the binaries. These can be debugged using `ocamldebug`.
+Executing a bytecode executable also requires the environment variable `LD_LIBRARY_PATH` to
+be set to `_build/default/src/base/cpp`. An example debug command line is provided below.
+
+
+```shell
+LD_LIBRARY_PATH=${PWD}/_build/default/src/base/cpp ocamldebug _build/default/src/runners/scilla_checker.bc -libdir src/stdlib -gaslimit 10000 tests/contracts/helloworld.scilla
+
+```
+
 ## Developer Tools
 ### Emacs mode
 

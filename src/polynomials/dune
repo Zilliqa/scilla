@@ -2,5 +2,6 @@
  (name polynomials)
  (public_name scilla.polynomials)
  (wrapped false)
+ (modes byte native)
  (synopsis "Utility to deal with multivariate polynomials")
  (libraries core))
