@@ -179,6 +179,7 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let tests =
     [
+      "ackermann.scilexp";
       "branch-match.scilexp";
       "builtin-strings.scilexp";
       "builtin-bech32-1.scilexp";
