@@ -62,46 +62,30 @@ struct
 
   type de_bruijn_level = int
 
-  (* In the expression language, all contribution sources are formal parameters.
-     In the statement language, all contribution sources are pseudofields, i.e.
-     identifier contributions are reduced after every statement *)
   type contrib_source =
     | UnknownSource
     | Pseudofield of pseudofield
-    | FormalParameter of de_bruijn_level * int
+    (* When analysing pure functions, we describe their output's contributions
+       in terms of how the function's formal parameters flow into the output *)
+    | FormalParameter of de_bruijn_level
 
-  type contrib_cardinality = LinearContrib | NonLinearContrib
+  type contrib_cardinality = NoContrib | LinearContrib | NonLinearContrib
 
-  (* There is a design choice to be made here: should we only support builitin
-     operations, or should we also support user-defined operations (that the
-     programmer needs to prove commutative)? For now, we only support builtins. *)
-  type contrib_op = BuiltinOp of builtin
+  type contrib_op = BuiltinOp of builtin | Conditional
 
   let pp_contrib_source cs =
     match cs with
     | UnknownSource -> "unknown_source"
     | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
-    | FormalParameter (depth, i) ->
-        let depth_str = if depth > 0 then string_of_int depth ^ "." else "" in
-        depth_str ^ "_" ^ string_of_int i
+    | FormalParameter i -> "_" ^ string_of_int i
 
-  let pp_contrib_cardinality cc =
-    match cc with LinearContrib -> "Linear" | NonLinearContrib -> "NonLinear"
-
-  let pp_contrib_op co = match co with BuiltinOp blt -> pp_builtin blt
-
-  let max_contrib_card a b =
-    match (a, b) with
-    | NonLinearContrib, _ -> NonLinearContrib
-    | _, NonLinearContrib -> NonLinearContrib
-    | LinearContrib, LinearContrib -> LinearContrib
+  let pp_contrib_op co =
+    match co with BuiltinOp blt -> pp_builtin blt | Conditional -> "?cond"
 
   module OrderedContribOp = struct
     type t = contrib_op
 
-    let compare a b =
-      match (a, b) with
-      | BuiltinOp a, BuiltinOp b -> compare (pp_builtin a) (pp_builtin b)
+    let compare a b = compare (pp_contrib_op a) (pp_contrib_op b)
   end
 
   module ContribOps = Set.Make (OrderedContribOp)
@@ -117,7 +101,6 @@ struct
   end
 
   module Contrib = Map.Make (OrderedContribSource)
-  module Cond = Set.Make (OrderedContribSource)
 
   (* keys are contrib_source, values are contrib_summary *)
   type contributions = contrib_summary Contrib.t
@@ -127,50 +110,48 @@ struct
   (* SubsetOf: the result has a subset of these contributions *)
   type source_precision = Exactly | SubsetOf
 
-  type conditionals = Cond.t
+  type known_contrib = source_precision * contributions
 
-  type dependencies = conditionals
+  type expr_type =
+    (* "I give up" type, for things we cannot analyse *)
+    | EUnknown
+    (* Known contribution *)
+    | EVal of known_contrib
+    (* Transformation of contributions, i.e. derived contributions *)
+    | EOp of contrib_op * expr_type
+    | EComposeSequence of expr_type list
+    (* conditional * clauses *)
+    | EComposeParallel of expr_type * expr_type list
+    | EFun of efun_desc
+    | EApp of efun_desc * expr_type list
 
-  type known_expr_type =
-    de_bruijn_level * source_precision * contributions * conditionals
+  (* We get away with not giving expr_types to the parameters because the Scilla
+     type checker guarantees EApp will always match what we expect. *)
+  and efun_desc = EFunDef of de_bruijn_level list * efun_def
 
-  type expr_type = KnownET of known_expr_type | UnknownET
+  (* Either something that can be evaluated, or an unknown (parameter of a HO
+     function). If the latter, we store _which_ parameter we are, so when EApp
+     is used, we can replace the definition with the concrete one. *)
+  and efun_def = DefExpr of expr_type | DefParameter of de_bruijn_level
 
-  let et_nothing = KnownET (0, Exactly, Contrib.empty, Cond.empty)
+  let et_nothing = EVal (Exactly, Contrib.empty)
 
+  (**  Helper functions  **)
   let min_precision ua ub =
     match (ua, ub) with Exactly, Exactly -> Exactly | _ -> SubsetOf
 
-  let ket_list_split (etl : known_expr_type list) =
-    let ls, ps = List.split @@ List.map (fun (a, b, _, _) -> (a, b)) etl in
-    let cs, conds = List.split @@ List.map (fun (_, _, a, b) -> (a, b)) etl in
-    (ls, ps, cs, conds)
+  let pp_contrib_cardinality cc =
+    match cc with
+    | NoContrib -> "None"
+    | LinearContrib -> "Linear"
+    | NonLinearContrib -> "NonLinear"
 
-  let et_to_ket (etl : expr_type list) : known_expr_type list option =
-    let ket =
-      mapM
-        (fun et ->
-          match et with UnknownET -> fail0 "Bad" | KnownET et -> pure @@ et)
-        etl
-    in
-    match ket with Ok ket -> Some ket | Error _ -> None
-
-  let et_equal (a : expr_type) (b : expr_type) =
+  let max_contrib_card a b =
     match (a, b) with
-    | KnownET a, KnownET b ->
-        let la, psa, contra, condsa = a in
-        let lb, psb, contrb, condsb = b in
-        let l_eq = la = lb in
-        let ps_eq = psa = psb in
-        let contr_eq =
-          Contrib.equal
-            (fun (cca, copa) (ccb, copb) ->
-              cca = ccb && ContribOps.equal copa copb)
-            contra contrb
-        in
-        let conds_eq = Cond.equal condsa condsb in
-        l_eq && ps_eq && contr_eq && conds_eq
-    | _ -> false
+    | NoContrib, NoContrib -> NoContrib
+    | NonLinearContrib, _ -> NonLinearContrib
+    | _, NonLinearContrib -> NonLinearContrib
+    | _ -> LinearContrib
 
   let pp_contrib_summary (cs : contrib_summary) =
     let card, ops_set = cs in
@@ -189,28 +170,261 @@ struct
   let pp_precision u =
     match u with Exactly -> "Exactly" | SubsetOf -> "SubsetOf"
 
-  let pp_conditionals c =
-    let sources = Cond.elements c in
-    String.concat " " @@ List.map pp_contrib_source sources
+  let pp_known_contrib (ps, cs) = pp_precision ps ^ " " ^ pp_contribs cs
 
-  let pp_expr_type (et : expr_type) =
+  let rec pp_expr_type et =
     match et with
-    | UnknownET -> "Unknown"
-    | KnownET et ->
-        let l, ps, cs, cond = et in
-        let show_level = l <> 0 in
-        let show_precision = Contrib.cardinal cs > 0 in
-        let show_cond = Cond.cardinal cond > 0 in
-        let level_str =
-          if show_level then "Level " ^ string_of_int l ^ " " else ""
+    | EUnknown -> "EUnknown"
+    | EVal kc -> "EVal " ^ pp_known_contrib kc
+    | EOp (op, et) ->
+        Printf.sprintf "EOp({%s}, {%s})" (pp_contrib_op op) (pp_expr_type et)
+    | EComposeSequence etl ->
+        Printf.sprintf "EComposeSeq(%s)" (pp_expr_type_list ~sep:" ;; " etl)
+    | EComposeParallel (c, etl) ->
+        Printf.sprintf "EComposePar(%s ~~ %s)" (pp_expr_type c)
+          (pp_expr_type_list ~sep:" || " etl)
+    | EFun fd -> pp_efun_desc fd
+    | EApp (eref, etl) ->
+        Printf.sprintf "(EApp (%s) @@ %s)" (pp_efun_desc eref)
+          (pp_expr_type_list ~sep:" @@ " etl)
+
+  and pp_expr_type_list ?(sep = ", ") etl =
+    String.concat sep (List.map pp_expr_type etl)
+
+  and pp_efun_desc d =
+    let pp_efun_def def =
+      match def with
+      | DefExpr et -> pp_expr_type et
+      | DefParameter i -> "DefParam " ^ pp_contrib_source (FormalParameter i)
+    in
+    match d with
+    | EFunDef (lvls, def) ->
+        let fargs =
+          String.concat ", " (List.map (fun i -> "_" ^ string_of_int i) lvls)
         in
-        let precision_str =
-          if show_precision then pp_precision ps ^ " " else ""
+        let ds = pp_efun_def def in
+        Printf.sprintf "EFun(%s) = %s" fargs ds
+
+  (* Type normalisation *)
+  let et_is_val et = match et with EVal _ -> true | _ -> false
+
+  let et_is_known_fun et =
+    match et with EFun (EFunDef (_, DefExpr _)) -> true | _ -> false
+
+  let combine_seq (carda, opsa) (cardb, opsb) =
+    (* This is NOT max(carda, cardb), but addition *)
+    let card =
+      match (carda, cardb) with
+      (* Special cases for no contributions *)
+      | NoContrib, b -> b
+      | a, NoContrib -> a
+      (* Any seq combination of contributions is NonLinear *)
+      | _ -> NonLinearContrib
+    in
+    let ops = ContribOps.union opsa opsb in
+    (card, ops)
+
+  let combine_par (carda, opsa) (cardb, opsb) =
+    let card = max_contrib_card carda cardb in
+    let ops = ContribOps.union opsa opsb in
+    (card, ops)
+
+  (* Only works on EVals *)
+  let et_compose f eta etb =
+    match (eta, etb) with
+    | EVal (psa, contra), EVal (psb, contrb) ->
+        let ps' = min_precision psa psb in
+        let contr' = Contrib.union f contra contrb in
+        pure @@ EVal (ps', contr')
+    (* This shouldn't happen *)
+    | _ -> fail0 "Sharding analysis: trying to et_compose non-EVal types"
+
+  let et_seq_compose = et_compose (fun cs a b -> Some (combine_seq a b))
+
+  let et_par_compose = et_compose (fun cs a b -> Some (combine_par a b))
+
+  (* WARNING: only guaranteed accurate for fully normalised types *)
+  let et_equal eta etb =
+    match (eta, etb) with
+    | EVal (psa, contra), EVal (psb, contrb) ->
+        let ps_eq = psa = psb in
+        let contr_eq =
+          Contrib.equal
+            (fun (cca, copa) (ccb, copb) ->
+              cca = ccb && ContribOps.equal copa copb)
+            contra contrb
         in
-        let cond_str =
-          if show_cond then " cond? " ^ pp_conditionals cond else ""
+        ps_eq && contr_eq
+    (* Give it our best shot *)
+    | _ -> pp_expr_type eta = pp_expr_type etb
+
+  (* For all the contributions in etc, add cond Op in et *)
+  let add_conditional etc et =
+    (* Convention that must be respected by sa_expr *)
+    let spurious = et_equal etc et_nothing in
+    match (etc, et) with
+    | EVal (_, ccontr), EVal (ps, contr) ->
+        let ps' = if spurious then Exactly else ps in
+        (* Some (cc, ContribOps.add Conditional cops) *)
+        let contr' =
+          Contrib.merge
+            (fun cs cond contr ->
+              match (cond, contr) with
+              | None, None -> None
+              | None, Some csumm -> Some csumm
+              (* contribution_source in conditional, but not contribution *)
+              | Some _, None ->
+                  (* Have to store it anyway, but mark as not contributing *)
+                  Some (NoContrib, ContribOps.singleton Conditional)
+              (* contribution_source in both cond and contr *)
+              | Some _, Some (cc, cops) ->
+                  Some (cc, ContribOps.add Conditional cops))
+            ccontr contr
         in
-        level_str ^ precision_str ^ pp_contribs cs ^ cond_str
+        pure @@ EVal (ps', contr')
+    | _ -> fail0 "Sharding analysis: add_conditional non-EVal type"
+
+  let rec et_normalise (et : expr_type) =
+    match et with
+    (* Nothing to do *)
+    | EUnknown | EVal _ -> pure @@ et
+    | EOp (op, expr) -> (
+        let%bind nexpr = et_normalise expr in
+        match nexpr with
+        | EVal (ps, contrs) ->
+            (* Distribute operation over contributions *)
+            let contrs' =
+              Contrib.map
+                (fun (cc, cops) -> (cc, ContribOps.add op cops))
+                contrs
+            in
+            let kc = (ps, contrs') in
+            pure @@ EVal kc
+        (* Cannot perform operation, but normalisation might simplify expr *)
+        | _ -> pure @@ EOp (op, nexpr) )
+    | EComposeSequence etl ->
+        let%bind netl = mapM et_normalise etl in
+        let all_vals = List.for_all et_is_val netl in
+        if all_vals then foldM et_seq_compose et_nothing netl
+        else pure @@ EComposeSequence netl
+    | EComposeParallel (xet, cl_etl) ->
+        let%bind nxet = et_normalise xet in
+        let%bind ncl_etl = mapM et_normalise cl_etl in
+        let all_vals = et_is_val nxet && List.for_all et_is_val ncl_etl in
+        if all_vals then
+          (* Don't want to mix et_nothing in and lose precision *)
+          (* Guaranteed to have at least one clauses by the typechecker *)
+          let fc = List.hd ncl_etl in
+          let%bind cl_et = foldM et_par_compose fc ncl_etl in
+          add_conditional nxet cl_et
+        else pure @@ EComposeParallel (nxet, ncl_etl)
+    (* Normalise within function bodies *)
+    | EFun (EFunDef (dbl, DefExpr expr)) ->
+        let%bind nexpr = et_normalise expr in
+        pure @@ EFun (EFunDef (dbl, DefExpr nexpr))
+    (* Cannot normalise unknown functions *)
+    | EFun (EFunDef (_, DefParameter _)) -> pure @@ et
+    (* Normalise when EApp referent is known *)
+    | EApp (EFunDef (dbls, DefExpr fde), etl) ->
+        (* print_endline @@ pp_expr_type et; *)
+        let%bind nfde = et_normalise fde in
+        let%bind netl = mapM et_normalise etl in
+        (* All arguments are known *)
+        let all_known =
+          List.for_all et_is_val netl || List.for_all et_is_known_fun netl
+        in
+        if all_known then
+          (* There is a mismatch between Fun and App. Fun takes a single
+             parameter, whereas App takes multiple arguments, i.e. length dbl = 1.
+             As such, we apply arguments one by one *)
+          let rec subst fp netl nfden =
+            let arg_et = List.hd netl in
+            let%bind nfde = substitute_argument fp arg_et nfden in
+            (* TODO: is this necessary? *)
+            (* let%bind nfde = et_normalise nfde in *)
+            (* print_endline
+               @@ Printf.sprintf "subst _%d:(%s) into %s == %s" fp
+                    (pp_expr_type arg_et) (pp_expr_type nfden) (pp_expr_type nfde); *)
+            match netl with
+            (* This was our last argument *)
+            | [ _ ] -> pure @@ nfde
+            (* More arguments exist, we have more substitution to do *)
+            | _ :: rem_netl -> subst (fp + 1) rem_netl nfde
+            (* This can't happen *)
+            | _ -> fail0 "Sharding analysis: EApp argument list is empty??"
+          in
+          (* Scilla type checking guarantees this is safe *)
+          let dbl = List.hd dbls in
+          let%bind substituted = subst dbl netl nfde in
+          et_normalise substituted
+        else pure @@ EApp (EFunDef (dbls, DefExpr nfde), netl)
+    | EApp (EFunDef (_, DefParameter _), etl) -> pure @@ et
+
+  and substitute_argument fp_dbl arg_et fundef_et =
+    let cont et = substitute_argument fp_dbl arg_et et in
+    match fundef_et with
+    | EUnknown -> pure @@ EUnknown
+    | EVal (fd_ps, fd_contr) -> (
+        (* Combine FormalParameter fp_dbl's contributions with those of
+           the argument, i.e. arg_contr. *)
+        match arg_et with
+        | EVal (arg_ps, arg_contr) -> (
+            let opt_fpc = Contrib.find_opt (FormalParameter fp_dbl) fd_contr in
+            match opt_fpc with
+            | Some fpc ->
+                let ps = min_precision arg_ps fd_ps in
+                (* Compute contributions due to the argument *)
+                let acontr =
+                  Contrib.map (fun c -> combine_par c fpc) arg_contr
+                in
+                let fd_contr =
+                  Contrib.remove (FormalParameter fp_dbl) fd_contr
+                in
+                (* Add them to fd_contr instead of old value *)
+                let contr =
+                  Contrib.union
+                    (fun cs a b -> Some (combine_seq a b))
+                    acontr fd_contr
+                in
+                pure @@ EVal (ps, contr)
+                (* If the formal parameter is not used, argument is not used,
+                   i.e. nothing changes *)
+            | None -> pure @@ fundef_et )
+        | _ -> fail0 "Sharding analysis: substituting non-EVal in EVal" )
+    | EOp (op, expr) ->
+        let%bind sexpr = cont expr in
+        pure @@ EOp (op, sexpr)
+    | EComposeSequence etl ->
+        let%bind setl = mapM cont etl in
+        pure @@ EComposeSequence setl
+    | EComposeParallel (c, etl) ->
+        let%bind sc = cont c in
+        let%bind setl = mapM cont etl in
+        pure @@ EComposeParallel (sc, setl)
+    | EFun (EFunDef (dbl, DefExpr fd)) ->
+        (* Functions are well-scoped, so we can safely substitute inside
+           their definitions, i.e. the nesting protects us from mistakes. *)
+        let%bind sfd = cont fd in
+        (* After substituting the formal parameter, we only return the body *)
+        pure @@ sfd
+    (* TODO: Is this necessary? *)
+    (* | EFun (EFunDef (_, DefParameter i)) ->
+        (* Substitute function definition *)
+        if fp_dbl = i then
+          match arg_et with
+          (* TODO: should do this only for DefExpr? *)
+          | EFun _ -> pure @@ arg_et
+          | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
+          (* Not the function we're looking for; nothing to do *)
+        else pure @@ fundef_et *)
+    | EApp (EFunDef (_, DefParameter i), etl) ->
+        if fp_dbl = i then
+          match arg_et with
+          (* TODO: should do this only for DefExpr? *)
+          | EFun fd -> pure @@ EApp (fd, etl)
+          | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
+        else pure @@ fundef_et
+    | _ -> fail0 "HURR DURR"
 
   (* For each contract component, we keep track of the operations it performs.
      This gives us enough information to tell whether two transitions have disjoint
@@ -218,23 +432,24 @@ struct
   type component_operation =
     (* Read of cfield, with map keys which are comp_params if field is a map *)
     | Read of pseudofield
+    (* TODO: replace with known_contrib *)
     | Write of pseudofield * expr_type
     | AcceptMoney
-    | ConditionOn of dependencies
-    | EmitEvent of dependencies
-    | SendMessages of dependencies
+    | ConditionOn of expr_type
+    | EmitEvent of expr_type
+    | SendMessages of expr_type
     (* Top element -- in case of ambiguity, be conservative *)
     | AlwaysExclusive of ErrorUtils.loc option * string
 
   let pp_operation op =
     match op with
     | Read (field, opt_keys) -> "Read " ^ pp_pseudofield field opt_keys
-    | Write ((field, opt_keys), et) ->
-        "Write " ^ pp_pseudofield field opt_keys ^ " (" ^ pp_expr_type et ^ ")"
+    | Write ((field, opt_keys), kc) ->
+        "Write " ^ pp_pseudofield field opt_keys ^ " (" ^ pp_expr_type kc ^ ")"
     | AcceptMoney -> "AcceptMoney"
-    | ConditionOn conds -> "ConditionOn " ^ pp_conditionals conds
-    | EmitEvent conds -> "EmitEvent " ^ pp_conditionals conds
-    | SendMessages conds -> "SendMessages " ^ pp_conditionals conds
+    | ConditionOn kc -> "ConditionOn " ^ pp_expr_type kc
+    | EmitEvent kc -> "EmitEvent " ^ pp_expr_type kc
+    | SendMessages kc -> "SendMessages " ^ pp_expr_type kc
     | AlwaysExclusive (opt_loc, msg) ->
         let loc_str =
           match opt_loc with
@@ -250,7 +465,7 @@ struct
   module OrderedComponentOperation = struct
     type t = component_operation
 
-    (* This is super hacky, but works *)
+    (* XXX: This is super hacky, but works *)
     let compare a b =
       let str_a = pp_operation a in
       let str_b = pp_operation b in
@@ -299,7 +514,6 @@ struct
         in
         ns ^ pp_expr_type et ^ pcm_str
 
-  (* XXX: I copied this from GasUsageAnalysis; why not use a Map? *)
   module SAEnv = struct
     open AssocDictionary
 
@@ -363,6 +577,7 @@ struct
       expr_type -> ER.rep ident -> (pattern * stmt_annot list) list -> bool
   end
 
+  (* BEGIN functions to do with detecting spurious match exprs/stmts  *)
   let sc_option_check pcm_is_applicable_type x clauses =
     let cond_type = (ER.get_type (get_rep x)).tp in
     let is_integer_option =
@@ -461,9 +676,7 @@ struct
             let cs =
               Contrib.singleton none_ps (LinearContrib, ContribOps.empty)
             in
-            let expected_et : expr_type =
-              KnownET (0, Exactly, cs, Cond.empty)
-            in
+            let expected_et = EVal (Exactly, cs) in
             let good_et = et_equal xc expected_et in
             good_et
             &&
@@ -491,6 +704,9 @@ struct
       | _ -> false
     else false
 
+  (* END functions to do with detecting spurious match exprs/stmts  *)
+
+  (* TODO: move PCMs into a separate file *)
   (* Generic addition PCM for all signed and unsigned types *)
   module Integer_Addition_PCM = struct
     let pcm_identifier = "integer_add"
@@ -548,6 +764,16 @@ struct
     PCMStatus.of_list
     @@ List.map (fun (module P : PCM) -> P.pcm_identifier) unit_of
 
+  let is_spurious_conditional_expr senv x clauses =
+    List.exists
+      (fun (module P : PCM) -> P.is_spurious_conditional_expr' senv x clauses)
+      enabled_pcms
+
+  let is_spurious_conditional_stmt xc x clauses =
+    List.exists
+      (fun (module P : PCM) -> P.is_spurious_conditional_stmt' xc x clauses)
+      enabled_pcms
+
   let env_bind_component senv comp (sgn : signature) =
     let i = comp.comp_name in
     SAEnv.addS senv (get_id i) sgn
@@ -562,60 +788,7 @@ struct
     let csrc = Pseudofield (f, opt_keys) in
     Contrib.singleton csrc csumm
 
-  let et_pseudofield (f, opt_keys) =
-    (0, Exactly, contrib_pseudofield (f, opt_keys), Cond.empty)
-
-  let contribs_add_op (x : contributions) (op : contrib_op) =
-    let cs_add_op (ccard, cops) op =
-      let cops' = ContribOps.add op cops in
-      (ccard, cops')
-    in
-    Contrib.map (fun cs -> cs_add_op cs op) x
-
-  (* Combine contributions "in sequence", e.g. builtin add a b *)
-  let contrib_union a b =
-    (* Any combination of the same ident leads to a NonLinearContrib *)
-    let combine_seq ident (_, opsa) (_, opsb) =
-      let ops = ContribOps.union opsa opsb in
-      Some (NonLinearContrib, ops)
-    in
-    Contrib.union combine_seq a b
-
-  let et_union (eta : expr_type) (etb : expr_type) =
-    match (eta, etb) with
-    | KnownET eta, KnownET etb ->
-        let la, ufa, csa, cnda = eta in
-        let lb, ufb, csb, cndb = etb in
-        (* TODO: think about this? *)
-        let l = max la lb in
-        let uf = min_precision ufa ufb in
-        let cs = contrib_union csa csb in
-        let cnd = Cond.union cnda cndb in
-        KnownET (l, uf, cs, cnd)
-    | _ -> UnknownET
-
-  (* Combine contributions "in parallel", e.g. match *)
-  let contrib_combine_par (carda, opsa) (cardb, opsb) =
-    let card = max_contrib_card carda cardb in
-    let ops = ContribOps.union opsa opsb in
-    (card, ops)
-
-  let contrib_upper_bound a b =
-    Contrib.union (fun k x y -> Some (contrib_combine_par x y)) a b
-
-  (* Combine contributions by multiplication, e.g. function application *)
-  let contrib_product (multiple : contributions) (single : contrib_summary) =
-    Contrib.map (fun c -> contrib_combine_par c single) multiple
-
-  let is_spurious_conditional_expr senv x clauses =
-    List.exists
-      (fun (module P : PCM) -> P.is_spurious_conditional_expr' senv x clauses)
-      enabled_pcms
-
-  let is_spurious_conditional_stmt xc x clauses =
-    List.exists
-      (fun (module P : PCM) -> P.is_spurious_conditional_stmt' xc x clauses)
-      enabled_pcms
+  let et_pseudofield (f, opt_keys) = (Exactly, contrib_pseudofield (f, opt_keys))
 
   let is_bottom_level_access m klist =
     let mt = (ER.get_type (get_rep m)).tp in
@@ -638,129 +811,12 @@ struct
   let map_access_can_be_summarised senv m klist =
     is_bottom_level_access m klist && all_keys_are_parameters senv klist
 
-  let conds_can_be_summarised senv (conds : Cond.t) =
-    let can_summarise c =
-      match c with
-      | Pseudofield (m, Some klist) -> map_access_can_be_summarised senv m klist
-      | Pseudofield (f, None) -> true
-      | UnknownSource | FormalParameter (_, _) -> false
-    in
-    Cond.for_all can_summarise conds
-
-  let translate_op op old_params new_params =
-    let old_names = List.map (fun p -> get_id p) old_params in
-    let mapping = List.combine old_names new_params in
-    (* The assoc will fail only if there's a bug *)
-    let map_keys keys =
-      List.map (fun k -> List.assoc (get_id k) mapping) keys
-    in
-    let tt_contrib_source cs =
-      match cs with
-      | Pseudofield (f, Some keys) -> Pseudofield (f, Some (map_keys keys))
-      (* This is only applied to pseudofields *)
-      | _ -> cs
-    in
-    let translate_comp_contribs contribs =
-      let c_keys, c_values = List.split @@ Contrib.bindings contribs in
-      let new_keys = List.map tt_contrib_source c_keys in
-      let new_bindings = List.combine new_keys c_values in
-      Contrib.of_seq (List.to_seq new_bindings)
-    in
-    let translate_comp_cond cond =
-      let new_bindings = List.map tt_contrib_source (Cond.elements cond) in
-      Cond.of_seq (List.to_seq new_bindings)
-    in
-    let translate_comp_et (et : expr_type) =
-      match et with
-      | KnownET et ->
-          let l, un, cs, cond = et in
-          KnownET (l, un, translate_comp_contribs cs, translate_comp_cond cond)
-      | UnknownET -> UnknownET
-    in
-
-    match op with
-    | Read (f, Some keys) -> Read (f, Some (map_keys keys))
-    | Write ((f, Some keys), et) ->
-        Write ((f, Some (map_keys keys)), translate_comp_et et)
-    | _ -> op
-
-  (* Return the parameters actually used to in the given ComponentSig summary *)
-  let parameters_in_summary (proc_sig : signature) =
-    let parameters_in_set deps =
-      List.flatten
-      @@ List.map
-           (fun k ->
-             match k with Pseudofield (f, Some keys) -> keys | _ -> [])
-           (Cond.elements deps)
-    in
-    let parameters_in_op op =
-      match op with
-      | Read (f, Some keys) -> keys
-      | Write ((f, Some keys), _) -> keys
-      | ConditionOn deps | EmitEvent deps | SendMessages deps ->
-          parameters_in_set deps
-      | _ -> []
-    in
-    match proc_sig with
-    | ComponentSig (_, proc_summ) ->
-        let params_in_summ =
-          List.sort_uniq compare_id @@ List.flatten
-          @@ List.map parameters_in_op (ComponentSummary.elements proc_summ)
-        in
-        pure @@ params_in_summ
-    | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
-
-  let procedure_call_summary senv p (proc_sig : signature) arglist =
-    let loc = SR.get_loc (get_rep p) in
-    let proc_name = get_id p in
-    let implicit_params, _ = List.split @@ SCU.append_implict_comp_params [] in
-    let arglist = implicit_params @ arglist in
-    match proc_sig with
-    | ComponentSig (proc_params, proc_summ) ->
-        let proc_params = implicit_params @ fst @@ List.split proc_params in
-        let%bind proc_params_in_summary = parameters_in_summary proc_sig in
-        let%bind args_in_summary =
-          mapM
-            ( List.filter (fun k ->
-                  match k with Some _ -> true | None -> false)
-            @@ List.map2
-                 (fun p a ->
-                   if List.mem p proc_params_in_summary then Some a else None)
-                 proc_params arglist )
-            ~f:(fun k -> match k with Some a -> pure @@ a | None -> fail0 "")
-        in
-        let can_summarise = all_keys_are_parameters senv args_in_summary in
-        if can_summarise then
-          pure
-          @@ ComponentSummary.map
-               (fun op -> translate_op op proc_params arglist)
-               proc_summ
-        else
-          pure
-          @@ ComponentSummary.singleton
-               (AlwaysExclusive (Some loc, "CallProc " ^ proc_name))
-    | _ ->
-        (* If this occurs, it's a bug. *)
-        fail0 "Sharding analysis: procedure summary is not of the right type"
-
   let get_ident_et senv i =
     let%bind isig = SAEnv.resolvS senv (get_id i) in
     match isig with
     | IdentSig (_, _, c) -> pure @@ c
     (* If this happens, it's a bug *)
     | _ -> fail0 "Sharding analysis: ident does not have a signature"
-
-  let dependencies_of senv i =
-    let%bind isig = SAEnv.resolvS senv (get_id i) in
-    match isig with
-    | IdentSig (_, _, KnownET (_, _, contrs, conds)) ->
-        let deps =
-          Cond.of_list @@ fst @@ List.split @@ Contrib.bindings contrs
-        in
-        pure @@ Cond.union deps conds
-    | IdentSig (_, _, UnknownET) -> pure @@ Cond.singleton UnknownSource
-    | _ ->
-        fail0 "Sharding analysis: trying to get dependencies, but no IdentSig"
 
   (* Add a new identifier to the environment, keeping track of whether it
      shadows a component parameter *)
@@ -779,87 +835,48 @@ struct
     in
     SAEnv.addS senv id new_id_sig
 
-  (* Helpers for applying functions *)
-  let cs_max_depth fps =
-    List.fold_left
-      (fun acc x ->
-        match x with FormalParameter (depth, _) -> max acc depth | _ -> acc)
-      0 fps
+  let int_range a b =
+    let rec int_range_rec l a b =
+      if a > b then l else int_range_rec (b :: l) a (b - 1)
+    in
+    int_range_rec [] a b
 
-  let tt_helper ~find_opt ~f ~none fp_l fp_contribs arg_contribs =
-    (* Contributions corresponding to arguments *)
-    let args_cs =
-      List.mapi
-        (fun idx argc ->
-          let opt_fpc = find_opt (FormalParameter (fp_l, idx)) fp_contribs in
-          match opt_fpc with
-          | Some fpc -> f argc fpc
-          (* If the formal parameter is not used, argument is not used *)
-          | None -> none)
-        arg_contribs
-    in
-    args_cs
-
-  let tt_formal_parameters ~f ~none fp_l fp_contribs arg_contribs =
-    (* Contributions from distributing arguments over formal parameters *)
-    let args_cs =
-      tt_helper ~find_opt:Contrib.find_opt ~f ~none fp_l fp_contribs
-        arg_contribs
-    in
-    (* Contributions corresponding to closure of the called function *)
-    (* Closures (can) have contributions from their environment. Here we ensure
-       that if such contributions exist, they get passed onto the result when the
-       closure is applied *)
-    let closure_cs =
-      Contrib.filter
-        (fun x _ ->
-          match x with FormalParameter (depth, _) -> depth <> fp_l | _ -> true)
-        fp_contribs
-    in
-    closure_cs :: args_cs
-
-  let tt_conds ~f ~none fp_l fp_conds arg_conds =
-    let args_cs =
-      tt_helper ~find_opt:Cond.find_opt ~f ~none fp_l fp_conds arg_conds
-    in
-    let closure_cs =
-      Cond.filter
-        (fun x ->
-          match x with FormalParameter (depth, _) -> depth <> fp_l | _ -> true)
-        fp_conds
-    in
-    closure_cs :: args_cs
-
-  let is_fun t = match t with FunType _ -> true | _ -> false
-
-  (* Return UnknownET if argument is a higher-order function,
-      i.e. it takes a function as argument OR returns a function *)
-  let remove_ho (x : ER.rep Syntax.ident) (et : expr_type) (ea : expr_annot) =
-    (* Determine whether it takes a function as argument *)
-    let rec takes_fun_arg t =
-      match t with
-      | FunType (arg, ret) -> is_fun arg || takes_fun_arg ret
-      | _ -> false
-    in
-    let xt = (ER.get_type (get_rep x)).tp in
-    (* Determine whether it returns a function, i.e. its type has more arrows
-       than the number of head-form binders. A less restricted version of this
-       would count all level 0 binders.
-    *)
+  (* Get the expr_type to assign to function formal parameters *)
+  let get_fp_et fp_count fp_typ =
+    let is_fun t = match t with FunType _ -> true | _ -> false in
     let rec count_arrows t =
       match t with FunType (arg, ret) -> 1 + count_arrows ret | _ -> 0
     in
-    let rec count_hf_binders ea =
-      let e, erep = ea in
-      match e with Fun (formal, _, body) -> 1 + count_hf_binders body | _ -> 0
-    in
-    let is_ho = takes_fun_arg xt || count_arrows xt <> count_hf_binders ea in
-    if is_ho then UnknownET else et
+    let primitive = not (is_fun fp_typ) in
+    if primitive then
+      EVal
+        ( Exactly,
+          Contrib.singleton (FormalParameter fp_count)
+            (LinearContrib, ContribOps.empty) )
+    else
+      let nargs = count_arrows fp_typ in
+      let fps = int_range 0 (nargs - 1) in
+      (* See comment attached to efun_desc explaining why we don't need to do
+         this recursively if fp takes functions as parameters as well *)
+      EFun (EFunDef (fps, DefParameter fp_count))
+
+  let get_fun_sig senv f =
+    let%bind fs = SAEnv.resolvS senv (get_id f) in
+    match fs with
+    | IdentSig (_, _, c) -> pure @@ c
+    | _ -> fail0 "Sharding analysis: applied function does not have IdentSig"
+
+  let get_eapp_referent senv f =
+    let%bind et = get_fun_sig senv f in
+    match et with
+    | EFun fdesc -> pure @@ fdesc
+    | _ ->
+        fail0 "Sharding analysis: applied function that does not have EFun type"
 
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
-  let rec sa_expr senv (fdepth, fp_count) (erep : expr_annot) =
-    let cont senv expr = sa_expr senv (fdepth, fp_count) expr in
+  let rec sa_expr senv fp_count (erep : expr_annot) =
+    let cont senv expr = sa_expr senv fp_count expr in
     let e, rep = erep in
     match e with
     | Literal l -> pure @@ et_nothing
@@ -868,181 +885,71 @@ struct
         pure @@ ic
     | Builtin ((b, _), actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        let et = List.fold_left et_union et_nothing arg_ets in
-        let new_et =
-          match et with
-          | UnknownET -> UnknownET
-          (* Add the builtin to all the contributions *)
-          | KnownET et ->
-              let _, uf, cs, cnds = et in
-              let cs_wops =
-                Contrib.map
-                  (fun (co_cc, co_ops) ->
-                    let co_ops' =
-                      ContribOps.union co_ops
-                        (ContribOps.singleton (BuiltinOp b))
-                    in
-                    (co_cc, co_ops'))
-                  cs
-              in
-              KnownET (fdepth, uf, cs_wops, cnds)
-        in
-        pure @@ new_et
+        pure @@ EOp (BuiltinOp b, EComposeSequence arg_ets)
     | Message bs ->
         let get_payload_et pld =
           match pld with
           | MLit l -> pure @@ et_nothing
-          | MVar i ->
-              let%bind ic = get_ident_et senv i in
-              pure @@ ic
+          | MVar i -> get_ident_et senv i
         in
+        (* Ignore labels, just analyse payloads *)
         let _, plds = List.split bs in
         let%bind pld_ets = mapM get_payload_et plds in
-        pure @@ List.fold_left et_union et_nothing pld_ets
+        (* Don't care about linearity for msgs; could just as well be EComPar *)
+        pure @@ EComposeSequence pld_ets
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        pure @@ List.fold_left et_union et_nothing arg_ets
-    | MatchExpr (x, clauses) ->
-        let%bind xc = get_ident_et senv x in
-        let spurious = is_spurious_conditional_expr senv x clauses in
-        let%bind new_et =
-          match xc with
-          | UnknownET -> pure @@ UnknownET
-          | KnownET xc -> (
-              let _, _, xcontr, xcond = xc in
-              let clause_et (pattern, cl_expr) =
-                let binders = get_pattern_bounds pattern in
-                let senv' =
-                  List.fold_left
-                    (* Each binder in the pattern gets the full contributions of x *)
-                      (fun env_acc id -> env_new_ident id (KnownET xc) env_acc)
-                    senv binders
-                in
-                cont senv' cl_expr
-              in
-              let%bind cl_ets = mapM clause_et clauses in
-              let cl_kets = et_to_ket cl_ets in
-              match cl_kets with
-              (* If any of the clauses is Unknown, match is Unknown *)
-              | None -> pure @@ UnknownET
-              | Some cl_kets ->
-                  let cl_l, cl_pss, cl_contribs, cl_conds =
-                    ket_list_split cl_kets
-                  in
-                  let fc = List.hd cl_contribs in
-                  let all_equal = List.for_all (fun c -> c = fc) cl_contribs in
-                  let cl_ps = List.fold_left min_precision Exactly cl_pss in
-                  (* The precision of the match is: Exactly if all clauses are equal and
-                     precise OR the conditional is spurious, otherwise SubsetOf *)
-                  let match_ps =
-                    min_precision
-                      (if all_equal || spurious then Exactly else SubsetOf)
-                      cl_ps
-                  in
-                  (* The match's contributions is the LUB of the clauses *)
-                  let match_contribs =
-                    List.fold_left contrib_upper_bound Contrib.empty cl_contribs
-                  in
-                  let match_cond =
-                    let this_cond =
-                      if spurious then Cond.empty
-                      else
-                        Cond.of_list @@ fst @@ List.split
-                        @@ Contrib.bindings xcontr
-                    in
-
-                    let this_cond = Cond.union this_cond xcond in
-                    List.fold_left Cond.union this_cond cl_conds
-                  in
-                  pure @@ KnownET (fdepth, match_ps, match_contribs, match_cond)
-              )
-        in
-        pure @@ new_et
+        pure @@ EComposeSequence arg_ets
     | Let (i, _, lhs, rhs) ->
-        (* We are introducing a new binder, so LHS is a new scope *)
-        let%bind lhs_et = sa_expr senv (fdepth + 1, 0) lhs in
-        let lhs_et = remove_ho i lhs_et lhs in
+        let%bind lhs_et = cont senv lhs in
+        let%bind lhs_et = et_normalise lhs_et in
         let senv' = env_new_ident i lhs_et senv in
         cont senv' rhs
-    (* Our expr_types do not depend on Scilla types; just analyse as if monomorphic *)
+    (* Our expr_types do not depend on Scilla types; just analyse as if
+       monomorphic *)
     | TFun (_, body) -> cont senv body
     | TApp (tf, _) -> get_ident_et senv tf
-    | Fun (formal, _, body) ->
+    (* The cases below are the interesting ones *)
+    | Fun (formal, ftyp, body) ->
         (* Formal parameters are given a linear contribution when producing
-           function summaries. Arguments (see App) might be nonlinear. *)
-        let fp_contrib =
-          Contrib.singleton
-            (FormalParameter (fdepth, fp_count))
-            (LinearContrib, ContribOps.empty)
-        in
-        let fp_et = KnownET (fdepth, Exactly, fp_contrib, Cond.empty) in
+           function summaries. Arguments (see App) might be nonlinear. If the
+           parameter is a function, we make it EFun = Unknown *)
+        let fp_et = get_fp_et fp_count ftyp in
         let senv' = env_new_ident formal fp_et senv in
-        sa_expr senv' (fdepth, fp_count + 1) body
+        let%bind body_et = sa_expr senv' (fp_count + 1) body in
+        (* TODO: need to combine the EFuns somehow *)
+        (* May be challening if not head-form *)
+        pure @@ EFun (EFunDef ([ fp_count ], DefExpr body_et))
     | App (f, actuals) ->
-        let fun_sig f =
-          let%bind fs = SAEnv.resolvS senv (get_id f) in
-          match fs with
-          | IdentSig (_, _, c) -> pure @@ c
-          | _ ->
-              fail0 "Sharding analysis: applied function does not have IdentSig"
-        in
+        let%bind eapp_ref = get_eapp_referent senv f in
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        let%bind new_et =
-          let arg_kets = et_to_ket arg_ets in
-          match arg_kets with
-          | None -> pure @@ UnknownET
-          | Some arg_kets -> (
-              let _, arg_ps, arg_contribs, _ = ket_list_split arg_kets in
-              (* f's summary has arguments named _0, _1, etc. *)
-              (* CAREFUL: don't rely on order of elements in map; Ord.compare may change *)
-              let%bind fp_ets = fun_sig f in
-              match fp_ets with
-              | UnknownET -> pure @@ UnknownET
-              | KnownET fp_ets ->
-                  let fp_l, fp_ps, fp_contribs, fp_conds = fp_ets in
-                  (* Distribute each argument's contributions over the respective formal
-                     parameter's contribution *)
-                  let contribs_pairwise =
-                    tt_formal_parameters ~f:contrib_product ~none:Contrib.empty
-                      fp_l fp_contribs arg_contribs
-                  in
-                  (* Which argument contributions flowed into conditionals in the function? *)
-                  let conds_pairwise =
-                    tt_conds
-                      ~f:(fun argc _ ->
-                        Cond.of_list @@ fst @@ List.split
-                        @@ Contrib.bindings argc)
-                      ~none:Cond.empty fp_l fp_conds arg_contribs
-                  in
-                  let app_ps = List.fold_left min_precision fp_ps arg_ps in
-                  let app_contrib =
-                    List.fold_left contrib_union Contrib.empty contribs_pairwise
-                  in
-                  let app_conds =
-                    List.fold_left Cond.union Cond.empty conds_pairwise
-                  in
-
-                  (* App result takes the max level of app_contrib + app_conds *)
-                  (* Reasoning: if the result of the App (say, q) takes an argument at
-                     level X, then q is a function of at least level X *)
-                  let app_level =
-                    let contrib_ml =
-                      cs_max_depth @@ fst @@ List.split
-                      @@ Contrib.bindings app_contrib
-                    in
-                    let conds_ml = cs_max_depth @@ Cond.elements app_conds in
-                    max contrib_ml conds_ml
-                  in
-                  pure @@ KnownET (app_level, app_ps, app_contrib, app_conds) )
+        pure @@ EApp (eapp_ref, arg_ets)
+    | MatchExpr (x, clauses) ->
+        let%bind xc = get_ident_et senv x in
+        let clause_et (pattern, cl_expr) =
+          let binders = get_pattern_bounds pattern in
+          let senv' =
+            List.fold_left
+              (* Each binder in the pattern gets the full contributions of x *)
+                (fun env_acc id -> env_new_ident id xc env_acc)
+              senv binders
+          in
+          cont senv' cl_expr
         in
-        pure @@ new_et
-    | _ -> fail0 @@ "Sharding analysis: unsupported instruction " ^ pp_expr e
+        let%bind cl_ets = mapM clause_et clauses in
+        let spurious = is_spurious_conditional_expr senv x clauses in
+        (* Convention: et_nothing if spurious *)
+        let cond = if spurious then et_nothing else EOp (Conditional, xc) in
+        pure @@ EComposeParallel (cond, cl_ets)
+    | Fixpoint (_, _, _) ->
+        fail0 "Sharding analysis: somehow encountered a fixpoint??"
 
-  let sa_expr_wrapper senv erep = sa_expr senv (0, 0) erep
+  let sa_expr_wrapper senv erep = sa_expr senv 0 erep
 
   (* Precondition: senv contains the component parameters, appropriately marked *)
   let rec sa_stmt senv summary (stmts : stmt_annot list) =
-    (* Helpers to continue after accumulating an operation *)
+    (* Helpers to continue after
+       accumulating an operation *)
     let cont senv summary sts = sa_stmt senv summary sts in
     (* Perform an operation *)
     let cont_op op summary sts =
@@ -1060,15 +967,14 @@ struct
       let summary' = ComponentSummary.add op summary in
       cont senv' summary' sts
     in
-
-    (* We can assume everything is well-typed, which makes this much easier *)
     match stmts with
     | [] -> pure summary
     | (s, sloc) :: sts -> (
         match s with
+        (* Reads and Writes *)
         | Load (x, f) ->
             cont_ident_op x
-              (KnownET (et_pseudofield (f, None)))
+              (EVal (et_pseudofield (f, None)))
               (Read (f, None))
               summary sts
         | Store (f, i) ->
@@ -1084,7 +990,7 @@ struct
                     pp_operation (Read (m, Some klist)) )
             in
             cont_ident_op x
-              (KnownET (et_pseudofield (m, Some klist)))
+              (EVal (et_pseudofield (m, Some klist)))
               op summary sts
         | MapUpdate (m, klist, opt_i) ->
             let%bind ic =
@@ -1101,22 +1007,23 @@ struct
                     pp_operation (Write ((m, Some klist), ic)) )
             in
             cont_op op summary sts
+        (* Accept, Send, Event, ReadFromBC *)
         | AcceptPayment -> cont_op AcceptMoney summary sts
         | SendMsgs i ->
-            let%bind deps = dependencies_of senv i in
+            let%bind deps = get_ident_et senv i in
             cont_op (SendMessages deps) summary sts
         | CreateEvnt i ->
-            let%bind deps = dependencies_of senv i in
+            let%bind deps = get_ident_et senv i in
             cont_op (EmitEvent deps) summary sts
         (* TODO: Do we want to track blockchain reads? *)
         | ReadFromBC (x, _) -> cont_ident x et_nothing summary sts
+        (* Plugging into the expression language *)
         | Bind (x, expr) ->
             let%bind expr_contrib = sa_expr_wrapper senv expr in
-            let expr_contrib = remove_ho x expr_contrib expr in
+            let%bind expr_contrib = et_normalise expr_contrib in
             cont_ident x expr_contrib summary sts
         | MatchStmt (x, clauses) ->
             let%bind xc = get_ident_et senv x in
-            let spurious = is_spurious_conditional_stmt xc x clauses in
             let summarise_clause (pattern, cl_sts) =
               let binders = get_pattern_bounds pattern in
               let senv' =
@@ -1127,73 +1034,41 @@ struct
               in
               sa_stmt senv' summary cl_sts
             in
-            let%bind new_summ =
-              (* Unusual case: match does not express "real" control flow, but
-                 monadic operation on option; in this case, the summary is the
-                 summary of the Some branch *)
+            let spurious = is_spurious_conditional_stmt xc x clauses in
+            let%bind summary' =
               if spurious then
-                let is_some (pattern, _) =
-                  List.length (get_pattern_bounds pattern) = 1
-                in
+                (* Only the Some branch "really" contributes if spurious *)
                 let%bind some_summary =
-                  mapM summarise_clause (List.filter is_some clauses)
+                  mapM summarise_clause
+                    (List.filter
+                       (fun (p, _) -> List.length (get_pattern_bounds p) = 1)
+                       clauses)
                 in
-                let%bind summary' =
-                  foldM
-                    (fun acc_summ cl_summ ->
-                      pure @@ ComponentSummary.union acc_summ cl_summ)
-                    summary some_summary
-                in
-                cont senv summary' sts (* This is the normal case *)
+                foldM
+                  (fun acc_summ cl_summ ->
+                    pure @@ ComponentSummary.union acc_summ cl_summ)
+                  summary some_summary
               else
-                match xc with
-                | UnknownET ->
-                    pure
-                    @@ ComponentSummary.add
-                         (AlwaysExclusive
-                            ( Some (ER.get_loc (get_rep x)),
-                              "Condition on UnknownET" ))
-                         summary
-                | KnownET xc ->
-                    let _, _, xcontr, xcond = xc in
-                    let match_conds =
-                      let this_cond =
-                        Cond.of_list @@ fst @@ List.split
-                        @@ Contrib.bindings xcontr
-                      in
-                      Cond.union this_cond xcond
-                    in
-                    let conds_op =
-                      let co = ConditionOn match_conds in
-                      if conds_can_be_summarised senv match_conds then co
-                      else
-                        AlwaysExclusive
-                          (Some (ER.get_loc (get_rep x)), pp_operation co)
-                    in
-                    let%bind cl_summaries = mapM summarise_clause clauses in
-                    let summary_with_conds =
-                      (* It's possible (and fine) to condition on constants or blockchain reads *)
-                      if Cond.cardinal match_conds > 0 then
-                        ComponentSummary.add conds_op summary
-                      else summary
-                    in
-                    (* TODO: LUB *)
-                    let%bind summary' =
-                      foldM
-                        (fun acc_summ cl_summ ->
-                          pure @@ ComponentSummary.union acc_summ cl_summ)
-                        summary_with_conds cl_summaries
-                    in
-                    cont senv summary' sts
+                (* If not spurious, more things happen *)
+                let%bind cond = et_normalise @@ EOp (Conditional, xc) in
+                (* TODO: Transitions must check that cond can be summarised *)
+                let cond_op = ConditionOn cond in
+                let summary_with_conds = ComponentSummary.add cond_op summary in
+                let%bind cl_summaries = mapM summarise_clause clauses in
+                (* TODO: least upper bound? *)
+                foldM
+                  (fun acc_summ cl_summ ->
+                    pure @@ ComponentSummary.union acc_summ cl_summ)
+                  summary_with_conds cl_summaries
             in
-            pure @@ new_summ
+            cont senv summary' sts
+        (* TODO: CallProc  *)
         | CallProc (p, arglist) -> (
             let opt_proc_sig = SAEnv.lookupS senv (get_id p) in
             match opt_proc_sig with
             | Some proc_sig ->
-                let%bind call_summ =
-                  procedure_call_summary senv p proc_sig arglist
-                in
+                let call_summ = summary in
+                (* procedure_call_summary senv p proc_sig arglist *)
                 let summary' = ComponentSummary.union summary call_summ in
                 cont senv summary' sts
             (* If this occurs, it's a bug. Type checking should prevent it. *)
@@ -1207,17 +1082,18 @@ struct
             in
             cont_op op summary sts
         | Throw i ->
-            let op = AlwaysExclusive (None, "Throw") in
-            cont_op op summary sts )
+            (* Throwing cancels all effects. All effects happening is a correct
+               over-approximation. *)
+            cont senv summary sts
+        | _ -> fail0 "HURR DURR CallProc" )
 
   let sa_component_summary senv (comp : component) =
     let all_params = SCU.append_implict_comp_params comp.comp_params in
     (* Add component parameters to the analysis environment *)
     let senv' =
+      (* Give proper type to procedure functions *)
       env_bind_ident_map senv all_params (fun i t ->
-          (* Make sure functions given as arguments are marked as not analyzed *)
-          let et = if is_fun t then UnknownET else et_nothing in
-          IdentSig (ComponentParameter, PCMStatus.empty, et))
+          IdentSig (ComponentParameter, PCMStatus.empty, et_nothing))
     in
     sa_stmt senv' ComponentSummary.empty comp.comp_body
 
@@ -1227,7 +1103,7 @@ struct
     in
     List.fold_left
       (fun senv s ->
-        SAEnv.addS senv s (IdentSig (DoesNotShadow, PCMStatus.empty, UnknownET)))
+        SAEnv.addS senv s (IdentSig (DoesNotShadow, PCMStatus.empty, EUnknown)))
       senv folds
 
   let sa_libentries senv (lel : lib_entry list) =
@@ -1236,7 +1112,7 @@ struct
         match le with
         | LibVar (lname, _, lexp) ->
             let%bind esig = sa_expr_wrapper senv lexp in
-            let esig = remove_ho lname esig lexp in
+            let%bind esig = et_normalise esig in
             let e, rep = lexp in
             let pcms = pcm_unit senv e in
             pure
