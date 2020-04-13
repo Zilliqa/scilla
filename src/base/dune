@@ -1,6 +1,5 @@
 (ocamllex
  (modules ScillaLexer))
-
 (menhir
  (flags "--table")
  (modules ScillaParser))
@@ -17,6 +16,7 @@
 
 (library
  (name scilla_base)
+ (modes byte native)
  (wrapped false)
  (libraries core num hex stdint angstrom polynomials cryptokit secp256k1
    bitstring yojson fileutils scilla_cpp_deps menhirLib)

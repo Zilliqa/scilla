@@ -1,4 +1,5 @@
 (executables
+ (modes byte native)
  (names testsuite scilla_client)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))

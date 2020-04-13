@@ -49,6 +49,15 @@ test_install : install
 uninstall : release
 	dune uninstall
 
+# Debug with ocamldebug: Build byte code instead of native code.
+debug :
+	dune build --profile dev src/runners/scilla_runner.bc
+	dune build --profile dev src/runners/scilla_checker.bc
+	@test -d bin || mkdir bin
+	@test bin/scilla_runner.bc || ln -s _build/default/src/runners/scilla_runner.bc bin/
+	@test bin/scilla_runner.bc || ln -s _build/default/src/runners/scilla_checker.bc bin/
+	@echo "Before executing bytecode, set LD_LIBRARY_PATH to ${PWD}/_build/default/src/cpp"
+
 # === TESTS (begin) ===========================================================
 # Build and run tests
 

@@ -1,10 +1,12 @@
 (library
+ (modes byte native)
  (name testparser)
  (modules TestParser)
  (wrapped false)
  (libraries core_kernel oUnit testutil testparserfail))
 
 (executable
+ (modes byte native)
  (name parser_dummy)
  (public_name parser-dummy)
  (modules Parser_dummy)

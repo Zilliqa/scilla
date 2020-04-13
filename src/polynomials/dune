@@ -1,5 +1,6 @@
 (library
  (name polynomials)
  (wrapped false)
+ (modes byte native)
  (synopsis "Utility to deal with multivariate polynomials")
  (libraries core))
