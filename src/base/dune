@@ -1,5 +1,6 @@
 (ocamllex
  (modules ScillaLexer))
+
 (menhir
  (flags "--table")
  (modules ScillaParser))

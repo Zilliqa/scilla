@@ -4,7 +4,8 @@
    scilla_base scilla_eval)
  (modes byte native)
  (preprocess
-(pps ppx_sexp_conv ppx_deriving_rpc ppx_deriving.show)))
+  (pps ppx_sexp_conv ppx_deriving_rpc ppx_deriving.show)))
+
 (env
  (dev
   (flags
