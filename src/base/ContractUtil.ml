@@ -129,9 +129,12 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let append_implict_comp_params cparams =
     let open PrimTypes in
     let sender =
-      (asIdL MessagePayload.sender_label ER.address_rep, bystrx_typ address_length)
+      ( asIdL MessagePayload.sender_label ER.address_rep,
+        bystrx_typ address_length )
     in
-    let amount = (asIdL MessagePayload.amount_label ER.uint128_rep, uint128_typ) in
+    let amount =
+      (asIdL MessagePayload.amount_label ER.uint128_rep, uint128_typ)
+    in
     amount :: sender :: cparams
 
   let msg_mandatory_field_types =

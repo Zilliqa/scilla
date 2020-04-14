@@ -42,7 +42,8 @@ struct
   module Gas = Gas.ScillaGas (SR) (ER)
   open GUASyntax
 
-  let mk_typed_id i t = asIdL i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+  let mk_typed_id i t =
+    asIdL i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
 
   type sizeref =
     (* Refer to the size of a variable. *)

@@ -43,11 +43,15 @@ module TypecheckerERep (R : Rep) = struct
 
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
 
-  let address_rep = mk_rep R.address_rep (PlainTypes.mk_qualified_type (bystrx_typ address_length))
+  let address_rep =
+    mk_rep R.address_rep
+      (PlainTypes.mk_qualified_type (bystrx_typ address_length))
 
-  let uint128_rep = mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint128_typ)
+  let uint128_rep =
+    mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint128_typ)
 
-  let uint32_rep = mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint32_typ)
+  let uint32_rep =
+    mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint32_typ)
 
   let bnum_rep = mk_rep R.bnum_rep (PlainTypes.mk_qualified_type bnum_typ)
 
