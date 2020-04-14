@@ -19,103 +19,114 @@
 open Stdint
 open MonadUtil
 open ErrorUtils
+open Identifier
+open Type
 
-type mtype = Type.t * Type.t [@@deriving sexp]
+module type Literal = sig
 
-open Integer256
+  module LIdentifier : Identifier
+  module LType : Type
 
-type int_lit =
-  | Int32L of int32
-  | Int64L of int64
-  | Int128L of int128
-  | Int256L of int256
-[@@deriving equal]
+  type mtype = LType.t * LType.t [@@deriving sexp]
 
-val equal_uint32 : uint32 -> uint32 -> bool
+  open Integer256
 
-type uint_lit =
-  | Uint32L of uint32
-  | Uint64L of uint64
-  | Uint128L of uint128
-  | Uint256L of uint256
-[@@deriving equal]
+  type int_lit =
+    | Int32L of int32
+    | Int64L of int64
+    | Int128L of int128
+    | Int256L of int256
+  [@@deriving equal]
 
-module type BYSTR = sig
-  type t [@@deriving sexp]
+  val equal_uint32 : uint32 -> uint32 -> bool
 
-  val width : t -> int
+  type uint_lit =
+    | Uint32L of uint32
+    | Uint64L of uint64
+    | Uint128L of uint128
+    | Uint256L of uint256
+  [@@deriving equal]
 
-  val parse_hex : string -> t
+  module type BYSTR = sig
+    type t [@@deriving sexp]
 
-  val hex_encoding : t -> string
+    val width : t -> int
 
-  val to_raw_bytes : t -> string
+    val parse_hex : string -> t
 
-  val of_raw_bytes : int -> string -> t option
+    val hex_encoding : t -> string
 
-  val equal : t -> t -> bool
+    val to_raw_bytes : t -> string
 
-  val concat : t -> t -> t
+    val of_raw_bytes : int -> string -> t option
+
+    val equal : t -> t -> bool
+
+    val concat : t -> t -> t
+  end
+
+  module Bystr : BYSTR
+
+  module type BYSTRX = sig
+    type t [@@deriving sexp]
+
+    val width : t -> int
+
+    val parse_hex : string -> t
+
+    val hex_encoding : t -> string
+
+    val to_raw_bytes : t -> string
+
+    val of_raw_bytes : int -> string -> t option
+
+    val equal : t -> t -> bool
+
+    val concat : t -> t -> t
+
+    val to_bystr : t -> Bystr.t
+  end
+
+  module Bystrx : BYSTRX
+
+  type t =
+    | StringLit of string
+    (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
+    | IntLit of int_lit
+    | UintLit of uint_lit
+    | BNum of string
+    (* Byte string with a statically known length. *)
+    | ByStrX of Bystrx.t
+    (* Byte string without a statically known length. *)
+    | ByStr of Bystr.t
+    (* Message: an associative array *)
+    | Msg of (string * t) list
+    (* A dynamic map of literals *)
+    | Map of mtype * (t, t) Hashtbl.t
+    (* A constructor in HNF *)
+    | ADTValue of string * LType.t list * t list
+    (* An embedded closure *)
+    | Clo of
+        (t ->
+         ( t,
+           scilla_error list,
+           uint64 ->
+           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+         )
+           CPSMonad.t)
+    (* A type abstraction *)
+    | TAbs of
+        (LType.t ->
+         ( t,
+           scilla_error list,
+           uint64 ->
+           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+         )
+           CPSMonad.t)
+  [@@deriving sexp]
+
+  val subst_type_in_literal : 'a LIdentifier.t -> LType.t -> t -> t
+
 end
 
-module Bystr : BYSTR
-
-module type BYSTRX = sig
-  type t [@@deriving sexp]
-
-  val width : t -> int
-
-  val parse_hex : string -> t
-
-  val hex_encoding : t -> string
-
-  val to_raw_bytes : t -> string
-
-  val of_raw_bytes : int -> string -> t option
-
-  val equal : t -> t -> bool
-
-  val concat : t -> t -> t
-
-  val to_bystr : t -> Bystr.t
-end
-
-module Bystrx : BYSTRX
-
-type t =
-  | StringLit of string
-  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
-  | IntLit of int_lit
-  | UintLit of uint_lit
-  | BNum of string
-  (* Byte string with a statically known length. *)
-  | ByStrX of Bystrx.t
-  (* Byte string without a statically known length. *)
-  | ByStr of Bystr.t
-  (* Message: an associative array *)
-  | Msg of (string * t) list
-  (* A dynamic map of literals *)
-  | Map of mtype * (t, t) Hashtbl.t
-  (* A constructor in HNF *)
-  | ADTValue of string * Type.t list * t list
-  (* An embedded closure *)
-  | Clo of
-      (t ->
-      ( t,
-        scilla_error list,
-        uint64 ->
-        ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-      )
-      CPSMonad.t)
-  (* A type abstraction *)
-  | TAbs of
-      (Type.t ->
-      ( t,
-        scilla_error list,
-        uint64 ->
-        ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-      )
-      CPSMonad.t)
-[@@deriving sexp]
-
-val subst_type_in_literal : 'a Identifier.t -> Type.t -> t -> t
+module MkLiteral : functor (Name : QualifiedName) -> Literal

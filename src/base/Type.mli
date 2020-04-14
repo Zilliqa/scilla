@@ -17,53 +17,62 @@
 *)
 
 open ErrorUtils
+open Identifier
 
-type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
+module type Type = sig
 
-val int_bit_width_to_string : int_bit_width -> string
+  module TIdentifier : Identifier
+  
+  type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
 
-type prim_typ =
-  | Int_typ of int_bit_width
-  | Uint_typ of int_bit_width
-  | String_typ
-  | Bnum_typ
-  | Msg_typ
-  | Event_typ
-  | Exception_typ
-  | Bystr_typ
-  | Bystrx_typ of int
-[@@deriving equal]
+  val int_bit_width_to_string : int_bit_width -> string
 
-val pp_prim_typ : prim_typ -> string
+  type prim_typ =
+    | Int_typ of int_bit_width
+    | Uint_typ of int_bit_width
+    | String_typ
+    | Bnum_typ
+    | Msg_typ
+    | Event_typ
+    | Exception_typ
+    | Bystr_typ
+    | Bystrx_typ of int
+  [@@deriving equal]
 
-type t =
-  | PrimType of prim_typ
-  | MapType of t * t
-  | FunType of t * t
-  | ADT of loc Identifier.t * t list
-  | TypeVar of string
-  | PolyFun of string * t
-  | Unit
-[@@deriving sexp]
+  val pp_prim_typ : prim_typ -> string
 
-val pp_typ : t -> string
+  type t =
+    | PrimType of prim_typ
+    | MapType of t * t
+    | FunType of t * t
+    | ADT of loc TIdentifier.t * t list
+    | TypeVar of string
+    | PolyFun of string * t
+    | Unit
+  [@@deriving sexp]
 
-(****************************************************************)
-(*                     Type substitutions                       *)
-(****************************************************************)
+  val pp_typ : t -> string
 
-val free_tvars : t -> string list
+  (****************************************************************)
+  (*                     Type substitutions                       *)
+  (****************************************************************)
 
-val mk_fresh_var : string list -> string -> string
+  val free_tvars : t -> string list
 
-val refresh_tfun : t -> string list -> t
+  val mk_fresh_var : string list -> string -> string
 
-val canonicalize_tfun : t -> t
+  val refresh_tfun : t -> string list -> t
 
-val equal : t -> t -> bool
+  val canonicalize_tfun : t -> t
 
-val subst_type_in_type : string -> t -> t -> t
+  val equal : t -> t -> bool
 
-val subst_types_in_type : (string * t) list -> t -> t
+  val subst_type_in_type : string -> t -> t -> t
 
-val subst_type_in_type' : 'a Identifier.t -> t -> t -> t
+  val subst_types_in_type : (string * t) list -> t -> t
+
+  val subst_type_in_type' : 'a TIdentifier.t -> t -> t -> t
+
+end
+
+module MkType : functor (Name : QualifiedName) -> Type

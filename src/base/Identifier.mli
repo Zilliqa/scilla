@@ -18,21 +18,44 @@
 
 open ErrorUtils
 
-type 'rep t = Ident of string * 'rep [@@deriving sexp]
+module type QualifiedName = sig
+  type t [@@deriving sexp]
 
-val asId : string -> loc t
+  val as_string : t -> string
+  val as_error_string : t -> string
 
-val asIdL : string -> 'a -> 'a t
+  val equal_name : t -> t -> bool
+  val compare_name : t -> t -> int
+end
 
-val get_id : 'a t -> string
+val concat_qualifier_and_name : string -> string -> string
 
-val get_rep : 'a t -> 'a
+module FlattenedName : QualifiedName
 
-(* A few utilities on id. *)
-val equal_id : 'a t -> 'b t -> bool
+module LocalName : QualifiedName
 
-val compare_id : 'a t -> 'b t -> int
+module CanonicalName : QualifiedName
 
-val dedup_id_list : 'a t list -> 'a t list
+module type Identifier = sig
 
-val is_mem_id : 'a t -> 'a t list -> bool
+  module Name : QualifiedName
+  
+  type 'rep t [@@deriving sexp]
+
+  val asId : Name.t -> loc t
+  val asIdL : Name.t -> 'a -> 'a t
+
+  val get_id : 'a t -> Name.t
+  val as_string : 'a t -> string
+  val get_rep : 'a t -> 'a
+
+  (* A few utilities on id. *)
+  val equal_id : 'a t -> 'b t -> bool
+  val compare_id : 'a t -> 'b t -> int
+
+  val dedup_id_list : 'a t list -> 'a t list
+  val is_mem_id : 'a t -> 'a t list -> bool
+
+end
+
+module MkIdentifier : functor (Name : QualifiedName) -> Identifier
