@@ -21,6 +21,7 @@ open! Int.Replace_polymorphic_compare
 
 let explist =
   [
+    "ackermann.scilexp";
     "addr.scilexp";
     "app2.scilexp";
     "app3.scilexp";

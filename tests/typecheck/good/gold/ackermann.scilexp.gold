@@ -1,0 +1,2359 @@
+{
+  "type_info": [
+    {
+      "vname": "nat_succ",
+      "type": "Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 2,
+        "column": 13
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 3,
+        "column": 9
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 3,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 3,
+        "column": 26
+      }
+    },
+    {
+      "vname": "nat_iter",
+      "type": "forall 'A. ('A -> 'A) -> Nat -> 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 7,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 7,
+        "column": 13
+      }
+    },
+    {
+      "vname": "'A",
+      "type": "('A -> 'A) -> Nat -> 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 8,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 8,
+        "column": 10
+      }
+    },
+    {
+      "vname": "f",
+      "type": "'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 9,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 9,
+        "column": 9
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 10,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 10,
+        "column": 9
+      }
+    },
+    {
+      "vname": "x0",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 11,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 11,
+        "column": 10
+      }
+    },
+    {
+      "vname": "folder",
+      "type": "('A -> Nat -> 'A) -> 'A -> Nat -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 12,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 12,
+        "column": 13
+      }
+    },
+    {
+      "vname": "nat_fold",
+      "type": "forall 'T. ('T -> Nat -> 'T) -> 'T -> Nat -> 'T",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 12,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 12,
+        "column": 25
+      }
+    },
+    {
+      "vname": "step",
+      "type": "'A -> Nat -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 11
+      }
+    },
+    {
+      "vname": "x",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 19
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 20
+      }
+    },
+    {
+      "vname": "unused",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 35
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 41
+      }
+    },
+    {
+      "vname": "f",
+      "type": "'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 52
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 53
+      }
+    },
+    {
+      "vname": "x",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 54
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 13,
+        "column": 55
+      }
+    },
+    {
+      "vname": "folder",
+      "type": "('A -> Nat -> 'A) -> 'A -> Nat -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 9
+      }
+    },
+    {
+      "vname": "step",
+      "type": "'A -> Nat -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 14
+      }
+    },
+    {
+      "vname": "x0",
+      "type": "'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 15
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 17
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 14,
+        "column": 19
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 17,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 17,
+        "column": 14
+      }
+    },
+    {
+      "vname": "iter_nat",
+      "type": "(Nat -> Nat) -> Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 18,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 18,
+        "column": 15
+      }
+    },
+    {
+      "vname": "nat_iter",
+      "type": "forall 'A. ('A -> 'A) -> Nat -> 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 18,
+        "column": 19
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 18,
+        "column": 27
+      }
+    },
+    {
+      "vname": "iter_nat_nat",
+      "type":
+        "((Nat -> Nat) -> Nat -> Nat) -> Nat -> (Nat -> Nat) -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 19,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 19,
+        "column": 19
+      }
+    },
+    {
+      "vname": "nat_iter",
+      "type": "forall 'A. ('A -> 'A) -> Nat -> 'A -> 'A",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 19,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 19,
+        "column": 31
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 20,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 20,
+        "column": 11
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 21,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 21,
+        "column": 10
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 21,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 21,
+        "column": 22
+      }
+    },
+    {
+      "vname": "f",
+      "type": "(Nat -> Nat) -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 22,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 22,
+        "column": 8
+      }
+    },
+    {
+      "vname": "ack",
+      "type": "Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 22,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 22,
+        "column": 19
+      }
+    },
+    {
+      "vname": "x0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 11
+      }
+    },
+    {
+      "vname": "ack",
+      "type": "Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 14
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 17
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 18
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 23,
+        "column": 21
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 11
+      }
+    },
+    {
+      "vname": "iter_nat",
+      "type": "(Nat -> Nat) -> Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 30
+      }
+    },
+    {
+      "vname": "ack",
+      "type": "Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 31
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 34
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 35
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 36
+      }
+    },
+    {
+      "vname": "x0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 37
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 24,
+        "column": 39
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 12
+      }
+    },
+    {
+      "vname": "iter_nat_nat",
+      "type":
+        "((Nat -> Nat) -> Nat -> Nat) -> Nat -> (Nat -> Nat) -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 35
+      }
+    },
+    {
+      "vname": "f",
+      "type": "(Nat -> Nat) -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 37
+      }
+    },
+    {
+      "vname": "n",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 38
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 39
+      }
+    },
+    {
+      "vname": "nat_succ",
+      "type": "Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 40
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 25,
+        "column": 48
+      }
+    },
+    {
+      "vname": "uint0",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 29,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint1",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 30,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint2",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 31,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 31,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint3",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 32,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint4",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 33,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint5",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 34,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 34,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint6",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 35,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 35,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint7",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 36,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 36,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint9",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 37,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 37,
+        "column": 10
+      }
+    },
+    {
+      "vname": "uint11",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 38,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 38,
+        "column": 11
+      }
+    },
+    {
+      "vname": "uint13",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 39,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 39,
+        "column": 11
+      }
+    },
+    {
+      "vname": "uint29",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 40,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 40,
+        "column": 11
+      }
+    },
+    {
+      "vname": "uint61",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 41,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 41,
+        "column": 11
+      }
+    },
+    {
+      "vname": "uint125",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 42,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 42,
+        "column": 12
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 44,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 44,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint0",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 44,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 44,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 45,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint1",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 45,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 45,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 46,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 46,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint2",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 46,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 46,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 47,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 47,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint3",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 47,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 47,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 48,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 48,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint4",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 48,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 48,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n5",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 49,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 49,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint5",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 49,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 49,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n6",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 50,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 50,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint6",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 50,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 50,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n7",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 51,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint7",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 51,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 51,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n9",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 52,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 52,
+        "column": 7
+      }
+    },
+    {
+      "vname": "uint9",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 52,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 52,
+        "column": 30
+      }
+    },
+    {
+      "vname": "n11",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 53,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 53,
+        "column": 8
+      }
+    },
+    {
+      "vname": "uint11",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 53,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 53,
+        "column": 32
+      }
+    },
+    {
+      "vname": "n13",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 54,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 54,
+        "column": 8
+      }
+    },
+    {
+      "vname": "uint13",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 54,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 54,
+        "column": 32
+      }
+    },
+    {
+      "vname": "n29",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 55,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 55,
+        "column": 8
+      }
+    },
+    {
+      "vname": "uint29",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 55,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 55,
+        "column": 32
+      }
+    },
+    {
+      "vname": "n61",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 56,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 56,
+        "column": 8
+      }
+    },
+    {
+      "vname": "uint61",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 56,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 56,
+        "column": 32
+      }
+    },
+    {
+      "vname": "n125",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 57,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 57,
+        "column": 9
+      }
+    },
+    {
+      "vname": "uint125",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 57,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 57,
+        "column": 34
+      }
+    },
+    {
+      "vname": "ack00",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 59,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack01",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 60,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack02",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 61,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack03",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 62,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack04",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 63,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack10",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 64,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack11",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 65,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack12",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 66,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack13",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 67,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack14",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 68,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack20",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 69,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack21",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 70,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack22",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 71,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack23",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 72,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack24",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 73,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack30",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 74,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack31",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n1",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 75,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack32",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n2",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 76,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack33",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 77,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack34",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n3",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 78,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ack40",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 10
+      }
+    },
+    {
+      "vname": "ackermann",
+      "type": "Nat -> Nat -> Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 22
+      }
+    },
+    {
+      "vname": "n4",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 25
+      }
+    },
+    {
+      "vname": "n0",
+      "type": "Nat",
+      "start_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/ackermann.scilexp",
+        "line": 79,
+        "column": 28
+      }
+    }
+  ],
+  "type": "Bool"
+}
