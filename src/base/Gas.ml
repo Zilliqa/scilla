@@ -286,7 +286,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let%bind w =
       match args with
       | IntLit i :: _ -> pure @@ int_lit_width i
-      | UintLit i :: _  -> pure @@ uint_lit_width i
+      | UintLit i :: _ -> pure @@ uint_lit_width i
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'
