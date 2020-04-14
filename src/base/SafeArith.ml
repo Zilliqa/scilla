@@ -135,26 +135,24 @@ module SafeUint (Unsafe : IntRep) = struct
 
   let isqrt n =
     let div2 m = Unsafe.shift_right m 1 in
-    if Unsafe.compare n Unsafe.zero = 0 then n
-    else
-      (* https://math.stackexchange.com/a/2469503/167002 *)
-      let rec recurser x y =
-        (* if x <= y then x *)
-        if Unsafe.compare x y <= 0 then x
-        else
-          let x' =
-            (* Checks against overflow *)
-            let saturating_add a b =
-              let open Unsafe in
-              let r = add a b in
-              (* if r < a || r < b then we have an overflow *)
-              if compare r a < 0 || compare r b < 0 then max_int else r
-            in
-            (* (x + y) / 2 *)
-            div2 (saturating_add x y)
+    (* https://math.stackexchange.com/a/2469503/167002 *)
+    let rec recurser x y =
+      (* if x <= y then x *)
+      if Unsafe.compare x y <= 0 then x
+      else
+        let x' =
+          (* Checks against overflow *)
+          let saturating_add a b =
+            let open Unsafe in
+            let r = add a b in
+            (* if r < a || r < b then we have an overflow *)
+            if compare r a < 0 || compare r b < 0 then max_int else r
           in
-          let y' = div n x' in
-          recurser x' y'
-      in
-      recurser n Unsafe.one
+          (* (x + y) / 2 *)
+          div2 (saturating_add x y)
+        in
+        let y' = div n x' in
+        recurser x' y'
+    in
+    recurser n Unsafe.one
 end
