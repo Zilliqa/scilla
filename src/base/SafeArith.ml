@@ -146,19 +146,16 @@ module SafeUint (Unsafe : IntRep) = struct
         (* if x <= y then x *)
         if Unsafe.compare x y <= 0 then x
         else
-          let x' = (* (x + y) / 2 *)
-            try
-              div2 (add x y)
-            with
-            | IntOverflow | IntUnderflow ->
-              (* (x + y) / 2 using Big_int to avoid overflow. *)
-              Unsafe.of_string
-                (Big_int.string_of_big_int
-                   (Big_int.div_big_int
-                      (Big_int.add_big_int
-                         (Big_int.big_int_of_string (Unsafe.to_string x))
-                         (Big_int.big_int_of_string (Unsafe.to_string y)))
-                      (Big_int.big_int_of_int 2)))
+          let x' =
+            (* Checks against overflow *)
+            let saturating_add a b =
+              let open Unsafe in
+              let r = add a b in
+              (* if r < a || r < b then we have an overflow *)
+              if compare r a < 0 || compare r b < 0 then max_int else r
+            in
+            (* (x + y) / 2 *)
+            div2 (saturating_add x y)
           in
           let y' = div n x' in
           recurser x' y'
