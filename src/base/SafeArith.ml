@@ -27,11 +27,15 @@ module type IntRep = sig
 
   val rem : t -> t -> t
 
+  val shift_right : t -> int -> t
+
   val zero : t
 
   val one : t
 
   val min_int : t
+
+  val max_int : t
 end
 
 module SafeInt (Unsafe : IntRep) = struct
@@ -128,4 +132,21 @@ module SafeUint (Unsafe : IntRep) = struct
     pow_aux Unsafe.one b
 
   let lt a b = Unsafe.compare a b < 0
+
+  let isqrt n =
+    if Unsafe.compare n Unsafe.zero = 0 then n
+    else
+      (* https://math.stackexchange.com/a/2469503/167002 *)
+      let rec recurser x y =
+        (* if x <= y then x *)
+        if Unsafe.compare x y <= 0 then x
+        else
+          let sum =
+            if Unsafe.compare x Unsafe.max_int = 0 then x else add x y
+          in
+          let x' = Unsafe.shift_right sum 1 in
+          let y' = div n x' in
+          recurser x' y'
+      in
+      recurser n Unsafe.one
 end

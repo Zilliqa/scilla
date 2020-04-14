@@ -54,6 +54,16 @@ module TestArith (SmallInt : Int) = struct
         test binop big_binop a_int b_int
       done
     done
+
+  let test_all_isqrt isqrt_op =
+    for a_int = min_small_int to max_small_int do
+      let a = SmallInt.of_int a_int in
+      let asqrt = SmallInt.to_int @@ isqrt_op a in
+      (* asqrt * asqrt <= a && asqrt+1 * asqrt+1 > a *)
+      assert_bool
+        (sprintf "Got isqrt %d = %d" a_int asqrt)
+        (asqrt * asqrt <= a_int && (asqrt+1) * (asqrt+1) > a_int)
+    done
 end
 
 module I8_safe = SafeInt (Int8)
@@ -82,6 +92,7 @@ let builtin_arith_8bit_tests =
              TestUnsigned.test_all U8_safe.div Int.( / ) );
            ( "unsigned 8-bit: safe rem",
              TestUnsigned.test_all U8_safe.rem Int.rem );
+           ("unsigned 8-bit: isqrt", TestUnsigned.test_all_isqrt U8_safe.isqrt);
          ]
 
 let all_tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]
