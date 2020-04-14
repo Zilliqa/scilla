@@ -1,0 +1,19 @@
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let two = Uint32 2 in
+let three = Uint32 3 in
+let four = Uint32 4 in
+let six = Uint32 6 in
+let ten = Uint32 10 in
+let thirty_six = Uint32 36 in
+
+let isqrt_zero = builtin isqrt zero in
+let isqrt_one = builtin isqrt one in
+let isqrt_two = builtin isqrt two in
+let isqrt_three = builtin isqrt three in
+let isqrt_four = builtin isqrt four in
+let isqrt_six = builtin isqrt six in
+let isqrt_ten = builtin isqrt ten in
+let isqrt_thirty_six = builtin isqrt thirty_six in
+zero
+

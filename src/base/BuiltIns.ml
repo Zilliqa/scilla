@@ -548,6 +548,29 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
+    let isqrt_arity = 1
+
+    let isqrt_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
+
+    let isqrt_elab t ts =
+      match ts with
+      | [ i ] when is_uint_type i -> elab_tfun_with_args_no_gas t [ i ]
+      | _ -> fail0 "Failed to elaborate"
+
+    let isqrt ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x) ] -> pure @@ Uint32L (Uint32_safe.isqrt x)
+          | [ UintLit (Uint64L x) ] -> pure @@ Uint64L (Uint64_safe.isqrt x)
+          | [ UintLit (Uint128L x) ] -> pure @@ Uint128L (Uint128_safe.isqrt x)
+          | [ UintLit (Uint256L x) ] -> pure @@ Uint256L (Uint256_safe.isqrt x)
+          | _ -> builtin_fail "Int.isqrt: unsupported types" ls
+        in
+        pure @@ UintLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Int.isqrt: an overflow/underflow occurred" ls
+
     let lt ls _ =
       try
         match ls with
@@ -1342,6 +1365,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                         Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem]
       | Builtin_pow -> [Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow;
                         Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow]
+      | Builtin_isqrt -> [Uint.isqrt_arity, Uint.isqrt_type, Uint.isqrt_elab, Uint.isqrt]
     
       (* Signed integers specific builtins *)
       | Builtin_to_int32 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits32, Int.to_int32]
