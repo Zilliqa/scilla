@@ -36,6 +36,10 @@ module type IntRep = sig
   val min_int : t
 
   val max_int : t
+
+  val to_string : t -> string
+
+  val of_string : string -> t
 end
 
 module SafeInt (Unsafe : IntRep) = struct
@@ -134,6 +138,7 @@ module SafeUint (Unsafe : IntRep) = struct
   let lt a b = Unsafe.compare a b < 0
 
   let isqrt n =
+    let div2 m = Unsafe.shift_right m 1 in
     if Unsafe.compare n Unsafe.zero = 0 then n
     else
       (* https://math.stackexchange.com/a/2469503/167002 *)
@@ -141,10 +146,20 @@ module SafeUint (Unsafe : IntRep) = struct
         (* if x <= y then x *)
         if Unsafe.compare x y <= 0 then x
         else
-          let sum =
-            if Unsafe.compare x Unsafe.max_int = 0 then x else add x y
+          let x' = (* (x + y) / 2 *)
+            try
+              div2 (add x y)
+            with
+            | IntOverflow | IntUnderflow ->
+              (* (x + y) / 2 using Big_int to avoid overflow. *)
+              Unsafe.of_string
+                (Big_int.string_of_big_int
+                   (Big_int.div_big_int
+                      (Big_int.add_big_int
+                         (Big_int.big_int_of_string (Unsafe.to_string x))
+                         (Big_int.big_int_of_string (Unsafe.to_string y)))
+                      (Big_int.big_int_of_int 2)))
           in
-          let x' = Unsafe.shift_right sum 1 in
           let y' = div n x' in
           recurser x' y'
       in
