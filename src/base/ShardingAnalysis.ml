@@ -996,8 +996,21 @@ struct
     | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
 
   let rec translate_et_field_keys et key_mapping =
+    (* WARNING: we need to be very careful with this. While it may look
+       superficially similar to the map_keys in translate_op (which is always
+       safe), this is NOT the same. Keys that are not arguments may flow into
+       expr_types. We don't need to translate those, i.e. they come from our
+       caller and are already valid for our caller. And we wouldn't know how to
+       translate them anyway. *)
     let map_keys keys =
-      List.map (fun k -> List.assoc (get_id k) key_mapping) keys
+      List.map
+        (fun k ->
+          match List.assoc_opt (get_id k) key_mapping with
+          (* Translate if we know how *)
+          | Some x -> x
+          (* If we don't know how, this contrib_source is already valid for our caller *)
+          | None -> k)
+        keys
     in
     let tt_contrib_source cs =
       match cs with
