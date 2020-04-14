@@ -32,7 +32,7 @@ module ScillaGUA
 
       val get_type : rep -> PlainTypes.t inferred_type
 
-      val mk_id : loc Identifier.t -> Type.t -> rep Identifier.t
+      val mk_rep : loc -> PlainTypes.t inferred_type -> rep
     end) =
 struct
   module SER = SR
@@ -41,6 +41,9 @@ struct
   module TU = TypeUtilities
   module Gas = Gas.ScillaGas (SR) (ER)
   open GUASyntax
+
+  let mk_typed_id i t =
+    asIdL i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
 
   type sizeref =
     (* Refer to the size of a variable. *)
@@ -775,7 +778,7 @@ struct
 
     let tvar a = TypeVar a in
     (* Make a simple identifier of type 'A *)
-    let si a = ER.mk_id (asId a) (tvar "'A") in
+    let si a = mk_typed_id a (tvar "'A") in
     (* Make a simple polynomial from string a *)
     let sp a = single_simple_pn (SizeOf (Base (si a))) in
     let arg_err s = "Incorrect arguments to builtin " ^ pp_builtin s in
@@ -1086,12 +1089,12 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = ER.mk_id (asId "a") (ADT (asId "List", [ TypeVar "'A" ])) in
+    let a = mk_typed_id "a" (ADT (asId "List", [ TypeVar "'A" ])) in
     let g =
-      ER.mk_id (asId "g")
+      mk_typed_id "g"
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))
     in
-    let b = ER.mk_id (asId "b") (TypeVar "'B") in
+    let b = mk_typed_id "b" (TypeVar "'B") in
     let lendep = SizeOf (Length (Base a)) in
     (* The final result size is after applying the fold "Length(a)" times. *)
     let ressize = RFoldAcc (g, Base a, Base b) in
@@ -1210,7 +1213,7 @@ struct
 
   let gua_component genv (comp : component) =
     let open PrimTypes in
-    let si a t = ER.mk_id (asId a) t in
+    let si a t = mk_typed_id a t in
     let all_params =
       [
         ( si ContractUtil.MessagePayload.sender_label (bystrx_typ 20),
@@ -1271,7 +1274,7 @@ struct
     in
 
     (* Bind contract parameters. *)
-    let si a t = ER.mk_id (asId a) t in
+    let si a t = mk_typed_id a t in
     let all_cparams =
       [
         ( si ContractUtil.creation_block_label PrimTypes.bnum_typ,
