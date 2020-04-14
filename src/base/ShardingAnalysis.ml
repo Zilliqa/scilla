@@ -312,6 +312,33 @@ struct
         pure @@ EVal (ps', contr')
     | _ -> fail0 "Sharding analysis: add_conditional non-EVal type"
 
+  let create_unknown_fun ~num_arrows =
+    let rec cuf_aux na fp =
+      if na = 1 then EFun (EFunDef ([ fp ], DefExpr EUnknown))
+      else EFun (EFunDef ([ fp ], DefExpr (cuf_aux (na - 1) (fp + 1))))
+    in
+    cuf_aux num_arrows 0
+
+  let rec efun_depth et =
+    match et with
+    | EFun (EFunDef (_, DefExpr expr)) -> 1 + efun_depth expr
+    | EFun (EFunDef (_, (DefFormalParameter _ | DefProcParameter _))) -> 1
+    | _ -> 1
+
+  (* Anything that has EUnknown/UnknownSource within it is Unknown *)
+  let rec et_is_unknown et =
+    match et with
+    | EUnknown -> true
+    | EVal (ps, kc) -> Contrib.mem UnknownSource kc
+    | EFun (EFunDef (_, (DefFormalParameter _ | DefProcParameter _))) -> false
+    | EOp (_, expr) -> et_is_unknown expr
+    | EComposeSequence etl -> List.exists et_is_unknown etl
+    | EComposeParallel (c, etl) -> List.exists et_is_unknown (c :: etl)
+    | EFun (EFunDef (_, DefExpr expr)) -> et_is_unknown expr
+    | EApp (EFunDef (_, DefExpr expr), etl) ->
+        List.exists et_is_unknown (expr :: etl)
+    | EApp (_, etl) -> List.exists et_is_unknown etl
+
   let rec et_normalise (et : expr_type) =
     match et with
     (* Nothing to do *)
@@ -384,6 +411,15 @@ struct
           let dbl = List.hd dbls in
           let%bind substituted = subst (FormalParameter dbl) netl nfde in
           et_normalise substituted
+        else if et_is_unknown fde then
+          (* Special case: applying EUnknown function, which we can do no
+              matter what the arguments are. It would be helpful to give this
+              the appropriate type (i.e. it might need to be a function that
+              returns EUnknown), but that's hard. It would imply us having a
+              type sytem for our type system. Rather than do that, we give
+              values the appropriate type when the needed type becomes known (at
+              function application time) *)
+          pure @@ EUnknown
         else pure @@ EApp (EFunDef (dbls, DefExpr nfde), netl)
     | EApp (EFunDef (_, DefFormalParameter _), etl) -> pure @@ et
     | EApp (EFunDef (_, DefProcParameter _), etl) -> pure @@ et
@@ -445,8 +481,16 @@ struct
           (* Functions are well-scoped, so we can safely substitute inside
              their definitions, i.e. the nesting protects us from mistakes. *)
           let%bind sfd = cont fd in
-          (* After substituting the formal parameter, we only return the body *)
-          pure @@ sfd
+
+          (* All our functions have just one parameter *)
+          let fp = List.hd dbl in
+
+          if pid_idx_eq fp pid then
+            (* If substituting the formal parameter, we only return the body *)
+            pure @@ sfd
+          else
+            (* Otherwise, retain function *)
+            pure @@ EFun (EFunDef (dbl, DefExpr sfd))
       (* This substitutes returned functions *)
       | EFun (EFunDef (_, DefFormalParameter i))
       | EFun (EFunDef (_, DefProcParameter i)) ->
@@ -458,7 +502,7 @@ struct
           else
             (* Not the function we're looking for; nothing to do *)
             pure @@ in_this
-      (* Substitute function applications *)
+      (* Substitute referents in function applications *)
       | EApp (EFunDef (fbl, DefFormalParameter i), etl) ->
           let%bind setl = mapM cont etl in
           if pid_idx_eq i pid then
@@ -1126,25 +1170,35 @@ struct
     in
     SAEnv.addS senv id new_id_sig
 
-  let get_fun_sig senv f =
+  let get_fun_sig senv f loc =
     let%bind fs = SAEnv.resolvS senv (get_id f) in
     match fs with
     | IdentSig (_, _, c) -> pure @@ c
     | _ ->
-        fail0
+        fail1
           (Printf.sprintf
              "Sharding analysis: applied function %s does not have IdentSig"
              (get_id f))
+          loc
 
-  let get_eapp_referent senv f =
-    let%bind et = get_fun_sig senv f in
+  let get_eapp_referent senv f num_args loc =
+    let%bind et = get_fun_sig senv f loc in
     match et with
     | EFun fdesc -> pure @@ fdesc
     | _ ->
-        fail0
-          (Printf.sprintf
-             "Sharding analysis: applied function %s does not have EFun type"
-             (get_id f))
+        if et_is_unknown et then
+          (* Hack to support evaluating Unknown functions. num_args tells us what the
+             type of the function should be, so we just make it up *)
+          let artificial = create_unknown_fun num_args in
+          match artificial with
+          | EFun fdesc -> pure @@ fdesc
+          | _ -> fail1 "Sharding analysis: unknown EApp bug?" loc
+        else
+          fail1
+            (Printf.sprintf
+               "Sharding analysis: applied fun %s doesn't have EFun type (%s)"
+               (get_id f) (pp_expr_type et))
+            loc
 
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
@@ -1192,7 +1246,11 @@ struct
         let%bind body_et = sa_expr senv' (fp_count + 1) body in
         pure @@ EFun (EFunDef ([ fp_count ], DefExpr body_et))
     | App (f, actuals) ->
-        let%bind eapp_ref = get_eapp_referent senv f in
+        (* This is here so we can make up an unknown function if required *)
+        let num_args = List.length actuals in
+        let%bind eapp_ref =
+          get_eapp_referent senv f num_args (ER.get_loc rep)
+        in
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
         pure @@ EApp (eapp_ref, arg_ets)
     | MatchExpr (x, clauses) ->
@@ -1386,9 +1444,11 @@ struct
     let folds =
       [ "nat_fold"; "nat_foldk"; "list_foldl"; "list_foldr"; "list_foldk" ]
     in
+    (* Example: "('T -> Nat -> 'T) -> 'T -> Nat -> 'T" *)
+    let fold_et = create_unknown_fun ~num_arrows:3 in
     List.fold_left
       (fun senv s ->
-        SAEnv.addS senv s (IdentSig (DoesNotShadow, PCMStatus.empty, EUnknown)))
+        SAEnv.addS senv s (IdentSig (DoesNotShadow, PCMStatus.empty, fold_et)))
       senv folds
 
   let sa_libentries senv (lel : lib_entry list) =
