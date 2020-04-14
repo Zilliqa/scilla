@@ -62,12 +62,15 @@ struct
 
   type de_bruijn_level = int
 
+  type arg_index = int
+
   type contrib_source =
     | UnknownSource
     | Pseudofield of pseudofield
     (* When analysing pure functions, we describe their output's contributions
        in terms of how the function's formal parameters flow into the output *)
     | FormalParameter of de_bruijn_level
+    | ProcParameter of arg_index
 
   type contrib_cardinality = NoContrib | LinearContrib | NonLinearContrib
 
@@ -78,6 +81,7 @@ struct
     | UnknownSource -> "unknown_source"
     | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
     | FormalParameter i -> "_" ^ string_of_int i
+    | ProcParameter i -> "_p" ^ string_of_int i
 
   let pp_contrib_op co =
     match co with BuiltinOp blt -> pp_builtin blt | Conditional -> "?cond"
@@ -130,9 +134,13 @@ struct
   and efun_desc = EFunDef of de_bruijn_level list * efun_def
 
   (* Either something that can be evaluated, or an unknown (parameter of a HO
-     function). If the latter, we store _which_ parameter we are, so when EApp
-     is used, we can replace the definition with the concrete one. *)
-  and efun_def = DefExpr of expr_type | DefParameter of de_bruijn_level
+     function or of a procedure). If the latter, we store _which_ parameter we
+     are, so when EApp is used, we can replace the definition with the concrete
+     one. *)
+  and efun_def =
+    | DefExpr of expr_type
+    | DefFormalParameter of de_bruijn_level
+    | DefProcParameter of arg_index
 
   let et_nothing = EVal (Exactly, Contrib.empty)
 
@@ -152,6 +160,12 @@ struct
     | NonLinearContrib, _ -> NonLinearContrib
     | _, NonLinearContrib -> NonLinearContrib
     | _ -> LinearContrib
+
+  let product_contrib_card a b =
+    match (a, b) with
+    | NoContrib, _ | _, NoContrib -> NoContrib
+    | NonLinearContrib, _ | _, NonLinearContrib -> NonLinearContrib
+    | LinearContrib, LinearContrib -> LinearContrib
 
   let pp_contrib_summary (cs : contrib_summary) =
     let card, ops_set = cs in
@@ -195,8 +209,11 @@ struct
     let pp_efun_def def =
       match def with
       | DefExpr et -> pp_expr_type et
-      | DefParameter i -> "DefParam " ^ pp_contrib_source (FormalParameter i)
+      | DefFormalParameter i ->
+          "DefParam " ^ pp_contrib_source (FormalParameter i)
+      | DefProcParameter i -> "DefParam " ^ pp_contrib_source (ProcParameter i)
     in
+
     match d with
     | EFunDef (lvls, def) ->
         let fargs =
@@ -229,6 +246,17 @@ struct
     let ops = ContribOps.union opsa opsb in
     (card, ops)
 
+  let combine_product (carda, opsa) (cardb, opsb) =
+    let card = product_contrib_card carda cardb in
+    let ops = ContribOps.union opsa opsb in
+    (* ?cond is only allowable op if card = NoContrib *)
+    let ops =
+      match card with
+      | NoContrib -> ContribOps.inter ops (ContribOps.singleton Conditional)
+      | _ -> ops
+    in
+    (card, ops)
+
   (* Only works on EVals *)
   let et_compose f eta etb =
     match (eta, etb) with
@@ -256,7 +284,7 @@ struct
         in
         ps_eq && contr_eq
     (* Give it our best shot *)
-    | _ -> pp_expr_type eta = pp_expr_type etb
+    | _ -> String.compare (pp_expr_type eta) (pp_expr_type etb) = 0
 
   (* For all the contributions in etc, add cond Op in et *)
   let add_conditional etc et =
@@ -323,10 +351,10 @@ struct
         let%bind nexpr = et_normalise expr in
         pure @@ EFun (EFunDef (dbl, DefExpr nexpr))
     (* Cannot normalise unknown functions *)
-    | EFun (EFunDef (_, DefParameter _)) -> pure @@ et
+    | EFun (EFunDef (_, DefFormalParameter _)) -> pure @@ et
+    | EFun (EFunDef (_, DefProcParameter _)) -> pure @@ et
     (* Normalise when EApp referent is known *)
     | EApp (EFunDef (dbls, DefExpr fde), etl) ->
-        (* print_endline @@ pp_expr_type et; *)
         let%bind nfde = et_normalise fde in
         let%bind netl = mapM et_normalise etl in
         (* All arguments are known *)
@@ -337,94 +365,119 @@ struct
           (* There is a mismatch between Fun and App. Fun takes a single
              parameter, whereas App takes multiple arguments, i.e. length dbl = 1.
              As such, we apply arguments one by one *)
-          let rec subst fp netl nfden =
+          let rec subst pid netl nfden =
             let arg_et = List.hd netl in
-            let%bind nfde = substitute_argument fp arg_et nfden in
+            let%bind nfde = substitute_argument pid arg_et nfden in
             (* TODO: is this necessary? *)
             (* let%bind nfde = et_normalise nfde in *)
-            (* print_endline
-               @@ Printf.sprintf "subst _%d:(%s) into %s == %s" fp
-                    (pp_expr_type arg_et) (pp_expr_type nfden) (pp_expr_type nfde); *)
             match netl with
             (* This was our last argument *)
             | [ _ ] -> pure @@ nfde
             (* More arguments exist, we have more substitution to do *)
-            | _ :: rem_netl -> subst (fp + 1) rem_netl nfde
+            | _ :: rem_netl ->
+                let%bind next = pid_next pid in
+                subst next rem_netl nfde
             (* This can't happen *)
             | _ -> fail0 "Sharding analysis: EApp argument list is empty??"
           in
           (* Scilla type checking guarantees this is safe *)
           let dbl = List.hd dbls in
-          let%bind substituted = subst dbl netl nfde in
+          let%bind substituted = subst (FormalParameter dbl) netl nfde in
           et_normalise substituted
         else pure @@ EApp (EFunDef (dbls, DefExpr nfde), netl)
-    | EApp (EFunDef (_, DefParameter _), etl) -> pure @@ et
+    | EApp (EFunDef (_, DefFormalParameter _), etl) -> pure @@ et
+    | EApp (EFunDef (_, DefProcParameter _), etl) -> pure @@ et
 
-  and substitute_argument fp_dbl arg_et fundef_et =
-    let cont et = substitute_argument fp_dbl arg_et et in
-    match fundef_et with
-    | EUnknown -> pure @@ EUnknown
-    | EVal (fd_ps, fd_contr) -> (
-        (* Combine FormalParameter fp_dbl's contributions with those of
-           the argument, i.e. arg_contr. *)
-        match arg_et with
-        | EVal (arg_ps, arg_contr) -> (
-            let opt_fpc = Contrib.find_opt (FormalParameter fp_dbl) fd_contr in
-            match opt_fpc with
-            | Some fpc ->
-                let ps = min_precision arg_ps fd_ps in
-                (* Compute contributions due to the argument *)
-                let acontr =
-                  Contrib.map (fun c -> combine_par c fpc) arg_contr
-                in
-                let fd_contr =
-                  Contrib.remove (FormalParameter fp_dbl) fd_contr
-                in
-                (* Add them to fd_contr instead of old value *)
-                let contr =
-                  Contrib.union
-                    (fun cs a b -> Some (combine_seq a b))
-                    acontr fd_contr
-                in
-                pure @@ EVal (ps, contr)
-                (* If the formal parameter is not used, argument is not used,
-                   i.e. nothing changes *)
-            | None -> pure @@ fundef_et )
-        | _ -> fail0 "Sharding analysis: substituting non-EVal in EVal" )
-    | EOp (op, expr) ->
-        let%bind sexpr = cont expr in
-        pure @@ EOp (op, sexpr)
-    | EComposeSequence etl ->
-        let%bind setl = mapM cont etl in
-        pure @@ EComposeSequence setl
-    | EComposeParallel (c, etl) ->
-        let%bind sc = cont c in
-        let%bind setl = mapM cont etl in
-        pure @@ EComposeParallel (sc, setl)
-    | EFun (EFunDef (dbl, DefExpr fd)) ->
-        (* Functions are well-scoped, so we can safely substitute inside
-           their definitions, i.e. the nesting protects us from mistakes. *)
-        let%bind sfd = cont fd in
-        (* After substituting the formal parameter, we only return the body *)
-        pure @@ sfd
-    (* TODO: Is this necessary? *)
-    (* | EFun (EFunDef (_, DefParameter i)) ->
-        (* Substitute function definition *)
-        if fp_dbl = i then
-          match arg_et with
-          (* TODO: should do this only for DefExpr? *)
-          | EFun _ -> pure @@ arg_et
-          | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
-          (* Not the function we're looking for; nothing to do *)
-        else pure @@ fundef_et *)
-    | EApp (EFunDef (_, DefParameter i), etl) ->
-        if fp_dbl = i then
-          match arg_et with
-          (* TODO: should do this only for DefExpr? *)
-          | EFun fd -> pure @@ EApp (fd, etl)
-          | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
-        else pure @@ fundef_et
-    | _ -> fail0 "HURR DURR"
+  (* Parameter identifier *)
+  and pid_idx_eq idx cs =
+    match cs with
+    | FormalParameter i -> idx = i
+    | ProcParameter i -> idx = i
+    | _ -> false
+
+  and pid_next cs =
+    match cs with
+    | FormalParameter i -> pure @@ FormalParameter (i + 1)
+    | ProcParameter i -> pure @@ ProcParameter (i + 1)
+    | _ -> fail0 "Sharding analysis: wrong argument to pid_next"
+
+  and substitute_argument pid this in_this =
+    let cont et = substitute_argument pid this et in
+    let%bind result =
+      match in_this with
+      | EUnknown -> pure @@ EUnknown
+      | EVal (fd_ps, fd_contr) -> (
+          (* Combine parameters's contributions with those of the argument, i.e.
+             arg_contr. *)
+          match this with
+          | EVal (arg_ps, arg_contr) -> (
+              let opt_fpc = Contrib.find_opt pid fd_contr in
+              match opt_fpc with
+              | Some fpc ->
+                  let ps = min_precision arg_ps fd_ps in
+                  (* Compute contributions due to the argument *)
+                  let acontr =
+                    Contrib.map (fun c -> combine_product c fpc) arg_contr
+                  in
+                  (* Add them to fd_contr instead of old value *)
+                  let fd_contr = Contrib.remove pid fd_contr in
+                  let contr =
+                    Contrib.union
+                      (fun cs a b -> Some (combine_seq a b))
+                      acontr fd_contr
+                  in
+                  pure @@ EVal (ps, contr)
+                  (* If the formal parameter is not used, argument is not used,
+                     i.e. nothing changes *)
+              | None -> pure @@ in_this )
+          | _ -> pure @@ in_this )
+      | EOp (op, expr) ->
+          let%bind sexpr = cont expr in
+          pure @@ EOp (op, sexpr)
+      | EComposeSequence etl ->
+          let%bind setl = mapM cont etl in
+          pure @@ EComposeSequence setl
+      | EComposeParallel (c, etl) ->
+          let%bind sc = cont c in
+          let%bind setl = mapM cont etl in
+          pure @@ EComposeParallel (sc, setl)
+      | EFun (EFunDef (dbl, DefExpr fd)) ->
+          (* Functions are well-scoped, so we can safely substitute inside
+             their definitions, i.e. the nesting protects us from mistakes. *)
+          let%bind sfd = cont fd in
+          (* After substituting the formal parameter, we only return the body *)
+          pure @@ sfd
+      (* This substitutes returned functions *)
+      | EFun (EFunDef (_, DefFormalParameter i))
+      | EFun (EFunDef (_, DefProcParameter i)) ->
+          if pid_idx_eq i pid then
+            match this with
+            (* TODO: should do this only for DefExpr? *)
+            | EFun _ -> pure @@ this
+            | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
+          else
+            (* Not the function we're looking for; nothing to do *)
+            pure @@ in_this
+      (* Substitute function applications *)
+      | EApp (EFunDef (fbl, DefFormalParameter i), etl) ->
+          let%bind setl = mapM cont etl in
+          if pid_idx_eq i pid then
+            match this with
+            | EFun fd -> pure @@ EApp (fd, setl)
+            | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
+          else pure @@ EApp (EFunDef (fbl, DefFormalParameter i), setl)
+      | EApp (EFunDef (dbl, DefProcParameter i), etl) ->
+          let%bind setl = mapM cont etl in
+          if pid_idx_eq i pid then
+            match this with
+            | EFun fd -> pure @@ EApp (fd, setl)
+            | _ -> fail0 "Sharding analysis: substituting non-EFun into EFun"
+          else pure @@ EApp (EFunDef (dbl, DefProcParameter i), setl)
+      | EApp (EFunDef (dbl, DefExpr expr), etl) ->
+          let%bind setl = mapM cont etl in
+          pure @@ EApp (EFunDef (dbl, DefExpr expr), setl)
+    in
+    pure @@ result
 
   (* For each contract component, we keep track of the operations it performs.
      This gives us enough information to tell whether two transitions have disjoint
@@ -432,7 +485,6 @@ struct
   type component_operation =
     (* Read of cfield, with map keys which are comp_params if field is a map *)
     | Read of pseudofield
-    (* TODO: replace with known_contrib *)
     | Write of pseudofield * expr_type
     | AcceptMoney
     | ConditionOn of expr_type
@@ -779,8 +831,10 @@ struct
     SAEnv.addS senv (get_id i) sgn
 
   let env_bind_ident_map senv idlist sgn =
+    let idlist = List.mapi (fun i k -> (i, k)) idlist in
     List.fold_left
-      (fun acc_senv (i, t) -> SAEnv.addS acc_senv (get_id i) (sgn i t))
+      (fun acc_senv (idx, (i, t)) ->
+        SAEnv.addS acc_senv (get_id i) (sgn idx i t))
       senv idlist
 
   let contrib_pseudofield (f, opt_keys) =
@@ -811,6 +865,243 @@ struct
   let map_access_can_be_summarised senv m klist =
     is_bottom_level_access m klist && all_keys_are_parameters senv klist
 
+  let rec et_field_keys et =
+    let remove_dups = List.sort_uniq compare_id in
+    match et with
+    | EUnknown -> []
+    | EVal (ps, contr) ->
+        let contrib_sources = fst @@ List.split @@ Contrib.bindings contr in
+        let res =
+          remove_dups @@ List.flatten
+          @@ List.map
+               (fun cs ->
+                 match cs with Pseudofield (f, Some keys) -> keys | _ -> [])
+               contrib_sources
+        in
+        res
+    | EOp (op, expr) -> remove_dups @@ et_field_keys et
+    | EComposeSequence etl ->
+        remove_dups @@ List.flatten @@ List.map et_field_keys etl
+    | EComposeParallel (ec, etl) ->
+        remove_dups @@ List.flatten
+        @@ (et_field_keys ec :: List.map et_field_keys etl)
+    | EFun (EFunDef (_, DefExpr fd)) -> remove_dups @@ et_field_keys fd
+    | EApp (EFunDef (_, DefExpr fd), etl) ->
+        remove_dups @@ List.flatten
+        @@ (et_field_keys fd :: List.map et_field_keys etl)
+    | EApp (EFunDef (_, (DefFormalParameter _ | DefProcParameter _)), etl) ->
+        remove_dups @@ List.flatten @@ List.map et_field_keys etl
+    | EFun (EFunDef (_, (DefFormalParameter _ | DefProcParameter _))) -> []
+
+  let int_range a b =
+    let rec int_range_rec l a b =
+      if a > b then l else int_range_rec (b :: l) a (b - 1)
+    in
+    int_range_rec [] a b
+
+  let is_fun t = match t with FunType _ -> true | _ -> false
+
+  let rec count_arrows t =
+    match t with FunType (arg, ret) -> 1 + count_arrows ret | _ -> 0
+
+  (* Get the expr_type to assign to function formal parameters *)
+  let get_fp_et fp_count fp_typ =
+    let primitive = not (is_fun fp_typ) in
+    if primitive then
+      EVal
+        ( Exactly,
+          Contrib.singleton (FormalParameter fp_count)
+            (LinearContrib, ContribOps.empty) )
+    else
+      let nargs = count_arrows fp_typ in
+      let fps = int_range 0 (nargs - 1) in
+      (* See comment attached to efun_desc explaining why we don't need to do
+         this recursively if fp takes functions as parameters as well *)
+      EFun (EFunDef (fps, DefFormalParameter fp_count))
+
+  (* Get the expr_type to assign to procedure parameters *)
+  let get_pp_et arg_idx typ =
+    if is_fun typ then
+      let nargs = count_arrows typ in
+      let fps = int_range 0 (nargs - 1) in
+      EFun (EFunDef (fps, DefProcParameter arg_idx))
+    else
+      EVal
+        ( Exactly,
+          Contrib.singleton (ProcParameter arg_idx)
+            (LinearContrib, ContribOps.empty) )
+
+  (* Return the parameters actually used to in the given ComponentSig summary *)
+  let idents_used_as_map_keys (proc_sig : signature) =
+    let idents_in_op op =
+      match op with
+      | Read (f, Some keys) -> keys
+      | Write ((f, Some keys), et) -> keys @ et_field_keys et
+      | Write ((_, None), et) | EmitEvent et | SendMessages et | ConditionOn et
+        ->
+          et_field_keys et
+      | Read (_, None) | AcceptMoney | AlwaysExclusive (_, _) -> []
+    in
+    match proc_sig with
+    | ComponentSig (_, proc_summ) ->
+        let idents_in_summ =
+          List.sort_uniq compare_id @@ List.flatten
+          @@ List.map idents_in_op (ComponentSummary.elements proc_summ)
+        in
+        pure @@ idents_in_summ
+    | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
+
+  let rec translate_et_field_keys et key_mapping =
+    let map_keys keys =
+      List.map (fun k -> List.assoc (get_id k) key_mapping) keys
+    in
+    let tt_contrib_source cs =
+      match cs with
+      | Pseudofield (f, Some keys) -> Pseudofield (f, Some (map_keys keys))
+      (* This is only applied to pseudofields *)
+      | _ -> cs
+    in
+    let translate_comp_contribs contribs =
+      let c_keys, c_values = List.split @@ Contrib.bindings contribs in
+      let new_keys = List.map tt_contrib_source c_keys in
+      let new_bindings = List.combine new_keys c_values in
+      Contrib.of_seq (List.to_seq new_bindings)
+    in
+    let cont expr = translate_et_field_keys expr key_mapping in
+    match et with
+    | EUnknown -> EUnknown
+    | EVal (ps, contr) -> EVal (ps, translate_comp_contribs contr)
+    | EOp (op, expr) -> EOp (op, cont expr)
+    | EComposeSequence etl ->
+        let setl = List.map cont etl in
+        EComposeSequence setl
+    | EComposeParallel (ec, etl) ->
+        let setl = List.map cont etl in
+        EComposeParallel (cont ec, setl)
+    | EFun (EFunDef (dbl, DefExpr fd)) ->
+        EFun (EFunDef (dbl, DefExpr (cont fd)))
+    | EApp (EFunDef (dbl, DefExpr fd), etl) ->
+        let setl = List.map cont etl in
+        EApp (EFunDef (dbl, DefExpr (cont fd)), setl)
+    | _ -> et
+
+  let et_can_be_summarised senv et =
+    let can_summarise c =
+      match c with
+      | Pseudofield (m, Some klist) -> map_access_can_be_summarised senv m klist
+      | Pseudofield (f, None) -> true
+      | UnknownSource | FormalParameter _ | ProcParameter _ -> true
+    in
+    match et with
+    | EVal (_, kc) ->
+        let c_keys, _ = List.split @@ Contrib.bindings kc in
+        List.for_all can_summarise c_keys
+    | _ -> false
+
+  (* Rewrite an operation written in terms of proc_params into an operation
+     written in terms of call_args. We need to rewrite both the map keys
+     and the expr_types in the operation. *)
+  let translate_op op proc_params call_args arg_ets =
+    let pp_names, _ =
+      List.split @@ List.map (fun (i, t) -> (get_id i, t)) proc_params
+    in
+    let pp_css = List.mapi (fun i _ -> ProcParameter i) proc_params in
+    let key_mapping = List.combine pp_names call_args in
+    let cs_to_et_mapping = List.combine pp_css arg_ets in
+    (* The assoc will fail only if there's a bug *)
+    let map_keys keys =
+      List.map (fun k -> List.assoc (get_id k) key_mapping) keys
+    in
+    (* FIXME TODO: make this more efficient!! *)
+    let translate_comp_et et =
+      let substituted =
+        foldM
+          (fun in_this (pid, this) -> substitute_argument pid this in_this)
+          et cs_to_et_mapping
+      in
+      match substituted with
+      | Ok sub -> (
+          let res = et_normalise sub in
+          match res with
+          | Ok r ->
+              (* We need to rewrite field keys in the expr_type as well! *)
+              translate_et_field_keys r key_mapping
+          | Error _ -> et )
+      | Error x -> et
+    in
+
+    (* TODO: currently, if the translated_comp_et is et_nothing, the operation
+       still exists. This is slightly annoying, e.g. for ConditionOn *)
+    match op with
+    | Read (f, Some keys) -> Read (f, Some (map_keys keys))
+    | Write ((f, None), et) -> Write ((f, None), translate_comp_et et)
+    | Write ((f, Some keys), et) ->
+        Write ((f, Some (map_keys keys)), translate_comp_et et)
+    | ConditionOn et -> ConditionOn (translate_comp_et et)
+    | EmitEvent et -> EmitEvent (translate_comp_et et)
+    | SendMessages et -> SendMessages (translate_comp_et et)
+    | Read (_, None) | AcceptMoney | AlwaysExclusive _ -> op
+
+  let procedure_call_summary senv p (proc_sig : signature) arglist arg_ets =
+    let implicit_params = SCU.append_implict_comp_params [] in
+    let ip_vals, _ = List.split implicit_params in
+    (* Scilla typechecker ensures arg types are correct; we don't need them *)
+    let arglist = ip_vals @ arglist in
+    let implicit_ets =
+      List.mapi (fun idx (ident, typ) -> get_pp_et idx typ) implicit_params
+    in
+    let arg_ets = implicit_ets @ arg_ets in
+    match proc_sig with
+    | ComponentSig (proc_params, proc_summ) ->
+        let proc_params = implicit_params @ proc_params in
+        let pp_vals, _ = List.split @@ proc_params in
+        (* To summarise the procedure call: all idents used as map keys in
+           the called procedure MUST be parameters of the caller component *)
+        let%bind idents_used_as_keys = idents_used_as_map_keys proc_sig in
+        (* Does the called procedure use non-parameters as map keys? If yes,
+           then we can't summarise it. I believe this check is redundant given the
+           et_can_be_summarised check in MatchStmt, but better safe than sorry.*)
+        let exist_non_params_used_as_keys =
+          List.exists
+            (fun i -> not @@ List.exists (fun q -> compare_id i q = 0) pp_vals)
+            idents_used_as_keys
+        in
+        let%bind args_used_as_keys =
+          (* XXX: Is there a way to do this that's easier to read? *)
+          mapM
+            ( List.filter (fun k ->
+                  match k with Some _ -> true | None -> false)
+            (* If the parameter (p) is used, the corresponding argument (a) is used *)
+            @@ List.map2
+                 (fun p a ->
+                   (* Be very careful with List.mem and such -- they don't work with idents *)
+                   if
+                     List.exists
+                       (fun q -> compare_id p q = 0)
+                       idents_used_as_keys
+                   then Some a
+                   else None)
+                 pp_vals arglist )
+            (* This can't fail *)
+            ~f:(fun k -> match k with Some a -> pure @@ a | None -> fail0 "")
+        in
+        let can_summarise =
+          (not exist_non_params_used_as_keys)
+          && all_keys_are_parameters senv args_used_as_keys
+        in
+        if can_summarise then
+          pure
+          @@ ComponentSummary.map
+               (fun op -> translate_op op proc_params arglist arg_ets)
+               proc_summ
+        else
+          let loc = SR.get_loc (get_rep p) in
+          let proc_name = get_id p in
+          pure
+          @@ ComponentSummary.singleton
+               (AlwaysExclusive (Some loc, "CallProc " ^ proc_name))
+    | _ -> fail0 "Sharding analysis: procedure summary is not of the right type"
+
   let get_ident_et senv i =
     let%bind isig = SAEnv.resolvS senv (get_id i) in
     match isig with
@@ -835,43 +1126,25 @@ struct
     in
     SAEnv.addS senv id new_id_sig
 
-  let int_range a b =
-    let rec int_range_rec l a b =
-      if a > b then l else int_range_rec (b :: l) a (b - 1)
-    in
-    int_range_rec [] a b
-
-  (* Get the expr_type to assign to function formal parameters *)
-  let get_fp_et fp_count fp_typ =
-    let is_fun t = match t with FunType _ -> true | _ -> false in
-    let rec count_arrows t =
-      match t with FunType (arg, ret) -> 1 + count_arrows ret | _ -> 0
-    in
-    let primitive = not (is_fun fp_typ) in
-    if primitive then
-      EVal
-        ( Exactly,
-          Contrib.singleton (FormalParameter fp_count)
-            (LinearContrib, ContribOps.empty) )
-    else
-      let nargs = count_arrows fp_typ in
-      let fps = int_range 0 (nargs - 1) in
-      (* See comment attached to efun_desc explaining why we don't need to do
-         this recursively if fp takes functions as parameters as well *)
-      EFun (EFunDef (fps, DefParameter fp_count))
-
   let get_fun_sig senv f =
     let%bind fs = SAEnv.resolvS senv (get_id f) in
     match fs with
     | IdentSig (_, _, c) -> pure @@ c
-    | _ -> fail0 "Sharding analysis: applied function does not have IdentSig"
+    | _ ->
+        fail0
+          (Printf.sprintf
+             "Sharding analysis: applied function %s does not have IdentSig"
+             (get_id f))
 
   let get_eapp_referent senv f =
     let%bind et = get_fun_sig senv f in
     match et with
     | EFun fdesc -> pure @@ fdesc
     | _ ->
-        fail0 "Sharding analysis: applied function that does not have EFun type"
+        fail0
+          (Printf.sprintf
+             "Sharding analysis: applied function %s does not have EFun type"
+             (get_id f))
 
   (* TODO: might want to track pcm_status for expressions *)
   (* fp_count keeps track of how many function formal parameters we've encountered *)
@@ -895,8 +1168,8 @@ struct
         (* Ignore labels, just analyse payloads *)
         let _, plds = List.split bs in
         let%bind pld_ets = mapM get_payload_et plds in
-        (* Don't care about linearity for msgs; could just as well be EComPar *)
-        pure @@ EComposeSequence pld_ets
+        (* Don't really care about linearity for msgs, but Par fits better than Seq *)
+        pure @@ EComposeParallel (et_nothing, pld_ets)
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
         pure @@ EComposeSequence arg_ets
@@ -917,8 +1190,6 @@ struct
         let fp_et = get_fp_et fp_count ftyp in
         let senv' = env_new_ident formal fp_et senv in
         let%bind body_et = sa_expr senv' (fp_count + 1) body in
-        (* TODO: need to combine the EFuns somehow *)
-        (* May be challening if not head-form *)
         pure @@ EFun (EFunDef ([ fp_count ], DefExpr body_et))
     | App (f, actuals) ->
         let%bind eapp_ref = get_eapp_referent senv f in
@@ -947,10 +1218,10 @@ struct
   let sa_expr_wrapper senv erep = sa_expr senv 0 erep
 
   (* Precondition: senv contains the component parameters, appropriately marked *)
-  let rec sa_stmt senv summary (stmts : stmt_annot list) =
+  let rec sa_stmt senv summary (stmts : stmt_annot list) ct =
     (* Helpers to continue after
        accumulating an operation *)
-    let cont senv summary sts = sa_stmt senv summary sts in
+    let cont senv summary sts = sa_stmt senv summary sts ct in
     (* Perform an operation *)
     let cont_op op summary sts =
       let summary' = ComponentSummary.add op summary in
@@ -1032,7 +1303,7 @@ struct
                     (fun env_acc id -> env_new_ident id xc env_acc)
                   senv binders
               in
-              sa_stmt senv' summary cl_sts
+              cont senv' summary cl_sts
             in
             let spurious = is_spurious_conditional_stmt xc x clauses in
             let%bind summary' =
@@ -1051,8 +1322,13 @@ struct
               else
                 (* If not spurious, more things happen *)
                 let%bind cond = et_normalise @@ EOp (Conditional, xc) in
-                (* TODO: Transitions must check that cond can be summarised *)
-                let cond_op = ConditionOn cond in
+                let cond_op =
+                  if et_can_be_summarised senv cond then ConditionOn cond
+                  else
+                    AlwaysExclusive
+                      ( Some (ER.get_loc (get_rep x)),
+                        pp_operation (ConditionOn cond) )
+                in
                 let summary_with_conds = ComponentSummary.add cond_op summary in
                 let%bind cl_summaries = mapM summarise_clause clauses in
                 (* TODO: least upper bound? *)
@@ -1062,13 +1338,14 @@ struct
                   summary_with_conds cl_summaries
             in
             cont senv summary' sts
-        (* TODO: CallProc  *)
         | CallProc (p, arglist) -> (
+            let%bind arg_ets = mapM arglist ~f:(fun i -> get_ident_et senv i) in
             let opt_proc_sig = SAEnv.lookupS senv (get_id p) in
             match opt_proc_sig with
             | Some proc_sig ->
-                let call_summ = summary in
-                (* procedure_call_summary senv p proc_sig arglist *)
+                let%bind call_summ =
+                  procedure_call_summary senv p proc_sig arglist arg_ets
+                in
                 let summary' = ComponentSummary.union summary call_summ in
                 cont senv summary' sts
             (* If this occurs, it's a bug. Type checking should prevent it. *)
@@ -1084,18 +1361,26 @@ struct
         | Throw i ->
             (* Throwing cancels all effects. All effects happening is a correct
                over-approximation. *)
-            cont senv summary sts
-        | _ -> fail0 "HURR DURR CallProc" )
+            cont senv summary sts )
 
   let sa_component_summary senv (comp : component) =
     let all_params = SCU.append_implict_comp_params comp.comp_params in
     (* Add component parameters to the analysis environment *)
     let senv' =
       (* Give proper type to procedure functions *)
-      env_bind_ident_map senv all_params (fun i t ->
-          IdentSig (ComponentParameter, PCMStatus.empty, et_nothing))
+      env_bind_ident_map senv all_params (fun idx i t ->
+          (* Transition parameters are constants. Procedure parameters are not
+             necessarily, i.e. reads can flow into them. *)
+          let et =
+            match comp.comp_type with
+            (* TODO: might want not to track this for transitions, since
+               parameters are constants *)
+            | CompTrans -> get_pp_et idx t
+            | CompProc -> get_pp_et idx t
+          in
+          IdentSig (ComponentParameter, PCMStatus.empty, et))
     in
-    sa_stmt senv' ComponentSummary.empty comp.comp_body
+    sa_stmt senv' ComponentSummary.empty comp.comp_body comp.comp_type
 
   let sa_analyze_folds senv =
     let folds =
@@ -1158,7 +1443,7 @@ struct
     (* Bind contract parameters *)
     let senv =
       let all_params = SCU.append_implict_contract_params cmod.contr.cparams in
-      env_bind_ident_map senv all_params (fun _ _ ->
+      env_bind_ident_map senv all_params (fun _ _ _ ->
           IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
     in
 
