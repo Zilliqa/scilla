@@ -107,16 +107,16 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
 
   let balance_field =
     let open PrimTypes in
-    (ER.mk_id_uint128 balance_label, uint128_typ)
+    (asIdL balance_label ER.uint128_rep, uint128_typ)
 
   let append_implict_contract_params tparams =
     let open PrimTypes in
-    let creation_block = (ER.mk_id_bnum creation_block_label, bnum_typ) in
+    let creation_block = (asIdL creation_block_label ER.bnum_rep, bnum_typ) in
     let this_address =
-      (ER.mk_id_address this_address_label, bystrx_typ address_length)
+      (asIdL this_address_label ER.address_rep, bystrx_typ address_length)
     in
     let scilla_version_init =
-      (ER.mk_id_uint32 scilla_version_label, uint32_typ)
+      (asIdL scilla_version_label ER.uint32_rep, uint32_typ)
     in
     creation_block :: scilla_version_init :: this_address :: tparams
 
@@ -129,9 +129,9 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let append_implict_comp_params cparams =
     let open PrimTypes in
     let sender =
-      (ER.mk_id_address MessagePayload.sender_label, bystrx_typ address_length)
+      (asIdL MessagePayload.sender_label ER.address_rep, bystrx_typ address_length)
     in
-    let amount = (ER.mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
+    let amount = (asIdL MessagePayload.amount_label ER.uint128_rep, uint128_typ) in
     amount :: sender :: cparams
 
   let msg_mandatory_field_types =
