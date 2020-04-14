@@ -1,0 +1,33 @@
+{
+  "type_info": [
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-isqrt.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-isqrt.scilexp",
+        "line": 1,
+        "column": 8
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-isqrt.scilexp",
+        "line": 2,
+        "column": 15
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-isqrt.scilexp",
+        "line": 2,
+        "column": 18
+      }
+    }
+  ],
+  "type": "Uint32"
+}

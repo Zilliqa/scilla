@@ -1,0 +1,2 @@
+let one = Uint32 1 in
+builtin isqrt one

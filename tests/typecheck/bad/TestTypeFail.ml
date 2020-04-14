@@ -161,6 +161,7 @@ module Tests = TestUtil.DiffBasedTests (struct
       "builtin-alt-bn128-add.scilexp";
       "builtin-alt-bn128-mul.scilexp";
       "builtin-alt-bn128-pairing-product.scilexp";
+      "builtin-isqrt-int32.scilexp";
       "fun2.scilexp";
       "fun3.scilexp";
       "fun4.scilexp";

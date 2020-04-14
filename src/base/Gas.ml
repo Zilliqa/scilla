@@ -269,12 +269,24 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           | [ _; UintLit (Uint32L p) ] ->
               pure (base * 5 * Stdint.Uint32.to_int p)
           | _ -> fail0 @@ "Gas cost error for built-in pow" )
+      | Builtin_isqrt ->
+          let%bind ifloat =
+            match args with
+            | [ UintLit (Uint32L i) ] -> pure @@ Stdint.Uint32.to_float i
+            | [ UintLit (Uint64L i) ] -> pure @@ Stdint.Uint64.to_float i
+            | [ UintLit (Uint128L i) ] -> pure @@ Stdint.Uint128.to_float i
+            | [ UintLit (Uint256L i) ] ->
+                pure @@ Float.of_string @@ Integer256.Uint256.to_string i
+            | _ -> fail0 "Invalid argument type to isqrt"
+          in
+          (* The +. 1.0 is just to ensure that we don't input 0 to Float.log. *)
+          pure @@ (base * Int.of_float (Float.log (ifloat +. 1.0)))
       | _ -> pure base
     in
     let%bind w =
       match args with
-      | [ IntLit i; _ ] -> pure @@ int_lit_width i
-      | [ UintLit i; _ ] -> pure @@ uint_lit_width i
+      | IntLit i :: _ -> pure @@ int_lit_width i
+      | UintLit i :: _ -> pure @@ uint_lit_width i
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'
@@ -335,6 +347,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (Builtin_div, [tvar "'A"; tvar "'A"], int_coster, 4);
     (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster, 4);
     (Builtin_pow, [tvar "'A"; uint32_typ], int_coster, 4);
+    (Builtin_isqrt, [tvar "'A"], int_coster, 4);
     (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32, 4);
     (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64, 4);
     (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128, 4);

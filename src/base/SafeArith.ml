@@ -27,11 +27,15 @@ module type IntRep = sig
 
   val rem : t -> t -> t
 
+  val shift_right : t -> int -> t
+
   val zero : t
 
   val one : t
 
   val min_int : t
+
+  val max_int : t
 end
 
 module SafeInt (Unsafe : IntRep) = struct
@@ -128,4 +132,27 @@ module SafeUint (Unsafe : IntRep) = struct
     pow_aux Unsafe.one b
 
   let lt a b = Unsafe.compare a b < 0
+
+  let isqrt n =
+    let div2 m = Unsafe.shift_right m 1 in
+    (* https://math.stackexchange.com/a/2469503/167002 *)
+    let rec recurser x y =
+      (* if x <= y then x *)
+      if Unsafe.compare x y <= 0 then x
+      else
+        let x' =
+          (* Checks against overflow *)
+          let saturating_add a b =
+            let open Unsafe in
+            let r = add a b in
+            (* if r < a || r < b then we have an overflow *)
+            if compare r a < 0 || compare r b < 0 then max_int else r
+          in
+          (* (x + y) / 2 *)
+          div2 (saturating_add x y)
+        in
+        let y' = div n x' in
+        recurser x' y'
+    in
+    recurser n Unsafe.one
 end
