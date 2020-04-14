@@ -56,13 +56,12 @@ module TestArith (SmallInt : Int) = struct
     done
 
   let test_all_isqrt isqrt_op =
-    for a_int = min_small_int to max_small_int do
-      let a = SmallInt.of_int a_int in
-      let asqrt = SmallInt.to_int @@ isqrt_op a in
+    for a = min_small_int to max_small_int do
+      let asqrt = SmallInt.to_int @@ isqrt_op (SmallInt.of_int a) in
       (* asqrt * asqrt <= a && asqrt+1 * asqrt+1 > a *)
       assert_bool
-        (sprintf "Got isqrt %d = %d" a_int asqrt)
-        (asqrt * asqrt <= a_int && (asqrt+1) * (asqrt+1) > a_int)
+        (sprintf "Got isqrt %d = %d" a asqrt)
+        (asqrt * asqrt <= a && (asqrt + 1) * (asqrt + 1) > a)
     done
 end
 
