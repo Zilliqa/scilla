@@ -565,11 +565,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ UintLit (Uint64L x) ] -> pure @@ Uint64L (Uint64_safe.isqrt x)
           | [ UintLit (Uint128L x) ] -> pure @@ Uint128L (Uint128_safe.isqrt x)
           | [ UintLit (Uint256L x) ] -> pure @@ Uint256L (Uint256_safe.isqrt x)
-          | _ -> builtin_fail "Int.isqrt: unsupported types" ls
+          | _ -> builtin_fail "Uint.isqrt: unsupported types" ls
         in
         pure @@ UintLit l
       with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.isqrt: an overflow/underflow occurred" ls
+        builtin_fail "Uint.isqrt: isqrt cannot throw, impossible!" ls
 
     let lt ls _ =
       try
