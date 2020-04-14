@@ -1,3 +1,0 @@
-set arguments -libdir /media/data/scilla/src/stdlib/ -gaslimit 10000 /media/data/scilla/tests/eval/good/isqrt.scilexp
-break @ int_coster
-run
