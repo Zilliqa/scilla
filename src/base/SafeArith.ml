@@ -36,10 +36,6 @@ module type IntRep = sig
   val min_int : t
 
   val max_int : t
-
-  val to_string : t -> string
-
-  val of_string : string -> t
 end
 
 module SafeInt (Unsafe : IntRep) = struct
