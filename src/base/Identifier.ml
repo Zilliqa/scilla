@@ -29,6 +29,8 @@ module type QualifiedName = sig
 
   val equal_name : t -> t -> bool
   val compare_name : t -> t -> int
+
+  val parse_builtin_adt_name : string -> t
 end
 
 (* Names flattede immediately during parsing *)
@@ -42,6 +44,7 @@ module FlattenedName = struct
   let equal_name = String.(=)
   let compare_name = String.compare
 
+  let parse_builtin_adt_name n = n
 end
 
 (* Names possibly qualified by a namespace *)
@@ -69,6 +72,9 @@ module LocalName = struct
     | _, _ -> false
 
   let compare_name a b = String.compare (as_string a) (as_string b)
+
+  let parse_builtin_adt_name n = Simple n
+
 end
   
 module CanonicalName = struct
@@ -95,6 +101,8 @@ module CanonicalName = struct
 
   let compare_name a b = String.compare (as_string a) (as_string b)
 
+  let parse_builtin_adt_name n = Simple n
+
 end
 
 module type Identifier = sig
@@ -111,6 +119,8 @@ module type Identifier = sig
   val as_error_string : 'a t -> string
   val get_rep : 'a t -> 'a
 
+  val parse_builtin_adt_name : string -> loc t
+  
   (* A few utilities on id. *)
   val equal_id : 'a t -> 'b t -> bool
   val compare_id : 'a t -> 'b t -> int
@@ -138,6 +148,8 @@ module MkIdentifier (Name : QualifiedName) = struct
 
   let get_rep i = match i with Ident (_, l) -> l
 
+  let parse_builtin_adt_name n = Ident (Name.parse_builtin_adt_name n, dummy_loc)
+  
   (* A few utilities on id. *)
   let equal_id a b = Name.equal_name (get_id a) (get_id b)
 

@@ -18,93 +18,102 @@
 
 open ErrorUtils
 open Core_kernel
+open Literal
 
-(**********************************************************)
-(*                 Built-in Algebraic Data Types          *)
-(**********************************************************)
+module type Datatypes = sig
 
-type constructor = {
-  cname : string;
-  (* constructor name *)
-  arity : int; (* How many arguments it takes *)
-}
-[@@deriving equal]
+  module DTLiteral : Literal
+  
+  (**********************************************************)
+  (*                 Built-in Algebraic Data Types          *)
+  (**********************************************************)
 
-type adt = {
-  tname : string;
-  tparams : string list;
-  tconstr : constructor list;
-  tmap : (string * Type.t list) list;
-}
-[@@deriving equal]
+  type constructor = {
+    cname : string;
+    (* constructor name *)
+    arity : int; (* How many arguments it takes *)
+  }
+  [@@deriving equal]
 
-module DataTypeDictionary : sig
-  (* Hiding the actual data type dicionary *)
+  type adt = {
+    tname : string;
+    tparams : string list;
+    tconstr : constructor list;
+    tmap : (string * DTLiteral.LType.t list) list;
+  }
+  [@@deriving equal]
 
-  (* Re-initialize environment with the built-in ADTs *)
-  val reinit : unit -> unit
+  module DataTypeDictionary : sig
+    (* Hiding the actual data type dicionary *)
 
-  (*  Get ADT by name  *)
-  val lookup_name :
-    ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
+    (* Re-initialize environment with the built-in ADTs *)
+    val reinit : unit -> unit
 
-  (*  Get ADT by the constructor  *)
-  val lookup_constructor :
-    ?sloc:ErrorUtils.loc ->
-    string ->
-    (adt * constructor, scilla_error list) result
+    (*  Get ADT by name  *)
+    val lookup_name :
+      ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
 
-  (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> Type.t list option
+    (*  Get ADT by the constructor  *)
+    val lookup_constructor :
+      ?sloc:ErrorUtils.loc ->
+      string ->
+      (adt * constructor, scilla_error list) result
 
-  (* Get all known ADTs *)
-  val get_all_adts : unit -> adt list
+    (* Get typing map for a constructor *)
+    val constr_tmap : adt -> string -> DTLiteral.LType.t list option
 
-  (* Get all known ADT constructors *)
-  val get_all_ctrs : unit -> (adt * constructor) list
+    (* Get all known ADTs *)
+    val get_all_adts : unit -> adt list
 
-  val add_adt : adt -> loc -> (unit, scilla_error list) result
+    (* Get all known ADT constructors *)
+    val get_all_ctrs : unit -> (adt * constructor) list
 
-  (*  Built-in ADTs  *)
-  val bool_typ : Type.t
+    val add_adt : adt -> loc -> (unit, scilla_error list) result
 
-  val nat_typ : Type.t
+    (*  Built-in ADTs  *)
+    val bool_typ : DTLiteral.LType.t
 
-  val option_typ : Type.t -> Type.t
+    val nat_typ : DTLiteral.LType.t
 
-  val list_typ : Type.t -> Type.t
+    val option_typ : DTLiteral.LType.t -> DTLiteral.LType.t
 
-  val pair_typ : Type.t -> Type.t -> Type.t
+    val list_typ : DTLiteral.LType.t -> DTLiteral.LType.t
+
+    val pair_typ : DTLiteral.LType.t -> DTLiteral.LType.t -> DTLiteral.LType.t
+  end
+
+  val scilla_list_to_ocaml :
+    DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
+
+  val scilla_list_to_ocaml_rev :
+    DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
+
+  open Snark
+
+  module SnarkTypes : sig
+    val scalar_type : DTLiteral.LType.t
+
+    val g1point_type : DTLiteral.LType.t
+
+    val g2point_type : DTLiteral.LType.t
+
+    val g2comp_type : DTLiteral.LType.t
+
+    val g1g2pair_type : DTLiteral.LType.t
+
+    val g1g2pair_list_type : DTLiteral.LType.t
+
+    val scilla_scalar_to_ocaml : DTLiteral.t -> (scalar, scilla_error list) result
+
+    val scilla_g1point_to_ocaml : DTLiteral.t -> (g1point, scilla_error list) result
+
+    val scilla_g1g2pairlist_to_ocaml :
+      DTLiteral.t -> ((g1point * g2point) list, scilla_error list) result
+
+    val ocaml_g1point_to_scilla_lit :
+      g1point -> (DTLiteral.t, scilla_error list) result
+  end
+
 end
 
-val scilla_list_to_ocaml :
-  Literal.t -> (Literal.t list, scilla_error list) result
-
-val scilla_list_to_ocaml_rev :
-  Literal.t -> (Literal.t list, scilla_error list) result
-
-open Snark
-
-module SnarkTypes : sig
-  val scalar_type : Type.t
-
-  val g1point_type : Type.t
-
-  val g2point_type : Type.t
-
-  val g2comp_type : Type.t
-
-  val g1g2pair_type : Type.t
-
-  val g1g2pair_list_type : Type.t
-
-  val scilla_scalar_to_ocaml : Literal.t -> (scalar, scilla_error list) result
-
-  val scilla_g1point_to_ocaml : Literal.t -> (g1point, scilla_error list) result
-
-  val scilla_g1g2pairlist_to_ocaml :
-    Literal.t -> ((g1point * g2point) list, scilla_error list) result
-
-  val ocaml_g1point_to_scilla_lit :
-    g1point -> (Literal.t, scilla_error list) result
-end
+module MkDatatype : functor (Literal : Literal) -> Datatypes

@@ -26,6 +26,8 @@ module type QualifiedName = sig
 
   val equal_name : t -> t -> bool
   val compare_name : t -> t -> int
+
+  val parse_builtin_adt_name : string -> t
 end
 
 val concat_qualifier_and_name : string -> string -> string
@@ -49,6 +51,8 @@ module type Identifier = sig
   val as_string : 'a t -> string
   val as_error_string : 'a t -> string
   val get_rep : 'a t -> 'a
+
+  val parse_builtin_adt_name : string -> loc t
 
   (* A few utilities on id. *)
   val equal_id : 'a t -> 'b t -> bool
