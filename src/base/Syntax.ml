@@ -227,9 +227,8 @@ end
 (*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module ScillaSyntax (SR : Rep) (ER : Rep) (Name : QualifiedName) = struct
-
-  module SLiteral = MkLiteral (Name)
+module ScillaSyntax (SR : Rep) (ER : Rep) (SLiteral : Literal) = struct
+  
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
   
@@ -604,6 +603,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Name : QualifiedName) = struct
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
 end
+
+(* Allow ScillaSyntax to be instantiated using a QualifiedName module
+   instead of a Literal module *)
+
+module MkScillaSyntax (SR : Rep) (ER : Rep) (Name : QualifiedName) =
+  ScillaSyntax (SR) (ER) (MkLiteral (Name))
 
 (*******************************************************)
 (*                   Annotations                       *)

@@ -44,21 +44,23 @@ module ScillaTypeInfo
     (SR : Rep) (ER : sig
       include Rep
 
-      val get_type : rep -> PlainTypes.t inferred_type
+      module ERTU : TypeUtilities
+      val get_type : rep -> ERTU.PlainTypes.t ERTU.inferred_type
     end) =
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
+  module EISyntax = ScillaSyntax (SR) (ER) (ER.ERTU.TULiteral)
+  module EIIdentifier = EISyntax.SIdentifier
   open EISyntax
 
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =
-    let name = get_id i in
-    let sloc = ER.get_loc (get_rep i) in
+    let name = EIIdentifier.as_string i in
+    let sloc = ER.get_loc (EIIdentifier.get_rep i) in
     (* Once Issue #134 is solved, this calculation can be avoided. *)
     let eloc = { sloc with cnum = sloc.cnum + String.length name } in
-    let t = (ER.get_type (get_rep i)).tp in
+    let t = (ER.get_type (EIIdentifier.get_rep i)).tp in
     (name, t, sloc, eloc)
 
   let rec type_info_expr (e, _erep) =
