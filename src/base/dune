@@ -19,9 +19,9 @@
  (name scilla_base)
  (modes byte native)
  (public_name scilla.base)
- (wrapped false)
+ (wrapped true)
  (libraries core num hex stdint angstrom polynomials cryptokit secp256k1
-   bitstring yojson fileutils scilla_cpp_deps menhirLib)
+   bitstring yojson fileutils scilla_crypto menhirLib)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare bisect_ppx
     --conditional))

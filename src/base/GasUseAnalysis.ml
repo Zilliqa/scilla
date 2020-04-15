@@ -24,7 +24,7 @@ open Type
 open Syntax
 open ErrorUtils
 open MonadUtil
-open Polynomial
+open Polynomials.Polynomial
 
 module ScillaGUA
     (SR : Rep) (ER : sig

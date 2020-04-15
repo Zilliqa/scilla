@@ -17,6 +17,8 @@
 *)
 
 open Core
+open Scilla_base
+open Scilla_eval
 open DebugMessage
 open ErrorUtils
 open Api

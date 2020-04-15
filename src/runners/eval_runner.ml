@@ -18,6 +18,8 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Scilla_base
+open Scilla_eval
 open Identifier
 open Syntax
 open FrontEndParser

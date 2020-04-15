@@ -1,5 +1,5 @@
 (library
  (modes byte native)
  (name testgascontracts)
- (wrapped false)
- (libraries core oUnit testutil scilla_base))
+ (wrapped true)
+ (libraries core oUnit scilla_test scilla_base))

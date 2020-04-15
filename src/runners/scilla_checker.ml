@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open Scilla_base
 open ErrorUtils
 open DebugMessage
 

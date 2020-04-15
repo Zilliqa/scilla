@@ -16,6 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Scilla_base
+open Scilla_eval
+
 (* This file aids Testcontracts.ml in setting up a state server
  * and initializing it with some initial data. *)
 

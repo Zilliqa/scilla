@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open OUnit2
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "pm_check"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "pm_check"; "bad"; f ]
@@ -56,4 +56,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-let all_tests env = "pm_check_fail_tests" >::: [ Tests.all_tests env ]
+let tests env = "bad" >::: [ Tests.tests env ]

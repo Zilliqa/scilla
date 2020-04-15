@@ -1,6 +1,6 @@
 (library
  (name scilla_eval)
- (wrapped false)
+ (wrapped true)
  (modes byte native)
  (libraries core angstrom stdint yojson cryptokit scilla_base rpclib unix
    rpclib.json rresult ocaml-protoc)

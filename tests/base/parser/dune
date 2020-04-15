@@ -1,9 +1,11 @@
+(include_subdirs unqualified)
+
 (library
  (modes byte native)
  (name testparser)
- (modules TestParser)
- (wrapped false)
- (libraries core_kernel oUnit testutil testparserfail))
+ (modules All Bad)
+ (wrapped true)
+ (libraries core_kernel oUnit scilla_test))
 
 (executable
  (modes byte native)

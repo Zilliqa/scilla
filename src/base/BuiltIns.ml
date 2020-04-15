@@ -736,7 +736,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     open UsefulLiterals
     open Cryptokit
     open Datatypes.DataTypeDictionary
-    open Schnorr
+    open Scilla_crypto.Schnorr
 
     (* Hash raw bytes / binary string. *)
     let sha256_hasher s = hash_string (Hash.sha2 256) s
@@ -1072,6 +1072,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "schnorr_get_address" ls
 
     open Datatypes.SnarkTypes
+    open Scilla_crypto
 
     (* alt_bn128_G1_add : zksnark_g1point_typ -> zksnark_g1point_type ->
                           Option {zksnark_g1point_type} *)

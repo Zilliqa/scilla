@@ -83,9 +83,9 @@ val scilla_list_to_ocaml :
 val scilla_list_to_ocaml_rev :
   Literal.t -> (Literal.t list, scilla_error list) result
 
-open Snark
-
 module SnarkTypes : sig
+  open Scilla_crypto.Snark
+
   val scalar_type : Type.t
 
   val g1point_type : Type.t

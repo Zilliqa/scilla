@@ -1,5 +1,0 @@
-(library
- (name testpmfail)
- (modes byte native)
- (wrapped false)
- (libraries core oUnit testutil scilla_base))
