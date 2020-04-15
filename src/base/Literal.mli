@@ -20,7 +20,7 @@ open Stdint
 open MonadUtil
 open ErrorUtils
 
-type mtype = Type.t * Type.t [@@deriving sexp]
+type mtype = Type.t * Type.t [@@deriving sexp, equal]
 
 open Integer256
 
@@ -41,7 +41,7 @@ type uint_lit =
 [@@deriving equal]
 
 module type BYSTR = sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, equal]
 
   val width : t -> int
 
@@ -61,7 +61,7 @@ end
 module Bystr : BYSTR
 
 module type BYSTRX = sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, equal]
 
   val width : t -> int
 
@@ -117,5 +117,7 @@ type t =
       )
       CPSMonad.t)
 [@@deriving sexp]
+
+val equal : t -> t -> bool
 
 val subst_type_in_literal : 'a Identifier.t -> Type.t -> t -> t

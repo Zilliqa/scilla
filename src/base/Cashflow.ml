@@ -44,7 +44,7 @@ module CashflowRep (R : Rep) = struct
     | Map t -> "(Map " ^ money_tag_to_string t ^ ")"
     | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
 
-  type rep = money_tag * R.rep [@@deriving sexp]
+  type rep = money_tag * R.rep [@@deriving sexp, equal]
 
   let get_loc r = match r with _, rr -> R.get_loc rr
 

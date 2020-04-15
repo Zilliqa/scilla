@@ -33,10 +33,10 @@ open PrettyPrinters
 (*                Inferred types and qualifiers                 *)
 (****************************************************************)
 
-type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp, equal]
 
 module type QualifiedTypes = sig
-  type t
+  type t [@@deriving equal]
 
   val t_of_sexp : Sexp.t -> t
 
@@ -246,7 +246,7 @@ functor
 (****************************************************************)
 
 module PlainTypes : QualifiedTypes = struct
-  type t = unit [@@deriving sexp]
+  type t = unit [@@deriving sexp, equal]
 
   let mk_qualified_type t = { tp = t; qual = () }
 end

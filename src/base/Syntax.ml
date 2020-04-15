@@ -87,7 +87,7 @@ type builtin =
   | Builtin_schnorr_get_address
 [@@deriving sexp, equal]
 
-type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
+type 'rep builtin_annot = builtin * 'rep [@@deriving sexp, equal]
 
 let pp_builtin b =
   match b with
@@ -186,7 +186,7 @@ let parse_builtin s loc =
 (*               Types of components                   *)
 (*******************************************************)
 
-type component_type = CompTrans | CompProc
+type component_type = CompTrans | CompProc [@@deriving equal]
 
 let component_type_to_string ctp =
   match ctp with CompTrans -> "transition" | CompProc -> "procedure"
@@ -196,7 +196,7 @@ let component_type_to_string ctp =
 (*******************************************************)
 
 module type Rep = sig
-  type rep
+  type rep [@@deriving equal]
 
   val dummy_rep : rep
 
@@ -233,15 +233,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*******************************************************)
 
   type payload = MLit of Literal.t | MVar of ER.rep Identifier.t
-  [@@deriving sexp]
+  [@@deriving sexp, equal]
 
   type pattern =
     | Wildcard
     | Binder of ER.rep Identifier.t
     | Constructor of SR.rep Identifier.t * pattern list
-  [@@deriving sexp]
+  [@@deriving sexp, equal]
 
-  type expr_annot = expr * ER.rep
+  type expr_annot = expr * ER.rep [@@deriving equal]
 
   and expr =
     | Literal of Literal.t
@@ -258,7 +258,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | TApp of ER.rep Identifier.t * Type.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ER.rep Identifier.t * Type.t * expr_annot
-  [@@deriving sexp]
+  [@@deriving sexp, equal]
 
   let expr_rep erep = snd erep
 
@@ -275,7 +275,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                   Statements                        *)
   (*******************************************************)
 
-  type stmt_annot = stmt * SR.rep
+  type stmt_annot = stmt * SR.rep [@@deriving equal]
 
   and stmt =
     | Load of ER.rep Identifier.t * ER.rep Identifier.t
@@ -303,7 +303,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     | CreateEvnt of ER.rep Identifier.t
     | CallProc of SR.rep Identifier.t * ER.rep Identifier.t list
     | Throw of ER.rep Identifier.t option
-  [@@deriving sexp]
+  [@@deriving sexp, equal]
 
   let stmt_rep srep = snd srep
 
@@ -345,14 +345,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     comp_params : (ER.rep Identifier.t * Type.t) list;
     comp_body : stmt_annot list;
   }
+  [@@deriving equal]
 
   type ctr_def = { cname : ER.rep Identifier.t; c_arg_types : Type.t list }
+  [@@deriving equal]
 
   type lib_entry =
     | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
     | LibTyp of ER.rep Identifier.t * ctr_def list
+  [@@deriving equal]
 
   type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
+  [@@deriving equal]
 
   type contract = {
     cname : SR.rep Identifier.t;
@@ -361,6 +365,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     cfields : (ER.rep Identifier.t * Type.t * expr_annot) list;
     ccomps : component list;
   }
+  [@@deriving equal]
 
   (* Contract module: libary + contract definiton *)
   type cmodule = {
@@ -373,6 +378,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     elibs : (SR.rep Identifier.t * SR.rep Identifier.t option) list;
     contr : contract;
   }
+  [@@deriving equal]
 
   (* Library module *)
   type lmodule = {
@@ -604,6 +610,8 @@ end
 
 module ParserRep = struct
   type rep = loc [@@deriving sexp]
+
+  let equal_rep _ _ = true
 
   let dummy_rep = dummy_loc
 

@@ -68,7 +68,7 @@ type t =
   | TypeVar of string
   | PolyFun of string * t
   | Unit
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 let int_bit_width_to_string = function
   | Bits32 -> "32"

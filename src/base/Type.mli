@@ -44,7 +44,7 @@ type t =
   | TypeVar of string
   | PolyFun of string * t
   | Unit
-[@@deriving sexp]
+[@@deriving sexp, equal]
 
 val pp_typ : t -> string
 

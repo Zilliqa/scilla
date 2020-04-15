@@ -21,11 +21,11 @@ open ErrorUtils
 open Syntax
 
 (* An inferred type with possible qualifiers *)
-type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp, equal]
 
 (* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
-  type t
+  type t [@@deriving equal]
 
   val t_of_sexp : Sexp.t -> t
 

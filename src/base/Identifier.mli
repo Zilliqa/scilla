@@ -18,7 +18,7 @@
 
 open ErrorUtils
 
-type 'rep t = Ident of string * 'rep [@@deriving sexp]
+type 'rep t = Ident of string * 'rep [@@deriving sexp, equal]
 
 val asId : string -> loc t
 

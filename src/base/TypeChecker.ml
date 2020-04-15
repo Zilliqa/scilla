@@ -35,7 +35,7 @@ open PrimTypes
 (*******************************************************)
 
 module TypecheckerERep (R : Rep) = struct
-  type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp]
+  type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp, equal]
 
   let dummy_rep = (PlainTypes.mk_qualified_type Unit, R.dummy_rep)
 

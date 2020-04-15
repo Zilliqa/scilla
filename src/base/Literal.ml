@@ -46,7 +46,7 @@ open Type
 (*******************************************************)
 
 (* The first component is a primitive type *)
-type mtype = Type.t * Type.t [@@deriving sexp]
+type mtype = Type.t * Type.t [@@deriving sexp, equal]
 
 open Integer256
 
@@ -93,7 +93,7 @@ let sexp_of_uint_lit = function
 let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
 module type BYSTR = sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, equal]
 
   val width : t -> int
 
@@ -111,7 +111,7 @@ module type BYSTR = sig
 end
 
 module Bystr : BYSTR = struct
-  type t = string [@@deriving sexp]
+  type t = string [@@deriving sexp, equal]
 
   let width = String.length
 
@@ -137,7 +137,7 @@ module Bystr : BYSTR = struct
 end
 
 module type BYSTRX = sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, equal]
 
   val width : t -> int
 
@@ -197,6 +197,27 @@ type t =
       )
       CPSMonad.t)
 [@@deriving sexp]
+
+let rec equal s t =
+  match (s, t) with
+  | StringLit s1, StringLit s2 -> [%equal: string] s1 s2
+  | IntLit i1, IntLit i2 -> [%equal: int_lit] i1 i2
+  | UintLit u1, UintLit u2 -> [%equal: uint_lit] u1 u2
+  | BNum s1, BNum s2 -> [%equal: string] s1 s2
+  | ByStrX s1, ByStrX s2 -> [%equal: Bystrx.t] s1 s2
+  | ByStr s1, ByStr s2 -> [%equal: Bystr.t] s1 s2
+  | Msg m1, Msg m2 ->
+      List.equal
+        (fun (s1, t1) (s2, t2) -> String.( = ) s1 s2 && equal t1 t2)
+        m1 m2
+  | Map (s1, t1), Map (s2, t2) -> [%equal: mtype] s1 s2 && Poly.( = ) t1 t2
+  | ADTValue (s1, t1, u1), ADTValue (s2, t2, u2) ->
+      String.( = ) s1 s2
+      && [%equal: Type.t list] t1 t2
+      && List.equal equal u1 u2
+  | Clo _, Clo _ -> true
+  | TAbs _, TAbs _ -> true
+  | _, _ -> false
 
 (****************************************************************)
 (*                     Type substitutions                       *)
