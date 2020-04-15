@@ -36,12 +36,16 @@ module ScillaAcceptChecker
     (SR : Rep) (ER : sig
       include Rep
 
-      val get_type : rep -> PlainTypes.t inferred_type [@@warning "-32"]
+      module ERTU : TypeUtilities
+      
+      val get_type : rep -> ERTU.PlainTypes.t ERTU.inferred_type [@@warning "-32"]
     end) =
 struct
-  module EISyntax = ScillaSyntax (SR) (ER)
+  module EISyntax = ScillaSyntax (SR) (ER) (ER.ERTU.TULiteral)
+  module EIIdentifier = EISyntax.SIdentifier
   open EISyntax
 
+  
   (* Warning level to use when contract has code paths with potentially
    * no accept statement. *)
   let warning_level_missing_accept = 1
@@ -104,7 +108,7 @@ struct
           ( sprintf
               "transition %s had a potential code path with duplicate accept \
                statements:\n"
-              (get_id transition.comp_name)
+              (EIIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
               (List.map group ~f:(fun loc ->
                    sprintf "  Accept at %s\n" (get_loc_str loc))) )
@@ -125,7 +129,7 @@ struct
     if List.for_all all_accept_groups ~f:List.is_empty then
       warn0
         (sprintf "No transition in contract %s contains an accept statement\n"
-           (get_id contr.cname))
+           (EIIdentifier.as_error_string contr.cname))
         warning_level_missing_accept
 
   (* ************************************** *)
