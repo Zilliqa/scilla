@@ -24,7 +24,6 @@ open Type
 
 module type Literal = sig
 
-  module LIdentifier : Identifier
   module LType : Type
 
   type mtype = LType.t * LType.t [@@deriving sexp]
@@ -125,7 +124,7 @@ module type Literal = sig
            CPSMonad.t)
   [@@deriving sexp]
 
-  val subst_type_in_literal : 'a LIdentifier.t -> LType.t -> t -> t
+  val subst_type_in_literal : 'a LType.TIdentifier.t -> LType.t -> t -> t
 
 end
 

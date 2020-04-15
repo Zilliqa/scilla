@@ -108,6 +108,7 @@ module type Identifier = sig
 
   val get_id : 'a t -> Name.t
   val as_string : 'a t -> string
+  val as_error_string : 'a t -> string
   val get_rep : 'a t -> 'a
 
   (* A few utilities on id. *)
@@ -133,6 +134,8 @@ module MkIdentifier (Name : QualifiedName) = struct
 
   let as_string i = Name.as_string (get_id i)
   
+  let as_error_string i = Name.as_error_string (get_id i)
+
   let get_rep i = match i with Ident (_, l) -> l
 
   (* A few utilities on id. *)

@@ -47,6 +47,7 @@ module type Identifier = sig
 
   val get_id : 'a t -> Name.t
   val as_string : 'a t -> string
+  val as_error_string : 'a t -> string
   val get_rep : 'a t -> 'a
 
   (* A few utilities on id. *)
