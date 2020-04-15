@@ -36,6 +36,7 @@ struct
   module EER = ER
   module SASyntax = ScillaSyntax (SR) (ER)
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
+  module MP = ContractUtil.MessagePayload
   module TU = TypeUtilities
   open SASyntax
 
@@ -143,6 +144,9 @@ struct
     | DefProcParameter of arg_index
 
   let et_nothing = EVal (Exactly, Contrib.empty)
+
+  (* This is a bit of a hack -- we give this type to messages that can't be sharded *)
+  let et_bad_message = EVal (SubsetOf, Contrib.empty)
 
   (**  Helper functions  **)
   let min_precision ua ub =
@@ -292,7 +296,7 @@ struct
     let spurious = et_equal etc et_nothing in
     match (etc, et) with
     | EVal (_, ccontr), EVal (ps, contr) ->
-        let ps' = if spurious then Exactly else ps in
+        let ps' = min_precision (if spurious then Exactly else SubsetOf) ps in
         (* Some (cc, ContribOps.add Conditional cops) *)
         let contr' =
           Contrib.merge
@@ -1226,15 +1230,43 @@ struct
     | Builtin ((b, _), actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
         pure @@ EOp (BuiltinOp b, EComposeSequence arg_ets)
+    (* High-level idea: encode in the expr_type of messages who they are
+        sent to and whether money is sent or not *)
     | Message bs ->
-        let get_payload_et pld =
-          match pld with
-          | MLit l -> pure @@ et_nothing
-          | MVar i -> get_ident_et senv i
+        let get_payload_et (label, pld) =
+          if String.compare label MP.amount_label = 0 then
+            (* Sent amount must be zero for the message send to be shardable *)
+            match pld with
+            | MLit l ->
+                if Integer_Addition_PCM.is_unit_literal (Literal l) then
+                  pure @@ et_nothing
+                else pure @@ et_bad_message
+            | MVar i ->
+                if Integer_Addition_PCM.is_unit senv (Var i) then
+                  get_ident_et senv i
+                else pure @@ et_bad_message
+          else if String.compare label MP.recipient_label = 0 then
+            (* We forbid hard-coded recipient addresses. We report back what
+               idents flow into _recipient, and the blockchain code can decide
+               whether they are contract or non-contract addresses *)
+            match pld with
+            | MLit l -> pure @@ et_bad_message
+            | MVar i -> get_ident_et senv i
+          else
+            match pld with
+            | MLit l -> pure @@ et_nothing
+            | MVar i -> get_ident_et senv i
         in
-        (* Ignore labels, just analyse payloads *)
-        let _, plds = List.split bs in
-        let%bind pld_ets = mapM get_payload_et plds in
+        (* We only care about _recipient and _amount labels *)
+        let labels_to_analyse = [ MP.recipient_label; MP.amount_label ] in
+        let plds =
+          List.filter (fun (label, pld) -> List.mem label labels_to_analyse) bs
+        in
+        (* Events are also built using the Message constructor; don't want an empty list *)
+        let%bind pld_ets =
+          if List.length plds = 0 then pure @@ [ et_nothing ]
+          else mapM get_payload_et plds
+        in
         (* Don't really care about linearity for msgs, but Par fits better than Seq *)
         pure @@ EComposeParallel (et_nothing, pld_ets)
     | Constr (cname, _, actuals) ->
