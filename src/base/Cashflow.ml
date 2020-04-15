@@ -52,17 +52,17 @@ module CashflowRep (R : Rep) = struct
 
   let dummy_rep = (NoInfo, R.dummy_rep)
 
-  let mk_id s = add_tag_to_id s NoInfo
+  let mk_rep (t : money_tag) (s : R.rep) = (t, s)
 
-  let mk_id_address s = mk_id (R.mk_id_address s)
+  let address_rep = mk_rep NoInfo R.address_rep
 
-  let mk_id_uint128 s = mk_id (R.mk_id_uint128 s)
+  let uint128_rep = mk_rep NoInfo R.uint128_rep
 
-  let mk_id_uint32 s = mk_id (R.mk_id_uint32 s)
+  let uint32_rep = mk_rep NoInfo R.uint32_rep
 
-  let mk_id_bnum s = mk_id (R.mk_id_bnum s)
+  let bnum_rep = mk_rep NoInfo R.bnum_rep
 
-  let mk_id_string s = mk_id (R.mk_id_string s)
+  let string_rep = mk_rep NoInfo R.string_rep
 
   let parse_rep s = (NoInfo, R.parse_rep s)
 
@@ -88,7 +88,8 @@ struct
   (*******************************************************)
 
   (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
-  let add_noinfo_to_ident i = ECFR.mk_id i
+  let add_noinfo_to_ident = function
+    | Ident (i, r) -> asIdL i (ECFR.mk_rep NoInfo r)
 
   let add_money_or_mapmoney_to_ident i typ =
     let rec create_money_tag typ =

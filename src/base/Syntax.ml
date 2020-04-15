@@ -75,6 +75,7 @@ type builtin =
   | Builtin_div
   | Builtin_rem
   | Builtin_pow
+  | Builtin_isqrt
   | Builtin_to_int32
   | Builtin_to_int64
   | Builtin_to_int128
@@ -124,6 +125,7 @@ let pp_builtin b =
   | Builtin_div -> "div"
   | Builtin_rem -> "rem"
   | Builtin_pow -> "pow"
+  | Builtin_isqrt -> "isqrt"
   | Builtin_to_int32 -> "to_int32"
   | Builtin_to_int64 -> "to_int64"
   | Builtin_to_int128 -> "to_int128"
@@ -169,6 +171,7 @@ let parse_builtin s loc =
   | "div" -> Builtin_div
   | "rem" -> Builtin_rem
   | "pow" -> Builtin_pow
+  | "isqrt" -> Builtin_isqrt
   | "to_int32" -> Builtin_to_int32
   | "to_int64" -> Builtin_to_int64
   | "to_int128" -> Builtin_to_int128
@@ -199,15 +202,15 @@ module type Rep = sig
 
   val get_loc : rep -> loc
 
-  val mk_id_address : string -> rep Identifier.t
+  val address_rep : rep
 
-  val mk_id_uint128 : string -> rep Identifier.t
+  val uint128_rep : rep
 
-  val mk_id_uint32 : string -> rep Identifier.t
+  val uint32_rep : rep
 
-  val mk_id_bnum : string -> rep Identifier.t
+  val bnum_rep : rep
 
-  val mk_id_string : string -> rep Identifier.t
+  val string_rep : rep
 
   val rep_of_sexp : Sexp.t -> rep
 
@@ -606,15 +609,15 @@ module ParserRep = struct
 
   let get_loc l = l
 
-  let mk_id_address s = Ident (s, dummy_loc)
+  let address_rep = dummy_loc
 
-  let mk_id_uint128 s = Ident (s, dummy_loc)
+  let uint128_rep = dummy_loc
 
-  let mk_id_uint32 s = Ident (s, dummy_loc)
+  let uint32_rep = dummy_loc
 
-  let mk_id_bnum s = Ident (s, dummy_loc)
+  let bnum_rep = dummy_loc
 
-  let mk_id_string s = Ident (s, dummy_loc)
+  let string_rep = dummy_loc
 
   let parse_rep _ = dummy_loc
 

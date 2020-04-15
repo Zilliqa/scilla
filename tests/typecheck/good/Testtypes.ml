@@ -179,11 +179,13 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let tests =
     [
+      "ackermann.scilexp";
       "branch-match.scilexp";
       "builtin-strings.scilexp";
       "builtin-bech32-1.scilexp";
       "builtin-bech32-2.scilexp";
       "builtin-alt-bn128.scilexp";
+      "builtin-isqrt.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
       "addr.scilexp";

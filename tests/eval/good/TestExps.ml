@@ -21,6 +21,7 @@ open! Int.Replace_polymorphic_compare
 
 let explist =
   [
+    "ackermann.scilexp";
     "addr.scilexp";
     "app2.scilexp";
     "app3.scilexp";
@@ -45,6 +46,7 @@ let explist =
     "builtin-bsub.scilexp";
     "builtin-bech32-1.scilexp";
     "builtin-bech32-2.scilexp";
+    "builtin-isqrt.scilexp";
     "cons.scilexp";
     "fib.scilexp";
     "func_pair.scilexp";

@@ -62,3 +62,5 @@ src/stdlib/*.json
 deps/libff/build/
 deps/libff/install/
 
+# ocamldebug init file
+.ocamldebug
