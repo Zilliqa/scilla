@@ -1320,6 +1320,26 @@ struct
 
   let sa_expr_wrapper senv erep = sa_expr senv 0 erep
 
+  let read_after_write summary read =
+    let opt_keys_eq oa ob =
+      match (oa, ob) with
+      | None, None -> true
+      | Some la, Some lb ->
+          List.length la = List.length lb
+          && List.for_all2 (fun a b -> get_id a = get_id b) la lb
+      | _ -> false
+    in
+    match read with
+    | Read (rf, rkeys) ->
+        ComponentSummary.exists
+          (fun op ->
+            match op with
+            | Write ((wf, wkeys), _) ->
+                get_id rf = get_id wf && opt_keys_eq rkeys wkeys
+            | _ -> false)
+          summary
+    | _ -> false
+
   (* Precondition: senv contains the component parameters, appropriately marked *)
   let rec sa_stmt senv summary (stmts : stmt_annot list) ct =
     (* Helpers to continue after
@@ -1347,25 +1367,39 @@ struct
         match s with
         (* Reads and Writes *)
         | Load (x, f) ->
-            cont_ident_op x
-              (EVal (et_pseudofield (f, None)))
-              (Read (f, None))
-              summary sts
+            (* If the value we're reading is not fresh, mark this Load as exclusive *)
+            let et, op =
+              if read_after_write summary (Read (f, None)) then
+                ( EUnknown,
+                  AlwaysExclusive
+                    ( Some (ER.get_loc (get_rep x)),
+                      pp_operation (Read (f, None))
+                      ^ " comes after write to same location." ) )
+              else (EVal (et_pseudofield (f, None)), Read (f, None))
+            in
+            cont_ident_op x et op summary sts
         | Store (f, i) ->
             let%bind ic = get_ident_et senv i in
             cont_op (Write ((f, None), ic)) summary sts
         | MapGet (x, m, klist, _) ->
-            let op =
+            let et, op =
               if map_access_can_be_summarised senv m klist then
-                Read (m, Some klist)
+                if read_after_write summary (Read (m, Some klist)) then
+                  ( EUnknown,
+                    AlwaysExclusive
+                      ( Some (ER.get_loc (get_rep x)),
+                        pp_operation (Read (m, Some klist))
+                        ^ " comes after write to same location." ) )
+                else
+                  (EVal (et_pseudofield (m, Some klist)), Read (m, Some klist))
               else
-                AlwaysExclusive
-                  ( Some (ER.get_loc (get_rep m)),
-                    pp_operation (Read (m, Some klist)) )
+                ( EVal (et_pseudofield (m, Some klist)),
+                  AlwaysExclusive
+                    ( Some (ER.get_loc (get_rep m)),
+                      pp_operation (Read (m, Some klist))
+                      ^ " cannot be summarised." ) )
             in
-            cont_ident_op x
-              (EVal (et_pseudofield (m, Some klist)))
-              op summary sts
+            cont_ident_op x et op summary sts
         | MapUpdate (m, klist, opt_i) ->
             let%bind ic =
               match opt_i with
