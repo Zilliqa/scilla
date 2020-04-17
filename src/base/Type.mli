@@ -114,4 +114,3 @@ val bystrx_typ : int -> t
 
 (* Given a ByStrX, return integer X *)
 val bystrx_width : t -> int option
-

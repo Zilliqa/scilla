@@ -1276,10 +1276,7 @@ struct
     (* Bind contract parameters. *)
     let si a t = mk_typed_id a t in
     let all_cparams =
-      [
-        ( si ContractUtil.creation_block_label Type.bnum_typ,
-          Type.bnum_typ );
-      ]
+      [ (si ContractUtil.creation_block_label Type.bnum_typ, Type.bnum_typ) ]
       @ cmod.contr.cparams
     in
     let genv_cparams =

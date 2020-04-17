@@ -366,8 +366,7 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = ) then
-      pure Type.msg_typ
+    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure Type.msg_typ
     else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
       pure Type.event_typ
     else if List.Assoc.mem m exception_label ~equal:String.( = ) then
