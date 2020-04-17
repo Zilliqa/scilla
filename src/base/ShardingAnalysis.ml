@@ -39,6 +39,7 @@ struct
   module MP = ContractUtil.MessagePayload
   module TU = TypeUtilities
   open SASyntax
+  open PrettyPrinters
 
   (* field name, with optional map keys; if the field is a map, the pseudofield
      is always a bottom-level access *)
@@ -67,6 +68,8 @@ struct
 
   type contrib_source =
     | UnknownSource
+    | ConstantLiteral of literal
+    | ConstantContractParameter of ER.rep ident
     | Pseudofield of pseudofield
     (* When analysing pure functions, we describe their output's contributions
        in terms of how the function's formal parameters flow into the output *)
@@ -79,7 +82,9 @@ struct
 
   let pp_contrib_source cs =
     match cs with
-    | UnknownSource -> "unknown_source"
+    | UnknownSource -> "_unknown_source"
+    | ConstantLiteral l -> "Literal " ^ pp_literal_simplified l
+    | ConstantContractParameter id -> "CParam " ^ get_id id
     | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
     | FormalParameter i -> "_" ^ string_of_int i
     | ProcParameter i -> "_p" ^ string_of_int i
@@ -145,8 +150,8 @@ struct
 
   let et_nothing = EVal (Exactly, Contrib.empty)
 
-  (* This is a bit of a hack -- we give this type to messages that can't be sharded *)
-  let et_bad_message = EVal (SubsetOf, Contrib.empty)
+  (* This is a bit of a hack -- we give this type to messages that may send money *)
+  let et_sends_money = EVal (SubsetOf, Contrib.empty)
 
   (**  Helper functions  **)
   let min_precision ua ub =
@@ -1019,6 +1024,18 @@ struct
 
   let et_pseudofield (f, opt_keys) = (Exactly, contrib_pseudofield (f, opt_keys))
 
+  let et_literal l =
+    EVal
+      ( Exactly,
+        Contrib.singleton (ConstantLiteral l) (LinearContrib, ContribOps.empty)
+      )
+
+  let et_contract_param id =
+    EVal
+      ( Exactly,
+        Contrib.singleton (ConstantContractParameter id)
+          (LinearContrib, ContribOps.empty) )
+
   let is_bottom_level_access m klist =
     let mt = (ER.get_type (get_rep m)).tp in
     let nindices = List.length klist in
@@ -1178,6 +1195,7 @@ struct
       match c with
       | Pseudofield (m, Some klist) -> map_access_can_be_summarised senv m klist
       | Pseudofield (f, None) -> true
+      | ConstantLiteral _ | ConstantContractParameter _ -> true
       | UnknownSource | FormalParameter _ | ProcParameter _ -> true
     in
     match et with
@@ -1350,7 +1368,7 @@ struct
     let cont senv expr = sa_expr senv fp_count expr in
     let e, rep = erep in
     match e with
-    | Literal l -> pure @@ et_nothing
+    | Literal l -> pure @@ et_literal l
     | Var i ->
         let%bind ic = get_ident_et senv i in
         pure @@ ic
@@ -1367,19 +1385,21 @@ struct
             | MLit l ->
                 if Integer_Addition_PCM.is_unit_literal (Literal l) then
                   pure @@ et_nothing
-                else pure @@ et_bad_message
+                else pure @@ et_sends_money
             | MVar i ->
                 if Integer_Addition_PCM.is_unit senv (Var i) then
-                  get_ident_et senv i
-                else pure @@ et_bad_message
+                  pure @@ et_nothing
+                else pure @@ et_sends_money
           else if String.compare label MP.recipient_label = 0 then
-            (* We forbid hard-coded recipient addresses. We report back what
-               idents flow into _recipient, and the blockchain code can decide
-               whether they are contract or non-contract addresses *)
+            (* We report back what idents flow into _recipient, and the
+               blockchain code can decide whether they are contract or
+               non-contract addresses *)
             match pld with
-            | MLit l -> pure @@ et_bad_message
+            | MLit l -> pure @@ et_literal l
             | MVar i -> get_ident_et senv i
           else
+            (* Currently, we only call get_payload_et for _recipient and
+               _amount, so this branch is not taken *)
             match pld with
             | MLit l -> pure @@ et_nothing
             | MVar i -> get_ident_et senv i
@@ -1788,8 +1808,8 @@ struct
     (* Bind contract parameters *)
     let senv =
       let all_params = SCU.append_implict_contract_params cmod.contr.cparams in
-      env_bind_ident_map senv all_params (fun _ _ _ ->
-          IdentSig (DoesNotShadow, PCMStatus.empty, et_nothing))
+      env_bind_ident_map senv all_params (fun _ id _ ->
+          IdentSig (DoesNotShadow, PCMStatus.empty, et_contract_param id))
     in
 
     (* This is a combined map and fold: fold for senv', map for summaries *)
