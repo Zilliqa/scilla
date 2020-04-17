@@ -226,6 +226,60 @@ struct
         let ds = pp_efun_def def in
         Printf.sprintf "EFun(%s) = %s" fargs ds
 
+  (* TODO: should this belong to the blockchain code? *)
+  type sharding_constraint =
+    (* Non-spurious read, non-commutative write, or conditional *)
+    | CMustOwn of contrib_source
+    (* If a commutative write happens to a field, reads of that field must be
+       willing to accept that they may see stale data *)
+    | CMustAcceptWeakRead of contrib_source
+    (* What PCM is the commutative write under. The PCMs for different writes
+       must coincide for the constraint to be satisfiable. *)
+    | CMustHavePCM of contrib_source * string
+    (* Message sends are OK only to non-contracts *)
+    (* If money is sent, CMustOwn _balance to prevent double-spending. *)
+    | CAddrMustBeNonContract of arg_index
+    (* There should be no duplicate values in these arguments. This is to
+       guarantee map keys do not alias. This is important because our
+       commutativity analysis assumes that pseudofields do not alias. *)
+    | CMustNotBeEqual of arg_index list
+    (* If a transition accepts money, it must be processed in the sender shard
+       to prevent double-spending. Accepting money is commutative, though, so
+       we do not need to have CMustOwn _balance. *)
+    | CSenderShard
+    (* This constraint cannot be satisfied --> must go to the DS *)
+    | CUnsat
+
+  let pp_sharding_constraint sc =
+    match sc with
+    | CMustOwn cs -> "CMustOwn " ^ pp_contrib_source cs
+    | CMustAcceptWeakRead cs -> "CMustAcceptWeakRead " ^ pp_contrib_source cs
+    | CMustHavePCM (cs, pcm_str) ->
+        "CMustHavePCM " ^ pp_contrib_source cs ^ " " ^ pcm_str
+    | CAddrMustBeNonContract i -> "CAddrMustBeNonContract " ^ string_of_int i
+    | CMustNotBeEqual il ->
+        Printf.sprintf "CMustNotBeEqual [%s]"
+          (String.concat "; " (List.map string_of_int il))
+    | CSenderShard -> "CSenderShard"
+    | CUnsat -> "CUnsat"
+
+  module OrderedShardingConstraint = struct
+    type t = sharding_constraint
+
+    let compare a b =
+      let str_a = pp_sharding_constraint a in
+      let str_b = pp_sharding_constraint b in
+      compare str_a str_b
+  end
+
+  module ShardingSummary = Set.Make (OrderedShardingConstraint)
+
+  let pp_sharding summ =
+    let scs = ShardingSummary.elements summ in
+    List.fold_left
+      (fun acc sc -> acc ^ "  " ^ pp_sharding_constraint sc ^ "\n")
+      "" scs
+
   (* Type normalisation *)
   let et_is_val et = match et with EVal _ -> true | _ -> false
 
@@ -668,7 +722,9 @@ struct
 
     val is_unit : SAEnv.t -> expr -> bool
 
-    val is_op : expr -> ER.rep ident -> ER.rep ident -> bool
+    val is_op : contrib_op -> bool
+
+    val is_op_expr : expr -> ER.rep ident -> ER.rep ident -> bool
 
     val is_spurious_conditional_expr' :
       SAEnv.t -> ER.rep ident -> (pattern * expr_annot) list -> bool
@@ -836,7 +892,9 @@ struct
           | _ -> false )
       | _ -> false
 
-    let is_op expr ida idb =
+    let is_op op = match op with BuiltinOp Builtin_add -> true | _ -> false
+
+    let is_op_expr expr ida idb =
       match expr with
       | Builtin ((Builtin_add, _), actuals) ->
           let a_uses =
@@ -848,9 +906,11 @@ struct
           a_uses = 1 && b_uses = 1
       | _ -> false
 
-    let is_spurious_conditional_expr' = sc_expr is_applicable_type is_unit is_op
+    let is_spurious_conditional_expr' =
+      sc_expr is_applicable_type is_unit is_op_expr
 
-    let is_spurious_conditional_stmt' = sc_stmt is_applicable_type is_unit is_op
+    let is_spurious_conditional_stmt' =
+      sc_stmt is_applicable_type is_unit is_op_expr
   end
 
   let int_add_pcm = (module Integer_Addition_PCM : PCM)
@@ -873,6 +933,73 @@ struct
     List.exists
       (fun (module P : PCM) -> P.is_spurious_conditional_stmt' xc x clauses)
       enabled_pcms
+
+  let identify_pcm_for_op (op : contrib_op) =
+    let candidate =
+      List.find_opt (fun (module P : PCM) -> P.is_op op) enabled_pcms
+    in
+    match candidate with
+    | Some (module P : PCM) -> Some P.pcm_identifier
+    | _ -> None
+
+  let is_comm_write op =
+    match op with
+    | Write (wp, et) -> (
+        match et with
+        | EVal (ps, kc) -> (
+            let field_contribs =
+              Contrib.filter
+                (fun cs c -> match cs with Pseudofield _ -> true | _ -> false)
+                kc
+            in
+            (* There is precisely one field contribution *)
+            let exactly_one =
+              ps = Exactly && Contrib.cardinal field_contribs = 1
+            in
+            if not exactly_one then (false, None)
+            else
+              let ocs = Contrib.find_opt (Pseudofield wp) field_contribs in
+              match ocs with
+              (* From the field we're writing to *)
+              | Some (card, ops) -> (
+                  (* The contribution is Linear and has one operation applied to it *)
+                  let linear_op =
+                    card = LinearContrib && ContribOps.cardinal ops = 1
+                  in
+                  if not linear_op then (false, None)
+                  else
+                    (* And that operation is a PCM operation for some PCM *)
+                    let op = ContribOps.choose ops in
+                    match identify_pcm_for_op op with
+                    | Some pcm_id -> (true, Some pcm_id)
+                    | None -> (false, None) )
+              | _ -> (false, None) )
+        | _ -> (false, None) )
+    | _ -> (false, None)
+
+  (* Does the given contrib_source show up in known & normalised expr_type? *)
+  let cs_in_known_et cs et =
+    match et with
+    | EVal (_, kc) -> (
+        match Contrib.find_opt cs kc with Some _ -> true | _ -> false )
+    | _ -> false
+
+  (* In context should have *)
+  let is_spurious_read op context_without_cws =
+    match op with
+    | Read pf ->
+        let read_is_used =
+          ComponentSummary.exists
+            (fun user_op ->
+              match user_op with
+              | Write (_, et) | ConditionOn et | EmitEvent et | SendMessages et
+                ->
+                  cs_in_known_et (Pseudofield pf) et
+              | Read _ | AcceptMoney | AlwaysExclusive _ -> false)
+            context_without_cws
+        in
+        not read_is_used
+    | _ -> false
 
   let env_bind_component senv comp (sgn : signature) =
     let i = comp.comp_name in
@@ -1545,6 +1672,85 @@ struct
         | LibTyp _ -> pure senv)
       ~init:senv lel
 
+  (* TODO: generate separate constraints for when WeakReads are unacceptable *)
+  let constraints_for (meta : SR.rep Syntax.ident * ComponentSummary.t) =
+    let comp_name, comp_summ = meta in
+
+    (* If there is an AlwaysExclusive operation, no way to shard this transition *)
+    let exists_exclusive =
+      ComponentSummary.exists
+        (fun op -> match op with AlwaysExclusive _ -> true | _ -> false)
+        comp_summ
+    in
+    (* If an unknown message is sent, no way to shard this transition  *)
+    (* If a message is sent to a non-parameter address, we choose not to shard
+       this transition *)
+    let sends_unknown_message =
+      ComponentSummary.exists
+        (fun op ->
+          match op with
+          | SendMessages et -> ( match et with EVal _ -> false | _ -> true )
+          | _ -> false)
+        comp_summ
+    in
+    if exists_exclusive || sends_unknown_message then
+      ShardingSummary.singleton CUnsat
+    else
+      let ss = ShardingSummary.empty in
+      (* Accepting money *)
+      let may_accept_money =
+        ComponentSummary.exists
+          (fun op -> match op with AcceptMoney -> true | _ -> false)
+          comp_summ
+      in
+      (* If you accept money, the transaction must be processed in the sender's
+         shard to prevent double-spends *)
+      let ss =
+        if may_accept_money then ShardingSummary.add CSenderShard ss else ss
+      in
+      (* Sending messages *)
+      let sent_messages =
+        ComponentSummary.filter
+          (fun op -> match op with SendMessages _ -> true | _ -> false)
+          comp_summ
+      in
+      (* see et_money_message *)
+      let may_send_money =
+        ComponentSummary.exists
+          (fun op ->
+            match op with
+            | SendMessages et -> (
+                match et with EVal (ps, _) -> ps = SubsetOf | _ -> false )
+            | _ -> false)
+          sent_messages
+      in
+      (* If you send money, you must own _balance to prevent double-spends *)
+      let ss =
+        if may_send_money then
+          ShardingSummary.add
+            (CMustOwn (Pseudofield (fst @@ SCU.balance_field, None)))
+            ss
+        else ss
+      in
+
+      (* Step 1: detect commutative writes *)
+      let comm_writes =
+        ComponentSummary.filter (fun op -> fst @@ is_comm_write op) comp_summ
+      in
+      (* Step 2: Detect corresponding spurious reads *)
+      (* A read is spurious if it only flows into a commutative write (or in nothing) *)
+      let summ_without_cws = ComponentSummary.diff comp_summ comm_writes in
+      let spurious_reads =
+        ComponentSummary.filter
+          (fun op -> is_spurious_read op summ_without_cws)
+          summ_without_cws
+      in
+      let summ_without_cwsr =
+        ComponentSummary.diff summ_without_cws spurious_reads
+      in
+
+      ss
+
   let sa_module (cmod : cmodule) (elibs : libtree list) =
     (* Stage 1: determine state footprint of components *)
     let senv = SAEnv.mk () in
@@ -1587,7 +1793,7 @@ struct
     in
 
     (* This is a combined map and fold: fold for senv', map for summaries *)
-    let%bind senv, _ =
+    let%bind senv, summaries =
       foldM
         (fun (senv_acc, summ_acc) comp ->
           let%bind comp_summ = sa_component_summary senv_acc comp in
@@ -1595,11 +1801,19 @@ struct
             env_bind_component senv_acc comp
               (ComponentSig (comp.comp_params, comp_summ))
           in
-          let summaries = (comp.comp_name, comp_summ) :: summ_acc in
+          (* We only want transitions in the output *)
+          let summaries =
+            if comp.comp_type = CompTrans then
+              let const = constraints_for (comp.comp_name, comp_summ) in
+              (comp.comp_name, comp_summ, const) :: summ_acc
+            else summ_acc
+          in
           pure @@ (senv', summaries))
         (senv, []) cmod.contr.ccomps
     in
 
-    (* let summaries = List.rev summaries in *)
-    pure senv
+    let summaries = List.rev summaries in
+    pure summaries
+
+  (* pure senv *)
 end

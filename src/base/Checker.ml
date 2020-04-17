@@ -183,12 +183,12 @@ let analyze_print_sharding cmod typed_elibs =
             "\n[Sharding analysis]:\n module [%s] is successfully analyzed.\n"
             (get_id cmod.contr.cname);
       let _ =
-        (* List.iter
-          ~f:(fun (i, summ) ->
+        List.iter
+          ~f:(fun (i, summ, const) ->
             pout
-            @@ sprintf "State footprint for component %s:\n%s\n\n"
-                  (get_id i) (SA.pp_summary summ)) *)
-          pout @@ (SA.SAEnv.pp cpol)
+            @@ sprintf "State footprint for transition %s:\n%sSharding constraints:\n%s\n"
+                  (get_id i) (SA.pp_summary summ) (SA.pp_sharding const)) cpol
+          (* pout @@ (SA.SAEnv.pp cpol) *)
       in
       res
 
