@@ -76,6 +76,53 @@ module type Type = sig
 
   val subst_type_in_type' : 'a TIdentifier.t -> t -> t -> t
 
+  (****************************************************************)
+  (*                     PrimType utilities                       *)
+  (****************************************************************)
+
+  val is_prim_type : t -> bool
+
+  val is_int_type : t -> bool
+
+  val is_uint_type : t -> bool
+
+  val is_bystrx_type : t -> bool
+
+  val int_width : t -> int option
+
+  val int32_typ : t
+
+  val int64_typ : t
+
+  val int128_typ : t
+
+  val int256_typ : t
+
+  val uint32_typ : t
+
+  val uint64_typ : t
+
+  val uint128_typ : t
+
+  val uint256_typ : t
+
+  val string_typ : t
+
+  val bnum_typ : t
+
+  val msg_typ : t
+
+  val event_typ : t
+
+  val exception_typ : t
+
+  val bystr_typ : t
+
+  val bystrx_typ : int -> t
+
+  (* Given a ByStrX, return integer X *)
+  val bystrx_width : t -> int option
+
 end
 
 (*******************************************************)
@@ -273,5 +320,57 @@ module MkType (Name : QualifiedName) = struct
 
   (* The same as above, but for a variable with locations *)
   let subst_type_in_type' tv = subst_type_in_type (TIdentifier.as_string tv)
+
+  (****************************************************************)
+  (*                     PrimType utilities                       *)
+  (****************************************************************)
+
+  let int32_typ = PrimType (Int_typ Bits32)
+
+  let int64_typ = PrimType (Int_typ Bits64)
+
+  let int128_typ = PrimType (Int_typ Bits128)
+
+  let int256_typ = PrimType (Int_typ Bits256)
+
+  let uint32_typ = PrimType (Uint_typ Bits32)
+
+  let uint64_typ = PrimType (Uint_typ Bits64)
+
+  let uint128_typ = PrimType (Uint_typ Bits128)
+
+  let uint256_typ = PrimType (Uint_typ Bits256)
+
+  let string_typ = PrimType String_typ
+
+  let bnum_typ = PrimType Bnum_typ
+
+  let msg_typ = PrimType Msg_typ
+
+  let event_typ = PrimType Event_typ
+
+  let exception_typ = PrimType Exception_typ
+
+  let bystr_typ = PrimType Bystr_typ
+
+  let bystrx_typ b = PrimType (Bystrx_typ b)
+
+  let int_width = function
+    | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
+    | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
+    | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
+    | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+    | _ -> None
+
+  (* Given a ByStrX string, return integer X *)
+  let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
+
+  let is_prim_type = function PrimType _ -> true | _ -> false
+
+  let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
+
+  let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
+
+  let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
 
 end

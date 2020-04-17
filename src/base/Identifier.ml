@@ -31,6 +31,7 @@ module type QualifiedName = sig
   val compare_name : t -> t -> int
 
   val parse_builtin_adt_name : string -> t
+  val parse_variable_name : string -> t
 end
 
 (* Names flattede immediately during parsing *)
@@ -45,6 +46,8 @@ module FlattenedName = struct
   let compare_name = String.compare
 
   let parse_builtin_adt_name n = n
+  let parse_variable_name n = n
+
 end
 
 (* Names possibly qualified by a namespace *)
@@ -74,6 +77,8 @@ module LocalName = struct
   let compare_name a b = String.compare (as_string a) (as_string b)
 
   let parse_builtin_adt_name n = Simple n
+  (* Variable names are always unqualified *)
+  let parse_variable_name n = Simple n
 
 end
   
@@ -102,6 +107,8 @@ module CanonicalName = struct
   let compare_name a b = String.compare (as_string a) (as_string b)
 
   let parse_builtin_adt_name n = Simple n
+  (* Variable names are always unqualified *)
+  let parse_variable_name n = Simple n
 
 end
 
@@ -113,13 +120,14 @@ module type Identifier = sig
 
   val asId : Name.t -> loc t
   val asIdL : Name.t -> 'a -> 'a t
-
+  
   val get_id : 'a t -> Name.t
   val as_string : 'a t -> string
   val as_error_string : 'a t -> string
   val get_rep : 'a t -> 'a
 
   val parse_builtin_adt_name : string -> loc t
+  val parse_variable_name : string -> 'a -> 'a t
   
   (* A few utilities on id. *)
   val equal_id : 'a t -> 'b t -> bool
@@ -149,7 +157,9 @@ module MkIdentifier (Name : QualifiedName) = struct
   let get_rep i = match i with Ident (_, l) -> l
 
   let parse_builtin_adt_name n = Ident (Name.parse_builtin_adt_name n, dummy_loc)
-  
+
+  let parse_variable_name n loc = Ident (Name.parse_variable_name n, loc)
+
   (* A few utilities on id. *)
   let equal_id a b = Name.equal_name (get_id a) (get_id b)
 

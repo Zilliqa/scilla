@@ -604,12 +604,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (SLiteral : Literal) = struct
     | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
 end
 
-(* Allow ScillaSyntax to be instantiated using a QualifiedName module
-   instead of a Literal module *)
-
-module MkScillaSyntax (SR : Rep) (ER : Rep) (Name : QualifiedName) =
-  ScillaSyntax (SR) (ER) (MkLiteral (Name))
-
 (*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)

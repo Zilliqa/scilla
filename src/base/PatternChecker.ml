@@ -32,14 +32,16 @@ module ScillaPatternchecker
     (SR : Rep) (ER : sig
       include Rep
 
-      val get_type : rep -> PlainTypes.t inferred_type
+      module ERTU : TypeUtilities
+      
+      val get_type : rep -> ERTU.PlainTypes.t ERTU.inferred_type
     end) =
 struct
   module SPR = SR
   module EPR = ER
-  module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
-  module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
-  module TU = TypeUtilities
+  module UncheckedPatternSyntax = ScillaSyntax (SR) (ER) (ER.ERTU.TULiteral)
+  module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR) (ER.ERTU.TULiteral)
+  module TU = ER.ERTU
   open UncheckedPatternSyntax
   open TU
 

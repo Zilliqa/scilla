@@ -33,7 +33,8 @@ open Identifier
 open Syntax
 
 module ScillaAcceptChecker
-    (SR : Rep) (ER : sig
+    (SR : Rep)
+    (ER : sig
       include Rep
 
       module ERTU : TypeUtilities

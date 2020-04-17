@@ -72,11 +72,15 @@ module type BuiltIns = sig
 
 end
 
-module MkBuiltIns (BILiteral : Literal) = struct
+module MkBuiltIns (Literal : Literal) = struct
 
+  module BILiteral = Literal
+  module BITypeUtils = MkTypeUtilities (BILiteral)
+  
   open BILiteral
   open LType
   open TIdentifier
+  open BITypeUtils.TypeUtilities
   
   module UsefulLiterals = struct
     let true_lit = ADTValue ("True", [], [])

@@ -20,7 +20,7 @@ open ErrorUtils
 open Core_kernel
 open Literal
 
-module type Datatypes = sig
+module type Datatype = sig
 
   module DTLiteral : Literal
   
@@ -116,4 +116,4 @@ module type Datatypes = sig
 
 end
 
-module MkDatatype : functor (Literal : Literal) -> Datatypes
+module MkDatatype : functor (Literal : Literal) -> Datatype

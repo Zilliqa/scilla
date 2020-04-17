@@ -25,18 +25,21 @@ open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
 open Datatypes
+open BuiltIns
 
 (*****************************************************************)
 (*   Recursion principles for built-in and user-defined ADTs     *)
 (*****************************************************************)
 
-module ScillaRecursion (SR : Rep) (ER : Rep) = struct
-  module PreRecursionSyntax = ScillaSyntax (SR) (ER)
+module ScillaRecursion (SR : Rep) (ER : Rep) (Datatypes : Datatypes) = struct
+  module PreRecursionSyntax = ScillaSyntax (SR) (ER) (Datatypes.DTLiteral)
   module SRecRep = SR
   module ERecRep = ER
-  module RecursionSyntax = ScillaSyntax (SRecRep) (ERecRep)
+  module RecursionSyntax = ScillaSyntax (SRecRep) (ERecRep) (Datatypes.DTLiteral)
+  module RecursionBuiltIns = MkBuiltIns (Datatypes.DTLiteral)
   include RecursionSyntax
   include ERecRep
+  open PreRecursionSyntax.SType
   open PreRecursionSyntax
 
   let wrap_recursion_err e ?(opt = "") = wrap_err e "ADT" ~opt
@@ -168,11 +171,11 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
         | CallProc (p, args) ->
-            if is_proc_in_scope (get_id p) then
+            if is_proc_in_scope p then
               pure @@ RecursionSyntax.CallProc (p, args)
             else
               fail1
-                (sprintf "Procedure %s is not in scope." (get_id p))
+                (sprintf "Procedure %s is not in scope." (SIdentifier.as_error_string p))
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
       in
@@ -220,7 +223,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     let%bind recursion_ccomps_rev, _ =
       foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
-          let is_proc_in_scope p = List.mem acc_procs p ~equal:String.( = ) in
+          let is_proc_in_scope p = List.mem acc_procs p ~equal:(fun pid1 pid2 -> String.( SIdentifier.as_string pid1 = SIdentifier.as_string pid2)) in
           let%bind checked_component =
             recursion_component is_adt_in_scope is_adt_ctr_in_scope
               is_proc_in_scope comp
@@ -228,7 +231,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let new_acc_procs =
             match comp.comp_type with
             | CompTrans -> acc_procs
-            | CompProc -> get_id comp.comp_name :: acc_procs
+            | CompProc -> comp.comp_name :: acc_procs
           in
           pure @@ (checked_component :: acc_comps, new_acc_procs))
     in
@@ -272,8 +275,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     match lib_entry with
     | LibVar (n, t, e) ->
         wrap_with_info
-          ( sprintf "Type error in library variable %s:\n" (get_id n),
-            ER.get_loc (get_rep n) )
+          ( sprintf "Type error in library variable %s:\n" (SIdentifier.as_error_string n),
+            ER.get_loc (SIdentifier.get_rep n) )
         @@ let%bind new_e =
              recursion_exp is_adt_in_scope is_adt_ctr_in_scope e
            in
@@ -285,12 +288,12 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            pure @@ (RecursionSyntax.LibVar (n, t, new_e), None)
     | LibTyp (tname, ctr_defs) ->
         wrap_with_info
-          ( sprintf "Type error in library type %s:\n" (get_id tname),
-            ER.get_loc (get_rep tname) )
+          ( sprintf "Type error in library type %s:\n" (SIdentifier.as_error_string tname),
+            ER.get_loc (SIdentifier.get_rep tname) )
         @@ let%bind checked_ctr_defs =
              mapM
                ~f:(fun ({ cname; c_arg_types } : ctr_def) ->
-                 let error_loc = ER.get_loc (get_rep cname) in
+                 let error_loc = ER.get_loc (SIdentifier.get_rep cname) in
                  let%bind recursion_c_arg_types =
                    mapM
                      ~f:(fun c_arg ->
@@ -335,7 +338,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let { lname; lentries } = lib in
     let is_adt_in_scope adts_in_scope adt_name =
       (* Check if type has already been declared *)
-      if List.mem adts_in_scope (get_id adt_name) ~equal:String.( = ) then
+      if List.mem adts_in_scope adt_name ~equal:(fun tid1 tid2 -> String.( SIdentifier.as_string tid1 = SIdentifier.as_string tid2)) then
         pure ()
       else
         (* Check if the name is a builtin ADT *)
@@ -347,7 +350,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     let is_adt_ctr_in_scope adt_ctrs_in_scope ctr_name =
       (* Check if type has already been declared *)
-      if List.mem adt_ctrs_in_scope (get_id ctr_name) ~equal:String.( = ) then
+      if List.mem adt_ctrs_in_scope ctr_name ~equal:(fun cid1 cid2 -> String.( SIdentifier.as_string cid1 = SIdentifier.as_string cid2)) then
         pure ()
       else
         (* Check if the name is a builtin ADT *)
@@ -359,8 +362,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         pure ()
     in
     wrap_with_info
-      ( sprintf "Type error in library %s:\n" (get_id lname),
-        SR.get_loc (get_rep lname) )
+      ( sprintf "Type error in library %s:\n" (SIdentifier.as_error_string lname),
+        SR.get_loc (SIdentifier.get_rep lname) )
     @@ let%bind recursion_entries, adts, _, _ =
          foldM
            ~f:
@@ -466,8 +469,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         scilla_error list )
       result =
     wrap_with_info
-      ( sprintf "Type error(s) in library %s:\n" (get_id md.libs.lname),
-        SR.get_loc (get_rep md.libs.lname) )
+      ( sprintf "Type error(s) in library %s:\n" (SIdentifier.as_error_string md.libs.lname),
+        SR.get_loc (SIdentifier.get_rep md.libs.lname) )
     @@ let%bind recursion_rprins, recursion_elibs, recursion_md_libs, emsgs =
          recursion_rprins_elibs recursion_principles ext_libs (Some md.libs)
        in
@@ -477,7 +480,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          | Some s -> pure s
          | None ->
              fail1 "Internal error in typing library module."
-               (SR.get_loc (get_rep md.libs.lname))
+               (SR.get_loc (SIdentifier.get_rep md.libs.lname))
        in
 
        if List.is_empty emsgs then
@@ -500,8 +503,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       result =
     let { smver; cname; libs; elibs; contr } = md in
     wrap_with_info
-      ( sprintf "Type error(s) in contract %s:\n" (get_id contr.cname),
-        SR.get_loc (get_rep contr.cname) )
+      ( sprintf "Type error(s) in contract %s:\n" (SIdentifier.as_error_string contr.cname),
+        SR.get_loc (SIdentifier.get_rep contr.cname) )
     @@ let%bind recursion_rprins, recursion_elibs, recursion_md_libs, emsgs =
          recursion_rprins_elibs recursion_principles ext_libs libs
        in
@@ -530,7 +533,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                    cname;
                    cparams = [];
                    cconstraint =
-                     ( RecursionSyntax.Literal BuiltIns.UsefulLiterals.false_lit,
+                     ( RecursionSyntax.Literal RecursionBuiltIns.UsefulLiterals.false_lit,
                        ERecRep.dummy_rep );
                    cfields = [];
                    ccomps = [];

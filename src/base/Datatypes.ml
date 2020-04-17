@@ -25,7 +25,7 @@ open Literal
 open MonadUtil
 open Result.Let_syntax
 
-module type Datatypes = sig
+module type Datatype = sig
 
   module DTLiteral : Literal
   
@@ -318,7 +318,7 @@ module MkDatatype (Literal : Literal) = struct
 
   module SnarkTypes = struct
     open Snark
-    open PrimTypes
+    open DTLiteral.LType
     open DataTypeDictionary
 
     let scalar_type = bystrx_typ scalar_len
