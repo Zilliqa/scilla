@@ -222,3 +222,95 @@ let rec subst_type_in_literal tvar tp l =
       let ls' = List.map ls ~f:(subst_type_in_literal tvar tp) in
       ADTValue (n, ts', ls')
   | _ -> l
+
+(****************************************************************)
+(*                 Primitive Literal Utilities                  *)
+(****************************************************************)
+
+(* Is string representation of integer valid for integer typ. *)
+let validate_int_string pt x =
+  let open String in
+  try
+    match pt with
+    | Int_typ Bits32 -> Int32.to_string (Int32.of_string x) = x
+    | Int_typ Bits64 -> Int64.to_string (Int64.of_string x) = x
+    | Int_typ Bits128 -> Int128.to_string (Int128.of_string x) = x
+    | Int_typ Bits256 -> Int256.to_string (Int256.of_string x) = x
+    | Uint_typ Bits32 -> Uint32.to_string (Uint32.of_string x) = x
+    | Uint_typ Bits64 -> Uint64.to_string (Uint64.of_string x) = x
+    | Uint_typ Bits128 -> Uint128.to_string (Uint128.of_string x) = x
+    | Uint_typ Bits256 -> Uint256.to_string (Uint256.of_string x) = x
+    | _ -> false
+  with _ -> false
+
+(* Given an integer type and the value (as string),
+   build IntLit or UintLit out of it. *)
+let build_int pt v =
+  let validator_wrapper l = Option.some_if (validate_int_string pt v) l in
+  try
+    match pt with
+    | Int_typ Bits32 -> validator_wrapper (IntLit (Int32L (Int32.of_string v)))
+    | Int_typ Bits64 -> validator_wrapper (IntLit (Int64L (Int64.of_string v)))
+    | Int_typ Bits128 ->
+        validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
+    | Int_typ Bits256 ->
+        validator_wrapper (IntLit (Int256L (Int256.of_string v)))
+    | Uint_typ Bits32 ->
+        validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
+    | Uint_typ Bits64 ->
+        validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
+    | Uint_typ Bits128 ->
+        validator_wrapper (UintLit (Uint128L (Stdint.Uint128.of_string v)))
+    | Uint_typ Bits256 ->
+        validator_wrapper (UintLit (Uint256L (Uint256.of_string v)))
+    | _ -> None
+  with _ -> None
+
+let int_lit_width = function
+  | Int32L _ -> 32
+  | Int64L _ -> 64
+  | Int128L _ -> 128
+  | Int256L _ -> 256
+
+let string_of_int_lit = function
+  | Int32L i' -> Int32.to_string i'
+  | Int64L i' -> Int64.to_string i'
+  | Int128L i' -> Int128.to_string i'
+  | Int256L i' -> Int256.to_string i'
+
+let uint_lit_width = function
+  | Uint32L _ -> 32
+  | Uint64L _ -> 64
+  | Uint128L _ -> 128
+  | Uint256L _ -> 256
+
+let string_of_uint_lit = function
+  | Uint32L i' -> Uint32.to_string i'
+  | Uint64L i' -> Uint64.to_string i'
+  | Uint128L i' -> Uint128.to_string i'
+  | Uint256L i' -> Uint256.to_string i'
+
+(* Scilla only allows printable ASCII characters from 32 (0x20) up-to 126 (0x7e).
+ * The only exceptions allowed are various whitespaces: \b \f \n \r \t. *)
+let validate_string_literal s =
+  let specials = [ '\b'; '\012'; '\n'; '\r'; '\t' ] in
+  String.fold s ~init:true ~f:(fun safe c ->
+      if not safe then false
+      else
+        let c_int = Char.to_int c in
+        if c_int >= 32 && c_int <= 126 then true
+        else if List.mem specials c ~equal:Char.( = ) then true
+        else false)
+
+let build_prim_literal pt v =
+  match pt with
+  | Int_typ _ | Uint_typ _ -> build_int pt v
+  | String_typ -> Option.some_if (validate_string_literal v) (StringLit v)
+  | Bnum_typ ->
+      Option.some_if
+        (let re = Str.regexp "[0-9]+$" in
+         Str.string_match re v 0)
+        (BNum v)
+  | Bystr_typ -> Some (ByStr (Bystr.parse_hex v))
+  | Bystrx_typ _ -> Some (ByStrX (Bystrx.parse_hex v))
+  | _ -> None

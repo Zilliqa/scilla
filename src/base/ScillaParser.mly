@@ -57,7 +57,7 @@
     with | _ -> raise (exn ())
 
   let build_prim_literal_exn t v loc =
-    match PrimTypes.build_prim_literal t v with
+    match Literal.build_prim_literal t v with
     | Some l -> l
     | None -> raise (SyntaxError (("Invalid " ^ (pp_prim_typ t) ^ " literal " ^ v), loc))
 
