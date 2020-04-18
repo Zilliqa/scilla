@@ -45,7 +45,7 @@ struct
      is always a bottom-level access *)
   type pseudofield = ER.rep ident * ER.rep ident list option
 
-  let pp_pseudofield field opt_keys =
+  let pp_pseudofield (field, opt_keys) =
     let base = get_id field in
     let keys =
       match opt_keys with
@@ -85,7 +85,7 @@ struct
     | UnknownSource -> "_unknown_source"
     | ConstantLiteral l -> "Literal " ^ pp_literal_simplified l
     | ConstantContractParameter id -> "CParam " ^ get_id id
-    | Pseudofield (f, opt_keys) -> pp_pseudofield f opt_keys
+    | Pseudofield pf -> pp_pseudofield pf
     | FormalParameter i -> "_" ^ string_of_int i
     | ProcParameter i -> "_p" ^ string_of_int i
 
@@ -127,6 +127,12 @@ struct
     | EUnknown
     (* Known contribution *)
     | EVal of known_contrib
+    (* This is a hack for message/event types: we store both the type of all
+       message tags put together and, separately, the type of just _recipient
+       and _amount: first full, then special. But ECompositeVal could be used
+       more generally, whenever we want to keep more than one expr_type for a
+       given identifier. *)
+    | ECompositeVal of expr_type * expr_type
     (* Transformation of contributions, i.e. derived contributions *)
     | EOp of contrib_op * expr_type
     | EComposeSequence of expr_type list
@@ -199,6 +205,9 @@ struct
     match et with
     | EUnknown -> "EUnknown"
     | EVal kc -> "EVal " ^ pp_known_contrib kc
+    | ECompositeVal (full, special) ->
+        Printf.sprintf "ECompVal [%s] (%s)" (pp_expr_type special)
+          (pp_expr_type full)
     | EOp (op, et) ->
         Printf.sprintf "EOp({%s}, {%s})" (pp_contrib_op op) (pp_expr_type et)
     | EComposeSequence etl ->
@@ -234,20 +243,20 @@ struct
   (* TODO: should this belong to the blockchain code? *)
   type sharding_constraint =
     (* Non-spurious read, non-commutative write, or conditional *)
-    | CMustOwn of contrib_source
+    | CMustOwn of pseudofield
     (* If a commutative write happens to a field, reads of that field must be
        willing to accept that they may see stale data *)
-    | CMustAcceptWeakRead of contrib_source
+    | CMustAcceptWeakRead of pseudofield
     (* What PCM is the commutative write under. The PCMs for different writes
        must coincide for the constraint to be satisfiable. *)
-    | CMustHavePCM of contrib_source * string
+    | CMustHavePCM of pseudofield * string
     (* Message sends are OK only to non-contracts *)
     (* If money is sent, CMustOwn _balance to prevent double-spending. *)
     | CAddrMustBeNonContract of arg_index
     (* There should be no duplicate values in these arguments. This is to
        guarantee map keys do not alias. This is important because our
        commutativity analysis assumes that pseudofields do not alias. *)
-    | CMustNotBeEqual of arg_index list
+    | CMustNotHaveDuplicates of arg_index list
     (* If a transition accepts money, it must be processed in the sender shard
        to prevent double-spending. Accepting money is commutative, though, so
        we do not need to have CMustOwn _balance. *)
@@ -257,14 +266,15 @@ struct
 
   let pp_sharding_constraint sc =
     match sc with
-    | CMustOwn cs -> "CMustOwn " ^ pp_contrib_source cs
-    | CMustAcceptWeakRead cs -> "CMustAcceptWeakRead " ^ pp_contrib_source cs
+    | CMustOwn cs -> "CMustOwn " ^ pp_pseudofield cs
+    | CMustAcceptWeakRead cs -> "CMustAcceptWeakRead " ^ pp_pseudofield cs
     | CMustHavePCM (cs, pcm_str) ->
-        "CMustHavePCM " ^ pp_contrib_source cs ^ " " ^ pcm_str
-    | CAddrMustBeNonContract i -> "CAddrMustBeNonContract " ^ string_of_int i
-    | CMustNotBeEqual il ->
-        Printf.sprintf "CMustNotBeEqual [%s]"
-          (String.concat "; " (List.map string_of_int il))
+        "CMustHavePCM " ^ pp_pseudofield cs ^ " " ^ pcm_str
+    | CAddrMustBeNonContract i ->
+        "CAddrMustBeNonContract " ^ pp_contrib_source (ProcParameter i)
+    | CMustNotHaveDuplicates il ->
+        Printf.sprintf "CMustNotHaveDuplicates [%s]"
+          (String.concat ", " (List.map string_of_int il))
     | CSenderShard -> "CSenderShard"
     | CUnsat -> "CUnsat"
 
@@ -286,7 +296,11 @@ struct
       "" scs
 
   (* Type normalisation *)
-  let et_is_val et = match et with EVal _ -> true | _ -> false
+  let rec et_is_val et =
+    match et with
+    | EVal _ -> true
+    | ECompositeVal (a, b) -> et_is_val a || et_is_val b
+    | _ -> false
 
   let et_is_known_fun et =
     match et with EFun (EFunDef (_, DefExpr _)) -> true | _ -> false
@@ -393,6 +407,8 @@ struct
     match et with
     | EUnknown -> true
     | EVal (ps, kc) -> Contrib.mem UnknownSource kc
+    | ECompositeVal (full, special) ->
+        et_is_unknown full || et_is_unknown special
     | EFun (EFunDef (_, (DefFormalParameter _ | DefProcParameter _))) -> false
     | EOp (_, expr) -> et_is_unknown expr
     | EComposeSequence etl -> List.exists et_is_unknown etl
@@ -406,6 +422,10 @@ struct
     match et with
     (* Nothing to do *)
     | EUnknown | EVal _ -> pure @@ et
+    | ECompositeVal (full, spc) ->
+        let%bind nfull = et_normalise full in
+        let%bind nspc = et_normalise spc in
+        pure @@ ECompositeVal (nfull, nspc)
     | EOp (op, expr) -> (
         let%bind nexpr = et_normalise expr in
         match nexpr with
@@ -501,35 +521,64 @@ struct
     | _ -> fail0 "Sharding analysis: wrong argument to pid_next"
 
   and substitute_argument pid this in_this =
+    let combine_param_arg (fd_ps, fd_contr) (arg_ps, arg_contr) =
+      let opt_fpc = Contrib.find_opt pid fd_contr in
+      match opt_fpc with
+      | Some fpc ->
+          let ps = min_precision arg_ps fd_ps in
+          (* Compute contributions due to the argument *)
+          let acontr = Contrib.map (fun c -> combine_product c fpc) arg_contr in
+          (* Add them to fd_contr instead of old value *)
+          let fd_contr = Contrib.remove pid fd_contr in
+          let contr =
+            Contrib.union (fun cs a b -> Some (combine_seq a b)) acontr fd_contr
+          in
+          EVal (ps, contr)
+      | None ->
+          (* If the formal parameter is not used, argument is not used,
+                 i.e. nothing changes *)
+          in_this
+    in
     let cont et = substitute_argument pid this et in
     let%bind result =
       match in_this with
       | EUnknown -> pure @@ EUnknown
-      | EVal (fd_ps, fd_contr) -> (
+      | EVal fd -> (
           (* Combine parameters's contributions with those of the argument, i.e.
              arg_contr. *)
           match this with
-          | EVal (arg_ps, arg_contr) -> (
-              let opt_fpc = Contrib.find_opt pid fd_contr in
-              match opt_fpc with
-              | Some fpc ->
-                  let ps = min_precision arg_ps fd_ps in
-                  (* Compute contributions due to the argument *)
-                  let acontr =
-                    Contrib.map (fun c -> combine_product c fpc) arg_contr
-                  in
-                  (* Add them to fd_contr instead of old value *)
-                  let fd_contr = Contrib.remove pid fd_contr in
-                  let contr =
-                    Contrib.union
-                      (fun cs a b -> Some (combine_seq a b))
-                      acontr fd_contr
-                  in
-                  pure @@ EVal (ps, contr)
-                  (* If the formal parameter is not used, argument is not used,
-                     i.e. nothing changes *)
-              | None -> pure @@ in_this )
+          | EVal arg -> pure @@ combine_param_arg fd arg
+          | ECompositeVal (EVal full_arg, EVal special_arg) ->
+              pure
+              @@ ECompositeVal
+                   ( combine_param_arg fd full_arg,
+                     combine_param_arg fd special_arg )
+          (* Do partial evaluation if possible *)
+          (* TODO: think about this; make sure it's correct *)
+          (* The intuition is we would only get here if one of the branches
+             would eventually evaluate to EUnknown *)
+          | ECompositeVal (EVal full_arg, b) ->
+              pure @@ ECompositeVal (combine_param_arg fd full_arg, b)
+          | ECompositeVal (a, EVal special_arg) ->
+              pure @@ ECompositeVal (a, combine_param_arg fd special_arg)
+          | ECompositeVal (full, spc) ->
+              let%bind sfull = cont full in
+              let%bind sspc = cont spc in
+              pure @@ ECompositeVal (sfull, sspc)
+          (* TODO FIXME: this is dodgy and not robust in the face of change *)
+          (* We should have a reliable way to express when substitution needs to happen *)
           | _ -> pure @@ in_this )
+      | ECompositeVal (full, spc) -> (
+          match this with
+          | ECompositeVal (tfull, tspc) ->
+              (* If subst'ing a CompositeVal into a CompositeVal, do it pairwise *)
+              let%bind sfull = substitute_argument pid tfull full in
+              let%bind sspc = substitute_argument pid tspc spc in
+              pure @@ ECompositeVal (sfull, sspc)
+          | _ ->
+              let%bind sfull = cont full in
+              let%bind sspc = cont spc in
+              pure @@ ECompositeVal (sfull, sspc) )
       | EOp (op, expr) ->
           let%bind sexpr = cont expr in
           pure @@ EOp (op, sexpr)
@@ -602,9 +651,9 @@ struct
 
   let pp_operation op =
     match op with
-    | Read (field, opt_keys) -> "Read " ^ pp_pseudofield field opt_keys
-    | Write ((field, opt_keys), kc) ->
-        "Write " ^ pp_pseudofield field opt_keys ^ " (" ^ pp_expr_type kc ^ ")"
+    | Read pf -> "Read " ^ pp_pseudofield pf
+    | Write (pf, kc) ->
+        "Write " ^ pp_pseudofield pf ^ " (" ^ pp_expr_type kc ^ ")"
     | AcceptMoney -> "AcceptMoney"
     | ConditionOn kc -> "ConditionOn " ^ pp_expr_type kc
     | EmitEvent kc -> "EmitEvent " ^ pp_expr_type kc
@@ -983,11 +1032,33 @@ struct
     | _ -> (false, None)
 
   (* Does the given contrib_source show up in known & normalised expr_type? *)
-  let cs_in_known_et cs et =
+  let rec cs_in_known_et cs et =
     match et with
     | EVal (_, kc) -> (
         match Contrib.find_opt cs kc with Some _ -> true | _ -> false )
+    | ECompositeVal (full, _) -> cs_in_known_et cs full
     | _ -> false
+
+  let pseudofields_in_known_et et =
+    match et with
+    | EVal (_, kc) ->
+        let sources, _ = List.split @@ Contrib.bindings kc in
+        List.flatten
+        @@ List.map
+             (fun cs -> match cs with Pseudofield pf -> [ pf ] | _ -> [])
+             sources
+    | _ -> []
+
+  let rec proc_arg_idxs_in_et et =
+    match et with
+    | EVal (_, kc) ->
+        let sources, _ = List.split @@ Contrib.bindings kc in
+        List.flatten
+        @@ List.map
+             (fun cs -> match cs with ProcParameter i -> [ i ] | _ -> [])
+             sources
+    | ECompositeVal (_, special) -> proc_arg_idxs_in_et special
+    | _ -> []
 
   (* In context should have *)
   let is_spurious_read op context_without_cws =
@@ -997,9 +1068,11 @@ struct
           ComponentSummary.exists
             (fun user_op ->
               match user_op with
+              (* For EmitEvent and SendMessages, we inspect the FULL part of the
+                 ECompositeVal. If any value is Unknown, we are conservative. *)
               | Write (_, et) | ConditionOn et | EmitEvent et | SendMessages et
                 ->
-                  cs_in_known_et (Pseudofield pf) et
+                  cs_in_known_et (Pseudofield pf) et || et_is_unknown et
               | Read _ | AcceptMoney | AlwaysExclusive _ -> false)
             context_without_cws
         in
@@ -1071,6 +1144,7 @@ struct
                contrib_sources
         in
         res
+    | ECompositeVal (full, _) -> remove_dups @@ et_field_keys full
     | EOp (op, expr) -> remove_dups @@ et_field_keys et
     | EComposeSequence etl ->
         remove_dups @@ List.flatten @@ List.map et_field_keys etl
@@ -1375,10 +1449,21 @@ struct
     | Builtin ((b, _), actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
         pure @@ EOp (BuiltinOp b, EComposeSequence arg_ets)
-    (* High-level idea: encode in the expr_type of messages who they are
-        sent to and whether money is sent or not *)
     | Message bs ->
-        let get_payload_et (label, pld) =
+        (* Get the "real"/full expression type *)
+        let get_payload_et pld =
+          match pld with
+          | MLit l -> pure @@ et_literal l
+          | MVar i -> get_ident_et senv i
+        in
+        let _, plds = List.split bs in
+        let%bind pld_ets = mapM get_payload_et plds in
+        (* Don't really care about linearity for msgs, but Par fits better than Seq *)
+        let full_et = EComposeParallel (et_nothing, pld_ets) in
+        (* Get the "special", _recipient and _amount, expression type *)
+        (* High-level idea: encode in the expr_type of messages who they are
+            sent to and whether money is sent or not *)
+        let get_special_payload_et (label, pld) =
           if String.compare label MP.amount_label = 0 then
             (* Sent amount must be zero for the message send to be shardable *)
             match pld with
@@ -1397,25 +1482,19 @@ struct
             match pld with
             | MLit l -> pure @@ et_literal l
             | MVar i -> get_ident_et senv i
-          else
-            (* Currently, we only call get_payload_et for _recipient and
-               _amount, so this branch is not taken *)
-            match pld with
-            | MLit l -> pure @@ et_nothing
-            | MVar i -> get_ident_et senv i
+          else get_payload_et pld
         in
-        (* We only care about _recipient and _amount labels *)
-        let labels_to_analyse = [ MP.recipient_label; MP.amount_label ] in
-        let plds =
-          List.filter (fun (label, pld) -> List.mem label labels_to_analyse) bs
+        (* For "special" et, we only care about _recipient and _amount labels *)
+        let special_labels = [ MP.recipient_label; MP.amount_label ] in
+        let special_plds =
+          List.filter (fun (label, pld) -> List.mem label special_labels) bs
         in
-        (* Events are also built using the Message constructor; don't want an empty list *)
-        let%bind pld_ets =
-          if List.length plds = 0 then pure @@ [ et_nothing ]
-          else mapM get_payload_et plds
+        let%bind special_pld_ets =
+          if List.length special_plds = 0 then pure @@ [ et_nothing ]
+          else mapM get_special_payload_et special_plds
         in
-        (* Don't really care about linearity for msgs, but Par fits better than Seq *)
-        pure @@ EComposeParallel (et_nothing, pld_ets)
+        let special_et = EComposeParallel (et_nothing, special_pld_ets) in
+        pure @@ ECompositeVal (full_et, special_et)
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
         pure @@ EComposeSequence arg_ets
@@ -1703,18 +1782,35 @@ struct
         comp_summ
     in
     (* If an unknown message is sent, no way to shard this transition  *)
-    (* If a message is sent to a non-parameter address, we choose not to shard
-       this transition *)
     let sends_unknown_message =
       ComponentSummary.exists
         (fun op ->
           match op with
-          | SendMessages et -> ( match et with EVal _ -> false | _ -> true )
+          | SendMessages et -> (
+              match et with ECompositeVal (_, EVal _) -> false | _ -> true )
           | _ -> false)
         comp_summ
     in
-    if exists_exclusive || sends_unknown_message then
-      ShardingSummary.singleton CUnsat
+    (* If a message is sent to an address that is not a transition parameter, we
+       _choose_ not to shard this transition. We could conceivably do it for
+       contract parameters and constants. *)
+    let sends_non_parameter_addr =
+      ComponentSummary.exists
+        (fun op ->
+          match op with
+          | SendMessages et -> (
+              match et with
+              | ECompositeVal (_, EVal (_, contr)) ->
+                  Contrib.for_all
+                    (fun cs _ ->
+                      match cs with ProcParameter _ -> false | _ -> true)
+                    contr
+              | _ -> false )
+          | _ -> false)
+        comp_summ
+    in
+    if exists_exclusive || sends_unknown_message || sends_non_parameter_addr
+    then ShardingSummary.singleton CUnsat
     else
       let ss = ShardingSummary.empty in
       (* Accepting money *)
@@ -1734,7 +1830,7 @@ struct
           (fun op -> match op with SendMessages _ -> true | _ -> false)
           comp_summ
       in
-      (* see et_money_message *)
+      (* see comment on et_send_money *)
       let may_send_money =
         ComponentSummary.exists
           (fun op ->
@@ -1747,13 +1843,25 @@ struct
       (* If you send money, you must own _balance to prevent double-spends *)
       let ss =
         if may_send_money then
-          ShardingSummary.add
-            (CMustOwn (Pseudofield (fst @@ SCU.balance_field, None)))
-            ss
+          ShardingSummary.add (CMustOwn (fst @@ SCU.balance_field, None)) ss
         else ss
       in
-
-      (* Step 1: detect commutative writes *)
+      (* If you send messages, the recipients must be non-contracts *)
+      let recipient_addresses =
+        List.flatten
+        @@ List.map (fun op ->
+               match op with
+               | SendMessages et -> proc_arg_idxs_in_et et
+               | _ -> [])
+        @@ ComponentSummary.elements sent_messages
+      in
+      let ss =
+        List.fold_left
+          (fun acc addr ->
+            ShardingSummary.add (CAddrMustBeNonContract addr) acc)
+          ss recipient_addresses
+      in
+      (* Step 1: detect commutative writes (CWs) *)
       let comm_writes =
         ComponentSummary.filter (fun op -> fst @@ is_comm_write op) comp_summ
       in
@@ -1768,7 +1876,23 @@ struct
       let summ_without_cwsr =
         ComponentSummary.diff summ_without_cws spurious_reads
       in
-
+      (* You must own everything in non-spurious reads, non-CWs and conditions *)
+      let must_own =
+        List.flatten
+        @@ List.map (fun op ->
+               match op with
+               | Read pf -> [ pf ]
+               (* et should be redundant, but better be safe *)
+               | Write (pf, et) -> pf :: pseudofields_in_known_et et
+               | ConditionOn et -> pseudofields_in_known_et et
+               | _ -> [])
+        @@ ComponentSummary.elements summ_without_cwsr
+      in
+      let ss =
+        List.fold_left
+          (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
+          ss must_own
+      in
       ss
 
   let sa_module (cmod : cmodule) (elibs : libtree list) =

@@ -188,8 +188,8 @@ let analyze_print_sharding cmod typed_elibs =
             pout
             @@ sprintf "State footprint for transition %s:\n%sSharding constraints:\n%s\n"
                   (get_id i) (SA.pp_summary summ) (SA.pp_sharding const)) cpol
-          (* pout @@ (SA.SAEnv.pp cpol) *)
       in
+      (* pout @@ (SA.SAEnv.pp cpol); *)
       res
 
 let check_cashflow typed_cmod token_fields =
