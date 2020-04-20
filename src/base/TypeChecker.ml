@@ -28,7 +28,6 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
-open PrimTypes
 
 (*******************************************************)
 (*                   Annotations                       *)
@@ -120,7 +119,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*****************************************************************)
 
   let bc_types =
-    let open PrimTypes in
+    let open Type in
     [ (TypeUtil.blocknum_name, bnum_typ) ]
 
   let lookup_bc_type x =
@@ -529,7 +528,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match repstmts with stmts, env -> ((s :: stmts, env), remaining_gas)
 
   let rec type_stmts env stmts get_loc remaining_gas =
-    let open PrimTypes in
+    let open Type in
     let open Datatypes.DataTypeDictionary in
     match stmts with
     | [] -> pure (([], env), remaining_gas)

@@ -338,7 +338,7 @@ module TypeUtilities = struct
         not @@ List.is_empty seen_adts
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
-        PrimTypes.(
+        Type.(
           (not @@ [%equal: Type.t] t msg_typ) || [%equal: Type.t] t event_typ)
     | ADT (tname, ts) -> (
         if List.mem seen_adts tname ~equal:equal_id then true
@@ -366,12 +366,11 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = ) then
-      pure PrimTypes.msg_typ
+    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure Type.msg_typ
     else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
-      pure PrimTypes.event_typ
+      pure Type.event_typ
     else if List.Assoc.mem m exception_label ~equal:String.( = ) then
-      pure PrimTypes.exception_typ
+      pure Type.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
@@ -622,7 +621,7 @@ module TypeUtilities = struct
   (****************************************************************)
 
   let literal_type l =
-    let open PrimTypes in
+    let open Type in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
     | IntLit (Int64L _) -> pure int64_typ
@@ -647,7 +646,7 @@ module TypeUtilities = struct
 
   (* Verifies a literal to be wellformed and returns it's type. *)
   let rec is_wellformed_lit l =
-    let open PrimTypes in
+    let open Type in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
     | IntLit (Int64L _) -> pure int64_typ
@@ -675,7 +674,7 @@ module TypeUtilities = struct
           fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
         else pure msg_typ
     | Map ((kt, vt), kv) ->
-        if PrimTypes.is_prim_type kt then
+        if Type.is_prim_type kt then
           (* Verify that all key/vals conform to kt,vt, recursively. *)
           let%bind valid =
             Caml.Hashtbl.fold

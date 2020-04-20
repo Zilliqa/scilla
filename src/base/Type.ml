@@ -213,3 +213,55 @@ let equal t1 t2 =
 
 (* The same as above, but for a variable with locations *)
 let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+
+(****************************************************************)
+(*                     PrimType utilities                       *)
+(****************************************************************)
+
+let int32_typ = PrimType (Int_typ Bits32)
+
+let int64_typ = PrimType (Int_typ Bits64)
+
+let int128_typ = PrimType (Int_typ Bits128)
+
+let int256_typ = PrimType (Int_typ Bits256)
+
+let uint32_typ = PrimType (Uint_typ Bits32)
+
+let uint64_typ = PrimType (Uint_typ Bits64)
+
+let uint128_typ = PrimType (Uint_typ Bits128)
+
+let uint256_typ = PrimType (Uint_typ Bits256)
+
+let string_typ = PrimType String_typ
+
+let bnum_typ = PrimType Bnum_typ
+
+let msg_typ = PrimType Msg_typ
+
+let event_typ = PrimType Event_typ
+
+let exception_typ = PrimType Exception_typ
+
+let bystr_typ = PrimType Bystr_typ
+
+let bystrx_typ b = PrimType (Bystrx_typ b)
+
+let int_width = function
+  | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
+  | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
+  | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
+  | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+  | _ -> None
+
+(* Given a ByStrX string, return integer X *)
+let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
+
+let is_prim_type = function PrimType _ -> true | _ -> false
+
+let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
+
+let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
+
+let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false

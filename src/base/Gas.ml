@@ -25,7 +25,6 @@ open Type
 open Literal
 open Syntax
 open TypeUtil
-open PrimTypes
 open Schnorr
 open PrettyPrinters
 open Datatypes.SnarkTypes

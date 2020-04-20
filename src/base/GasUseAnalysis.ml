@@ -772,7 +772,7 @@ struct
   let builtin_cost (ops, opl') params =
     let opl = ER.get_loc opl' in
 
-    let open PrimTypes in
+    let open Type in
     (* Types of our paramters. *)
     let tparams = List.map (fun p -> (ER.get_type (get_rep p)).tp) params in
 
@@ -1212,7 +1212,7 @@ struct
       genv idlist
 
   let gua_component genv (comp : component) =
-    let open PrimTypes in
+    let open Type in
     let si a t = mk_typed_id a t in
     let all_params =
       [
@@ -1276,10 +1276,7 @@ struct
     (* Bind contract parameters. *)
     let si a t = mk_typed_id a t in
     let all_cparams =
-      [
-        ( si ContractUtil.creation_block_label PrimTypes.bnum_typ,
-          PrimTypes.bnum_typ );
-      ]
+      [ (si ContractUtil.creation_block_label Type.bnum_typ, Type.bnum_typ) ]
       @ cmod.contr.cparams
     in
     let genv_cparams =

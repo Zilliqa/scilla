@@ -106,11 +106,11 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   open ContractUtilSyntax
 
   let balance_field =
-    let open PrimTypes in
+    let open Type in
     (asIdL balance_label ER.uint128_rep, uint128_typ)
 
   let append_implict_contract_params tparams =
-    let open PrimTypes in
+    let open Type in
     let creation_block = (asIdL creation_block_label ER.bnum_rep, bnum_typ) in
     let this_address =
       (asIdL this_address_label ER.address_rep, bystrx_typ address_length)
@@ -127,7 +127,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         not (List.mem nonevalargs (fst a) ~equal:String.( = )))
 
   let append_implict_comp_params cparams =
-    let open PrimTypes in
+    let open Type in
     let sender =
       ( asIdL MessagePayload.sender_label ER.address_rep,
         bystrx_typ address_length )
@@ -139,9 +139,9 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
 
   let msg_mandatory_field_types =
     [
-      (MessagePayload.tag_label, PrimTypes.string_typ);
-      (MessagePayload.amount_label, PrimTypes.uint128_typ);
-      (MessagePayload.recipient_label, PrimTypes.bystrx_typ address_length);
+      (MessagePayload.tag_label, Type.string_typ);
+      (MessagePayload.amount_label, Type.uint128_typ);
+      (MessagePayload.recipient_label, Type.bystrx_typ address_length);
     ]
 
   (* Iterate over all messages in the contract, accumuating result. 

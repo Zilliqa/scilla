@@ -22,7 +22,6 @@ open Type
 open Literal
 open Syntax
 open Yojson
-open PrimTypes
 open ErrorUtils
 open Stdint
 

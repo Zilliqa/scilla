@@ -119,3 +119,24 @@ type t =
 [@@deriving sexp]
 
 val subst_type_in_literal : 'a Identifier.t -> Type.t -> t -> t
+
+(****************************************************************)
+(*            PrimType Literal utilities                        *)
+(****************************************************************)
+
+val build_prim_literal : Type.prim_typ -> string -> t option
+
+(* Is string representation of integer valid for integer typ. *)
+val validate_int_string : Type.prim_typ -> string -> bool
+
+(* Get bit-width if int_lit. *)
+val int_lit_width : int_lit -> int
+
+(* Get bit-width if uint_lit. *)
+val uint_lit_width : uint_lit -> int
+
+(* String conversion from int_typ *)
+val string_of_int_lit : int_lit -> string
+
+(* String conversion from uint_typ *)
+val string_of_uint_lit : uint_lit -> string

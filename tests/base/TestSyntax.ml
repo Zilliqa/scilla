@@ -7,7 +7,6 @@ open Type
 open Literal
 open Syntax
 open ParsedSyntax
-open PrimTypes
 open PrettyPrinters
 
 let parse_expr_wrapper exprstr =

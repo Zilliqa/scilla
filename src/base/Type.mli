@@ -67,3 +67,50 @@ val subst_type_in_type : string -> t -> t -> t
 val subst_types_in_type : (string * t) list -> t -> t
 
 val subst_type_in_type' : 'a Identifier.t -> t -> t -> t
+
+(****************************************************************)
+(*                     PrimType utilities                       *)
+(****************************************************************)
+
+val is_prim_type : t -> bool
+
+val is_int_type : t -> bool
+
+val is_uint_type : t -> bool
+
+val is_bystrx_type : t -> bool
+
+val int_width : t -> int option
+
+val int32_typ : t
+
+val int64_typ : t
+
+val int128_typ : t
+
+val int256_typ : t
+
+val uint32_typ : t
+
+val uint64_typ : t
+
+val uint128_typ : t
+
+val uint256_typ : t
+
+val string_typ : t
+
+val bnum_typ : t
+
+val msg_typ : t
+
+val event_typ : t
+
+val exception_typ : t
+
+val bystr_typ : t
+
+val bystrx_typ : int -> t
+
+(* Given a ByStrX, return integer X *)
+val bystrx_width : t -> int option

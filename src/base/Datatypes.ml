@@ -213,7 +213,6 @@ let scilla_list_to_ocaml_rev v =
 
 module SnarkTypes = struct
   open Snark
-  open PrimTypes
   open DataTypeDictionary
 
   let scalar_type = bystrx_typ scalar_len

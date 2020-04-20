@@ -27,7 +27,6 @@ open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
-open PrimTypes
 open BuiltIns
 open PrettyPrinters
 module JSONTypeUtilities = TypeUtilities
@@ -310,9 +309,8 @@ module ContractState = struct
             List.map lit' ~f:(fun sp ->
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when [%equal: Type.t] t1 PrimTypes.string_typ
-                       && [%equal: Type.t] t2
-                            (PrimTypes.bystrx_typ address_length)
+                  when [%equal: Type.t] t1 Type.string_typ
+                       && [%equal: Type.t] t2 (Type.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
@@ -343,13 +341,10 @@ module Message = struct
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
-    let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
-    let amount =
-      (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts)
-    in
+    let tag = (tag_label, build_prim_lit_exn Type.string_typ tags) in
+    let amount = (amount_label, build_prim_lit_exn Type.uint128_typ amounts) in
     let sender =
-      ( sender_label,
-        build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders )
+      (sender_label, build_prim_lit_exn (Type.bystrx_typ address_length) senders)
     in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params = List.map pjlist ~f:jobj_to_statevar in
