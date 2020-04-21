@@ -334,13 +334,18 @@ struct
     in
     (card, ops)
 
-  (* Only works on EVals *)
-  let et_compose f eta etb =
+  (* Only works on EVals and ECompVals *)
+  let rec et_compose f eta etb =
     match (eta, etb) with
     | EVal (psa, contra), EVal (psb, contrb) ->
         let ps' = min_precision psa psb in
         let contr' = Contrib.union f contra contrb in
         pure @@ EVal (ps', contr')
+    (* Compose each part independently *)
+    | ECompositeVal (afull, asp), ECompositeVal (bfull, bsp) ->
+        let%bind full = et_compose f afull bfull in
+        let%bind sp = et_compose f asp bsp in
+        pure @@ ECompositeVal (full, sp)
     (* This shouldn't happen *)
     | _ ->
         fail0
@@ -447,7 +452,10 @@ struct
     | EComposeSequence etl ->
         let%bind netl = mapM et_normalise etl in
         let all_vals = List.for_all et_is_val netl in
-        if all_vals then foldM et_seq_compose et_nothing netl
+        if all_vals then
+          match netl with
+          | x :: netl' -> foldM et_seq_compose x netl'
+          | _ -> pure @@ et_nothing
         else pure @@ EComposeSequence netl
     | EComposeParallel (xet, cl_etl) ->
         let%bind nxet = et_normalise xet in
@@ -882,7 +890,7 @@ struct
               match none_stmt with
               | MapUpdate (m, klist, Some i) ->
                   (Some i, Pseudofield (m, Some klist))
-              (* XXX: this pseudofield is junk; should probably use an option *)
+              (* TODO XXX: this pseudofield is junk; should probably use an option *)
               | _ -> (None, Pseudofield (x, None))
             in
 
@@ -1561,6 +1569,7 @@ struct
         pure @@ ECompositeVal (full_et, special_et)
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
+        print_endline @@ pp_expr_type_list ~sep:"||\n" arg_ets;
         pure @@ EComposeSequence arg_ets
     | Let (i, _, lhs, rhs) ->
         let%bind lhs_et = cont senv lhs in
@@ -1835,8 +1844,7 @@ struct
         | LibTyp _ -> pure senv)
       ~init:senv lel
 
-  (* TODO: split this into multiple functions *)
-  let constraints_for (meta : component * ComponentSummary.t) =
+  let base_constraints_for (meta : component * ComponentSummary.t) =
     let comp, comp_summ = meta in
 
     (* If there is an AlwaysExclusive operation, no way to shard this transition *)
@@ -1924,7 +1932,6 @@ struct
           (fun acc addr -> ShardingSummary.add (CMustBeUserAddr addr) acc)
           ss recipient_addresses
       in
-
       (* Prevent duplicates for parameters used as keys for the same field and
          at the same map-level. *)
       let dangerous_keys = get_dangerous_alias_keys comp_summ in
@@ -1933,10 +1940,19 @@ struct
           ShardingSummary.add (CMustNotHaveDuplicates dangerous_keys) ss
         else ss
       in
-      (* Above this line, everything is common across strategies *)
-      let ss_base = ss in
-      (* Below this line, different strategies come into play *)
-      (* Strategy 1: state splitting *)
+      pure @@ ss
+
+  let exists_unsat ss =
+    ShardingSummary.exists
+      (fun c -> match c with CUnsat -> true | _ -> false)
+      ss
+
+  (* Strategy 1: state splitting *)
+  let state_splitting_constraints (meta : component * ComponentSummary.t) =
+    let comp, comp_summ = meta in
+    let%bind ss_base = base_constraints_for meta in
+    if exists_unsat ss_base then pure @@ ShardingSummary.singleton CUnsat
+    else
       (* You must own every pseudo-field you read/write/condition on *)
       let must_own =
         List.flatten
@@ -1954,6 +1970,13 @@ struct
           (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
           ss_base must_own
       in
+      pure @@ ss_statesplit
+
+  let commutative_constraints (meta : component * ComponentSummary.t) =
+    let comp, comp_summ = meta in
+    let%bind ss_base = base_constraints_for meta in
+    if exists_unsat ss_base then pure @@ ShardingSummary.singleton CUnsat
+    else
       (* Strategy 2: commutative writes *)
       (* Step 1: detect commutative writes (CWs) *)
       let comm_writes =
@@ -1999,7 +2022,7 @@ struct
           (fun acc (m, pcm) -> ShardingSummary.add (CMustHavePCM (m, pcm)) acc)
           ss_commwrites pcms
       in
-      pure @@ ss_statesplit
+      pure @@ ss_commwrites
 
   let sa_module (cmod : cmodule) (elibs : libtree list) =
     (* Stage 1: determine state footprint of components *)
@@ -2054,7 +2077,7 @@ struct
           (* We only want transitions in the output *)
           let%bind summaries =
             if comp.comp_type = CompTrans then
-              let%bind const = constraints_for (comp, comp_summ) in
+              let%bind const = commutative_constraints (comp, comp_summ) in
               pure @@ ((comp.comp_name, comp_summ, const) :: summ_acc)
             else pure @@ summ_acc
           in
