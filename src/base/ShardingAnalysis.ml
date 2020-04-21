@@ -249,14 +249,14 @@ struct
     | CMustAcceptWeakRead of pseudofield
     (* What PCM is the commutative write under. The PCMs for different writes
        must coincide for the constraint to be satisfiable. *)
-    | CMustHavePCM of pseudofield * string
+    | CMustHavePCM of ER.rep ident * string
     (* Message sends are OK only to non-contracts *)
     (* If money is sent, CMustOwn _balance to prevent double-spending. *)
-    | CAddrMustBeNonContract of arg_index
+    | CMustBeUserAddr of ER.rep ident
     (* There should be no duplicate values in these arguments. This is to
        guarantee map keys do not alias. This is important because our
        commutativity analysis assumes that pseudofields do not alias. *)
-    | CMustNotHaveDuplicates of arg_index list
+    | CMustNotHaveDuplicates of (ER.rep ident * ER.rep ident) list
     (* If a transition accepts money, it must be processed in the sender shard
        to prevent double-spending. Accepting money is commutative, though, so
        we do not need to have CMustOwn _balance. *)
@@ -269,12 +269,12 @@ struct
     | CMustOwn cs -> "CMustOwn " ^ pp_pseudofield cs
     | CMustAcceptWeakRead cs -> "CMustAcceptWeakRead " ^ pp_pseudofield cs
     | CMustHavePCM (cs, pcm_str) ->
-        "CMustHavePCM " ^ pp_pseudofield cs ^ " " ^ pcm_str
-    | CAddrMustBeNonContract i ->
-        "CAddrMustBeNonContract " ^ pp_contrib_source (ProcParameter i)
-    | CMustNotHaveDuplicates il ->
+        "CMustHavePCM " ^ get_id cs ^ " : " ^ pcm_str
+    | CMustBeUserAddr id -> "CMustBeUserAddr " ^ get_id id
+    | CMustNotHaveDuplicates idl ->
         Printf.sprintf "CMustNotHaveDuplicates [%s]"
-          (String.concat ", " (List.map string_of_int il))
+          (String.concat ", "
+             (List.map (fun (id1, id2) -> get_id id1 ^ " != " ^ get_id id2) idl))
     | CSenderShard -> "CSenderShard"
     | CUnsat -> "CUnsat"
 
@@ -342,7 +342,11 @@ struct
         let contr' = Contrib.union f contra contrb in
         pure @@ EVal (ps', contr')
     (* This shouldn't happen *)
-    | _ -> fail0 "Sharding analysis: trying to et_compose non-EVal types"
+    | _ ->
+        fail0
+          (Printf.sprintf
+             "Sharding analysis: trying to et_compose non-EVal types %s and %s"
+             (pp_expr_type eta) (pp_expr_type etb))
 
   let et_seq_compose = et_compose (fun cs a b -> Some (combine_seq a b))
 
@@ -1049,18 +1053,78 @@ struct
              sources
     | _ -> []
 
-  let rec proc_arg_idxs_in_et et =
+  let translate_proc_idx_to_ident comp idx =
+    let implicit_params = SCU.append_implict_comp_params [] in
+    let params, _ = List.split @@ implicit_params @ comp.comp_params in
+    match List.nth_opt params idx with
+    | Some ident -> pure @@ ident
+    | None ->
+        fail0
+          (Printf.sprintf
+             "Sharding analysis: procedure %s argument %d doesn't exist"
+             (get_id comp.comp_name) idx)
+
+  let rec proc_args_in_et comp et =
     match et with
     | EVal (_, kc) ->
         let sources, _ = List.split @@ Contrib.bindings kc in
-        List.flatten
-        @@ List.map
-             (fun cs -> match cs with ProcParameter i -> [ i ] | _ -> [])
-             sources
-    | ECompositeVal (_, special) -> proc_arg_idxs_in_et special
-    | _ -> []
+        let%bind x =
+          mapM
+            (fun cs ->
+              match cs with
+              | ProcParameter i ->
+                  let%bind id = translate_proc_idx_to_ident comp i in
+                  pure @@ [ id ]
+              | _ -> pure @@ [])
+            sources
+        in
+        pure @@ List.flatten x
+    | ECompositeVal (_, special) -> proc_args_in_et comp special
+    | _ -> pure @@ []
 
-  (* In context should have *)
+  (* Returns a list of pairs of keys which are dangerous if they alias *)
+  (* TODO FIXME: make this O(n * log n) rather than O(n^2) *)
+  let get_dangerous_alias_keys comp_summ =
+    let map_rws =
+      ComponentSummary.elements
+      @@ ComponentSummary.filter
+           (fun op ->
+             match op with
+             | Read (_, Some _) | Write ((_, Some _), _) -> true
+             | _ -> false)
+           comp_summ
+    in
+    let discordances_in keys1 keys2 =
+      let ks = List.combine keys1 keys2 in
+      List.filter (fun (k1, k2) -> not (get_id k1 = get_id k2)) ks
+    in
+    (* Order within a pair does not matter *)
+    let pair_compare (a1, b1) (a2, b2) =
+      let ida1, idb1 = (get_id a1, get_id b1) in
+      let ida2, idb2 = (get_id a2, get_id b2) in
+      if (ida1 = ida2 && idb1 = idb2) || (ida1 = idb2 && idb1 = ida2) then 0
+      else compare (a1, b1) (a2, b2)
+    in
+
+    List.sort_uniq pair_compare
+    @@ List.flatten
+    @@ List.map
+         (fun op1 ->
+           match op1 with
+           | Read (m1, Some keys1) | Write ((m1, Some keys1), _) ->
+               List.flatten
+               @@ List.map
+                    (fun op2 ->
+                      match op2 with
+                      | Read (m2, Some keys2) | Write ((m2, Some keys2), _) ->
+                          if get_id m1 = get_id m2 then
+                            discordances_in keys1 keys2
+                          else []
+                      | _ -> [])
+                    map_rws
+           | _ -> [])
+         map_rws
+
   let is_spurious_read op context_without_cws =
     match op with
     | Read pf ->
@@ -1771,9 +1835,9 @@ struct
         | LibTyp _ -> pure senv)
       ~init:senv lel
 
-  (* TODO: generate separate constraints for when WeakReads are unacceptable *)
-  let constraints_for (meta : SR.rep Syntax.ident * ComponentSummary.t) =
-    let comp_name, comp_summ = meta in
+  (* TODO: split this into multiple functions *)
+  let constraints_for (meta : component * ComponentSummary.t) =
+    let comp, comp_summ = meta in
 
     (* If there is an AlwaysExclusive operation, no way to shard this transition *)
     let exists_exclusive =
@@ -1810,7 +1874,7 @@ struct
         comp_summ
     in
     if exists_exclusive || sends_unknown_message || sends_non_parameter_addr
-    then ShardingSummary.singleton CUnsat
+    then pure @@ ShardingSummary.singleton CUnsat
     else
       let ss = ShardingSummary.empty in
       (* Accepting money *)
@@ -1847,23 +1911,61 @@ struct
         else ss
       in
       (* If you send messages, the recipients must be non-contracts *)
-      let recipient_addresses =
+      let%bind ras =
+        mapM ~f:(fun op ->
+            match op with
+            | SendMessages et -> proc_args_in_et comp et
+            | _ -> pure @@ [])
+        @@ ComponentSummary.elements sent_messages
+      in
+      let recipient_addresses = List.flatten ras in
+      let ss =
+        List.fold_left
+          (fun acc addr -> ShardingSummary.add (CMustBeUserAddr addr) acc)
+          ss recipient_addresses
+      in
+
+      (* Prevent duplicates for parameters used as keys for the same field and
+         at the same map-level. *)
+      let dangerous_keys = get_dangerous_alias_keys comp_summ in
+      let ss =
+        if List.length dangerous_keys > 0 then
+          ShardingSummary.add (CMustNotHaveDuplicates dangerous_keys) ss
+        else ss
+      in
+      (* Above this line, everything is common across strategies *)
+      let ss_base = ss in
+      (* Below this line, different strategies come into play *)
+      (* Strategy 1: state splitting *)
+      (* You must own every pseudo-field you read/write/condition on *)
+      let must_own =
         List.flatten
         @@ List.map (fun op ->
                match op with
-               | SendMessages et -> proc_arg_idxs_in_et et
+               | Read pf -> [ pf ]
+               (* et should be redundant, but better be safe *)
+               | Write (pf, et) -> pf :: pseudofields_in_known_et et
+               | ConditionOn et -> pseudofields_in_known_et et
                | _ -> [])
-        @@ ComponentSummary.elements sent_messages
+        @@ ComponentSummary.elements comp_summ
       in
-      let ss =
+      let ss_statesplit =
         List.fold_left
-          (fun acc addr ->
-            ShardingSummary.add (CAddrMustBeNonContract addr) acc)
-          ss recipient_addresses
+          (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
+          ss_base must_own
       in
+      (* Strategy 2: commutative writes *)
       (* Step 1: detect commutative writes (CWs) *)
       let comm_writes =
         ComponentSummary.filter (fun op -> fst @@ is_comm_write op) comp_summ
+      in
+      (* This is fine because of the previous filter *)
+      let%bind pcms =
+        mapM ~f:(fun op ->
+            match (op, is_comm_write op) with
+            | Write ((m, _), _), (_, Some pcm) -> pure @@ (m, pcm)
+            | _ -> fail0 "Sharding analysis: PCM detection bug")
+        @@ ComponentSummary.elements comm_writes
       in
       (* Step 2: Detect corresponding spurious reads *)
       (* A read is spurious if it only flows into a commutative write (or in nothing) *)
@@ -1876,7 +1978,6 @@ struct
       let summ_without_cwsr =
         ComponentSummary.diff summ_without_cws spurious_reads
       in
-      (* You must own everything in non-spurious reads, non-CWs and conditions *)
       let must_own =
         List.flatten
         @@ List.map (fun op ->
@@ -1888,12 +1989,17 @@ struct
                | _ -> [])
         @@ ComponentSummary.elements summ_without_cwsr
       in
-      let ss =
+      let ss_commwrites =
         List.fold_left
           (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
-          ss must_own
+          ss_base must_own
       in
-      ss
+      let ss_commwrites =
+        List.fold_left
+          (fun acc (m, pcm) -> ShardingSummary.add (CMustHavePCM (m, pcm)) acc)
+          ss_commwrites pcms
+      in
+      pure @@ ss_statesplit
 
   let sa_module (cmod : cmodule) (elibs : libtree list) =
     (* Stage 1: determine state footprint of components *)
@@ -1946,11 +2052,11 @@ struct
               (ComponentSig (comp.comp_params, comp_summ))
           in
           (* We only want transitions in the output *)
-          let summaries =
+          let%bind summaries =
             if comp.comp_type = CompTrans then
-              let const = constraints_for (comp.comp_name, comp_summ) in
-              (comp.comp_name, comp_summ, const) :: summ_acc
-            else summ_acc
+              let%bind const = constraints_for (comp, comp_summ) in
+              pure @@ ((comp.comp_name, comp_summ, const) :: summ_acc)
+            else pure @@ summ_acc
           in
           pure @@ (senv', summaries))
         (senv, []) cmod.contr.ccomps
