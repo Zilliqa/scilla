@@ -142,13 +142,15 @@ struct
   end
 
   module Contrib = Map.Make (OrderedContribSource)
+  module ContribSources = Set.Make (OrderedContribSource)
 
   (* keys are contrib_source, values are contrib_summary *)
   type contributions = contrib_summary Contrib.t
 
-  (* How precise are we about the keys in contributions? *)
-  (* Exactly: these are exactly the contributions in the result *)
-  (* SubsetOf: the result has a subset of these contributions *)
+  (* How precise are we about the NON-CONSTANT keys in contributions? *)
+  (* Exactly: these are exactly the contributions in the result, i.e. branches
+     differ only by constants. SubsetOf: the result has a subset of these
+     contributions, i.e. branches _may_ differ by non-constants *)
   type source_precision = Exactly | SubsetOf
 
   type known_contrib = source_precision * contributions
@@ -402,12 +404,16 @@ struct
     | _ -> String.compare (pp_expr_type eta) (pp_expr_type etb) = 0
 
   (* For all the contributions in etc, add cond Op in et *)
-  let add_conditional etc et =
+  let add_conditional etc et same_variables =
     (* Convention that must be respected by sa_expr *)
     let spurious = et_equal etc et_nothing in
     match (etc, et) with
     | EVal (_, ccontr), EVal (ps, contr) ->
-        let ps' = min_precision (if spurious then Exactly else SubsetOf) ps in
+        let ps' =
+          min_precision
+            (if spurious || same_variables then Exactly else SubsetOf)
+            ps
+        in
         (* Some (cc, ContribOps.add Conditional cops) *)
         let contr' =
           Contrib.merge
@@ -456,6 +462,33 @@ struct
         List.exists et_is_unknown (expr :: etl)
     | EApp (_, etl) -> List.exists et_is_unknown etl
 
+  let differ_only_in_constants (val_etl : expr_type list) =
+    let collect_variables et =
+      match et with
+      | EVal (_, contr) ->
+          fst @@ List.split @@ Contrib.bindings
+          @@ Contrib.filter
+               (fun cs _ ->
+                 match cs with
+                 | ConstantLiteral _ | ConstantContractParameter _ -> false
+                 | _ -> true)
+               contr
+      | _ -> []
+    in
+    let clauses_vars =
+      List.map (fun et -> ContribSources.of_list (collect_variables et)) val_etl
+    in
+    (* Union of the variables in all clauses *)
+    let all_variables =
+      List.fold_left
+        (fun acc cl_vars -> ContribSources.union acc cl_vars)
+        ContribSources.empty clauses_vars
+    in
+    (* Are the variables in all clauses equal? *)
+    List.for_all
+      (fun cl_vars -> ContribSources.equal cl_vars all_variables)
+      clauses_vars
+
   let rec et_normalise (et : expr_type) =
     match et with
     (* Nothing to do *)
@@ -495,7 +528,10 @@ struct
           (* Guaranteed to have at least one clauses by the typechecker *)
           let fc = List.hd ncl_etl in
           let%bind cl_et = foldM et_par_compose fc ncl_etl in
-          add_conditional nxet cl_et
+          (* If clauses have the same non-constants, do not reduce precision,
+             since precision only tracks variable contributions *)
+          let same_variables = differ_only_in_constants ncl_etl in
+          add_conditional nxet cl_et same_variables
         else pure @@ EComposeParallel (nxet, ncl_etl)
     (* Normalise within function bodies *)
     | EFun (EFunDef (dbl, DefExpr expr)) ->
@@ -1054,7 +1090,7 @@ struct
                   | _ -> false)
                 kc
             in
-            (* There is precisely one non-constant field contribution *)
+            (* There is one non-constant field contribution *)
             let exactly_one =
               ps = Exactly && Contrib.cardinal field_contribs = 1
             in
