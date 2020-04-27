@@ -89,7 +89,8 @@ test_extipcserver: dev
 
 # Run tests in server-mode
 test_server: dev
-	dune exec src/runners/scilla_server.exe &
+	dune build src/runners/scilla_server.exe
+	./_build/default/src/runners/scilla_server.exe &
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
   -server true \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
