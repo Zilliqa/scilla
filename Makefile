@@ -5,6 +5,13 @@ OCAMLFORMAT_VERSION=0.14.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
+# Dependencies useful for developing Scilla
+OPAM_DEV_DEPS := \
+merlin \
+ocamlformat.$(OCAMLFORMAT_VERSION) \
+ocp-indent \
+utop
+
 .PHONY: default release utop dev clean docker zilliqa-docker
 
 default: release
@@ -122,11 +129,13 @@ zilliqa-docker:
 	fi
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
+# Create an opam-based development environment
 .PHONY : opamdep
 opamdep:
 	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install --yes $(OPAM_DEV_DEPS)
 
 .PHONY : opamdep-ci
 opamdep-ci:
