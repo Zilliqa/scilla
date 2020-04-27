@@ -6,7 +6,7 @@ function print_available_contracts
     do
         if [[ -d $ff ]]
         then
-            f=`basename $ff`
+            f=$(basename "$ff")
             echo -n "$f|"
         fi
     done
@@ -38,14 +38,14 @@ then
     print_usage_and_exit
 fi
 
-bin/scilla-runner -init ${cdir}/init.json -istate ${cdir}/state_${i}.json -imessage ${cdir}/message_${i}.json -o ${cdir}/output_${i}.json -iblockchain ${cdir}/blockchain_${i}.json -i ${sdir}/${contract}.scilla -libdir src/stdlib -gaslimit 8000 -libdir tests/contracts/shogi_lib
+bin/scilla-runner -init "${cdir}"/init.json -istate "${cdir}/state_${i}".json -imessage "${cdir}/message_${i}".json -o "${cdir}/output_${i}".json -iblockchain "${cdir}/blockchain_${i}".json -i "${sdir}/${contract}".scilla -libdir src/stdlib -gaslimit 8000 -libdir tests/contracts/shogi_lib
 
 status=$?
 
 if test $status -eq 0
 then
     echo "output.json emitted by interpreter:"
-    cat ${cdir}/output_${i}.json
+    cat "${cdir}/output_${i}".json
     echo ""
 else
     echo "scilla-runner failed"

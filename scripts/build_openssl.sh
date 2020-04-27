@@ -7,8 +7,8 @@ then
 fi
 
 git clone https://github.com/openssl/openssl.git ~/openssl/src
-cd ~/openssl/src
+cd ~/openssl/src || exit
 git checkout tags/OpenSSL_1_1_1
-./config --prefix=${HOME}/openssl/install --openssldir=${HOME}/openssl/ssl
+./config --prefix="${HOME}"/openssl/install --openssldir="${HOME}"/openssl/ssl
 make -j4
 make install
