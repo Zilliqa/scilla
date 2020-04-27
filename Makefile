@@ -168,7 +168,7 @@ coveralls:
 	BISECT_ENABLE=YES make
 	dune build @install
 	dune exec -- tests/testsuite.exe
-	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
+	bisect-ppx-report --ignore-missing-files -I _build/ --coveralls coverage.json --service-name travis-ci --service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
 	-find . -name 'bisect*.out' | xargs rm
