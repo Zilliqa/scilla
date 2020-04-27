@@ -28,15 +28,7 @@ addons:
     - ocaml
     - curl
     - build-essential
-    - m4
-    - pkg-config
-    - zlib1g-dev
-    - libgmp-dev
-    - libssl-dev
-    - libboost-system-dev
-    - libpcre3-dev
     - aspcud
-    - libsecp256k1-dev
   homebrew:
     brewfile: true
     update: true

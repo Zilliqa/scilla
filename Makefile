@@ -141,6 +141,8 @@ opamdep:
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
 	eval $$(opam env)
+	opam install opam-depext --yes
+	opam depext --noninteractive --yes
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
 
