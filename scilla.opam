@@ -28,6 +28,18 @@ depends: [
   "stdint" {>= "0.5.1" & < "0.7~"}
   "ounit" {with-test & (>= "2.0.8" & < "2.3~")}
   "patdiff" {with-test & (>= "v0.12.1" & < "v0.13~")}
+  "conf-cmake" {build}
+  "conf-gcc" {build}
+  "conf-g++" {build}
+  "conf-m4" {build}
+  "conf-pkg-config" {build}
+  "conf-boost"
+  "conf-gmp"
+  "conf-libffi"
+  "conf-libpcre"
+  "conf-openssl"
+  "conf-secp256k1"
+  "conf-zlib"
 ]
 build: [
   [ "./scripts/libff.sh" ]
