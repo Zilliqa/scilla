@@ -55,6 +55,27 @@ struct
     in
     base ^ keys
 
+  let pp_compare (pfa : pseudofield) (pfb : pseudofield) =
+    String.compare (pp_pseudofield pfa) (pp_pseudofield pfb)
+
+  (* Turn, e.g. balances[_sender][to] into pseudofield *)
+  let pp_of_str str =
+    let ds = String.map (fun c -> if c = '[' || c = ']' then '|' else c) str in
+    let components = String.split_on_char '|' ds in
+    (* Filter out empty component at the end *)
+    let components =
+      List.filter (fun s -> not @@ String.equal s "") components
+    in
+    let mk_id f =
+      let dummy_type = Unit in
+      ER.mk_id (mk_ident f) dummy_type
+    in
+    match components with
+    | [ f ] -> (mk_id f, None)
+    | f :: keys -> (mk_id f, Some (List.map mk_id keys))
+    (* bad input *)
+    | [] -> (mk_id "", None)
+
   (* We keep track of whether identifiers in the impure part of the language
      shadow any of their component's parameters *)
   type ident_shadow_status =
@@ -242,14 +263,6 @@ struct
 
   (* TODO: should this belong to the blockchain code? *)
   type sharding_constraint =
-    (* Non-spurious read, non-commutative write, or conditional *)
-    | CMustOwn of pseudofield
-    (* If a commutative write happens to a field, reads of that field must be
-       willing to accept that they may see stale data *)
-    | CMustAcceptWeakRead of pseudofield
-    (* What PCM is the commutative write under. The PCMs for different writes
-       must coincide for the constraint to be satisfiable. *)
-    | CMustHavePCM of ER.rep ident * string
     (* Message sends are OK only to non-contracts *)
     (* If money is sent, CMustOwn _balance to prevent double-spending. *)
     | CMustBeUserAddr of ER.rep ident
@@ -259,23 +272,29 @@ struct
     | CMustNotHaveDuplicates of (ER.rep ident * ER.rep ident) list
     (* If a transition accepts money, it must be processed in the sender shard
        to prevent double-spending. Accepting money is commutative, though, so
-       we do not need to have CMustOwn _balance. *)
+       we do not need to have full ownership of _balance. *)
     | CSenderShard
+    (* If a transition sends money, it must be processed in the contract's shard
+       to prevent double-spending *)
+    | CContractShard
     (* This constraint cannot be satisfied --> must go to the DS *)
     | CUnsat
 
+  type transition_name = string
+
+  type pseudofield_name = string
+
+  type weak_read = transition_name * pseudofield_name
+
   let pp_sharding_constraint sc =
     match sc with
-    | CMustOwn cs -> "CMustOwn " ^ pp_pseudofield cs
-    | CMustAcceptWeakRead cs -> "CMustAcceptWeakRead " ^ pp_pseudofield cs
-    | CMustHavePCM (cs, pcm_str) ->
-        "CMustHavePCM " ^ get_id cs ^ " : " ^ pcm_str
     | CMustBeUserAddr id -> "CMustBeUserAddr " ^ get_id id
     | CMustNotHaveDuplicates idl ->
         Printf.sprintf "CMustNotHaveDuplicates [%s]"
           (String.concat ", "
              (List.map (fun (id1, id2) -> get_id id1 ^ " != " ^ get_id id2) idl))
     | CSenderShard -> "CSenderShard"
+    | CContractShard -> "CContractShard"
     | CUnsat -> "CUnsat"
 
   module OrderedShardingConstraint = struct
@@ -779,8 +798,10 @@ struct
       List.fold_left (fun acc (k, sgn) -> acc ^ pp_sig k sgn ^ "\n") "" l
   end
 
+  type pcm_ident = string
+
   module type PCM = sig
-    val pcm_identifier : string
+    val pcm_identifier : pcm_ident
 
     val is_applicable_type : typ list -> bool
 
@@ -1008,17 +1029,22 @@ struct
     | Some (module P : PCM) -> Some P.pcm_identifier
     | _ -> None
 
-  let is_comm_write op =
+  let is_comm_write op constant_fields =
     match op with
     | Write (wp, et) -> (
         match et with
         | EVal (ps, kc) -> (
             let field_contribs =
               Contrib.filter
-                (fun cs c -> match cs with Pseudofield _ -> true | _ -> false)
+                (fun cs c ->
+                  match cs with
+                  | Pseudofield (f, _) ->
+                      (* non-constant field contribution *)
+                      not @@ is_mem_id f constant_fields
+                  | _ -> false)
                 kc
             in
-            (* There is precisely one field contribution *)
+            (* There is precisely one non-constant field contribution *)
             let exactly_one =
               ps = Exactly && Contrib.cardinal field_contribs = 1
             in
@@ -1133,9 +1159,9 @@ struct
            | _ -> [])
          map_rws
 
-  let is_spurious_read op context_without_cws =
+  let is_spurious_read op context_without_cws constant_fields =
     match op with
-    | Read pf ->
+    | Read (f, keys) ->
         let read_is_used =
           ComponentSummary.exists
             (fun user_op ->
@@ -1144,11 +1170,11 @@ struct
                  ECompositeVal. If any value is Unknown, we are conservative. *)
               | Write (_, et) | ConditionOn et | EmitEvent et | SendMessages et
                 ->
-                  cs_in_known_et (Pseudofield pf) et || et_is_unknown et
+                  cs_in_known_et (Pseudofield (f, keys)) et || et_is_unknown et
               | Read _ | AcceptMoney | AlwaysExclusive _ -> false)
             context_without_cws
         in
-        not read_is_used
+        is_mem_id f constant_fields || not read_is_used
     | _ -> false
 
   let env_bind_component senv comp (sgn : signature) =
@@ -1569,7 +1595,6 @@ struct
         pure @@ ECompositeVal (full_et, special_et)
     | Constr (cname, _, actuals) ->
         let%bind arg_ets = mapM actuals ~f:(fun i -> get_ident_et senv i) in
-        print_endline @@ pp_expr_type_list ~sep:"||\n" arg_ets;
         pure @@ EComposeSequence arg_ets
     | Let (i, _, lhs, rhs) ->
         let%bind lhs_et = cont senv lhs in
@@ -1914,9 +1939,7 @@ struct
       in
       (* If you send money, you must own _balance to prevent double-spends *)
       let ss =
-        if may_send_money then
-          ShardingSummary.add (CMustOwn (fst @@ SCU.balance_field, None)) ss
-        else ss
+        if may_send_money then ShardingSummary.add CContractShard ss else ss
       in
       (* If you send messages, the recipients must be non-contracts *)
       let%bind ras =
@@ -1947,85 +1970,282 @@ struct
       (fun c -> match c with CUnsat -> true | _ -> false)
       ss
 
-  (* Strategy 1: state splitting *)
-  let state_splitting_constraints (meta : component * ComponentSummary.t) =
-    let comp, comp_summ = meta in
-    let%bind ss_base = base_constraints_for meta in
-    if exists_unsat ss_base then pure @@ ShardingSummary.singleton CUnsat
-    else
-      (* You must own every pseudo-field you read/write/condition on *)
-      let must_own =
-        List.flatten
-        @@ List.map (fun op ->
-               match op with
-               | Read pf -> [ pf ]
-               (* et should be redundant, but better be safe *)
-               | Write (pf, et) -> pf :: pseudofields_in_known_et et
-               | ConditionOn et -> pseudofields_in_known_et et
-               | _ -> [])
-        @@ ComponentSummary.elements comp_summ
-      in
-      let ss_statesplit =
-        List.fold_left
-          (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
-          ss_base must_own
-      in
-      pure @@ ss_statesplit
+  type state_fragment = string
 
-  let commutative_constraints (meta : component * ComponentSummary.t) =
-    let comp, comp_summ = meta in
-    let%bind ss_base = base_constraints_for meta in
-    if exists_unsat ss_base then pure @@ ShardingSummary.singleton CUnsat
-    else
-      (* Strategy 2: commutative writes *)
-      (* Step 1: detect commutative writes (CWs) *)
-      let comm_writes =
-        ComponentSummary.filter (fun op -> fst @@ is_comm_write op) comp_summ
-      in
-      (* This is fine because of the previous filter *)
-      let%bind pcms =
-        mapM ~f:(fun op ->
-            match (op, is_comm_write op) with
-            | Write ((m, _), _), (_, Some pcm) -> pure @@ (m, pcm)
-            | _ -> fail0 "Sharding analysis: PCM detection bug")
-        @@ ComponentSummary.elements comm_writes
-      in
-      (* Step 2: Detect corresponding spurious reads *)
-      (* A read is spurious if it only flows into a commutative write (or in nothing) *)
-      let summ_without_cws = ComponentSummary.diff comp_summ comm_writes in
-      let spurious_reads =
-        ComponentSummary.filter
-          (fun op -> is_spurious_read op summ_without_cws)
-          summ_without_cws
-      in
-      let summ_without_cwsr =
-        ComponentSummary.diff summ_without_cws spurious_reads
-      in
-      let must_own =
-        List.flatten
-        @@ List.map (fun op ->
-               match op with
-               | Read pf -> [ pf ]
-               (* et should be redundant, but better be safe *)
-               | Write (pf, et) -> pf :: pseudofields_in_known_et et
-               | ConditionOn et -> pseudofields_in_known_et et
-               | _ -> [])
-        @@ ComponentSummary.elements summ_without_cwsr
-      in
-      let ss_commwrites =
-        List.fold_left
-          (fun acc pf -> ShardingSummary.add (CMustOwn pf) acc)
-          ss_base must_own
-      in
-      let ss_commwrites =
-        List.fold_left
-          (fun acc (m, pcm) -> ShardingSummary.add (CMustHavePCM (m, pcm)) acc)
-          ss_commwrites pcms
-      in
-      pure @@ ss_commwrites
+  type shard_id = int
+
+  module type ShardingDecider = sig
+    val pcm_identifier : pcm_ident
+
+    val get_shard : unit
+
+    (* ancestor -> temp -> delta -> delta_shard_id -> merged *)
+    val join :
+      state_fragment ->
+      state_fragment ->
+      state_fragment ->
+      shard_id ->
+      state_fragment
+  end
+
+  module StateSplitDecider = struct
+    let pcm_identifier = "state_split"
+
+    let get_shard = ()
+
+    let join ancestor temp delta delta_shard_id = delta
+  end
+
+  let compose_sd_identifier base extra = base ^ "+" ^ extra
+
+  let get_reads comp_summ =
+    let ops = ComponentSummary.elements comp_summ in
+    let reads =
+      List.flatten
+      @@ List.map (fun op -> match op with Read pf -> [ pf ] | _ -> []) ops
+    in
+    reads
+
+  let comm_writes_reads comp_summ constant_fields =
+    (* Step 1: detect commutative writes (CWs) *)
+    let comm_writes =
+      ComponentSummary.filter
+        (fun op -> fst @@ is_comm_write op constant_fields)
+        comp_summ
+    in
+    (* This is fine because of the previous filter *)
+    let%bind cw_pcms =
+      mapM ~f:(fun op ->
+          match (op, is_comm_write op constant_fields) with
+          | Write ((m, _), _), (_, Some pcm) -> pure @@ (m, pcm)
+          | _ -> fail0 "Sharding analysis: PCM detection bug")
+      @@ ComponentSummary.elements comm_writes
+    in
+
+    (* Step 2: Detect corresponding spurious reads *)
+    (* A read is spurious if it is from a constant field or if it only flows
+       into a commutative write (or in nothing) *)
+    let summ_without_cws = ComponentSummary.diff comp_summ comm_writes in
+    let spurious_reads =
+      ComponentSummary.filter
+        (fun op -> is_spurious_read op summ_without_cws constant_fields)
+        summ_without_cws
+    in
+    let%bind sr_pseudofields =
+      mapM ~f:(fun op ->
+          match op with
+          | Read pf -> pure @@ pf
+          | _ -> fail0 "Sharding analysis: PCM detection bug")
+      @@ ComponentSummary.elements spurious_reads
+    in
+
+    (* Step 3: throw in the non-commutative writes as well *)
+    let nc_wr =
+      ComponentSummary.filter
+        (fun op ->
+          match op with
+          | Write _ -> not @@ ComponentSummary.mem op comm_writes
+          | _ -> false)
+        comp_summ
+    in
+    let%bind noncomm_writes =
+      mapM ~f:(fun op ->
+          match op with
+          | Write ((m, _), _) -> pure @@ m
+          | _ -> fail0 "Sharding analysis : noncomm_writes bug")
+      @@ ComponentSummary.elements nc_wr
+    in
+
+    pure @@ (noncomm_writes, cw_pcms, sr_pseudofields)
+
+  let list_distribute (l : 'a * 'b list) =
+    let a, bs = l in
+    List.map (fun b -> (a, b)) bs
+
+  let list_split3 (l : ('a * 'b * 'c) list) =
+    let a, b = List.split @@ List.map (fun (a, b, _) -> (a, b)) l in
+    let c = List.map (fun (_, _, c) -> c) l in
+    (a, b, c)
+
+  (* TODO: if there are multiple valid choices, we don't want to give up *)
+  let allocate_field_pcms local_pcms =
+    (* Detect any (field, PCM) global inconsistencies *)
+    let pcms =
+      List.sort_uniq
+        (fun (ida, pcma) (idb, pcmb) ->
+          let ic = compare_id ida idb in
+          let pc = String.compare pcma pcmb in
+          if ic = 0 then pc else ic)
+        (List.flatten local_pcms)
+    in
+    let fields, _ = List.split @@ pcms in
+    let no_duplicates = List.compare_lengths pcms fields = 0 in
+    if no_duplicates then Some pcms else None
+
+  let assign_pcms ?(selected_transitions = [])
+      ?(accepted_weak_reads : (String.t * pseudofield) list = []) cmod summaries
+      =
+    let all_transitions =
+      List.map (fun (comp, _, _) -> get_id comp.comp_name) summaries
+    in
+    (* SECURITY FIXME TODO: validate selected_transitions  *)
+    (* If user is not selective, try to shard all transitions *)
+    let selected_transitions =
+      if selected_transitions = [] then all_transitions
+      else selected_transitions
+    in
+    let selected_summaries =
+      List.filter
+        (fun (comp, _, _) ->
+          List.mem (get_id comp.comp_name) selected_transitions)
+        summaries
+    in
+
+    let selected_comp_summ =
+      List.map (fun (_, summ, _) -> summ) selected_summaries
+    in
+    let selected_shard_constr =
+      List.map (fun (_, _, constr) -> constr) selected_summaries
+    in
+
+    (* Determine which fields are constant in the shard phase *)
+    let contract_fields = List.map (fun (x, _, _) -> x) cmod.contr.cfields in
+    (* A field is constant if it isn't written to *)
+    let field_is_constant f =
+      List.for_all
+        (fun summ ->
+          not
+          @@ ComponentSummary.exists
+               (fun op ->
+                 match op with
+                 | Write ((wf, _), _) -> get_id f = get_id wf
+                 | _ -> false)
+               summ)
+        selected_comp_summ
+    in
+    let constant_fields =
+      List.filter (fun f -> field_is_constant f) contract_fields
+    in
+    print_endline @@ "Constant fields: "
+    ^ String.concat ", " (List.map get_id constant_fields);
+    (* Identify, for each transition separately, the PCM for commutative
+       writes and spurious reads. *)
+    let%bind local_pcmsr =
+      mapM
+        (fun (_, summ, _) -> comm_writes_reads summ constant_fields)
+        selected_summaries
+    in
+    let local_nc_wr, local_pcms, local_srs = list_split3 local_pcmsr in
+    (* Allocate PCMs to fields; give up if inconsistencies exist *)
+    let pcms = allocate_field_pcms local_pcms in
+    let default_assignment =
+      List.map
+        (fun (f, _, _) -> (get_id f, StateSplitDecider.pcm_identifier))
+        cmod.contr.cfields
+    in
+    match pcms with
+    | Some pcms -> (
+        print_endline @@ "Local PCMs: "
+        ^ String.concat ", " (List.map (fun (i, p) -> get_id i ^ ": " ^ p) pcms);
+        (* Helper functions *)
+        let flatten_reads (rs : pseudofield list list) =
+          List.flatten @@ List.map list_distribute
+          @@ List.combine selected_transitions rs
+        in
+        let is_mem_read (t, pf) rs =
+          List.exists
+            (fun (t', pf') -> String.compare t t' = 0 && pp_compare pf pf' = 0)
+            rs
+        in
+        (* Detect any non-spurious read that must be accepted as weak and isn't *)
+        let spurious_reads = flatten_reads local_srs in
+        print_endline @@ "Spurious reads: "
+        ^ String.concat ", "
+            (List.map
+               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+               spurious_reads);
+        let commutative_writes = List.map fst pcms in
+        let noncomm_writes =
+          List.sort_uniq compare_id @@ List.flatten local_nc_wr
+        in
+        let reads = flatten_reads @@ List.map get_reads selected_comp_summ in
+        let maybe_shardable =
+          let trs = List.combine selected_transitions selected_shard_constr in
+          let may_shard =
+            List.filter
+              (fun (t, sc) -> not @@ ShardingSummary.mem CUnsat sc)
+              trs
+          in
+          List.map fst may_shard
+        in
+        (* Must accept non-spurious reads that are commutatively written to,
+           if those reads appear in a potentially shardable transition *)
+        let must_accept_weak =
+          List.filter
+            (fun (t, pf) ->
+              let f, _ = pf in
+              List.mem t maybe_shardable
+              && is_mem_id f commutative_writes
+              && (not @@ is_mem_read (t, pf) spurious_reads))
+            reads
+        in
+        print_endline @@ "Must accept weak reads: "
+        ^ String.concat ", "
+            (List.map
+               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+               must_accept_weak);
+        print_endline @@ "Accepted weak reads: "
+        ^ String.concat ", "
+            (List.map
+               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+               accepted_weak_reads);
+        let all_weak_reads_accepted =
+          let wr_compare (ta, pfa) (tb, pfb) =
+            let tc = String.compare ta tb in
+            let pfc = pp_compare pfa pfb in
+            if tc = 0 then pfc else tc
+          in
+          let sort_wr wr = List.sort_uniq wr_compare wr in
+          let must_accept = sort_wr must_accept_weak in
+          let accepted = sort_wr accepted_weak_reads in
+          if List.compare_lengths must_accept accepted <> 0 then false
+          else
+            let combined = List.combine must_accept accepted in
+            List.for_all (fun (a, b) -> wr_compare a b = 0) combined
+        in
+        print_endline @@ "All weak reads accepted: "
+        ^ string_of_bool all_weak_reads_accepted;
+        let pcm_strs = List.map (fun (f, p) -> (get_id f, p)) pcms in
+        match all_weak_reads_accepted with
+        | true ->
+            (* Assign PCMs to all fields *)
+            let assignment =
+              List.map
+                (fun (f, _, _) ->
+                  (* the same field can be written to both commutatively and non-commutatively *)
+                  let has_cw = is_mem_id f commutative_writes in
+                  let has_non_cw = is_mem_id f noncomm_writes in
+                  let pcm =
+                    match (has_non_cw, has_cw) with
+                    | _, false -> StateSplitDecider.pcm_identifier
+                    | false, true -> List.assoc (get_id f) pcm_strs
+                    | true, true ->
+                        let cw_pcm = List.assoc (get_id f) pcm_strs in
+                        compose_sd_identifier StateSplitDecider.pcm_identifier
+                          cw_pcm
+                  in
+                  (get_id f, pcm))
+                cmod.contr.cfields
+            in
+            print_endline @@ "Global PCM assignment: "
+            ^ String.concat ", "
+                (List.map (fun (f, pcm) -> f ^ ": " ^ pcm) assignment);
+            pure @@ assignment
+        (* Revert to always-OK state splitting strategy if fancier strategies don't pan out *)
+        | false -> pure @@ default_assignment )
+    | None -> pure @@ default_assignment
 
   let sa_module (cmod : cmodule) (elibs : libtree list) =
-    (* Stage 1: determine state footprint of components *)
     let senv = SAEnv.mk () in
 
     let senv = sa_analyze_folds senv in
@@ -2077,15 +2297,17 @@ struct
           (* We only want transitions in the output *)
           let%bind summaries =
             if comp.comp_type = CompTrans then
-              let%bind const = commutative_constraints (comp, comp_summ) in
-              pure @@ ((comp.comp_name, comp_summ, const) :: summ_acc)
+              let%bind const = base_constraints_for (comp, comp_summ) in
+              pure @@ ((comp, comp_summ, const) :: summ_acc)
             else pure @@ summ_acc
           in
           pure @@ (senv', summaries))
         (senv, []) cmod.contr.ccomps
     in
 
+    (* print_endline @@ SAEnv.pp senv; *)
     let summaries = List.rev summaries in
+    let _ = assign_pcms cmod summaries in
     pure summaries
 
   (* pure senv *)
