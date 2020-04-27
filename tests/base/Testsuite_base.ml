@@ -18,17 +18,16 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open TestUtil
+open Scilla_test.Util
 
 let () =
   run_tests
     [
-      TestBech32.all_tests;
-      TestInteger256.all_tests;
-      TestParser.all_tests;
-      TestSafeArith.all_tests;
-      TestSignatures.all_tests;
-      TestSnark.all_tests;
-      TestSyntax.all_tests;
-      (* TestPolynomial.all_tests; *)
+      TestBech32.All.tests;
+      TestInteger256.All.tests;
+      Testparser.All.tests;
+      TestSafeArith.All.tests;
+      TestSignatures.All.tests;
+      TestSnark.All.tests;
+      TestSyntax.All.tests;
     ]

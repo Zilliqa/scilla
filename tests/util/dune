@@ -1,5 +1,5 @@
 (library
  (modes byte native)
- (name testutil)
- (wrapped false)
+ (name scilla_test)
+ (wrapped true)
  (libraries core oUnit fileutils scilla_base patdiff.lib))

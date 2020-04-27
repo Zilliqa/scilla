@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Scilla_eval
+
 module IPCTestType = StateIPCTestClient.Type
   
 (* This file aids Testcontracts.ml in setting up a state server

@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "checker"; "bad"; f ]
@@ -101,7 +101,7 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-module LibTests = TestUtil.DiffBasedTests (struct
+module LibTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "checker"; "bad"; f ]
@@ -146,7 +146,7 @@ end)
 
 (* The test here require the `-init` argument. This is required for
  * importing libraries whose addresses are specified in the init JSON *)
-module InitArgTests = TestUtil.DiffBasedTests (struct
+module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "checker"; "bad"; f ]

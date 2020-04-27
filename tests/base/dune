@@ -3,4 +3,4 @@
  (name testsuite_base)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare))
- (libraries core oUnit scilla_base testutil testparser))
+ (libraries core oUnit scilla_base scilla_test testparser))

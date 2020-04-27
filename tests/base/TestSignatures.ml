@@ -2,6 +2,8 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Result
 open OUnit2
+open Scilla_base
+open Scilla_crypto
 
 let t1 =
   test_case (fun _ ->
@@ -91,4 +93,6 @@ let t2' =
 
 let ecdsa_tests = "ecda_tests" >::: [ t1'; t2' ]
 
-let all_tests _ = "signature_tests" >::: [ schnorr_tests; ecdsa_tests ]
+module All = struct
+  let tests _ = "signature_tests" >::: [ schnorr_tests; ecdsa_tests ]
+end

@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open OUnit2
+open Scilla_base
 open Bech32
 open Literal
 open Utils
@@ -119,5 +120,7 @@ let random_tests =
         random_test (i + r)
       done)
 
-let all_tests _ =
-  "bech32_tests" >::: [ test1; test2; test3; test4; test5; random_tests ]
+module All = struct
+  let tests _ =
+    "bech32_tests" >::: [ test1; test2; test3; test4; test5; random_tests ]
+end

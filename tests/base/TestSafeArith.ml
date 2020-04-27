@@ -2,6 +2,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
+open Scilla_base
 open SafeArith
 
 (* We test by comparing the result of the safe arithmetic operations
@@ -94,4 +95,6 @@ let builtin_arith_8bit_tests =
            ("unsigned 8-bit: isqrt", TestUnsigned.test_all_isqrt U8_safe.isqrt);
          ]
 
-let all_tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]
+module All = struct
+  let tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]
+end

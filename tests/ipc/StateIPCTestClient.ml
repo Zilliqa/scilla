@@ -18,6 +18,8 @@
 
 open Core
 open! Int.Replace_polymorphic_compare
+open Scilla_base
+open Scilla_eval
 open TypeUtil
 open StateIPCIdl
 open OUnit2

@@ -24,6 +24,7 @@ open OUnit2
  * literals is by constructing them ourselves as there are checks
  * in both Scilla source parser and the JSON parser against
  * building bad literals. *)
+open Scilla_base
 open PrettyPrinters
 module TestTypeUtils = TypeUtil.TypeUtilities
 open TypeUtil.TUType
@@ -133,7 +134,7 @@ let lit_typ_tests =
   "literal_type_tests" >::: [ t1; t2; t3; t4; t5; t6; t7; t8; t9; t10; t11 ]
 
 (* PART B: Regular tests based on diffing outputs. *)
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "typecheck"; "bad"; f ]
@@ -193,5 +194,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-let all_tests env =
-  "type_check_fail_tests" >::: [ lit_typ_tests; Tests.all_tests env ]
+let tests env = "bad" >::: [ lit_typ_tests; Tests.tests env ]

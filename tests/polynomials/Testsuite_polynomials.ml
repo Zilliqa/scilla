@@ -17,7 +17,7 @@
 *)
 
 open OUnit2
-open Polynomial
+open Polynomials.Polynomial
 
 let t1_pn =
   test_case (fun _ ->

@@ -24,6 +24,8 @@
 open Core
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
+open Scilla_base
+open Scilla_eval
 open MonadUtil
 open StateIPCIdl
 open IPCUtil

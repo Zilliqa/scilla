@@ -19,6 +19,7 @@
 (* This file describes function that communicate with the blockchain to fetch
  * and update state variables on demand. *)
 
+open Scilla_base
 open Literal
 open Syntax
 open ParsedSyntax

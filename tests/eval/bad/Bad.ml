@@ -61,7 +61,7 @@ let explist =
     "substr_err1.scilexp";
   ]
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "eval"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "eval"; "bad"; f ]
@@ -85,4 +85,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-let all_tests env = "eval_exp_fail_tests" >::: [ Tests.all_tests env ]
+let tests env = "bad" >::: [ Tests.tests env ]

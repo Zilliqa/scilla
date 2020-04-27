@@ -18,6 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Scilla_base
 
 let uint256_max_str =
   "115792089237316195423570985008687907853269984665640564039457584007913129639935"
@@ -528,5 +529,8 @@ let int256_tests_list = List.append [ t1_int; t2_int; t3_int ] list_int256
 let int256_tests = "int256_tests" >::: int256_tests_list
 
 (* The test to be called from Testsuite. *)
-let all_tests _ =
-  "integer256_tests" >::: [ uint256_tests; int256_tests; non_arithmetic_tests ]
+module All = struct
+  let tests _ =
+    "integer256_tests"
+    >::: [ uint256_tests; int256_tests; non_arithmetic_tests ]
+end

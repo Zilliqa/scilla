@@ -2,6 +2,6 @@
 
 (library
  (modes byte native)
- (name testchecker)
+ (name testexps)
  (wrapped true)
  (libraries core oUnit scilla_test))
