@@ -1,6 +1,7 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
 OCAML_VERSION_RECOMMENDED=4.07.1
+OCAMLFORMAT_VERSION=0.14.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
@@ -132,6 +133,7 @@ opamdep-ci:
 	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
 
 .PHONY : coverage
 coverage :
