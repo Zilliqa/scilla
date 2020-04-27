@@ -299,9 +299,9 @@ let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
        ^ StdlibTracker.scilla_stdlib_env
-       ^ " environment variable, or pass through command-line argument for \
-          this script.\n" ^ "Example:\n" ^ exe_name
-       ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
+       ^ " environment variable, or pass through command-line \
+          argument           for           this script.\n" ^ "Example:\n"
+       ^ exe_name ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
@@ -337,6 +337,8 @@ type runner_cli = {
   p_type_info : bool;
   (* Sharding analysis *)
   sa_flag : bool;
+  sa_transitions : string list;
+  sa_accepted_weak_reads : string list;
 }
 
 let parse_cli args ~exe_name =
@@ -351,6 +353,8 @@ let parse_cli args ~exe_name =
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
   let r_sa = ref false in
+  let r_sa_transitions = ref [] in
+  let r_sa_accepted_weak_reads = ref [] in
   let speclist =
     [
       ( "-version",
@@ -387,8 +391,15 @@ let parse_cli args ~exe_name =
         "Make the cashflow checker consider a field to be money (implicitly \
          sets -cf)" );
       ( "-sa",
-      Arg.Unit (fun () -> r_sa := true),
-      "Run sharding analysis and print results" );
+        Arg.Unit (fun () -> r_sa := true),
+        "Run sharding analysis and print results" );
+      ( "-sa-tr",
+        Arg.String (fun s -> r_sa_transitions := s :: !r_sa_transitions),
+        "Select transition for sharding in the sharding analysis" );
+      ( "-sa-wr",
+        Arg.String
+          (fun s -> r_sa_accepted_weak_reads := s :: !r_sa_accepted_weak_reads),
+        "Accept weak read (transition:pseudofield) in the sharding analysis" );
       ( "-jsonerrors",
         Arg.Unit (fun () -> r_json_errors := true),
         "Print errors in JSON format" );
@@ -440,4 +451,6 @@ let parse_cli args ~exe_name =
     init_file = !r_init_file;
     p_type_info = !r_type_info;
     sa_flag = !r_sa;
+    sa_transitions = !r_sa_transitions;
+    sa_accepted_weak_reads = !r_sa_accepted_weak_reads;
   }

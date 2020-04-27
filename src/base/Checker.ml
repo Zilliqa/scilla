@@ -171,8 +171,8 @@ let analyze_print_gas cmod typed_elibs =
       in
       res
 
-let analyze_print_sharding cmod typed_elibs =
-  let res = SA.sa_module cmod typed_elibs in
+let analyze_print_sharding cmod typed_elibs selected_transitions weak_reads_str =
+  let res = SA.sa_module selected_transitions weak_reads_str cmod typed_elibs in
   match res with
   | Error msg ->
       pout @@ scilla_error_to_string msg;
@@ -307,7 +307,7 @@ let check_cmodule cli =
     let%bind _ =
     if cli.sa_flag then
       wrap_error_with_gas remaining_gas
-      @@ (pure @@ Some (analyze_print_sharding typed_cmod typed_elibs))
+      @@ (pure @@ Some (analyze_print_sharding typed_cmod typed_elibs cli.sa_transitions cli.sa_accepted_weak_reads))
     else pure @@ None
   in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)

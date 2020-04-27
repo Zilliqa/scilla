@@ -71,10 +71,20 @@ struct
       ER.mk_id (mk_ident f) dummy_type
     in
     match components with
-    | [ f ] -> (mk_id f, None)
-    | f :: keys -> (mk_id f, Some (List.map mk_id keys))
+    | [ f ] -> pure @@ (mk_id f, None)
+    | f :: keys -> pure @@ (mk_id f, Some (List.map mk_id keys))
     (* bad input *)
-    | [] -> (mk_id "", None)
+    | [] ->
+        fail0
+          (Printf.sprintf "Sharding analysis: bad pseudofield string %s " str)
+
+  let weak_read_of_str str =
+    let components = String.split_on_char ':' str in
+    if List.length components = 2 then
+      let%bind pf = pp_of_str @@ List.nth components 1 in
+      pure @@ (List.nth components 0, pf)
+    else
+      fail0 (Printf.sprintf "Sharding analysis: bad weak read string %s " str)
 
   (* We keep track of whether identifiers in the impure part of the language
      shadow any of their component's parameters *)
@@ -2082,18 +2092,23 @@ struct
     let no_duplicates = List.compare_lengths pcms fields = 0 in
     if no_duplicates then Some pcms else None
 
-  let assign_pcms ?(selected_transitions = [])
-      ?(accepted_weak_reads : (String.t * pseudofield) list = []) cmod summaries
-      =
+  let validate_transitions input all =
+    List.filter (fun t -> List.mem t input) all
+
+  let assign_pcms ?(selected_transitions : string list = [])
+      ?(accepted_weak_reads : (string * pseudofield) list = []) cmod summaries =
     let all_transitions =
       List.map (fun (comp, _, _) -> get_id comp.comp_name) summaries
     in
-    (* SECURITY FIXME TODO: validate selected_transitions  *)
-    (* If user is not selective, try to shard all transitions *)
     let selected_transitions =
+      (* If user is not selective, try to shard all transitions *)
       if selected_transitions = [] then all_transitions
-      else selected_transitions
+        (* Important: selected_transitions must actually exist in contract AND
+           appear in the order they are defined in contract. *)
+      else validate_transitions selected_transitions all_transitions
     in
+    print_endline @@ "Selected transitions: "
+    ^ String.concat ", " selected_transitions;
     let selected_summaries =
       List.filter
         (fun (comp, _, _) ->
@@ -2145,8 +2160,6 @@ struct
     in
     match pcms with
     | Some pcms -> (
-        print_endline @@ "Local PCMs: "
-        ^ String.concat ", " (List.map (fun (i, p) -> get_id i ^ ": " ^ p) pcms);
         (* Helper functions *)
         let flatten_reads (rs : pseudofield list list) =
           List.flatten @@ List.map list_distribute
@@ -2245,7 +2258,8 @@ struct
         | false -> pure @@ default_assignment )
     | None -> pure @@ default_assignment
 
-  let sa_module (cmod : cmodule) (elibs : libtree list) =
+  let sa_module selected_transitions weak_reads_str (cmod : cmodule)
+      (elibs : libtree list) =
     let senv = SAEnv.mk () in
 
     let senv = sa_analyze_folds senv in
@@ -2307,7 +2321,20 @@ struct
 
     (* print_endline @@ SAEnv.pp senv; *)
     let summaries = List.rev summaries in
-    let _ = assign_pcms cmod summaries in
+    (* SECURITY / UNTRUSTED INPUT: validate command line arguments *)
+    (* Important: selected_transitions must actually exist in contract AND
+       appear in the order they are defined in contract *)
+    let all_transitions =
+      List.map (fun (comp, _, _) -> get_id comp.comp_name) summaries
+    in
+    let selected_transitions =
+      validate_transitions selected_transitions all_transitions
+    in
+    let%bind accepted_weak_reads = mapM ~f:weak_read_of_str weak_reads_str in
+    let _ =
+      assign_pcms ~selected_transitions ~accepted_weak_reads cmod summaries;
+      print_endline "\n"
+    in
     pure summaries
 
   (* pure senv *)
