@@ -2,6 +2,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
+open Scilla_base
 open Identifier
 open Type
 open Literal
@@ -135,4 +136,6 @@ let unannotated_syntax_tests =
                 free_vars_in_expr (parse_expr_wrapper expr)) );
          ]
 
-let all_tests _ = "syntax_tests" >::: [ unannotated_syntax_tests ]
+module All = struct
+  let tests _ = "syntax_tests" >::: [ unannotated_syntax_tests ]
+end

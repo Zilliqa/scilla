@@ -18,6 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open OUnit2
 
 let explist =
   [
@@ -135,7 +136,7 @@ let explist =
     "builtin-alt-bn128.scilexp";
   ]
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "eval"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "eval"; "good"; f ]
@@ -159,4 +160,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 0
 end)
 
-let all_tests = Tests.all_tests
+let tests env = "good" >::: [ Tests.tests env ]

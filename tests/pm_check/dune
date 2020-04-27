@@ -1,5 +1,7 @@
+(include_subdirs unqualified)
+
 (library
+ (name testpm)
  (modes byte native)
- (name testgasexpr)
  (wrapped true)
  (libraries core oUnit scilla_test scilla_base))

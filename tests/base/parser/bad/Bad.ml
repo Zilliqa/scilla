@@ -21,7 +21,7 @@ open! Int.Replace_polymorphic_compare
 
 (* Add tests in alphabetical order *)
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "base"; "parser"; "bad"; f ]
@@ -139,7 +139,7 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-module LibTests = TestUtil.DiffBasedTests (struct
+module LibTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "base"; "parser"; "bad"; "lib"; f ]
@@ -184,7 +184,7 @@ module LibTests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 1
 end)
 
-module ExpTests = TestUtil.DiffBasedTests (struct
+module ExpTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "base"; "parser"; "bad"; "exps"; f ]

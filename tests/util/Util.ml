@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open OUnit2
-open ScillaUtil.FilePathInfix
+open Scilla_base.ScillaUtil.FilePathInfix
 
 (* Helper funcation borrowed from Batteries library *)
 let stream_to_string fl =
@@ -78,7 +78,7 @@ let run_tests tests =
       ext_ipc_server;
     }
   in
-  run_test_tt_main ("all_tests" >::: List.map ~f:(( |> ) env) tests)
+  run_test_tt_main ("tests" >::: List.map ~f:(( |> ) env) tests)
 
 let output_verifier goldoutput_file msg print_diff output =
   (* load all data from file *)
@@ -190,5 +190,5 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
               output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
-  let all_tests env = "exptests" >::: build_exp_tests env tests
+  let tests env = "exptests" >::: build_exp_tests env tests
 end

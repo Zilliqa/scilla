@@ -16,14 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
 
-let all_tests env =
-  "parser_tests"
-  >::: [
-         TestParserFail.Tests.all_tests env;
-         TestParserFail.LibTests.all_tests env;
-         TestParserFail.ExpTests.all_tests env;
-       ]
+let tests env = "typecheck" >::: [ Good.tests env; Bad.tests env ]

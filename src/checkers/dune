@@ -1,6 +1,6 @@
 (library
  (name scilla_checkers)
- (wrapped false)
+ (wrapped true)
  (modes byte native)
  (libraries core angstrom stdint polynomials yojson cryptokit scilla_base)
  (preprocess

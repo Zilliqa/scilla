@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "contracts"; f ]
@@ -78,7 +78,7 @@ module Tests = TestUtil.DiffBasedTests (struct
 end)
 
 (* These differ from "Tests" because of an additional libdir argument. *)
-module CheckerTests = TestUtil.DiffBasedTests (struct
+module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "checker"; "good"; f ]
@@ -139,7 +139,7 @@ end)
 
 (* The test here require the `-init` argument. This is required for
  * importing libraries whose addresses are specified in the init JSON *)
-module InitArgTests = TestUtil.DiffBasedTests (struct
+module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "checker"; "good"; f ]
@@ -163,7 +163,7 @@ module InitArgTests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 0
 end)
 
-module ShogiTests = TestUtil.DiffBasedTests (struct
+module ShogiTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "contracts"; f ]
@@ -189,7 +189,7 @@ end)
 
 (* We don't add the "-typeinfo" argument to the main set of "Tests"
  * because that adds a lot of diff noise when things change. *)
-module TypeInfoTests = TestUtil.DiffBasedTests (struct
+module TypeInfoTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".typeinfo.gold" ]
 
   let test_path f = [ "contracts"; f ]

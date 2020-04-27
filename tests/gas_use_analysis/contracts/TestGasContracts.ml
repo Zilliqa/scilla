@@ -29,7 +29,7 @@ let explist =
     "wallet.scilla";
   ]
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f =
     [ dir; "gas_use_analysis"; "contracts"; "gold"; f ^ ".gold" ]
 
@@ -54,4 +54,4 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 0
 end)
 
-let all_tests = Tests.all_tests
+let tests = Tests.tests

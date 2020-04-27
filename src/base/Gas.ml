@@ -25,7 +25,7 @@ open Type
 open Literal
 open Syntax
 open TypeUtil
-open Schnorr
+open Scilla_crypto.Schnorr
 open PrettyPrinters
 open Datatypes.SnarkTypes
 

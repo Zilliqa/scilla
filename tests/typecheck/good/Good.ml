@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open OUnit2
+open Scilla_base
 open Type
 open Syntax
 open ErrorUtils
@@ -158,7 +159,7 @@ let ground_type_tests =
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "typecheck"; "good"; f ]
@@ -210,11 +211,11 @@ module Tests = TestUtil.DiffBasedTests (struct
   let exit_code : Unix.process_status = WEXITED 0
 end)
 
-let all_tests env =
-  "type_check_success_tests"
+let tests env =
+  "good"
   >::: [
          type_equiv_tests;
-         Tests.all_tests env;
+         Tests.tests env;
          ground_type_tests;
          map_access_type_tests;
        ]

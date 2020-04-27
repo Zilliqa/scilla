@@ -16,6 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Scilla_base
 open ErrorUtils
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.

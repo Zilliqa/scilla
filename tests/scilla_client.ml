@@ -17,6 +17,7 @@
 *)
 
 open Core
+open Scilla_base
 open Scilla_server_lib
 module J = Yojson.Basic
 

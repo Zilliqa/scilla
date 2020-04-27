@@ -18,6 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Scilla_base
 open Datatypes
 open Identifier
 open Literal

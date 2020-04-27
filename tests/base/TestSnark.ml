@@ -21,6 +21,8 @@
 
 open Core_kernel
 open OUnit2
+open Scilla_base
+open Scilla_crypto
 open Snark
 open Integer256
 open Literal
@@ -556,13 +558,15 @@ let test_generate_random_points =
             "0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d3230af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27"
         ))
 
-let all_tests _ =
-  "snark_tests"
-  >::: [
-         test_add_zero;
-         test_invalid;
-         test_mul_add;
-         test_pairing;
-         test_pairing_null_input;
-         test_generate_random_points;
-       ]
+module All = struct
+  let tests _ =
+    "snark_tests"
+    >::: [
+           test_add_zero;
+           test_invalid;
+           test_mul_add;
+           test_pairing;
+           test_pairing_null_input;
+           test_generate_random_points;
+         ]
+end

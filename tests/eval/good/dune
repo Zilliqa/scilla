@@ -1,5 +1,0 @@
-(library
- (modes byte native)
- (name testexps)
- (wrapped false)
- (libraries core oUnit testutil))
