@@ -2,12 +2,17 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
-open Identifier
-open Type
 open Literal
 open Syntax
 open ParsedSyntax
 open PrettyPrinters
+
+module TestSyntaxLiteral = FlattenedLiteral
+module TestSyntaxType = TestSyntaxLiteral.LType
+module TestSyntaxIdentifier = TestSyntaxType.TIdentifier
+open TestSyntaxIdentifier
+open TestSyntaxType
+open TestSyntaxLiteral
 
 let parse_expr_wrapper exprstr =
   match FrontEndParser.parse_expr exprstr with

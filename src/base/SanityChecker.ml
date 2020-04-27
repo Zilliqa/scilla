@@ -19,7 +19,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open TypeUtil
-open Identifier
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -34,10 +34,15 @@ module ScillaSanityChecker
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module SCLiteral = FlattenedLiteral
+  module SCType = SCLiteral.LType
+  module SCIdentifier = SCType.TIdentifier
+  module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
-  open EISyntax
+  open SCIdentifier
+  open SCSyntax
   open SCU
 
   (* Warning level to use when contract loads/stores entire Maps. *)

@@ -16,6 +16,8 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+module IPCTestType = StateIPCTestClient.Type
+  
 (* This file aids Testcontracts.ml in setting up a state server
  * and initializing it with some initial data. *)
 
@@ -26,13 +28,13 @@ val setup_and_initialize :
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 val get_final_finish :
-  sock_addr:string -> (string * Type.t * Ipcmessage_types.proto_scilla_val) list
+  sock_addr:string -> (string * IPCTestType.t * Ipcmessage_types.proto_scilla_val) list
 
 (* Given the interpreter's output, parse the JSON, append svars to it and print out new JSON. *)
 val append_full_state :
   goldoutput_file:string ->
   interpreter_output:string ->
-  (string * Type.t * Ipcmessage_types.proto_scilla_val) list ->
+  (string * IPCTestType.t * Ipcmessage_types.proto_scilla_val) list ->
   string
 
 val json_from_string : string -> Yojson.Basic.t

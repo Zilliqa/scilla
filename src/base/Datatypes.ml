@@ -18,11 +18,17 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
-open Type
 open Literal
 open MonadUtil
 open Result.Let_syntax
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module DTLiteral = FlattenedLiteral
+module DTType = DTLiteral.LType
+module DTIdentifier = DTType.TIdentifier
+
+open DTType
+open DTLiteral
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -48,7 +54,7 @@ type adt = {
   (* Mapping for constructors' types
      The arity of the constructor is the same as the length
      of the list, so the types are mapped correspondingly. *)
-  tmap : (string * Type.t list) list;
+  tmap : (string * DTType.t list) list;
 }
 [@@deriving equal]
 
@@ -71,7 +77,7 @@ module DataTypeDictionary = struct
       tname = "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT (asId "Nat", []) ]) ];
+      tmap = [ ("Succ", [ ADT (DTIdentifier.asId "Nat", []) ]) ];
     }
 
   (* Option *)
@@ -97,7 +103,7 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT (asId "List", [ TypeVar "'A" ]) ]) ];
+      tmap = [ ("Cons", [ TypeVar "'A"; ADT (TIdentifier.asId "List", [ TypeVar "'A" ]) ]) ];
     }
 
   (* Products (Pairs) *)
@@ -167,15 +173,15 @@ module DataTypeDictionary = struct
   (* Get typing map for a constructor *)
   let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:String.( = )
 
-  let bool_typ = ADT (asId t_bool.tname, [])
+  let bool_typ = ADT (TIdentifier.asId t_bool.tname, [])
 
-  let nat_typ = ADT (asId t_nat.tname, [])
+  let nat_typ = ADT (TIdentifier.asId t_nat.tname, [])
 
-  let option_typ t = ADT (asId t_option.tname, [ t ])
+  let option_typ t = ADT (TIdentifier.asId t_option.tname, [ t ])
 
-  let list_typ t = ADT (asId t_list.tname, [ t ])
+  let list_typ t = ADT (TIdentifier.asId t_list.tname, [ t ])
 
-  let pair_typ t s = ADT (asId t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (TIdentifier.asId t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =
@@ -236,8 +242,8 @@ module SnarkTypes = struct
   let scilla_g1point_to_ocaml g1p =
     match g1p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: Type.t] pxt scalar_type
-           && [%equal: Type.t] pyt scalar_type
+      when [%equal: DTType.t] pxt scalar_type
+           && [%equal: DTType.t] pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -246,8 +252,8 @@ module SnarkTypes = struct
   let scilla_g2point_to_ocaml g2p =
     match g2p with
     | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: Type.t] pxt g2comp_type
-           && [%equal: Type.t] pyt g2comp_type
+      when [%equal: DTType.t] pxt g2comp_type
+           && [%equal: DTType.t] pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -270,8 +276,8 @@ module SnarkTypes = struct
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
           | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when [%equal: Type.t] g1pt g1point_type
-                 && [%equal: Type.t] g2pt g2point_type ->
+            when [%equal: DTType.t] g1pt g1point_type
+                 && [%equal: DTType.t] g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

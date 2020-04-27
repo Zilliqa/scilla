@@ -22,8 +22,9 @@
 open OUnit2
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Type
 open Yojson
+
+module IPCTestType = StateIPCTestClient.Type
 
 let parse_typ_wrapper t =
   match FrontEndParser.parse_type t with
@@ -62,6 +63,7 @@ let json_to_string j =
   json_exn_wrapper thunk
 
 let rec json_to_pb t j =
+  let open IPCTestType in
   match t with
   | MapType (_, vt) ->
       let kvlist = json_to_list j in
@@ -101,6 +103,7 @@ let json_file_to_state path =
   svars
 
 let state_to_json s =
+  let open IPCTestType in
   `List
     (List.map s ~f:(fun (fname, ftyp, fval) ->
          `Assoc
@@ -116,6 +119,7 @@ let sort_mapkeys goldj outj =
   let goldstates = json_to_list @@ json_member "states" goldj in
   let outstates = json_to_list @@ json_member "states" outj in
   let rec map_sorter goldmap outmap t =
+    let open IPCTestType in
     match t with
     | MapType (_, vt) ->
         let goldlist = json_to_list goldmap in

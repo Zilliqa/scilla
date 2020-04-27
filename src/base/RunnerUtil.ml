@@ -19,10 +19,11 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
-open Identifier
-open Type
 open Syntax
+(* TODO: Parameterise this. *)
 open ParsedSyntax
+open ParsedSyntax.SIdentifier
+open ParsedSyntax.SType
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
@@ -75,7 +76,7 @@ let import_lib id =
    Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
    to the type itself because we want to eliminate the idea of namespaces right here. *)
 type 'a nspace_tree = {
-  nspace : 'a Identifier.t option;
+  nspace : 'a SIdentifier.t option;
   dep_ns : 'a nspace_tree list;
 }
 

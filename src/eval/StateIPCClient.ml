@@ -19,7 +19,6 @@ open Core
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open MonadUtil
-open Identifier
 open Literal
 open Syntax
 open JSON
@@ -32,6 +31,10 @@ module M = Idl.IdM
 module IDL = Idl.Make (M)
 
 module IPCClient = IPCIdl (IDL.GenClient ())
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module IPCCLiteral = FlattenedLiteral
+module IPCCType = IPCCLiteral.LType
+module IPCCIdentifier = IPCCType.TIdentifier
 
 (* Translate JRPC result to our result. *)
 let translate_res res =
@@ -81,6 +84,7 @@ let deserialize_literal s tp =
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
 let rec serialize_field value =
+  let open IPCCLiteral in
   match value with
   | Map (_, mlit) ->
       let mpb =
@@ -116,7 +120,7 @@ let rec deserialize_value value tp =
                 Caml.Hashtbl.add mlit k' v';
                 pure ())
           in
-          pure (Map ((kt, vt), mlit))
+          pure (IPCCLiteral.Map ((kt, vt), mlit))
       | _ ->
           fail0
             "StateIPCClient: Type mismatch deserializing value. Unexpected \
@@ -148,7 +152,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.get_id fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -174,7 +178,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.get_id fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -196,7 +200,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.get_id fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;
@@ -216,7 +220,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.get_id fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;

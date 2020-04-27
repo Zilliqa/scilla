@@ -19,14 +19,20 @@
 (* This file describes function that communicate with the blockchain to fetch
  * and update state variables on demand. *)
 
+open Literal
 open Syntax
 open ParsedSyntax
 open ErrorUtils
 
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module SSLiteral = FlattenedLiteral
+module SSType = SSLiteral.LType
+module SSIdentifier = SSType.TIdentifier
+
 type ss_field = {
   fname : string;
-  ftyp : Type.t;
-  fval : Literal.t option; (* Value may not be available (in IPC mode) *)
+  ftyp : SSType.t;
+  fval : SSLiteral.t option; (* Value may not be available (in IPC mode) *)
 }
 
 type service_mode =
@@ -57,7 +63,7 @@ val initialize : sm:service_mode -> fields:ss_field list -> unit
 
 (* Expensive operation, use with care. *)
 val get_full_state :
-  unit -> ((string * Literal.t) list, scilla_error list) result
+  unit -> ((string * SSLiteral.t) list, scilla_error list) result
 
 (* Finalize: no more queries. *)
 val finalize : unit -> (unit, scilla_error list) result
@@ -65,27 +71,27 @@ val finalize : unit -> (unit, scilla_error list) result
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  (Literal.t option * stmt_eval_context, scilla_error list) result
+  fname:loc SSIdentifier.t ->
+  keys:SSLiteral.t list ->
+  (SSLiteral.t option * stmt_eval_context, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  value:Literal.t ->
+  fname:loc SSIdentifier.t ->
+  keys:SSLiteral.t list ->
+  value:SSLiteral.t ->
   (stmt_eval_context, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
+  fname:loc SSIdentifier.t ->
+  keys:SSLiteral.t list ->
   (bool * stmt_eval_context, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
+  fname:loc SSIdentifier.t ->
+  keys:SSLiteral.t list ->
   (stmt_eval_context, scilla_error list) result
 
 (* Should rarely be used, and is useful only when multiple StateService objects are required *)
@@ -93,28 +99,28 @@ module MakeStateService () : sig
   val initialize : sm:service_mode -> fields:ss_field list -> unit
 
   val get_full_state :
-    unit -> ((string * Literal.t) list, scilla_error list) result
+    unit -> ((string * SSLiteral.t) list, scilla_error list) result
 
   val finalize : unit -> (unit, scilla_error list) result
 
   val fetch :
-    fname:loc Identifier.t ->
-    keys:Literal.t list ->
-    (Literal.t option * stmt_eval_context, scilla_error list) result
+    fname:loc SSIdentifier.t ->
+    keys:SSLiteral.t list ->
+    (SSLiteral.t option * stmt_eval_context, scilla_error list) result
 
   val update :
-    fname:loc Identifier.t ->
-    keys:Literal.t list ->
-    value:Literal.t ->
+    fname:loc SSIdentifier.t ->
+    keys:SSLiteral.t list ->
+    value:SSLiteral.t ->
     (stmt_eval_context, scilla_error list) result
 
   val is_member :
-    fname:loc Identifier.t ->
-    keys:Literal.t list ->
+    fname:loc SSIdentifier.t ->
+    keys:SSLiteral.t list ->
     (bool * stmt_eval_context, scilla_error list) result
 
   val remove :
-    fname:loc Identifier.t ->
-    keys:Literal.t list ->
+    fname:loc SSIdentifier.t ->
+    keys:SSLiteral.t list ->
     (stmt_eval_context, scilla_error list) result
 end

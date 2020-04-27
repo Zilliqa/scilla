@@ -27,9 +27,9 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open Literal
 open TypeUtil
 open ErrorUtils
-open Identifier
 open Syntax
 
 module ScillaAcceptChecker
@@ -39,8 +39,12 @@ module ScillaAcceptChecker
       val get_type : rep -> PlainTypes.t inferred_type [@@warning "-32"]
     end) =
 struct
-  module EISyntax = ScillaSyntax (SR) (ER)
-  open EISyntax
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module ACLiteral = FlattenedLiteral
+  module ACType = ACLiteral.LType
+  module ACIdentifier = ACType.TIdentifier
+  module ACSyntax = ScillaSyntax (SR) (ER) (ACLiteral)
+  open ACSyntax
 
   (* Warning level to use when contract has code paths with potentially
    * no accept statement. *)
@@ -104,7 +108,7 @@ struct
           ( sprintf
               "transition %s had a potential code path with duplicate accept \
                statements:\n"
-              (get_id transition.comp_name)
+              (ACIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
               (List.map group ~f:(fun loc ->
                    sprintf "  Accept at %s\n" (get_loc_str loc))) )
@@ -125,7 +129,7 @@ struct
     if List.for_all all_accept_groups ~f:List.is_empty then
       warn0
         (sprintf "No transition in contract %s contains an accept statement\n"
-           (get_id contr.cname))
+           (ACIdentifier.as_error_string contr.cname))
         warning_level_missing_accept
 
   (* ************************************** *)

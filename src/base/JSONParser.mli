@@ -19,6 +19,9 @@
 open Core_kernel
 open Yojson
 module JSONTypeUtilities = TypeUtil.TypeUtilities
+module JSONIdentifier = TypeUtil.TUIdentifier
+module JSONType = TypeUtil.TUType
+module JSONLiteral = TypeUtil.TULiteral
 
 (*************************************)
 (***** Exception and wrappers ********)
@@ -29,16 +32,16 @@ module JSONTypeUtilities = TypeUtil.TypeUtilities
 val member_exn : string -> Basic.t -> Basic.t
 
 (* Wrapper for constr_pattern_arg_types. Throws Invalid_json exception instead of using result type *)
-val constr_pattern_arg_types_exn : Type.t -> string -> Type.t list
+val constr_pattern_arg_types_exn : JSONType.t -> string -> JSONType.t list
 
 (*  Wrapper for DataTypeDictionary.lookup_name  *)
-val lookup_adt_name_exn : 'a Identifier.t -> Datatypes.adt
+val lookup_adt_name_exn : 'a JSONIdentifier.t -> Datatypes.adt
 
 (*************************************)
 (*********** ADT parsers *************)
 (*************************************)
 
-type adt_parser_entry = Incomplete | Parser of (Basic.t -> Literal.t)
+type adt_parser_entry = Incomplete | Parser of (Basic.t -> JSONLiteral.t)
 
 (* ADT parsers table *)
 val adt_parsers : (string, adt_parser_entry) Caml.Hashtbl.t
@@ -53,7 +56,7 @@ val lookup_adt_parser_opt : string -> adt_parser_entry option
 val lookup_adt_parser : string -> adt_parser_entry
 
 (* Generate a parser *)
-val gen_parser : Type.t -> Basic.t -> Literal.t
+val gen_parser : JSONType.t -> Basic.t -> JSONLiteral.t
 
 (* Parse JSON *)
-val parse_json : Type.t -> Basic.t -> Literal.t
+val parse_json : JSONType.t -> Basic.t -> JSONLiteral.t

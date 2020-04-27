@@ -23,6 +23,9 @@ open Bech32
 open Literal
 open Utils
 
+module TestBechLiteral = FlattenedLiteral
+open TestBechLiteral
+
 let hex_to_raw_bytes h = Bystr.parse_hex h |> Bystr.to_raw_bytes
 
 (* Inputs and outputs matched in https://www.coinhako.com/zil-check. *)

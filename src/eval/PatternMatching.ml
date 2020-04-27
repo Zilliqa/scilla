@@ -19,11 +19,11 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Datatypes
-open Identifier
-open Literal
 open EvalUtil
 open MonadUtil
 open Result.Let_syntax
+open EvalIdentifier
+open EvalLiteral
 open EvalSyntax
 
 let rec match_with_pattern v p =

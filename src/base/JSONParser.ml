@@ -21,13 +21,13 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Yojson
-open Identifier
-open Literal
-open Type
 open ErrorUtils
 open TypeUtil
 open Datatypes
 module JSONTypeUtilities = TypeUtilities
+module JSONIdentifier = TypeUtil.TUIdentifier
+module JSONType = TypeUtil.TUType
+module JSONLiteral = TypeUtil.TULiteral
 open JSONTypeUtilities
 
 (*************************************)
@@ -47,7 +47,7 @@ let constr_pattern_arg_types_exn dt cname =
   | Ok s -> s
 
 let lookup_adt_name_exn name =
-  match DataTypeDictionary.lookup_name (get_id name) with
+  match DataTypeDictionary.lookup_name (JSONIdentifier.get_id name) with
   | Error emsg -> raise (Invalid_json emsg)
   | Ok s -> s
 
@@ -57,7 +57,7 @@ let lookup_adt_name_exn name =
 
 type adt_parser_entry =
   | Incomplete (* Parser not completely constructed. *)
-  | Parser of (Basic.t -> Literal.t)
+  | Parser of (Basic.t -> JSONLiteral.t)
 
 let adt_parsers =
   let open Caml in
@@ -84,8 +84,10 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : Type.t) : Basic.t -> Literal.t =
+let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
   let open Basic in
+  let open TUType in
+  let open TULiteral in
   let rec recurser t =
     match t with
     | PrimType pt -> (
@@ -173,7 +175,7 @@ let gen_parser (t' : Type.t) : Basic.t -> Literal.t =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if String.(get_id name <> "List") then
+                    if String.(JSONIdentifier.get_id name <> "List") then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")

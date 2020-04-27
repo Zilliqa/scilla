@@ -16,8 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Identifier
-open Type
 open Syntax
 open Core_kernel
 open! Int.Replace_polymorphic_compare
@@ -28,6 +26,8 @@ open FrontEndParser
 (***********************************************************)
 
 open ParsedSyntax
+open ParsedSyntax.SIdentifier
+open ParsedSyntax.SType
 
 let parse_expr_wrapper expr =
   match parse_expr expr with

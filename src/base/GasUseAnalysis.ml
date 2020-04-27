@@ -19,8 +19,7 @@
 
 open Core_kernel.Result.Let_syntax
 open TypeUtil
-open Identifier
-open Type
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -37,9 +36,14 @@ module ScillaGUA
 struct
   module SER = SR
   module EER = ER
-  module GUASyntax = ScillaSyntax (SR) (ER)
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module GUALiteral = FlattenedLiteral
+  module GUAType = GUALiteral.LType
+  module GUAIdentifier = GUAType.TIdentifier
+  module GUASyntax = ScillaSyntax (SR) (ER) (GUALiteral)
   module TU = TypeUtilities
   module Gas = Gas.ScillaGas (SR) (ER)
+  open GUAIdentifier
   open GUASyntax
 
   let mk_typed_id i t =
@@ -47,7 +51,7 @@ struct
 
   type sizeref =
     (* Refer to the size of a variable. *)
-    | Base of ER.rep Identifier.t
+    | Base of ER.rep GUAIdentifier.t
     (* For Lengths of Lists and Maps. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
@@ -65,17 +69,17 @@ struct
     | BApp of builtin * sizeref list
     (* The growth of accummulator (a recurrence) in list_foldr.
      * The semantics is similar to SApp, except that, the ressize of
-     * applying "Identifier.t" is taken as a recurence and solved for the
+     * applying "GUAIdentifier.t" is taken as a recurence and solved for the
      * length of the second sizeref (accumulator) actual. The first
      * sizeref actual is Element(list being folded). *)
-    | RFoldAcc of ER.rep Identifier.t * sizeref * sizeref
+    | RFoldAcc of ER.rep GUAIdentifier.t * sizeref * sizeref
     (* Same as RFoldAcc, but for list_foldl:
      * order of the two sizeref actuals are reversed. *)
-    | LFoldAcc of ER.rep Identifier.t * sizeref * sizeref
+    | LFoldAcc of ER.rep GUAIdentifier.t * sizeref * sizeref
     (* Lambda for unknown sizeref (from applying higher order functions). 
-     * TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
+     * TODO: Use "sizeref" instead of "GUAIdentifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | SApp of ER.rep Identifier.t * sizeref list
+    | SApp of ER.rep GUAIdentifier.t * sizeref list
     (* When we cannot determine the size *)
     | Intractable of string
 
@@ -84,9 +88,9 @@ struct
     (* Gas use depends on size of a value *)
     | SizeOf of sizeref
     (* Applying a higher order argument (function) and its arguments. *)
-    (* TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
+    (* TODO: Use "sizeref" instead of "GUAIdentifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | GApp of ER.rep Identifier.t * sizeref list
+    | GApp of ER.rep GUAIdentifier.t * sizeref list
     (* Gas usage polynomial which is known and needs to be expanded. 
      * When a GApp resolves successfully, we replace it with GPol. *)
     | GPol of guref polynomial
@@ -95,7 +99,7 @@ struct
    * The identifier list specifies the arguments which must be substituted.
    * Signatures that contain "GApp/SApp" will (recursively) be substituted for
    * the final signature to not have these lambdas. *)
-  type signature = ER.rep Identifier.t list * sizeref * guref polynomial
+  type signature = ER.rep GUAIdentifier.t list * sizeref * guref polynomial
 
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
@@ -772,7 +776,7 @@ struct
   let builtin_cost (ops, opl') params =
     let opl = ER.get_loc opl' in
 
-    let open Type in
+    let open GUAType in
     (* Types of our paramters. *)
     let tparams = List.map (fun p -> (ER.get_type (get_rep p)).tp) params in
 
@@ -1212,7 +1216,7 @@ struct
       genv idlist
 
   let gua_component genv (comp : component) =
-    let open Type in
+    let open GUAType in
     let si a t = mk_typed_id a t in
     let all_params =
       [
@@ -1276,7 +1280,7 @@ struct
     (* Bind contract parameters. *)
     let si a t = mk_typed_id a t in
     let all_cparams =
-      [ (si ContractUtil.creation_block_label Type.bnum_typ, Type.bnum_typ) ]
+      [ (si ContractUtil.creation_block_label GUAType.bnum_typ, GUAType.bnum_typ) ]
       @ cmod.contr.cparams
     in
     let genv_cparams =
