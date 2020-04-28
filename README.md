@@ -126,7 +126,6 @@ Start `scilla-server` without any arguments. Examples for checking a contract
 and running a transition via `scilla-server` are provided below. They are to be
 run on a separate shell (while `scilla-server` continues to run).
 
-
 ```shell
 scilla-client run -argv " -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000"
 
