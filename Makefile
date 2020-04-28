@@ -45,6 +45,12 @@ utop: release
 fmt:
 	dune build @fmt --auto-promote
 
+# Lint OCaml and dune source files, all the opam files in the project root, and the shell scripts
+lint:
+	dune build @fmt
+	opam lint .
+	shellcheck scripts/*.sh && shellcheck easyrun.sh && shellcheck tests/runner/pingpong.sh
+
 # Installer, uninstaller and test the installation
 install : release
 	dune install
