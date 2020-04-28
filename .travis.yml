@@ -64,3 +64,4 @@ script:
 - make test_server
 - make coveralls
 - dune build @fmt
+- shellcheck scripts/*.sh && shellcheck easyrun.sh && shellcheck tests/runner/pingpong.sh
