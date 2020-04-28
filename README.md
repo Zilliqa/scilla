@@ -118,6 +118,23 @@ within the server process itself.
 
 More details on the protocol can be found [here](https://github.com/Zilliqa/scilla/wiki/scilla-server-API).
 
+For local testing and experiments, a `scilla-client` is also provided on development
+builds (`make dev`). This can interact with `scilla-server`, achieving the same effect
+as `scilla-runner` and `scilla-client`.
+
+Start `scilla-server` without any arguments. Examples for checking a contract
+and running a transition via `scilla-server` are provided below. They are to be
+run on a separate shell (while `scilla-server` continues to run).
+
+
+```shell
+scilla-client run -argv " -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000"
+
+scilla-client check -argv " -libdir src/stdlib -gaslimit 8000 tests/contracts/helloWorld.scilla"
+
+```
+
+
 ### Where to find binaries
 
 * The runnables are put into the folder
