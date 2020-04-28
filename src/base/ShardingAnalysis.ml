@@ -289,6 +289,8 @@ struct
     (* If a transition sends money, it must be processed in the contract's shard
        to prevent double-spending *)
     | CContractShard
+    (* Must be able to access this pseudofield in a non-commutative fashion *)
+    | CAccess of pseudofield
     (* This constraint cannot be satisfied --> must go to the DS *)
     | CUnsat
 
@@ -307,6 +309,7 @@ struct
              (List.map (fun (id1, id2) -> get_id id1 ^ " != " ^ get_id id2) idl))
     | CSenderShard -> "CSenderShard"
     | CContractShard -> "CContractShard"
+    | CAccess pf -> Printf.sprintf "CAccess %s" (pp_pseudofield pf)
     | CUnsat -> "CUnsat"
 
   module OrderedShardingConstraint = struct
@@ -1205,20 +1208,28 @@ struct
            | _ -> [])
          map_rws
 
-  let is_spurious_read op context_without_cws constant_fields =
+  let is_spurious_read op context cws constant_fields =
     match op with
     | Read (f, keys) ->
         let read_is_used =
           ComponentSummary.exists
             (fun user_op ->
               match user_op with
+              (* A read is used if it flows into a non-commutative write or into
+                 a write to a different field *)
+              | Write (pf, et) ->
+                  let is_cw = ComponentSummary.mem user_op cws in
+                  let same_field = pp_compare (f, keys) pf = 0 in
+                  if is_cw && same_field then false
+                  else
+                    cs_in_known_et (Pseudofield (f, keys)) et
+                    || et_is_unknown et
               (* For EmitEvent and SendMessages, we inspect the FULL part of the
                  ECompositeVal. If any value is Unknown, we are conservative. *)
-              | Write (_, et) | ConditionOn et | EmitEvent et | SendMessages et
-                ->
+              | ConditionOn et | EmitEvent et | SendMessages et ->
                   cs_in_known_et (Pseudofield (f, keys)) et || et_is_unknown et
               | Read _ | AcceptMoney | AlwaysExclusive _ -> false)
-            context_without_cws
+            context
         in
         is_mem_id f constant_fields || not read_is_used
     | _ -> false
@@ -2042,7 +2053,12 @@ struct
     let join ancestor temp delta delta_shard_id = delta
   end
 
+  (* TODO: make this more type safe *)
   let compose_sd_identifier base extra = base ^ "+" ^ extra
+
+  (* TODO: make this more type safe *)
+  let is_pcm_compatible this with_this =
+    List.mem this (String.split_on_char '+' with_this)
 
   let get_reads comp_summ =
     let ops = ComponentSummary.elements comp_summ in
@@ -2052,30 +2068,32 @@ struct
     in
     reads
 
-  let comm_writes_reads comp_summ constant_fields =
+  (* Given a component summary and a list of contract fields held constant,
+     return the commutative writes and spurious reads within the component *)
+  let comm_writes_spurious_reads comp_summ constant_fields =
     (* Step 1: detect commutative writes (CWs) *)
     let comm_writes =
       ComponentSummary.filter
         (fun op -> fst @@ is_comm_write op constant_fields)
         comp_summ
     in
-    (* This is fine because of the previous filter *)
+    (* Step 2: Detect corresponding spurious reads *)
+    (* A read is spurious if it is from a constant field or if it only flows
+       into a commutative write into the same field (or in nothing) *)
+    let spurious_reads =
+      ComponentSummary.filter
+        (fun op -> is_spurious_read op comp_summ comm_writes constant_fields)
+        comp_summ
+    in
+    (comm_writes, spurious_reads)
+
+  let get_local_pcm_info comp_summ comm_writes spurious_reads constant_fields =
     let%bind cw_pcms =
       mapM ~f:(fun op ->
           match (op, is_comm_write op constant_fields) with
           | Write ((m, _), _), (_, Some pcm) -> pure @@ (m, pcm)
           | _ -> fail0 "Sharding analysis: PCM detection bug")
       @@ ComponentSummary.elements comm_writes
-    in
-
-    (* Step 2: Detect corresponding spurious reads *)
-    (* A read is spurious if it is from a constant field or if it only flows
-       into a commutative write (or in nothing) *)
-    let summ_without_cws = ComponentSummary.diff comp_summ comm_writes in
-    let spurious_reads =
-      ComponentSummary.filter
-        (fun op -> is_spurious_read op summ_without_cws constant_fields)
-        summ_without_cws
     in
     let%bind sr_pseudofields =
       mapM ~f:(fun op ->
@@ -2084,8 +2102,6 @@ struct
           | _ -> fail0 "Sharding analysis: PCM detection bug")
       @@ ComponentSummary.elements spurious_reads
     in
-
-    (* Step 3: throw in the non-commutative writes as well *)
     let nc_wr =
       ComponentSummary.filter
         (fun op ->
@@ -2113,7 +2129,6 @@ struct
     let c = List.map (fun (_, _, c) -> c) l in
     (a, b, c)
 
-  (* TODO: if there are multiple valid choices, we don't want to give up *)
   let allocate_field_pcms local_pcms =
     (* Detect any (field, PCM) global inconsistencies *)
     let pcms =
@@ -2125,13 +2140,184 @@ struct
         (List.flatten local_pcms)
     in
     let fields, _ = List.split @@ pcms in
+    (* TODO: if there are multiple valid choices, we don't want to give up *)
     let no_duplicates = List.compare_lengths pcms fields = 0 in
     if no_duplicates then Some pcms else None
 
   let validate_transitions input all =
     List.filter (fun t -> List.mem t input) all
 
-  let assign_pcms ?(selected_transitions : string list = [])
+  (* This function collates the possible PCMs from each transition
+     and makes a global PCM allocation decision informed by user input,
+     i.e. for each contract field it decides which PCM to assign out of
+     the (many) possibilities. If user input leads to incosistencies,
+     the chosen PCM is state_split for ALL contract fields. *)
+  let assign_field_pcms cmod selected_transitions accepted_weak_reads
+      constant_fields selected_info =
+    let selected_comp_summ = List.map (fun (summ, _) -> summ) selected_info in
+    let selected_shard_constr =
+      List.map (fun (_, (_, sh)) -> sh) selected_info
+    in
+    (* Identify, for each transition separately, valid PCM for commutative
+       writes and spurious reads. *)
+    let%bind local_pcmsr =
+      mapM
+        (fun (summ, ((cw, sr), _)) ->
+          get_local_pcm_info summ cw sr constant_fields)
+        selected_info
+    in
+    let local_nc_wr, local_pcms, local_srs = list_split3 local_pcmsr in
+    (* Globally allocate PCMs to fields; give up if inconsistencies exist *)
+    let pcms = allocate_field_pcms local_pcms in
+    let default_assignment =
+      List.map
+        (fun (f, _, _) -> (get_id f, StateSplitDecider.pcm_identifier))
+        cmod.contr.cfields
+    in
+    let assigned_field_pcms =
+      match pcms with
+      | Some pcms -> (
+          (* Helper functions *)
+          let flatten_reads (rs : pseudofield list list) =
+            List.flatten @@ List.map list_distribute
+            @@ List.combine selected_transitions rs
+          in
+          let is_mem_read (t, pf) rs =
+            List.exists
+              (fun (t', pf') ->
+                String.compare t t' = 0 && pp_compare pf pf' = 0)
+              rs
+          in
+          (* Detect any non-spurious read that must be accepted as weak and isn't *)
+          let spurious_reads = flatten_reads local_srs in
+          print_endline @@ "Spurious reads: "
+          ^ String.concat ", "
+              (List.map
+                 (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+                 spurious_reads);
+          let commutative_writes = List.map fst pcms in
+          let noncomm_writes =
+            List.sort_uniq compare_id @@ List.flatten local_nc_wr
+          in
+          let reads = flatten_reads @@ List.map get_reads selected_comp_summ in
+          let maybe_shardable =
+            let trs = List.combine selected_transitions selected_shard_constr in
+            let may_shard =
+              List.filter
+                (fun (t, sc) -> not @@ ShardingSummary.mem CUnsat sc)
+                trs
+            in
+            List.map fst may_shard
+          in
+          (* Must accept non-spurious reads that are commutatively written to,
+             if those reads appear in a potentially shardable transition *)
+          let must_accept_weak =
+            List.filter
+              (fun (t, pf) ->
+                let f, _ = pf in
+                List.mem t maybe_shardable
+                && is_mem_id f commutative_writes
+                && (not @@ is_mem_read (t, pf) spurious_reads))
+              reads
+          in
+          print_endline @@ "Must accept weak reads: "
+          ^ String.concat ", "
+              (List.map
+                 (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+                 must_accept_weak);
+          print_endline @@ "Accepted weak reads: "
+          ^ String.concat ", "
+              (List.map
+                 (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
+                 accepted_weak_reads);
+          let all_weak_reads_accepted =
+            let wr_compare (ta, pfa) (tb, pfb) =
+              let tc = String.compare ta tb in
+              let pfc = pp_compare pfa pfb in
+              if tc = 0 then pfc else tc
+            in
+            let sort_wr wr = List.sort_uniq wr_compare wr in
+            let must_accept = sort_wr must_accept_weak in
+            let accepted = sort_wr accepted_weak_reads in
+            if List.compare_lengths must_accept accepted <> 0 then false
+            else
+              let combined = List.combine must_accept accepted in
+              List.for_all (fun (a, b) -> wr_compare a b = 0) combined
+          in
+          print_endline @@ "All weak reads accepted: "
+          ^ string_of_bool all_weak_reads_accepted;
+          let pcm_strs = List.map (fun (f, p) -> (get_id f, p)) pcms in
+          match all_weak_reads_accepted with
+          | true ->
+              (* Assign PCMs to all fields *)
+              let assignment =
+                List.map
+                  (fun (f, _, _) ->
+                    (* the same field can be written to both commutatively and non-commutatively *)
+                    let has_cw = is_mem_id f commutative_writes in
+                    let has_non_cw = is_mem_id f noncomm_writes in
+                    let pcm =
+                      match (has_non_cw, has_cw) with
+                      | _, false -> StateSplitDecider.pcm_identifier
+                      | false, true -> List.assoc (get_id f) pcm_strs
+                      | true, true ->
+                          let cw_pcm = List.assoc (get_id f) pcm_strs in
+                          compose_sd_identifier StateSplitDecider.pcm_identifier
+                            cw_pcm
+                    in
+                    (get_id f, pcm))
+                  cmod.contr.cfields
+              in
+              print_endline @@ "Global PCM assignment: "
+              ^ String.concat ", "
+                  (List.map (fun (f, pcm) -> f ^ ": " ^ pcm) assignment);
+              assignment
+          (* Revert to always-OK state splitting strategy if fancier strategies don't pan out *)
+          | false -> default_assignment )
+      | None -> default_assignment
+    in
+    pure @@ assigned_field_pcms
+
+  (*  *)
+  let get_transition_state_constraints comp_summ local_cws srs sh_constr
+      field_pcms constant_fields =
+    (* Filter out accesses due to spurious reads or commutative writes under the
+       global PCM *)
+    let access_ops =
+      ComponentSummary.filter
+        (fun op ->
+          match op with
+          (* Non-spurious reads are exclusive accesses *)
+          | Read _ -> not @@ ComponentSummary.mem op srs
+          (* Non-commutative writes are exclusive accesses *)
+          | Write ((f, _), _) -> (
+              if not (ComponentSummary.mem op local_cws) then true
+              else
+                (* This is a comutative write; we need to ensure it's under the global PCM *)
+                match is_comm_write op constant_fields with
+                | true, Some local_pcm ->
+                    let global_pcm = List.assoc (get_id f) field_pcms in
+                    (* It's an exclusive access if it's not compatible with the global PCM *)
+                    not @@ is_pcm_compatible local_pcm global_pcm
+                (* If somehow this isn't commutative, there's a bug somewhere *)
+                | _ -> assert false )
+          | _ -> false)
+        comp_summ
+    in
+    let state_accessed =
+      List.flatten
+      @@ List.map (fun op ->
+             match op with
+             | Read pf -> [ pf ]
+             | Write (pf, _) -> [ pf ]
+             | _ -> [])
+      @@ ComponentSummary.elements access_ops
+    in
+    List.fold_left
+      (fun acc pf -> ShardingSummary.add (CAccess pf) acc)
+      sh_constr state_accessed
+
+  let get_sharding_info ?(selected_transitions : string list = [])
       ?(accepted_weak_reads : (string * pseudofield) list = []) cmod summaries =
     let all_transitions =
       List.map (fun (comp, _, _) -> get_id comp.comp_name) summaries
@@ -2151,14 +2337,12 @@ struct
           List.mem (get_id comp.comp_name) selected_transitions)
         summaries
     in
-
     let selected_comp_summ =
       List.map (fun (_, summ, _) -> summ) selected_summaries
     in
     let selected_shard_constr =
       List.map (fun (_, _, constr) -> constr) selected_summaries
     in
-
     (* Determine which fields are constant in the shard phase *)
     let contract_fields = List.map (fun (x, _, _) -> x) cmod.contr.cfields in
     (* A field is constant if it isn't written to *)
@@ -2179,120 +2363,50 @@ struct
     in
     print_endline @@ "Constant fields: "
     ^ String.concat ", " (List.map get_id constant_fields);
-    (* Identify, for each transition separately, the PCM for commutative
-       writes and spurious reads. *)
-    let%bind local_pcmsr =
-      mapM
-        (fun (_, summ, _) -> comm_writes_reads summ constant_fields)
-        selected_summaries
+    (* Locally compute CWs and SRs for each selected transition *)
+    let selected_cw, selected_sr =
+      List.split
+      @@ List.map
+           (fun s -> comm_writes_spurious_reads s constant_fields)
+           selected_comp_summ
     in
-    let local_nc_wr, local_pcms, local_srs = list_split3 local_pcmsr in
-    (* Allocate PCMs to fields; give up if inconsistencies exist *)
-    let pcms = allocate_field_pcms local_pcms in
-    let default_assignment =
+    let selected_info =
+      List.combine selected_comp_summ
+        (List.combine
+           (List.combine selected_cw selected_sr)
+           selected_shard_constr)
+    in
+    (* Consolidate the PCMs globally and assign a global PCM per field *)
+    let%bind field_pcms =
+      assign_field_pcms cmod selected_transitions accepted_weak_reads
+        constant_fields selected_info
+    in
+    (* Given global PCM allocation, determine constraints for each selected transition *)
+    let constraints =
+      (* Need to own anything that's not a spurious read OR a commutative write
+         _for the global PCM_. *)
       List.map
-        (fun (f, _, _) -> (get_id f, StateSplitDecider.pcm_identifier))
-        cmod.contr.cfields
+        (fun (summ, ((cws, srs), sh)) ->
+          get_transition_state_constraints summ cws srs sh field_pcms
+            constant_fields)
+        selected_info
     in
-    match pcms with
-    | Some pcms -> (
-        (* Helper functions *)
-        let flatten_reads (rs : pseudofield list list) =
-          List.flatten @@ List.map list_distribute
-          @@ List.combine selected_transitions rs
-        in
-        let is_mem_read (t, pf) rs =
-          List.exists
-            (fun (t', pf') -> String.compare t t' = 0 && pp_compare pf pf' = 0)
-            rs
-        in
-        (* Detect any non-spurious read that must be accepted as weak and isn't *)
-        let spurious_reads = flatten_reads local_srs in
-        print_endline @@ "Spurious reads: "
-        ^ String.concat ", "
-            (List.map
-               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
-               spurious_reads);
-        let commutative_writes = List.map fst pcms in
-        let noncomm_writes =
-          List.sort_uniq compare_id @@ List.flatten local_nc_wr
-        in
-        let reads = flatten_reads @@ List.map get_reads selected_comp_summ in
-        let maybe_shardable =
-          let trs = List.combine selected_transitions selected_shard_constr in
-          let may_shard =
-            List.filter
-              (fun (t, sc) -> not @@ ShardingSummary.mem CUnsat sc)
-              trs
-          in
-          List.map fst may_shard
-        in
-        (* Must accept non-spurious reads that are commutatively written to,
-           if those reads appear in a potentially shardable transition *)
-        let must_accept_weak =
-          List.filter
-            (fun (t, pf) ->
-              let f, _ = pf in
-              List.mem t maybe_shardable
-              && is_mem_id f commutative_writes
-              && (not @@ is_mem_read (t, pf) spurious_reads))
-            reads
-        in
-        print_endline @@ "Must accept weak reads: "
-        ^ String.concat ", "
-            (List.map
-               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
-               must_accept_weak);
-        print_endline @@ "Accepted weak reads: "
-        ^ String.concat ", "
-            (List.map
-               (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
-               accepted_weak_reads);
-        let all_weak_reads_accepted =
-          let wr_compare (ta, pfa) (tb, pfb) =
-            let tc = String.compare ta tb in
-            let pfc = pp_compare pfa pfb in
-            if tc = 0 then pfc else tc
-          in
-          let sort_wr wr = List.sort_uniq wr_compare wr in
-          let must_accept = sort_wr must_accept_weak in
-          let accepted = sort_wr accepted_weak_reads in
-          if List.compare_lengths must_accept accepted <> 0 then false
-          else
-            let combined = List.combine must_accept accepted in
-            List.for_all (fun (a, b) -> wr_compare a b = 0) combined
-        in
-        print_endline @@ "All weak reads accepted: "
-        ^ string_of_bool all_weak_reads_accepted;
-        let pcm_strs = List.map (fun (f, p) -> (get_id f, p)) pcms in
-        match all_weak_reads_accepted with
-        | true ->
-            (* Assign PCMs to all fields *)
-            let assignment =
-              List.map
-                (fun (f, _, _) ->
-                  (* the same field can be written to both commutatively and non-commutatively *)
-                  let has_cw = is_mem_id f commutative_writes in
-                  let has_non_cw = is_mem_id f noncomm_writes in
-                  let pcm =
-                    match (has_non_cw, has_cw) with
-                    | _, false -> StateSplitDecider.pcm_identifier
-                    | false, true -> List.assoc (get_id f) pcm_strs
-                    | true, true ->
-                        let cw_pcm = List.assoc (get_id f) pcm_strs in
-                        compose_sd_identifier StateSplitDecider.pcm_identifier
-                          cw_pcm
-                  in
-                  (get_id f, pcm))
-                cmod.contr.cfields
-            in
-            print_endline @@ "Global PCM assignment: "
-            ^ String.concat ", "
-                (List.map (fun (f, pcm) -> f ^ ": " ^ pcm) assignment);
-            pure @@ assignment
-        (* Revert to always-OK state splitting strategy if fancier strategies don't pan out *)
-        | false -> pure @@ default_assignment )
-    | None -> pure @@ default_assignment
+    (* If there's CUnsat in any constraint, just replace the whole thing with CUnsat *)
+    let constraints =
+      List.map
+        (fun sh ->
+          if ShardingSummary.mem CUnsat sh then ShardingSummary.singleton CUnsat
+          else sh)
+        constraints
+    in
+
+    let sharding_constraints = List.combine selected_transitions constraints in
+    print_endline
+    @@ String.concat "\n"
+         (List.map
+            (fun (t, sc) -> t ^ ": \n" ^ pp_sharding sc)
+            sharding_constraints);
+    pure @@ (sharding_constraints, field_pcms)
 
   let sa_module selected_transitions weak_reads_str (cmod : cmodule)
       (elibs : libtree list) =
@@ -2368,7 +2482,8 @@ struct
     in
     let%bind accepted_weak_reads = mapM ~f:weak_read_of_str weak_reads_str in
     let _ =
-      assign_pcms ~selected_transitions ~accepted_weak_reads cmod summaries;
+      get_sharding_info ~selected_transitions ~accepted_weak_reads cmod
+        summaries;
       print_endline "\n"
     in
     pure summaries
