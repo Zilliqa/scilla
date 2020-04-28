@@ -36,7 +36,7 @@ dev:
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
 	@test -L bin || ln -s _build/install/default/bin .
-	ln -sr _build/default/tests/scilla_client.exe _build/install/default/bin/scilla-client
+	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
 # Launch utop such that it finds the libraroes.
 utop: release
