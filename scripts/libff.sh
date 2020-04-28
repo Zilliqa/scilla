@@ -21,20 +21,18 @@ then
     exit 0
 fi
 
-cd $libffdir
+cd $libffdir || exit
 mkdir -p build install
-cd src
+cd src || exit
 echo "Installing libff into ${libffdir}/install"
-cd ../build
-cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
-if [[ $? -ne 0 ]]
+cd ../build || exit
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
 then
     echo "libff: CMake configuration failed"
     exit 1
 fi
 
-make -j4 install
-if [[ $? -ne 0 ]]
+if ! make -j4 install
 then
     echo "libff: build failed"
     exit 1
