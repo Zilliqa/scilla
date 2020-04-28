@@ -186,6 +186,23 @@ dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
 
+### Formatting and linting the codebase
+Our CI checks that the source code is formatted properly. Use
+```shell
+make fmt
+```
+to ensure your code adheres to the style guide.
+Note that the command will automatically change ("promote") your source code.
+You will need the `ocamlformat` opam package for the command above to work.
+
+To make sure you are good to go, before sending PR run
+```shell
+make lint
+```
+to check if there are any issues with your contribution.
+In addition to the `ocamlformat` package, `make lint` uses `opam` and
+[`shellcheck`](https://www.shellcheck.net).
+
 #### Debugging
 To debug scilla-checker or scilla-runner, you must build `make debug`, which will generate
 the OCaml bytecode versions of the binaries. These can be debugged using `ocamldebug`.

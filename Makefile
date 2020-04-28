@@ -36,7 +36,7 @@ dev:
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
 	@test -L bin || ln -s _build/install/default/bin .
-	ln -sr _build/default/tests/scilla_client.exe _build/install/default/bin/scilla-client
+	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
 # Launch utop such that it finds the libraroes.
 utop: release
@@ -44,6 +44,12 @@ utop: release
 
 fmt:
 	dune build @fmt --auto-promote
+
+# Lint OCaml and dune source files, all the opam files in the project root, and the shell scripts
+lint:
+	dune build @fmt
+	opam lint .
+	shellcheck scripts/*.sh && shellcheck easyrun.sh && shellcheck tests/runner/pingpong.sh
 
 # Installer, uninstaller and test the installation
 install : release
