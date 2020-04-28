@@ -37,6 +37,8 @@ addons:
     - libpcre3-dev
     - aspcud
     - libsecp256k1-dev
+    # Needed to install shellcheck from its GitHub binary releases
+    - xz-utils
   homebrew:
     brewfile: true
     update: true
@@ -55,6 +57,7 @@ branches:
     - /^release-v.*$/
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
+- if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_shellcheck_ubuntu.sh; fi
 - make opamdep-ci
 - rm $HOME/.opam/log/*
 script:
