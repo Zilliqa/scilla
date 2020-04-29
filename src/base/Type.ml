@@ -40,7 +40,7 @@ module type ScillaType = sig
     | Exception_typ
     | Bystr_typ
     | Bystrx_typ of int
-  [@@deriving equal]
+  [@@deriving equal, sexp]
 
   val pp_prim_typ : prim_typ -> string
 
