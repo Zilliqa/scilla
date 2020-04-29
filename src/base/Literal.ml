@@ -64,7 +64,7 @@ module type ScillaLiteral = sig
     | Uint64L of uint64
     | Uint128L of uint128
     | Uint256L of uint256
-  [@@deriving equal]
+  [@@deriving equal, sexp]
 
   module type BYSTR = sig
     type t [@@deriving sexp]
