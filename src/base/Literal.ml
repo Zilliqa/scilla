@@ -55,7 +55,7 @@ module type ScillaLiteral = sig
     | Int64L of int64
     | Int128L of int128
     | Int256L of int256
-  [@@deriving equal]
+  [@@deriving equal, sexp]
 
   val equal_uint32 : uint32 -> uint32 -> bool
 
