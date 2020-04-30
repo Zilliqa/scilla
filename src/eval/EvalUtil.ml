@@ -272,7 +272,7 @@ module Configuration = struct
   let accept_incoming st =
     let incoming' = st.incoming_funds in
     (* Although unsigned integer is used, and this check isn't
-     * necessary, we have it just in case, some how a malformed
+     * necessary, we have it just in case, somehow a malformed
      * Uint128 literal manages to reach here. *)
     if Uint128.compare incoming' Uint128.zero >= 0 then
       let balance = Uint128.add st.balance incoming' in
@@ -281,7 +281,7 @@ module Configuration = struct
       pure @@ { st with balance; accepted; incoming_funds }
     else
       fail0
-      @@ sprintf "Incoming balance is negaitve (somehow):%s."
+      @@ sprintf "Incoming balance is negative (somehow):%s."
            (Uint128.to_string incoming')
 
   (* Finds a procedure proc_name, and returns the procedure and the
