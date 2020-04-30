@@ -345,7 +345,7 @@ module TypeUtilities = struct
         TUType.(
           (not @@ [%equal: TUType.t] t msg_typ) || [%equal: TUType.t] t event_typ)
     | ADT (tname, ts) -> (
-        if List.mem seen_adts tname ~equal:equal_id then true
+        if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
           (* Inductive ADT - ignore this branch *)
         else
           (* Check that ADT is serializable *)

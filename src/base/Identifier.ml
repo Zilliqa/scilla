@@ -21,29 +21,21 @@ open ErrorUtils
 
 module type QualifiedName = sig
 
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, equal, compare]
 
   val as_string : t -> string
 
   val as_error_string : t -> string
 
-  val equal_id : t -> t -> bool
-  
-  val compare_id : t -> t -> int
-    
 end
 
 module FlattenedName = struct
 
-  type t = string [@@deriving sexp]
+  type t = string [@@deriving sexp, equal, compare]
 
   let as_string n = n
 
   let as_error_string n = n
-
-  let equal_id = String.(=)
-
-  let compare_id = String.compare
 
 end
 
@@ -67,9 +59,9 @@ module type ScillaIdentifier = sig
   val as_error_string : 'a t -> string
 
   (* A few utilities on id. *)
-  val equal_id : 'a t -> 'b t -> bool
+  val equal : 'a t -> 'b t -> bool
 
-  val compare_id : 'a t -> 'b t -> int
+  val compare : 'a t -> 'b t -> int
 
   val dedup_id_list : 'a t list -> 'a t list
 
@@ -96,12 +88,12 @@ module MkIdentifier (Name : QualifiedName) = struct
   let as_error_string i = Name.as_error_string (get_id i)
 
   (* A few utilities on id. *)
-  let equal_id a b = Name.equal_id (get_id a) (get_id b)
+  let equal a b = Name.equal (get_id a) (get_id b)
 
-  let compare_id a b = Name.compare_id (get_id a) (get_id b)
+  let compare a b = Name.compare (get_id a) (get_id b)
 
-  let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+  let dedup_id_list l = List.dedup_and_sort ~compare:compare l
 
-  let is_mem_id i l = List.exists l ~f:(equal_id i)
+  let is_mem_id i l = List.exists l ~f:(equal i)
 
 end

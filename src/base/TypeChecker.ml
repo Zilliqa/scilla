@@ -1137,7 +1137,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                           match entry' with
                           | LibTyp (i, _) | LibVar (i, _, _) -> i
                         in
-                        if equal_id ename ename' then
+                        if TCIdentifier.equal ename ename' then
                           err_acc
                           @ mk_error1
                               (sprintf

@@ -413,7 +413,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         let body_subst = subst_type_in_expr tvar tp body in
         (Fun (f, t_subst, body_subst), rep)
     | TFun (tv, body) as tf ->
-        if SIdentifier.equal_id tv tvar then (tf, rep)
+        if SIdentifier.equal tv tvar then (tf, rep)
         else
           let body_subst = subst_type_in_expr tvar tp body in
           (TFun (tv, body_subst), rep)

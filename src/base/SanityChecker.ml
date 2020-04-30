@@ -249,7 +249,7 @@ struct
        * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
        * Make this an error by just using fail1 below instead of warn1. *)
       let bounds = get_pattern_bounds pat in
-      match List.find_a_dup ~compare:compare_id bounds with
+      match List.find_a_dup ~compare:SCIdentifier.compare bounds with
       | Some v ->
           warn1
             (Printf.sprintf

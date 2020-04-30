@@ -19,16 +19,20 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
-open Syntax
-(* TODO: Parameterise this. *)
-open ParsedSyntax
-open ParsedSyntax.SIdentifier
-open ParsedSyntax.SType
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
+open Syntax
+
+(* TODO: Parameterise this. *)
+module RUSyntax = ParsedSyntax
+module RUType = RUSyntax.SType
+module RUIdentifier = RUSyntax.SIdentifier
+open RUIdentifier
+open RUType
+open RUSyntax
 
 let get_init_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
@@ -276,7 +280,7 @@ let import_libs names init_file =
       ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
         if List.mem stack (get_id name) ~equal:String.( = ) then
           let errmsg =
-            if equal_id mapped_name name then
+            if RUIdentifier.equal mapped_name name then
               sprintf "Cyclic dependence found when importing %s." (get_id name)
             else
               sprintf

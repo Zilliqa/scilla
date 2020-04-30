@@ -305,7 +305,7 @@ module MkType (I : ScillaIdentifier) = struct
       | TypeVar v1, TypeVar v2 -> String.equal v1 v2
       | Unit, Unit -> true
       | ADT (tname1, tl1), ADT (tname2, tl2) ->
-          TIdentifier.equal_id tname1 tname2
+          TIdentifier.equal tname1 tname2
           (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
           && List.length tl1 = List.length tl2
           && List.for_all2_exn ~f:equiv tl1 tl2
