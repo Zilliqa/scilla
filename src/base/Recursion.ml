@@ -504,7 +504,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         * RecursionSyntax.libtree list,
         scilla_error list )
       result =
-    let { smver; cname; libs; elibs; contr } = md in
+    let { smver; libs; elibs; contr } = md in
     wrap_with_info
       ( sprintf "Type error(s) in contract %s:\n" (get_id contr.cname),
         SR.get_loc (get_rep contr.cname) )
@@ -533,7 +533,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          | Error el ->
              Ok
                ( {
-                   cname;
+                   cname = contr.cname;
                    cparams = [];
                    cconstraint =
                      ( RecursionSyntax.Literal RecLiteral.false_lit,
@@ -548,7 +548,6 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          pure
          @@ ( {
                 RecursionSyntax.smver;
-                RecursionSyntax.cname;
                 RecursionSyntax.libs = recursion_md_libs;
                 RecursionSyntax.elibs;
                 RecursionSyntax.contr = recursion_contr;

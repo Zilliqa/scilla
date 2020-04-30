@@ -368,7 +368,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   type cmodule = {
     smver : int;
     (* Scilla major version of the contract. *)
-    cname : SR.rep SIdentifier.t;
     libs : library option;
     (* lib functions defined in the module *)
     (* List of imports / external libs with an optional namespace. *)
