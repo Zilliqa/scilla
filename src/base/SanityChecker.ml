@@ -110,7 +110,7 @@ struct
         e
         @ check_duplicate_ident
             (fun _ -> eloc)
-            (List.map msg ~f:(fun (s, _) -> asIdL s SR.string_rep))
+            (List.map msg ~f:(fun (s, _) -> mk_id s SR.string_rep))
       in
 
       (* Either "_tag" or "_eventname" must be present. *)

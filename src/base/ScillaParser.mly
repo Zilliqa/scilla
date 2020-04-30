@@ -47,7 +47,7 @@
   let to_type d sloc =
     let open SType in
     try PrimType (to_prim_type_exn d sloc)
-    with | _ -> ADT (SIdentifier.asIdL d sloc, [])
+    with | _ -> ADT (SIdentifier.mk_id d sloc, [])
 
   let to_map_key_type_exn d loc =
     let exn () = SyntaxError (("Invalid map key type " ^ d), loc) in
@@ -183,7 +183,7 @@ t_map_value :
 | d = scid; targs=list(t_map_value_args)
     { match targs with
       | [] -> to_type d (toLoc $startpos(d))
-      | _ -> ADT (SIdentifier.asIdL d (toLoc $startpos(d)), targs) }
+      | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 | LPAREN; t = t_map_value; RPAREN; { t }
 
@@ -191,7 +191,7 @@ typ :
 | d = scid; targs=list(targ)
   { match targs with
     | [] -> to_type d (toLoc $startpos(d))
-    | _ -> ADT (SIdentifier.asIdL d (toLoc $startpos(d)), targs)
+    | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs)
   }
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { SType.FunType (t1, t2) }
@@ -282,19 +282,19 @@ map_access:
 pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid; ps = list(arg_pattern) { Constructor (SIdentifier.asIdL c (toLoc $startpos(c)), ps) }
+| c = scid; ps = list(arg_pattern) { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
 | x = ID { Binder (Ident (x, toLoc $startpos(x))) }
-| c = scid;  { Constructor (SIdentifier.asIdL c (toLoc $startpos(c)), []) }
+| c = scid;  { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }
 msg_entry :
 | i = sid; COLON;  l = lit { i, MLit l }
-| i = sid; COLON;  v = sid  { i,  MVar (SIdentifier.asIdL v (toLoc $startpos(v))) }
+| i = sid; COLON;  v = sid  { i,  MVar (SIdentifier.mk_id v (toLoc $startpos(v))) }
 
 builtin_args :
 | args = nonempty_list(sident) { args }
@@ -314,22 +314,22 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; FETCH; r = sid   { (Load (SIdentifier.asIdL l (toLoc $startpos(l)), SIdentifier.asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; ASSIGN; r = sid { (Store (SIdentifier.asIdL l (toLoc $startpos(l)), SIdentifier.asIdL r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; EQ; r = exp    { (Bind (SIdentifier.asIdL l (toLoc $startpos(l)), r), toLoc $startpos) }
-| l = ID; FETCH; AND; c = CID { (ReadFromBC (SIdentifier.asIdL l (toLoc $startpos(l)), c), toLoc $startpos) }
+| l = ID; FETCH; r = sid   { (Load (SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = sid { (Store (SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; EQ; r = exp    { (Bind (SIdentifier.mk_id l (toLoc $startpos(l)), r), toLoc $startpos) }
+| l = ID; FETCH; AND; c = CID { (ReadFromBC (SIdentifier.mk_id l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
-  { MapGet(SIdentifier.asIdL l (toLoc $startpos(l)), SIdentifier.asIdL r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+  { MapGet(SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
-  { MapGet(SIdentifier.asIdL l (toLoc $startpos(l)), SIdentifier.asIdL r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+  { MapGet(SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
-  { MapUpdate(SIdentifier.asIdL l (toLoc $startpos(l)), keys, Some (SIdentifier.asIdL r (toLoc $startpos(r)))), toLoc $startpos }
+  { MapUpdate(SIdentifier.mk_id l (toLoc $startpos(l)), keys, Some (SIdentifier.mk_id r (toLoc $startpos(r)))), toLoc $startpos }
 | DELETE; l = ID; keys = nonempty_list(map_access)
-  { MapUpdate(SIdentifier.asIdL l (toLoc $startpos(l)), keys, None), toLoc $startpos }
+  { MapUpdate(SIdentifier.mk_id l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| SEND; m = sid;          { (SendMsgs (SIdentifier.asIdL m (toLoc $startpos(m))), toLoc $startpos) }
-| EVENT; m = sid; { (CreateEvnt (SIdentifier.asIdL m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (SIdentifier.asIdL m (toLoc $startpos)))), toLoc $startpos }
+| SEND; m = sid;          { (SendMsgs (SIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
+| EVENT; m = sid; { (CreateEvnt (SIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
+| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (SIdentifier.mk_id m (toLoc $startpos)))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
@@ -354,7 +354,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { SIdentifier.asIdL n (toLoc $startpos(n)), t }
+| n = ID; COLON; t = typ { SIdentifier.mk_id n (toLoc $startpos(n)), t }
 
 component:
 | t = transition
@@ -381,8 +381,8 @@ transition:
       comp_body = ss } }
 
 component_id:
-| c = CID { SIdentifier.asIdL c (toLoc $startpos(c)) }
-| i = ID { SIdentifier.asIdL i (toLoc $startpos(i)) }
+| c = CID { SIdentifier.mk_id c (toLoc $startpos(c)) }
+| i = ID { SIdentifier.mk_id i (toLoc $startpos(i)) }
 
 component_params:
 | LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
@@ -395,7 +395,7 @@ component_body:
 field:
 | FIELD; f = ID; COLON; t=typ;
   EQ; rhs = exp
-  { SIdentifier.asIdL f (toLoc $startpos(f)), t, rhs }
+  { SIdentifier.mk_id f (toLoc $startpos(f)), t, rhs }
 
 with_constraint:
 | WITH; f = exp; ARROW
@@ -407,7 +407,7 @@ contract:
   ct = ioption(with_constraint);
   fs = list(field);
   comps = list(component)
-  { { cname   = SIdentifier.asIdL c (toLoc $startpos(c));
+  { { cname   = SIdentifier.mk_id c (toLoc $startpos(c));
       cparams = params;
       cconstraint = Core_kernel.Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
@@ -415,22 +415,22 @@ contract:
 
 tconstr :
 | BAR; tn = CID;
-  { { cname = SIdentifier.asIdL tn (toLoc $startpos); c_arg_types = [] } }
+  { { cname = SIdentifier.mk_id tn (toLoc $startpos); c_arg_types = [] } }
 | BAR; tn = CID; OF; t = nonempty_list(targ);
-  { { cname = SIdentifier.asIdL tn (toLoc $startpos); c_arg_types = t }}
+  { { cname = SIdentifier.mk_id tn (toLoc $startpos); c_arg_types = t }}
 
 libentry :
 | LET; ns = ID;
   t = ioption(type_annot)
-  EQ; e= exp { LibVar (SIdentifier.asIdL ns (toLoc $startpos(ns)), t, e) }
+  EQ; e= exp { LibVar (SIdentifier.mk_id ns (toLoc $startpos(ns)), t, e) }
 | TYPE; tname = CID
-  { LibTyp (SIdentifier.asIdL tname (toLoc $startpos), []) }
+  { LibTyp (SIdentifier.mk_id tname (toLoc $startpos), []) }
 | TYPE; tname = CID; EQ; constrs = nonempty_list(tconstr)
-  { LibTyp (SIdentifier.asIdL tname (toLoc $startpos), constrs) }
+  { LibTyp (SIdentifier.mk_id tname (toLoc $startpos), constrs) }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);
-  { {lname = SIdentifier.asIdL n (toLoc $startpos);
+  { {lname = SIdentifier.mk_id n (toLoc $startpos);
      lentries = ls } }
 
 lmodule :

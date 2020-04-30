@@ -278,7 +278,7 @@ module MakeStateService () = struct
     | SS (IPC _, fl) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
-              let%bind vopt, _ = fetch ~fname:(asId f.fname) ~keys:[] in
+              let%bind vopt, _ = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
               match vopt with
               | Some v -> pure (f.fname, v)
               | None ->

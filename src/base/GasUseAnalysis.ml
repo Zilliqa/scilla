@@ -47,7 +47,7 @@ struct
   open GUASyntax
 
   let mk_typed_id i t =
-    asIdL i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+    mk_id i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
 
   type sizeref =
     (* Refer to the size of a variable. *)
@@ -954,8 +954,8 @@ struct
         (* We have the function signature ready, apply and expand it. *)
         (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
         let srparams = List.map (fun i -> Base i) actuals in
-        let u = SApp (asIdL (pp_builtin b) rep, srparams) in
-        let v = single_simple_pn (GApp (asIdL (pp_builtin b) rep, srparams)) in
+        let u = SApp (mk_id (pp_builtin b) rep, srparams) in
+        let v = single_simple_pn (GApp (mk_id (pp_builtin b) rep, srparams)) in
         (* Expand all lambdas that we can. *)
         let%bind ressize', gup' = resolve_expand genv' u v in
         (* TODO: Return value having no arguments implies partial application not supported. *)
@@ -1093,7 +1093,7 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = mk_typed_id "a" (ADT (asId "List", [ TypeVar "'A" ])) in
+    let a = mk_typed_id "a" (ADT (mk_loc_id "List", [ TypeVar "'A" ])) in
     let g =
       mk_typed_id "g"
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))

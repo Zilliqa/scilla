@@ -49,7 +49,7 @@ let run () =
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib =
         {
-          TC.UntypedSyntax.lname = TC.TCIdentifier.asId "dummy";
+          TC.UntypedSyntax.lname = TC.TCIdentifier.mk_loc_id "dummy";
           TC.UntypedSyntax.lentries = [];
         }
       in

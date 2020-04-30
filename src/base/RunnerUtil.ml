@@ -101,7 +101,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 plog
                 @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
                      (get_id id) nname;
-                asIdL nname (get_rep id)
+                mk_id nname (get_rep id)
             | _ -> id
           in
           let rename_in_type t env =
@@ -273,7 +273,7 @@ let import_libs names init_file =
           match List.Assoc.find name_map (get_id n) ~equal:String.( = ) with
           | Some n' ->
               (* Use a known source location for the mapped id. *)
-              (asIdL n' (get_rep n), n, namespace)
+              (mk_id n' (get_rep n), n, namespace)
           | None -> (n, n, namespace))
     in
     List.fold_left
@@ -327,7 +327,7 @@ let import_all_libs ldirs =
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
             let lib_name = chop_extension (basename file) in
-            Some (asId lib_name, None (* no import-as *))
+            Some (mk_loc_id lib_name, None (* no import-as *))
           else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)

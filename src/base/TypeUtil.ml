@@ -569,7 +569,7 @@ module TypeUtilities = struct
     let plen = List.length adt.tparams in
     let alen = List.length targs in
     let%bind _ = validate_param_length cn plen alen in
-    let res_typ = ADT (asId adt.tname, targs) in
+    let res_typ = ADT (mk_loc_id adt.tname, targs) in
     match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
     | Some ctparams ->
@@ -644,7 +644,7 @@ module TypeUtilities = struct
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
     | ADTValue (cname, ts, _) ->
         let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-        pure @@ ADT (asId adt.tname, ts)
+        pure @@ ADT (mk_loc_id adt.tname, ts)
     | Clo _ -> fail0 @@ "Cannot type runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type runtime type function."
 
@@ -713,7 +713,7 @@ module TypeUtilities = struct
                tname (List.length args) cname
           (* Verify that the types of args match that declared. *)
         else
-          let res = ADT (asId tname, ts) in
+          let res = ADT (mk_loc_id tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =

@@ -277,7 +277,7 @@ let run_with_args args =
                 (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                 let%bind _ =
                   mapM field_vals ~f:(fun (s, v) ->
-                      update ~fname:(SSIdentifier.asId s) ~keys:[] ~value:v)
+                      update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[] ~value:v)
                 in
                 finalize ()
               with

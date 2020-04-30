@@ -115,7 +115,7 @@ struct
                     | Ok typ ->
                         let loc = ER.parse_rep loc_s in
                         (* TODO: parse loc_s *)
-                        let id = asIdL name_s loc in
+                        let id = mk_id name_s loc in
                         Some (id, typ)
                     | Error _ -> None )
                 | _ ->

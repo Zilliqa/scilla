@@ -59,7 +59,7 @@ let check_typing e elibs gas =
   let open TC.TypeEnv in
   let rec_lib =
     {
-      ParsedSyntax.lname = TCIdentifier.asId "rec_lib";
+      ParsedSyntax.lname = TCIdentifier.mk_loc_id "rec_lib";
       ParsedSyntax.lentries = recursion_principles;
     }
   in

@@ -141,7 +141,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
 
   (* Lift 'rep ident to (inferred_type * 'rep) ident *)
   let add_type_to_ident i typ =
-    asIdL (get_id i) (ETR.mk_rep (get_rep i) typ)
+    mk_id (get_id i) (ETR.mk_rep (get_rep i) typ)
 
   (* Given a scrutinee type and a pattern,
      produce a list of ident -> type mappings for
@@ -658,8 +658,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT (asId "Option", [ v_type ])
-              else ADT (asId "Bool", [])
+              if valfetch then ADT (mk_loc_id "Option", [ v_type ])
+              else ADT (mk_loc_id "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
@@ -1299,7 +1299,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
+                @@ assert_type_equiv (ADT (mk_loc_id "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in

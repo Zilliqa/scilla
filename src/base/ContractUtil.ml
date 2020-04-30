@@ -111,16 +111,16 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
 
   let balance_field =
     let open CUType in
-    (CUIdentifier.asIdL balance_label ER.uint128_rep, uint128_typ)
+    (CUIdentifier.mk_id balance_label ER.uint128_rep, uint128_typ)
 
   let append_implict_contract_params tparams =
     let open CUType in
-    let creation_block = (CUIdentifier.asIdL creation_block_label ER.bnum_rep, bnum_typ) in
+    let creation_block = (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ) in
     let this_address =
-      (CUIdentifier.asIdL this_address_label ER.address_rep, bystrx_typ address_length)
+      (CUIdentifier.mk_id this_address_label ER.address_rep, bystrx_typ address_length)
     in
     let scilla_version_init =
-      (CUIdentifier.asIdL scilla_version_label ER.uint32_rep, uint32_typ)
+      (CUIdentifier.mk_id scilla_version_label ER.uint32_rep, uint32_typ)
     in
     creation_block :: scilla_version_init :: this_address :: tparams
 
@@ -133,11 +133,11 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let append_implict_comp_params cparams =
     let open CUType in
     let sender =
-      ( CUIdentifier.asIdL MessagePayload.sender_label ER.address_rep,
+      ( CUIdentifier.mk_id MessagePayload.sender_label ER.address_rep,
         bystrx_typ address_length )
     in
     let amount =
-      (CUIdentifier.asIdL MessagePayload.amount_label ER.uint128_rep, uint128_typ)
+      (CUIdentifier.mk_id MessagePayload.amount_label ER.uint128_rep, uint128_typ)
     in
     amount :: sender :: cparams
 

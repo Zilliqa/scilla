@@ -77,7 +77,7 @@ module DataTypeDictionary = struct
       tname = "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT (DTIdentifier.asId "Nat", []) ]) ];
+      tmap = [ ("Succ", [ ADT (DTIdentifier.mk_loc_id "Nat", []) ]) ];
     }
 
   (* Option *)
@@ -103,7 +103,7 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT (TIdentifier.asId "List", [ TypeVar "'A" ]) ]) ];
+      tmap = [ ("Cons", [ TypeVar "'A"; ADT (TIdentifier.mk_loc_id "List", [ TypeVar "'A" ]) ]) ];
     }
 
   (* Products (Pairs) *)
@@ -173,15 +173,15 @@ module DataTypeDictionary = struct
   (* Get typing map for a constructor *)
   let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:String.( = )
 
-  let bool_typ = ADT (TIdentifier.asId t_bool.tname, [])
+  let bool_typ = ADT (TIdentifier.mk_loc_id t_bool.tname, [])
 
-  let nat_typ = ADT (TIdentifier.asId t_nat.tname, [])
+  let nat_typ = ADT (TIdentifier.mk_loc_id t_nat.tname, [])
 
-  let option_typ t = ADT (TIdentifier.asId t_option.tname, [ t ])
+  let option_typ t = ADT (TIdentifier.mk_loc_id t_option.tname, [ t ])
 
-  let list_typ t = ADT (TIdentifier.asId t_list.tname, [ t ])
+  let list_typ t = ADT (TIdentifier.mk_loc_id t_list.tname, [ t ])
 
-  let pair_typ t s = ADT (TIdentifier.asId t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (TIdentifier.mk_loc_id t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =

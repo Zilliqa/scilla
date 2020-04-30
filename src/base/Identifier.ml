@@ -46,9 +46,9 @@ module type ScillaIdentifier = sig
     
   type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
 
-  val asId : Name.t -> loc t
+  val mk_loc_id : Name.t -> loc t
 
-  val asIdL : Name.t -> 'a -> 'a t
+  val mk_id : Name.t -> 'a -> 'a t
 
   val get_id : 'a t -> Name.t
 
@@ -75,9 +75,9 @@ module MkIdentifier (Name : QualifiedName) = struct
   
   type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
 
-  let asId i = Ident (i, dummy_loc)
+  let mk_id i r = Ident (i, r)
 
-  let asIdL i loc = Ident (i, loc)
+  let mk_loc_id i = mk_id i dummy_loc
 
   let get_id i = match i with Ident (x, _) -> x
 

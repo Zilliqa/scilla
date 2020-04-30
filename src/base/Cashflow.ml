@@ -90,12 +90,12 @@ struct
 
   let add_tag_to_id s tag =
     let open CFIdentifier in
-    asIdL (get_id s) (tag, get_rep s)
+    mk_id (get_id s) (tag, get_rep s)
 
   (* Lift Ident (n, rep) to Ident (n, (NoInfo, rep)) *)
   let add_noinfo_to_ident i =
     let open CFIdentifier in
-    asIdL (get_id i) (ECFR.mk_rep NoInfo (get_rep i))
+    mk_id (get_id i) (ECFR.mk_rep NoInfo (get_rep i))
 
   let add_money_or_mapmoney_to_ident i typ =
     let open CFType in
@@ -525,7 +525,7 @@ struct
   let update_id_tag id new_tag =
     let open CFIdentifier in
     match get_rep id with
-    | (_, rep) -> asIdL (get_id id) (new_tag, rep)
+    | (_, rep) -> mk_id (get_id id) (new_tag, rep)
 
   let lookup_var_tag i env =
     let open CFIdentifier in

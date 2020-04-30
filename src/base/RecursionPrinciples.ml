@@ -41,11 +41,11 @@ let parse_type_wrapper expr =
 
 (* Folding over natural numbers *)
 module NatRec = struct
-  let g = asId "g"
+  let g = mk_loc_id "g"
 
-  let fn = asId "fn"
+  let fn = mk_loc_id "fn"
 
-  let tvar = asId "'T"
+  let tvar = mk_loc_id "'T"
 
   (* Adopted one, as fold_left and fold_right are equivalent for
    * natural numbers *)
@@ -72,7 +72,7 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = asId "nat_fold"
+    let id = mk_loc_id "nat_fold"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -106,7 +106,7 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = asId "nat_foldk"
+    let id = mk_loc_id "nat_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -120,13 +120,13 @@ end
 
 (* Folding over lists *)
 module ListRec = struct
-  let f = asId "f"
+  let f = mk_loc_id "f"
 
-  let g = asId "g"
+  let g = mk_loc_id "g"
 
-  let avar = asId "'A"
+  let avar = mk_loc_id "'A"
 
-  let bvar = asId "'B"
+  let bvar = mk_loc_id "'B"
 
   module Foldl = struct
     let f_type = parse_type_wrapper "'B -> 'A -> 'B"
@@ -152,7 +152,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = asId "list_foldl"
+    let id = mk_loc_id "list_foldl"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -187,7 +187,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = asId "list_foldr"
+    let id = mk_loc_id "list_foldr"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
@@ -224,7 +224,7 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = asId "list_foldk"
+    let id = mk_loc_id "list_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
