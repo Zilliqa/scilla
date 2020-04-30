@@ -118,6 +118,21 @@ within the server process itself.
 
 More details on the protocol can be found [here](https://github.com/Zilliqa/scilla/wiki/scilla-server-API).
 
+For local testing and experiments, a `scilla-client` is also provided on development
+builds (`make dev`). This can interact with `scilla-server`, achieving the same effect
+as `scilla-runner` and `scilla-client`.
+
+Start `scilla-server` without any arguments. Examples for checking a contract
+and running a transition via `scilla-server` are provided below. They are to be
+run on a separate shell (while `scilla-server` continues to run).
+
+```shell
+scilla-client run -argv " -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000"
+
+scilla-client check -argv " -libdir src/stdlib -gaslimit 8000 tests/contracts/helloWorld.scilla"
+```
+
+
 ### Where to find binaries
 
 * The runnables are put into the folder
@@ -170,6 +185,23 @@ dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -
 
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
+
+### Formatting and linting the codebase
+Our CI checks that the source code is formatted properly. Use
+```shell
+make fmt
+```
+to ensure your code adheres to the style guide.
+Note that the command will automatically change ("promote") your source code.
+You will need the `ocamlformat` opam package for the command above to work.
+
+To make sure you are good to go, before sending PR run
+```shell
+make lint
+```
+to check if there are any issues with your contribution.
+In addition to the `ocamlformat` package, `make lint` uses `opam` and
+[`shellcheck`](https://www.shellcheck.net).
 
 #### Debugging
 To debug scilla-checker or scilla-runner, you must build `make debug`, which will generate

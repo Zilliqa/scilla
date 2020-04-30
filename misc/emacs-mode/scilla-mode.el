@@ -315,7 +315,6 @@
                             (setq endcol (gethash "column" endloc))
                             (if (and startline startcol endline endcol)
                                 (when (and (= startline linn) (>= coln startcol) (< coln endcol))
-                                  (message "hello")
                                   (setq type (gethash "type" vari))
                                   (if type
                                       (throw 'vtype type)

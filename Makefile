@@ -1,8 +1,16 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
 OCAML_VERSION_RECOMMENDED=4.07.1
+OCAMLFORMAT_VERSION=0.14.1
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
+
+# Dependencies useful for developing Scilla
+OPAM_DEV_DEPS := \
+merlin \
+ocamlformat.$(OCAMLFORMAT_VERSION) \
+ocp-indent \
+utop
 
 .PHONY: default release utop dev clean docker zilliqa-docker
 
@@ -28,7 +36,7 @@ dev:
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
 	@test -L bin || ln -s _build/install/default/bin .
-	ln -sr _build/default/tests/scilla_client.exe _build/install/default/bin/scilla-client
+	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
 # Launch utop such that it finds the libraroes.
 utop: release
@@ -36,6 +44,12 @@ utop: release
 
 fmt:
 	dune build @fmt --auto-promote
+
+# Lint OCaml and dune source files, all the opam files in the project root, and the shell scripts
+lint:
+	dune build @fmt
+	opam lint .
+	shellcheck scripts/*.sh && shellcheck easyrun.sh && shellcheck tests/runner/pingpong.sh
 
 # Installer, uninstaller and test the installation
 install : release
@@ -89,7 +103,8 @@ test_extipcserver: dev
 
 # Run tests in server-mode
 test_server: dev
-	dune exec src/runners/scilla_server.exe &
+	dune build src/runners/scilla_server.exe
+	./_build/default/src/runners/scilla_server.exe &
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
   -server true \
 	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
@@ -120,17 +135,20 @@ zilliqa-docker:
 	fi
 	docker build --build-arg BASE_IMAGE=$(ZILLIQA_IMAGE) .
 
+# Create an opam-based development environment
 .PHONY : opamdep
 opamdep:
 	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install --yes $(OPAM_DEV_DEPS)
 
 .PHONY : opamdep-ci
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
 
 .PHONY : coverage
 coverage :
@@ -152,7 +170,7 @@ coveralls:
 	BISECT_ENABLE=YES make
 	dune build @install
 	dune exec -- tests/testsuite.exe
-	bisect-ppx-report -ignore-missing-files -I _build/ -coveralls coverage.json -service-name travis-ci -service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
+	bisect-ppx-report --ignore-missing-files -I _build/ --coveralls coverage.json --service-name travis-ci --service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
 	-find . -name 'bisect*.out' | xargs rm

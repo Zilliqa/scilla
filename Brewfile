@@ -11,3 +11,4 @@ brew "boost"
 brew "pcre"
 brew "domt4/crypto/secp256k1", args: ["with-enable-module-recovery"]
 brew "cmake"
+brew "gmp"

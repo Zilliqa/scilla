@@ -7,7 +7,7 @@ dev-repo: "git+https://github.com/Zilliqa/scilla.git"
 license: "GPL-3.0"
 depends: [
   "ocaml" {>= "4.07.1" & < "4.10~"}
-  "dune" {build & >= "2.0" & < "2.3"}
+  "dune" {build & >= "2.0"}
   "menhir"
   "core" {>= "v0.12.4" & < "v0.13~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
@@ -26,9 +26,20 @@ depends: [
   "ppx_deriving_rpc" {>= "6.0.0" & < "8.0~"}
   "secp256k1" {>= "0.4.0" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.7~"}
-  "ocamlformat" {>= "0.14" & < "0.15~"}
   "ounit" {with-test & (>= "2.0.8" & < "2.3~")}
   "patdiff" {with-test & (>= "v0.12.1" & < "v0.13~")}
+  "conf-cmake" {build}
+  "conf-gcc" {build}
+  "conf-g++" {build}
+  "conf-m4" {build}
+  "conf-pkg-config" {build}
+  "conf-boost"
+  "conf-gmp"
+  "conf-libffi"
+  "conf-libpcre"
+  "conf-openssl"
+  "conf-secp256k1"
+  "conf-zlib"
 ]
 build: [
   [ "./scripts/libff.sh" ]

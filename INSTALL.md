@@ -228,6 +228,27 @@ You can remove `--yes` from the above command to manually control that process.
 eval $(opam env)
 ```
 
+#### Check that you have all system-level dependencies
+If one of the following commands asks you to install a plugin respond with "Y".
+```shell
+opam pin add . --no-action --yes
+opam depext
+opam pin remove scilla
+```
+You should see something like
+```shell
+# Detecting depexts using vars: arch=x86_64, os=macos, os-distribution=homebrew, os-family=homebrew
+# The following system packages are needed:
+gcc
+gmp
+libffi
+lzlib
+pcre
+pkg-config
+secp256k1
+# All required OS packages found.
+```
+
 #### Install Scilla dependencies using opam
 ```shell
 cd PROJECT_DIR    # go inside your Scilla project directory
@@ -244,6 +265,9 @@ make opamdep
 <details><summary>Local opam switch to avoid conflicts with already installed global opam switches</summary>
 
 ### If you have opam package manager already installed
+
+First of all, [make sure](#check-that-you-have-all-system-level-dependencies) you have all the system-level dependencies.
+
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
 If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
 managing your switches when doing Scilla- and non-Scilla- related hacking.
