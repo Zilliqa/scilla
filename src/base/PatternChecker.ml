@@ -137,14 +137,14 @@ struct
         let lifted_p =
           match p with
           | MLit l -> CheckedPatternSyntax.MLit l
-          | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (Ident (vs, r))
+          | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (PCIdentifier.mk_id vs r)
         in
         (s, lifted_p))
 
   let rec lift_pattern p =
     match p with
     | Wildcard -> CheckedPatternSyntax.Wildcard
-    | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (Ident (s, r))
+    | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (PCIdentifier.mk_id s r)
     | Constructor (s, sps) ->
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))

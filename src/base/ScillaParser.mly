@@ -157,9 +157,9 @@ sid :
 | ns = CID; PERIOD; name = ID { ns ^ "." ^ name }
 
 sident :
-| name = ID { Ident (name, toLoc $startpos) }
-| name = SPID { Ident (name, toLoc $startpos) }
-| ns = CID; PERIOD; name = ID { Ident (ns ^ "." ^ name, toLoc $startpos) }
+| name = ID { SIdentifier.mk_id name (toLoc $startpos) }
+| name = SPID { SIdentifier.mk_id name (toLoc $startpos) }
+| ns = CID; PERIOD; name = ID { SIdentifier.mk_id (ns ^ "." ^ name) (toLoc $startpos) }
 
 scid :
 | name = CID { name }
@@ -217,14 +217,14 @@ simple_exp :
 | LET; x = ID;
   t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
-  {(Let ((Ident (x, toLoc $startpos(x))), t, f, e), toLoc $startpos(f)) }
+  {(Let (SIdentifier.mk_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
 (* Function *)
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (Ident (i, toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
+  { (Fun (SIdentifier.mk_id i (toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
-  { (App ((Ident (f, toLoc $startpos(f))), args), toLoc $startpos ) }
+  { (App (SIdentifier.mk_id f (toLoc $startpos(f)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a}
 (* Built-in call *)
@@ -240,20 +240,20 @@ simple_exp :
       (match ts with
        | None -> []
        | Some ls -> ls) in
-    (Constr (Ident(c, toLoc $startpos), targs, args), toLoc $startpos)
+    (Constr (SIdentifier.mk_id c (toLoc $startpos), targs, args), toLoc $startpos)
   }
 (* Match expression *)
 | MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
-  { (MatchExpr (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos) }
+  { (MatchExpr (SIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
-  { (TFun (Ident (i, toLoc $startpos(i)), e), toLoc $startpos) }
+  { (TFun (SIdentifier.mk_id i (toLoc $startpos(i)), e), toLoc $startpos) }
 (* Type application *)
 | AT; f = sid; targs = nonempty_list(targ)
-  { (TApp ((Ident (f, toLoc $startpos(f))), targs), toLoc $startpos) }
+  { (TApp (SIdentifier.mk_id f (toLoc $startpos(f)), targs), toLoc $startpos) }
 
 atomic_exp :
-| i = sid       { (Var (Ident (i, toLoc $startpos(i))), toLoc $startpos) }
+| i = sid       { (Var (SIdentifier.mk_id i (toLoc $startpos(i))), toLoc $startpos) }
 | l = lit      { (Literal l, toLoc $startpos) }
 
 lit :
@@ -281,12 +281,12 @@ map_access:
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (Ident (x, toLoc $startpos(x))) }
+| x = ID { Binder (SIdentifier.mk_id x (toLoc $startpos(x))) }
 | c = scid; ps = list(arg_pattern) { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (Ident (x, toLoc $startpos(x))) }
+| x = ID { Binder (SIdentifier.mk_id x (toLoc $startpos(x))) }
 | c = scid;  { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), []) }
 | LPAREN; p = pattern RPAREN; { p }
 
@@ -331,7 +331,7 @@ stmt:
 | EVENT; m = sid; { (CreateEvnt (SIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (SIdentifier.mk_id m (toLoc $startpos)))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
-  { (MatchStmt (Ident (x, toLoc $startpos(x)), cs), toLoc $startpos)  }
+  { (MatchStmt (SIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
   p = component_id;
   args = list(sident)
@@ -439,8 +439,8 @@ lmodule :
       elibs = els; libs = l } }
 
 importname :
-| c = CID { Ident(c, toLoc $startpos), None }
-| c1 = CID AS c2 = CID { Ident(c1, toLoc $startpos(c1)), Some (Ident(c2, toLoc $startpos(c2)))}
+| c = CID { SIdentifier.mk_id c (toLoc $startpos), None }
+| c1 = CID AS c2 = CID { SIdentifier.mk_id c1 (toLoc $startpos(c1)), Some ( SIdentifier.mk_id c2 (toLoc $startpos(c2)))}
 
 imports :
 | IMPORT; els = list(importname) { els }

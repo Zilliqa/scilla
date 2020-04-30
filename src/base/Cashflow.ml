@@ -1164,7 +1164,7 @@ struct
           | Some t -> t
         in
         match v with
-        | Ident (name, (_, rep)) -> CFSyntax.MVar (Ident (name, (tag, rep))) )
+        | Ident (name, (_, rep)) -> CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)) )
 
   let rec cf_tag_expr erep expected_tag param_env local_env ctr_tag_map =
     let lub t = lub_tags expected_tag t in

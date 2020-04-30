@@ -44,7 +44,7 @@ module type ScillaIdentifier = sig
 
   module Name : QualifiedName
     
-  type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
+  type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp]
 
   val mk_loc_id : Name.t -> loc t
 
