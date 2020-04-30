@@ -67,7 +67,8 @@ module MessagePayload = struct
 
   let get_sender =
     get_value_for_entry sender_label (function
-      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length -> Some (pure a)
+      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
+          Some (pure a)
       | _ -> None)
 
   let get_amount =
@@ -115,9 +116,12 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
 
   let append_implict_contract_params tparams =
     let open CUType in
-    let creation_block = (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ) in
+    let creation_block =
+      (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ)
+    in
     let this_address =
-      (CUIdentifier.mk_id this_address_label ER.address_rep, bystrx_typ address_length)
+      ( CUIdentifier.mk_id this_address_label ER.address_rep,
+        bystrx_typ address_length )
     in
     let scilla_version_init =
       (CUIdentifier.mk_id scilla_version_label ER.uint32_rep, uint32_typ)
@@ -137,7 +141,8 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         bystrx_typ address_length )
     in
     let amount =
-      (CUIdentifier.mk_id MessagePayload.amount_label ER.uint128_rep, uint128_typ)
+      ( CUIdentifier.mk_id MessagePayload.amount_label ER.uint128_rep,
+        uint128_typ )
     in
     amount :: sender :: cparams
 
@@ -161,7 +166,9 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
       | Fixpoint _ -> pure acc
       (* Recursion. *)
       | Let (b', _, (e1, _), (e2, _)) ->
-          let%bind acc' = expr_folder (ER.get_loc @@ CUIdentifier.get_rep b') e1 acc in
+          let%bind acc' =
+            expr_folder (ER.get_loc @@ CUIdentifier.get_rep b') e1 acc
+          in
           expr_folder loc e2 acc'
       | Fun (_, _, (e', _)) | TFun (_, (e', _)) -> expr_folder loc e' acc
       | MatchExpr (p, pl) ->

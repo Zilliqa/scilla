@@ -43,9 +43,8 @@ open Identifier
 open Type
 
 module type ScillaLiteral = sig
-
   module LType : ScillaType
-  
+
   type mtype = LType.t * LType.t [@@deriving sexp]
 
   open Integer256
@@ -127,21 +126,21 @@ module type ScillaLiteral = sig
     (* An embedded closure *)
     | Clo of
         (t ->
-         ( t,
-           scilla_error list,
-           uint64 ->
-           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-         )
-           CPSMonad.t)
+        ( t,
+          scilla_error list,
+          uint64 ->
+          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+        )
+        CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
         (LType.t ->
-         ( t,
-           scilla_error list,
-           uint64 ->
-           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-         )
-           CPSMonad.t)
+        ( t,
+          scilla_error list,
+          uint64 ->
+          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+        )
+        CPSMonad.t)
   [@@deriving sexp]
 
   val subst_type_in_literal : 'a LType.TIdentifier.t -> LType.t -> t -> t
@@ -166,15 +165,12 @@ module type ScillaLiteral = sig
 
   (* String conversion from uint_typ *)
   val string_of_uint_lit : uint_lit -> string
-
 end
 
 module MkLiteral (T : ScillaType) = struct
-
   module LType = T
-
   open LType
-  
+
   (*******************************************************)
   (*                      Literals                       *)
   (*******************************************************)
@@ -315,21 +311,21 @@ module MkLiteral (T : ScillaType) = struct
     (* An embedded closure *)
     | Clo of
         (t ->
-         ( t,
-           scilla_error list,
-           uint64 ->
-           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-         )
-           CPSMonad.t)
+        ( t,
+          scilla_error list,
+          uint64 ->
+          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+        )
+        CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
         (LType.t ->
-         ( t,
-           scilla_error list,
-           uint64 ->
-           ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-         )
-           CPSMonad.t)
+        ( t,
+          scilla_error list,
+          uint64 ->
+          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+        )
+        CPSMonad.t)
   [@@deriving sexp]
 
   (****************************************************************)
@@ -345,9 +341,9 @@ module MkLiteral (T : ScillaType) = struct
         let _ =
           Hashtbl.iter
             (fun k v ->
-               let k' = subst_type_in_literal tvar tp k in
-               let v' = subst_type_in_literal tvar tp v in
-               Hashtbl.add ls' k' v')
+              let k' = subst_type_in_literal tvar tp k in
+              let v' = subst_type_in_literal tvar tp v in
+              Hashtbl.add ls' k' v')
             ls
         in
         Map ((kts, vts), ls')
@@ -383,8 +379,10 @@ module MkLiteral (T : ScillaType) = struct
     let validator_wrapper l = Option.some_if (validate_int_string pt v) l in
     try
       match pt with
-      | Int_typ Bits32 -> validator_wrapper (IntLit (Int32L (Int32.of_string v)))
-      | Int_typ Bits64 -> validator_wrapper (IntLit (Int64L (Int64.of_string v)))
+      | Int_typ Bits32 ->
+          validator_wrapper (IntLit (Int32L (Int32.of_string v)))
+      | Int_typ Bits64 ->
+          validator_wrapper (IntLit (Int64L (Int64.of_string v)))
       | Int_typ Bits128 ->
           validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
       | Int_typ Bits256 ->
@@ -448,7 +446,6 @@ module MkLiteral (T : ScillaType) = struct
     | Bystr_typ -> Some (ByStr (Bystr.parse_hex v))
     | Bystrx_typ _ -> Some (ByStrX (Bystrx.parse_hex v))
     | _ -> None
-
 end
 
 module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))

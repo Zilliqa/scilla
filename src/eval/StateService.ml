@@ -27,6 +27,7 @@ open Syntax
 module ER = ParserRep
 module SR = ParserRep
 module SSTypeUtil = TypeUtilities
+
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
 module SSLiteral = FlattenedLiteral
 module SSType = SSLiteral.LType

@@ -23,9 +23,8 @@ open ErrorUtils
 open Identifier
 
 module type ScillaType = sig
-
   module TIdentifier : ScillaIdentifier
-  
+
   type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
 
   val int_bit_width_to_string : int_bit_width -> string
@@ -122,13 +121,11 @@ module type ScillaType = sig
 
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
-
 end
 
 module MkType (I : ScillaIdentifier) = struct
-
   module TIdentifier = I
-  
+
   (*******************************************************)
   (*                         Types                       *)
   (*******************************************************)
@@ -199,7 +196,8 @@ module MkType (I : ScillaIdentifier) = struct
     | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
     | ADT (name, targs) ->
         let elems =
-          TIdentifier.as_string name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+          TIdentifier.as_string name
+          :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
         in
         String.concat ~sep:" " elems
     | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
@@ -372,5 +370,4 @@ module MkType (I : ScillaIdentifier) = struct
   let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
 
   let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
-
 end

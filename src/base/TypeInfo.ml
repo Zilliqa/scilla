@@ -49,6 +49,7 @@ module ScillaTypeInfo
 struct
   module SER = SR
   module EER = ER
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module TILiteral = FlattenedLiteral
   module TIType = TILiteral.LType

@@ -226,11 +226,10 @@ end
 (*******************************************************)
 
 module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
-
   module SLiteral = Literal
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
-  
+
   (*******************************************************)
   (*                   Expressions                       *)
   (*******************************************************)
@@ -396,7 +395,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   let pp_cparams ps =
     let cs =
       List.map ps ~f:(fun (i, t) ->
-          SIdentifier.as_string i ^ " : " ^ (SType.sexp_of_t t |> Sexplib.Sexp.to_string))
+          SIdentifier.as_string i ^ " : "
+          ^ (SType.sexp_of_t t |> Sexplib.Sexp.to_string))
     in
     "[" ^ String.concat ~sep:", " cs ^ "]"
 
@@ -466,7 +466,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       let e, _ = erep in
       match e with
       | Literal _ -> acc
-      | Var v | TApp (v, _) -> if SIdentifier.is_mem_id v bound_vars then acc else v :: acc
+      | Var v | TApp (v, _) ->
+          if SIdentifier.is_mem_id v bound_vars then acc else v :: acc
       | Fun (f, _, body) | Fixpoint (f, _, body) ->
           recurser body (f :: bound_vars) acc
       | TFun (_, body) -> recurser body bound_vars acc
@@ -480,9 +481,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           List.fold margs ~init:acc ~f:(fun acc (_, x) ->
               match x with
               | MLit _ -> acc
-              | MVar v -> if SIdentifier.is_mem_id v bound_vars then acc else v :: acc)
+              | MVar v ->
+                  if SIdentifier.is_mem_id v bound_vars then acc else v :: acc)
       | MatchExpr (v, cs) ->
-          let fv = if SIdentifier.is_mem_id v bound_vars then acc else v :: acc in
+          let fv =
+            if SIdentifier.is_mem_id v bound_vars then acc else v :: acc
+          in
           List.fold cs ~init:fv ~f:(fun acc (p, e) ->
               (* bind variables in pattern and recurse for expression. *)
               let bound_vars' = get_pattern_bounds p @ bound_vars in
@@ -496,7 +500,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
    * in expr is present in blist. *)
   let free_vars_dep_check erep blist =
     (* Utility: is any m in ml, in l. *)
-    let any_is_mem ml l = List.exists ml ~f:(fun i -> SIdentifier.is_mem_id i l) in
+    let any_is_mem ml l =
+      List.exists ml ~f:(fun i -> SIdentifier.is_mem_id i l)
+    in
     (* Get list of free variables in expression *)
     let fvs = free_vars_in_expr erep in
     (* and check if any of them are in blist. *)
@@ -516,7 +522,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Type error in the initialiser of `%s`:\n" (as_error_string i)
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
-      | App (f, _) -> sprintf "Type error in application of `%s`:\n" (as_error_string f)
+      | App (f, _) ->
+          sprintf "Type error in application of `%s`:\n" (as_error_string f)
       | Constr (s, _, _) ->
           sprintf "Type error in constructor `%s`:\n" (as_error_string s)
       | MatchExpr (x, _) ->
@@ -526,7 +533,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | Builtin ((i, _), _) ->
           sprintf "Type error in built-in application of `%s`:\n" (pp_builtin i)
       | TApp (tf, _) ->
-          sprintf "Type error in type application of `%s`:\n" (as_error_string tf)
+          sprintf "Type error in type application of `%s`:\n"
+            (as_error_string tf)
       | TFun (tf, _) ->
           sprintf "Type error in type function `%s`:\n" (as_error_string tf)
       | Fixpoint (f, _, _) ->
@@ -546,14 +554,17 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
             (as_error_string r) (as_error_string f)
       | Bind (x, _) ->
-          sprintf "Type error in the binding to into `%s`:\n" (as_error_string x)
+          sprintf "Type error in the binding to into `%s`:\n"
+            (as_error_string x)
       | MapGet (_, m, keys, _) ->
           sprintf "Type error in getting map value %s" (as_error_string m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ as_error_string k ^ "]")
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->
           sprintf "Type error in updating map %s" (as_error_string m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ as_error_string k ^ "]")
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MatchStmt (x, _) ->
           sprintf
@@ -566,13 +577,17 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
             (as_error_string p) (as_error_string l)
-      | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (as_error_string i)
-      | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (as_error_string i)
+      | SendMsgs i ->
+          sprintf "Error in sending messages `%s`:\n" (as_error_string i)
+      | CreateEvnt i ->
+          sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | Throw i ->
           let is =
-            match i with Some id -> "of '" ^ as_error_string id ^ "'" | None -> ""
+            match i with
+            | Some id -> "of '" ^ as_error_string id ^ "'"
+            | None -> ""
           in
           sprintf "Error in throw %s:\n" is ),
       sloc )

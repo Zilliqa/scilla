@@ -31,8 +31,9 @@ module StdlibTypeCacher
     (ER : Rep) : sig
   module L : sig
     module SIdentifier : ScillaIdentifier
+
     module SType : ScillaType
-      
+
     type expr_annot
 
     type ctr_def

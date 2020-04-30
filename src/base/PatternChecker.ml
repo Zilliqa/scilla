@@ -36,6 +36,7 @@ module ScillaPatternchecker
 struct
   module SPR = SR
   module EPR = ER
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module PCLiteral = FlattenedLiteral
   module PCType = PCLiteral.LType
@@ -93,7 +94,9 @@ struct
           traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
       | Constructor (c_name, sps_cons) -> (
           let arity () = List.length sps_cons in
-          let get_t_args () = constr_pattern_arg_types t (PCIdentifier.as_string c_name) in
+          let get_t_args () =
+            constr_pattern_arg_types t (PCIdentifier.as_string c_name)
+          in
           let get_dsc_args dsc =
             match dsc with
             | Pos (_, args) -> args
@@ -122,7 +125,9 @@ struct
           | No -> failure dsc
           | Maybe ->
               let%bind s_tree = success () in
-              let%bind f_tree = failure (add_neg dsc (PCIdentifier.as_string c_name)) in
+              let%bind f_tree =
+                failure (add_neg dsc (PCIdentifier.as_string c_name))
+              in
               pure @@ IfEq (t, c_name, s_tree, f_tree) )
     in
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
@@ -137,14 +142,16 @@ struct
         let lifted_p =
           match p with
           | MLit l -> CheckedPatternSyntax.MLit l
-          | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (PCIdentifier.mk_id vs r)
+          | MVar (Ident (vs, r)) ->
+              CheckedPatternSyntax.MVar (PCIdentifier.mk_id vs r)
         in
         (s, lifted_p))
 
   let rec lift_pattern p =
     match p with
     | Wildcard -> CheckedPatternSyntax.Wildcard
-    | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (PCIdentifier.mk_id s r)
+    | Binder (Ident (s, r)) ->
+        CheckedPatternSyntax.Binder (PCIdentifier.mk_id s r)
     | Constructor (s, sps) ->
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))
@@ -302,7 +309,8 @@ struct
             (PCIdentifier.as_error_string i)
         in
         let%bind checked_e =
-          wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep i)) @@ pm_check_expr e
+          wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep i))
+          @@ pm_check_expr e
         in
         pure @@ (i, t, checked_e))
       fs
@@ -343,7 +351,8 @@ struct
     in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let init_msg =
-      sprintf "Type error(s) in contract %s:\n" (PCIdentifier.as_error_string ctr_cname)
+      sprintf "Type error(s) in contract %s:\n"
+        (PCIdentifier.as_error_string ctr_cname)
     in
     wrap_with_info (init_msg, dummy_loc)
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in

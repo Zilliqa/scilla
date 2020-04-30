@@ -26,7 +26,6 @@ open MonadUtil
 open Result.Let_syntax
 open Datatypes
 open PrettyPrinters
-
 module TULiteral = FlattenedLiteral
 module TUType = TULiteral.LType
 module TUIdentifier = TUType.TIdentifier
@@ -343,7 +342,8 @@ module TypeUtilities = struct
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
         TUType.(
-          (not @@ [%equal: TUType.t] t msg_typ) || [%equal: TUType.t] t event_typ)
+          (not @@ [%equal: TUType.t] t msg_typ)
+          || [%equal: TUType.t] t event_typ)
     | ADT (tname, ts) -> (
         if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
           (* Inductive ADT - ignore this branch *)
@@ -688,7 +688,8 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ ([%equal: TUType.t] kt kt' && [%equal: TUType.t] vt vt'))
+                  pure
+                  @@ ([%equal: TUType.t] kt kt' && [%equal: TUType.t] vt vt'))
               kv (pure true)
           in
           if not valid then

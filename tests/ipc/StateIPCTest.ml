@@ -25,7 +25,6 @@ open! Int.Replace_polymorphic_compare
 open Yojson
 open Scilla_base
 open Scilla_eval
-
 module IPCTestType = StateIPCTestClient.Type
 
 let parse_typ_wrapper t =

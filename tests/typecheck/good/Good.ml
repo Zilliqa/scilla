@@ -42,7 +42,8 @@ let make_type_equiv_test st1 st2 eq =
     else (not ([%equal: TestTypeType.t] t1 t2), "<>")
   in
   let err_msg =
-    "Assert " ^ TestTypeType.pp_typ t1 ^ " " ^ bs ^ " " ^ TestTypeType.pp_typ t2 ^ " test failed"
+    "Assert " ^ TestTypeType.pp_typ t1 ^ " " ^ bs ^ " " ^ TestTypeType.pp_typ t2
+    ^ " test failed"
   in
   test_case (fun _ -> assert_bool err_msg b)
 
@@ -130,7 +131,8 @@ let make_map_access_type_test t at nindices =
           assert_bool
             (Printf.sprintf
                "Failed map_access_type test for %s[%d]. Expected %s, but got %s.\n"
-               t nindices at (TestTypeType.pp_typ at_computed'))
+               t nindices at
+               (TestTypeType.pp_typ at_computed'))
             b)
 
 let map_access_type_tests =

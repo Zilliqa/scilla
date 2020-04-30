@@ -7,7 +7,6 @@ open Literal
 open Syntax
 open ParsedSyntax
 open PrettyPrinters
-
 module TestSyntaxLiteral = FlattenedLiteral
 module TestSyntaxType = TestSyntaxLiteral.LType
 module TestSyntaxIdentifier = TestSyntaxType.TIdentifier
@@ -90,21 +89,25 @@ let unannotated_syntax_tests =
                   (Map ((TypeVar "'X", TypeVar "'X"), Caml.Hashtbl.create 4)))
            );
            ( "free_tvars-1",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a" ]
                (free_vars_in_expr (parse_expr_wrapper "a")) );
            ( "free_tvars-2",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a" ]
                (let expr = "fun (b : Uint32) => a" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-3",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "b" ]
                (let expr = "fun (a : Uint32) => b a" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-4",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a" ]
                (let expr =
                   "match a with \n\
@@ -113,7 +116,8 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-5",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a" ]
                (let expr =
                   "match a with \n\
@@ -124,7 +128,8 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-6",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a"; mk_loc_id "d" ]
                (let expr =
                   "match a with \n\
@@ -135,7 +140,8 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-7",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal TestSyntaxIdentifier.equal)
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
                [ mk_loc_id "a" ]
                (let expr = "let b = a in\n                   Int32 0" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );

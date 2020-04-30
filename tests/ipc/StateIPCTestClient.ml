@@ -29,7 +29,7 @@ module M = Idl.IdM
 module IDL = Idl.Make (M)
 
 module IPCClient = IPCIdl (IDL.GenClient ())
-                
+
 (* The purpose of this Test Client is to initialize the test server with data during testing.
  * While ideally we would've liked to reuse StateService, we cannot do so because that deals
  * with Scilla literals, which we cannot always parse from the JSONs. Parsing it requires the

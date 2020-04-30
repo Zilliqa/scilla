@@ -127,8 +127,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*               Blockchain component typing                     *)
   (*****************************************************************)
 
-  let bc_types =
-    [ (TypeUtil.blocknum_name, bnum_typ) ]
+  let bc_types = [ (TypeUtil.blocknum_name, bnum_typ) ]
 
   let lookup_bc_type x =
     match List.Assoc.find bc_types x ~equal:String.( = ) with
@@ -140,8 +139,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (**************************************************************)
 
   (* Lift 'rep ident to (inferred_type * 'rep) ident *)
-  let add_type_to_ident i typ =
-    mk_id (get_id i) (ETR.mk_rep (get_rep i) typ)
+  let add_type_to_ident i typ = mk_id (get_id i) (ETR.mk_rep (get_rep i) typ)
 
   (* Given a scrutinee type and a pattern,
      produce a list of ident -> type mappings for

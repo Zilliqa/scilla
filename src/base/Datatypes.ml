@@ -26,7 +26,6 @@ open Result.Let_syntax
 module DTLiteral = FlattenedLiteral
 module DTType = DTLiteral.LType
 module DTIdentifier = DTType.TIdentifier
-
 open DTType
 open DTLiteral
 
@@ -103,7 +102,13 @@ module DataTypeDictionary = struct
       tname = "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT (TIdentifier.mk_loc_id "List", [ TypeVar "'A" ]) ]) ];
+      tmap =
+        [
+          ( "Cons",
+            [
+              TypeVar "'A"; ADT (TIdentifier.mk_loc_id "List", [ TypeVar "'A" ]);
+            ] );
+        ];
     }
 
   (* Products (Pairs) *)

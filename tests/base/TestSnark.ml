@@ -26,7 +26,6 @@ open Scilla_crypto
 open Snark
 open Integer256
 open Literal
-
 module TestSnarkLiteral = FlattenedLiteral
 open TestSnarkLiteral
 

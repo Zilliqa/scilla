@@ -37,7 +37,6 @@ struct
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module L = ScillaSyntax (SR) (ER) (FlattenedLiteral)
   module MakeTEnv = Q (R) (ER)
-
   open L
   open SIdentifier
   open MakeTEnv

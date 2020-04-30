@@ -127,7 +127,9 @@ let rec json_to_adtargs cname tlist ajs =
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    JSONParser.constr_pattern_arg_types_exn (ADT (mk_loc_id dt.tname, tlist)) cname
+    JSONParser.constr_pattern_arg_types_exn
+      (ADT (mk_loc_id dt.tname, tlist))
+      cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
@@ -314,7 +316,8 @@ module ContractState = struct
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
                   when [%equal: JSONType.t] t1 JSONType.string_typ
-                       && [%equal: JSONType.t] t2 (JSONType.bystrx_typ address_length)
+                       && [%equal: JSONType.t] t2
+                            (JSONType.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
@@ -346,9 +349,12 @@ module Message = struct
     let senders = member_exn sender_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
     let tag = (tag_label, build_prim_lit_exn JSONType.string_typ tags) in
-    let amount = (amount_label, build_prim_lit_exn JSONType.uint128_typ amounts) in
+    let amount =
+      (amount_label, build_prim_lit_exn JSONType.uint128_typ amounts)
+    in
     let sender =
-      (sender_label, build_prim_lit_exn (JSONType.bystrx_typ address_length) senders)
+      ( sender_label,
+        build_prim_lit_exn (JSONType.bystrx_typ address_length) senders )
     in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params = List.map pjlist ~f:jobj_to_statevar in

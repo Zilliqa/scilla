@@ -98,7 +98,9 @@ let run () =
       | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
           match check_patterns typed_erep with
           | Ok _ -> (
-              let tj = [ ("type", `String (FrontEndParser.FEPType.pp_typ e_typ.tp)) ] in
+              let tj =
+                [ ("type", `String (FrontEndParser.FEPType.pp_typ e_typ.tp)) ]
+              in
               let output_j =
                 `Assoc
                   ( if cli.p_type_info then

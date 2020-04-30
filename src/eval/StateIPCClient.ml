@@ -32,6 +32,7 @@ module M = Idl.IdM
 module IDL = Idl.Make (M)
 
 module IPCClient = IPCIdl (IDL.GenClient ())
+
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
 module IPCCLiteral = FlattenedLiteral
 module IPCCType = IPCCLiteral.LType

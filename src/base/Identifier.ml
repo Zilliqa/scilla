@@ -20,30 +20,24 @@ open Core_kernel
 open ErrorUtils
 
 module type QualifiedName = sig
-
   type t [@@deriving sexp, equal, compare]
 
   val as_string : t -> string
 
   val as_error_string : t -> string
-
 end
 
 module FlattenedName = struct
-
   type t = string [@@deriving sexp, equal, compare]
 
   let as_string n = n
 
   let as_error_string n = n
-
 end
 
-
 module type ScillaIdentifier = sig
-
   module Name : QualifiedName
-    
+
   type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp]
 
   val mk_loc_id : Name.t -> loc t
@@ -66,13 +60,11 @@ module type ScillaIdentifier = sig
   val dedup_id_list : 'a t list -> 'a t list
 
   val is_mem_id : 'a t -> 'a t list -> bool
-
 end
 
 module MkIdentifier (Name : QualifiedName) = struct
-
   module Name = Name
-  
+
   type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
 
   let mk_id i r = Ident (i, r)
@@ -92,8 +84,7 @@ module MkIdentifier (Name : QualifiedName) = struct
 
   let compare a b = Name.compare (get_id a) (get_id b)
 
-  let dedup_id_list l = List.dedup_and_sort ~compare:compare l
+  let dedup_id_list l = List.dedup_and_sort ~compare l
 
   let is_mem_id i l = List.exists l ~f:(equal i)
-
 end

@@ -34,6 +34,7 @@ module ScillaSanityChecker
 struct
   module SER = SR
   module EER = ER
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module SCLiteral = FlattenedLiteral
   module SCType = SCLiteral.LType

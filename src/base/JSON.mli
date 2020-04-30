@@ -29,7 +29,6 @@ module JSONType = JSONLiteral.LType
  *    "value" : "value of the variable as a string"
  *)
 module ContractState : sig
-
   (* 
    *  Returns a list of (vname:string,value:literal) items
    *  from the json in the input filename. Invalid inputs in the json are ignored 
@@ -143,7 +142,10 @@ module ContractInfo : sig
     int -> contract -> (string * (string * JSONType.t) list) list -> string
 
   val get_json :
-    int -> contract -> (string * (string * JSONType.t) list) list -> Yojson.Basic.t
+    int ->
+    contract ->
+    (string * (string * JSONType.t) list) list ->
+    Yojson.Basic.t
 end
 
 module Event : sig
@@ -159,7 +161,8 @@ end
 
 module TypeInfo : sig
   val type_info_to_json :
-    (string * JSONType.t * ErrorUtils.loc * ErrorUtils.loc) list -> Yojson.Basic.t
+    (string * JSONType.t * ErrorUtils.loc * ErrorUtils.loc) list ->
+    Yojson.Basic.t
 
   val type_info_to_jstring :
     ?pp:bool ->

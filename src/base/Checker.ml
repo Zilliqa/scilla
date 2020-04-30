@@ -51,7 +51,6 @@ module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
 
-
 (* Check that the module parses *)
 let check_parsing ctr syn =
   let cmod = FrontEndParser.parse_file syn ctr in
@@ -165,7 +164,8 @@ let analyze_print_gas cmod typed_elibs =
           ~f:(fun (i, pol) ->
             pout
             @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n"
-                 (GUA.GUAIdentifier.get_id i) (GUA.sprint_gup pol))
+                 (GUA.GUAIdentifier.get_id i)
+                 (GUA.sprint_gup pol))
           cpol
       in
       res

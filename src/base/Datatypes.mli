@@ -105,7 +105,8 @@ module SnarkTypes : sig
 
   val scilla_scalar_to_ocaml : DTLiteral.t -> (scalar, scilla_error list) result
 
-  val scilla_g1point_to_ocaml : DTLiteral.t -> (g1point, scilla_error list) result
+  val scilla_g1point_to_ocaml :
+    DTLiteral.t -> (g1point, scilla_error list) result
 
   val scilla_g1g2pairlist_to_ocaml :
     DTLiteral.t -> ((g1point * g2point) list, scilla_error list) result

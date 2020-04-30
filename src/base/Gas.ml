@@ -41,7 +41,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   open GasType
   open GasLiteral
   open GasSyntax
-  
+
   (* The storage cost of a literal, based on it's size. *)
   let rec literal_cost lit =
     match lit with

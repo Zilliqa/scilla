@@ -33,7 +33,6 @@ open TypeUtilities
 module BILiteral = FlattenedLiteral
 module BIType = BILiteral.LType
 module BIIdentifier = BIType.TIdentifier
-
 open BIType
 open BILiteral
 

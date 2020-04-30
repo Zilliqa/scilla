@@ -174,7 +174,8 @@ module TypeUtilities : sig
     ('a, 'b) result ->
     ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
 
-  val assert_type_equiv : TUType.t -> TUType.t -> (unit, scilla_error list) result
+  val assert_type_equiv :
+    TUType.t -> TUType.t -> (unit, scilla_error list) result
 
   val assert_type_equiv_with_gas :
     TUType.t ->

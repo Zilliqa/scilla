@@ -33,6 +33,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   module PreRecursionSyntax = ScillaSyntax (SR) (ER) (FlattenedLiteral)
   module SRecRep = SR
   module ERecRep = ER
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module RecLiteral = FlattenedLiteral
   module RecType = RecLiteral.LType
@@ -43,7 +44,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   open RecIdentifier
   open RecType
   open PreRecursionSyntax
-  
+
   let wrap_recursion_err e ?(opt = "") = wrap_err e "ADT" ~opt
 
   let wrap_recursion_serr s ?(opt = "") = wrap_serr s "ADT" ~opt

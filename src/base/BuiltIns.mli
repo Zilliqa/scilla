@@ -32,12 +32,15 @@ module UsefulLiterals : sig
 
   val to_Bool : bool -> BILiteral.t
 
-  val some_lit : BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
+  val some_lit :
+    BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
 
   val none_lit : BIType.t -> BILiteral.t
 
   val pair_lit :
-    BILiteral.t -> BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
+    BILiteral.t ->
+    BILiteral.t ->
+    (BILiteral.t, ErrorUtils.scilla_error list) result
 end
 
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
@@ -57,5 +60,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   end
 
   (* Elaborator for the built-in typ *)
-  val elab_id : BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
+  val elab_id :
+    BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
 end

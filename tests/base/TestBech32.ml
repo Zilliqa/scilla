@@ -23,7 +23,6 @@ open Scilla_base
 open Bech32
 open Literal
 open Utils
-
 module TestBechLiteral = FlattenedLiteral
 open TestBechLiteral
 

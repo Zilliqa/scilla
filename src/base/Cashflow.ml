@@ -75,6 +75,7 @@ module ScillaCashflowChecker
 struct
   module SCFR = SR
   module ECFR = CashflowRep (ER)
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module CFLiteral = FlattenedLiteral
   module CFType = CFLiteral.LType
@@ -460,7 +461,8 @@ struct
                   NoInfo
               | MapType (_, vt) | FunType (_, vt) -> Map (tag_tmap vt)
               | ADT (adt_name, arg_typs) ->
-                  Adt (CFIdentifier.get_id adt_name, List.map arg_typs ~f:tag_tmap)
+                  Adt
+                    (CFIdentifier.get_id adt_name, List.map arg_typs ~f:tag_tmap)
               | TypeVar tvar -> (
                   match
                     List.Assoc.find tvar_tag_map ~equal:String.( = ) tvar
@@ -520,12 +522,11 @@ struct
   (*      Helper functions for local variables           *)
   (*******************************************************)
 
-  let get_id_tag id = match CFIdentifier.get_rep id with | (tag, _) -> tag
+  let get_id_tag id = match CFIdentifier.get_rep id with tag, _ -> tag
 
   let update_id_tag id new_tag =
     let open CFIdentifier in
-    match get_rep id with
-    | (_, rep) -> mk_id (get_id id) (new_tag, rep)
+    match get_rep id with _, rep -> mk_id (get_id id) (new_tag, rep)
 
   let lookup_var_tag i env =
     let open CFIdentifier in
@@ -539,7 +540,8 @@ struct
     | Some t -> t
     | None -> lookup_var_tag i env2
 
-  let update_var_tag i t env = AssocDictionary.update (CFIdentifier.get_id i) t env
+  let update_var_tag i t env =
+    AssocDictionary.update (CFIdentifier.get_id i) t env
 
   let update_var_tag2 i t env1 env2 =
     match AssocDictionary.lookup (CFIdentifier.get_id i) env1 with
@@ -1054,7 +1056,9 @@ struct
       | Binder x ->
           let new_x_tag = lookup_var_tag x local_env in
           let new_x = update_id_tag x new_x_tag in
-          let new_local_env = AssocDictionary.remove (CFIdentifier.get_id x) local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+          in
           ( Binder new_x,
             new_x_tag,
             new_local_env,
@@ -1080,7 +1084,8 @@ struct
                   acc_changes || p_changes ))
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ps_ctr_tag_map (CFIdentifier.get_id s) new_ps_tags
+            update_ctr_tag_map ps_ctr_tag_map (CFIdentifier.get_id s)
+              new_ps_tags
             |> Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
@@ -1106,7 +1111,9 @@ struct
           (Binder new_x, not ([%equal: ECFR.money_tag] new_x_tag (get_id_tag x)))
       | Constructor (s, ps) ->
           let expected_subtags =
-            match ctr_pattern_to_subtags (CFIdentifier.get_id s) expected_tag with
+            match
+              ctr_pattern_to_subtags (CFIdentifier.get_id s) expected_tag
+            with
             | Some ts -> ts
             | None -> List.map ps ~f:(fun _ -> NoInfo)
           in
@@ -1145,7 +1152,9 @@ struct
             | Ok tps -> tps
             | Unequal_lengths -> []
           in
-          let new_tag = ctr_to_adt_tag (CFIdentifier.get_id s) subpattern_tags in
+          let new_tag =
+            ctr_to_adt_tag (CFIdentifier.get_id s) subpattern_tags
+          in
           lub_tags new_tag acc_tag
     in
     List.fold_left ps ~init:NoInfo ~f:walk
@@ -1164,7 +1173,8 @@ struct
           | Some t -> t
         in
         match v with
-        | Ident (name, (_, rep)) -> CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)) )
+        | Ident (name, (_, rep)) ->
+            CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)) )
 
   let rec cf_tag_expr erep expected_tag param_env local_env ctr_tag_map =
     let lub t = lub_tags expected_tag t in
@@ -1203,7 +1213,8 @@ struct
             | _ -> Inconsistent
           in
           let body_local_env =
-            AssocDictionary.insert (CFIdentifier.get_id arg) (get_id_tag arg) local_env
+            AssocDictionary.insert (CFIdentifier.get_id arg) (get_id_tag arg)
+              local_env
           in
           let ( ((_, (new_body_tag, _)) as new_body),
                 res_param_env,
@@ -1307,7 +1318,8 @@ struct
             cf_tag_expr lhs (get_id_tag i) param_env local_env ctr_tag_map
           in
           let updated_lhs_local_env =
-            AssocDictionary.insert (CFIdentifier.get_id i) new_lhs_tag lhs_local_env
+            AssocDictionary.insert (CFIdentifier.get_id i) new_lhs_tag
+              lhs_local_env
           in
           let ( ((_, (new_rhs_tag, _)) as new_rhs),
                 rhs_param_env,
@@ -1319,7 +1331,9 @@ struct
           in
           let new_i_tag = lookup_var_tag i rhs_local_env in
           let new_i = update_id_tag i new_i_tag in
-          let res_local_env = AssocDictionary.remove (CFIdentifier.get_id i) rhs_local_env in
+          let res_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id i) rhs_local_env
+          in
           ( Let (new_i, topt, new_lhs, new_rhs),
             new_rhs_tag,
             rhs_param_env,
@@ -1347,13 +1361,16 @@ struct
             | Unequal_lengths -> false
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ctr_tag_map (CFIdentifier.get_id cname)
+            update_ctr_tag_map ctr_tag_map
+              (CFIdentifier.get_id cname)
               (List.map new_args ~f:get_id_tag)
             |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
           in
           let tag =
-            ctr_to_adt_tag (CFIdentifier.get_id cname) (List.map new_args ~f:get_id_tag)
+            ctr_to_adt_tag
+              (CFIdentifier.get_id cname)
+              (List.map new_args ~f:get_id_tag)
           in
           ( Constr (cname, ts, new_args),
             tag,
@@ -1532,7 +1549,9 @@ struct
             cf_update_tag_for_field_assignment f x param_env field_env local_env
           in
           (* x is no longer in scope, so remove from local_env *)
-          let new_local_env = AssocDictionary.remove (CFIdentifier.get_id x) tmp_local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id x) tmp_local_env
+          in
           ( Load (new_x, new_f),
             new_param_env,
             new_field_env,
@@ -1555,7 +1574,9 @@ struct
                @@ [%equal: ECFR.money_tag] (get_id_tag new_f) (get_id_tag f) )
       | Bind (x, e) ->
           let x_tag = lookup_var_tag x local_env in
-          let e_local_env = AssocDictionary.remove (CFIdentifier.get_id x) local_env in
+          let e_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+          in
           let ( ((_, (new_e_tag, _)) as new_e),
                 new_param_env,
                 new_local_env,
@@ -1633,7 +1654,9 @@ struct
           let m_tag = lub_tags m_tag_usage (lookup_var_tag m field_env) in
           let new_m = update_id_tag m m_tag in
           let new_field_env = update_var_tag m m_tag field_env in
-          let new_local_env = AssocDictionary.remove (CFIdentifier.get_id x) local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+          in
           let new_ks =
             List.map ks ~f:(fun k ->
                 let new_k_tag =
@@ -1731,7 +1754,9 @@ struct
       | ReadFromBC (x, s) ->
           let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
-          let new_local_env = AssocDictionary.remove (CFIdentifier.get_id x) local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+          in
           ( ReadFromBC (new_x, s),
             param_env,
             field_env,
@@ -1828,7 +1853,8 @@ struct
           match s with
           | Load (x, _) | Bind (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _)
             ->
-              AssocDictionary.insert (CFIdentifier.get_id x) (get_id_tag x) acc_env
+              AssocDictionary.insert (CFIdentifier.get_id x) (get_id_tag x)
+                acc_env
           | _ -> acc_env)
     in
     List.fold_right ss
@@ -1992,7 +2018,9 @@ struct
     let init_mod = cf_init_tag_module cmod token_fields in
     let new_mod, ctr_tag_map = cf_tag_module init_mod in
     let param_field_tags =
-      List.map ~f:(fun (p, _) -> (CFIdentifier.get_id p, get_id_tag p)) new_mod.contr.cparams
+      List.map
+        ~f:(fun (p, _) -> (CFIdentifier.get_id p, get_id_tag p))
+        new_mod.contr.cparams
       @ List.map
           ~f:(fun (f, _, _) -> (CFIdentifier.get_id f, get_id_tag f))
           new_mod.contr.cfields

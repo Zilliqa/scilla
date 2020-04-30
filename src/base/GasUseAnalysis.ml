@@ -36,6 +36,7 @@ module ScillaGUA
 struct
   module SER = SR
   module EER = ER
+
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module GUALiteral = FlattenedLiteral
   module GUAType = GUALiteral.LType
@@ -1280,7 +1281,9 @@ struct
     (* Bind contract parameters. *)
     let si a t = mk_typed_id a t in
     let all_cparams =
-      [ (si ContractUtil.creation_block_label GUAType.bnum_typ, GUAType.bnum_typ) ]
+      [
+        (si ContractUtil.creation_block_label GUAType.bnum_typ, GUAType.bnum_typ);
+      ]
       @ cmod.contr.cparams
     in
     let genv_cparams =
