@@ -583,3 +583,15 @@ module CashflowInfo = struct
                    ])) );
       ]
 end
+
+module ShardingInfo = struct
+  let get_json (sharding_constraints, field_pcms) =
+    `Assoc
+      [
+        ( "field_pcms",
+          `Assoc (List.map field_pcms ~f:(fun (f, p) -> (f, `String p))) );
+        ( "transition_constraints",
+          `Assoc
+            (List.map sharding_constraints ~f:(fun (t, sc) -> (t, `List sc))) );
+      ]
+end

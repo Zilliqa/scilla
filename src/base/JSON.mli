@@ -197,3 +197,9 @@ module CashflowInfo : sig
     (string * string) list * (string * (string * string list) list) list ->
     Yojson.Basic.t
 end
+
+module ShardingInfo : sig
+  val get_json :
+    (string * Yojson.Basic.t list) list * (string * string) list ->
+    Yojson.Basic.t
+end

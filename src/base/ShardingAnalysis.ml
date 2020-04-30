@@ -22,6 +22,7 @@ open TypeUtil
 open Syntax
 open ErrorUtils
 open MonadUtil
+open Yojson
 
 module ScillaSA
     (SR : Rep) (ER : sig
@@ -312,6 +313,18 @@ struct
     | CAccess pf -> Printf.sprintf "CAccess %s" (pp_pseudofield pf)
     | CUnsat -> "CUnsat"
 
+  let sharding_constraint_to_json sc : Yojson.Basic.t =
+    `Assoc [
+    match sc with
+    | CMustBeUserAddr i -> ("CMustBeUserAddr", `String (get_id i))
+    | CMustNotHaveDuplicates dl ->
+      let l = List.map (fun (a, b) ->  `List [`String (get_id a) ; `String (get_id b)]) dl in
+      ("CMustNotHaveDuplicates", `List l)
+    | CSenderShard -> ("CSenderShard", `Null)
+    | CContractShard -> ("CContractShard", `Null)
+    | CAccess pf -> ("CAccess", `String (pp_pseudofield pf))
+    | CUnsat -> ("CUnsat", `Null)
+    ]
   module OrderedShardingConstraint = struct
     type t = sharding_constraint
 
@@ -2190,7 +2203,7 @@ struct
           in
           (* Detect any non-spurious read that must be accepted as weak and isn't *)
           let spurious_reads = flatten_reads local_srs in
-          print_endline @@ "Spurious reads: "
+          Printf.eprintf "%s\n" @@ "Spurious reads: "
           ^ String.concat ", "
               (List.map
                  (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
@@ -2220,12 +2233,12 @@ struct
                 && (not @@ is_mem_read (t, pf) spurious_reads))
               reads
           in
-          print_endline @@ "Must accept weak reads: "
+          Printf.eprintf "%s\n" @@ "Must accept weak reads: "
           ^ String.concat ", "
               (List.map
                  (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
                  must_accept_weak);
-          print_endline @@ "Accepted weak reads: "
+          Printf.eprintf "%s\n" @@ "Accepted weak reads: "
           ^ String.concat ", "
               (List.map
                  (fun (t, pf) -> t ^ ": " ^ pp_pseudofield pf)
@@ -2244,7 +2257,7 @@ struct
               let combined = List.combine must_accept accepted in
               List.for_all (fun (a, b) -> wr_compare a b = 0) combined
           in
-          print_endline @@ "All weak reads accepted: "
+          Printf.eprintf "%s\n" @@ "All weak reads accepted: "
           ^ string_of_bool all_weak_reads_accepted;
           let pcm_strs = List.map (fun (f, p) -> (get_id f, p)) pcms in
           match all_weak_reads_accepted with
@@ -2268,7 +2281,7 @@ struct
                     (get_id f, pcm))
                   cmod.contr.cfields
               in
-              print_endline @@ "Global PCM assignment: "
+              Printf.eprintf "%s\n" @@ "Global PCM assignment: "
               ^ String.concat ", "
                   (List.map (fun (f, pcm) -> f ^ ": " ^ pcm) assignment);
               assignment
@@ -2329,7 +2342,7 @@ struct
            appear in the order they are defined in contract. *)
       else validate_transitions selected_transitions all_transitions
     in
-    print_endline @@ "Selected transitions: "
+    Printf.eprintf "%s\n" @@ "Selected transitions: "
     ^ String.concat ", " selected_transitions;
     let selected_summaries =
       List.filter
@@ -2361,7 +2374,7 @@ struct
     let constant_fields =
       List.filter (fun f -> field_is_constant f) contract_fields
     in
-    print_endline @@ "Constant fields: "
+    Printf.eprintf "%s\n" @@ "Constant fields: "
     ^ String.concat ", " (List.map get_id constant_fields);
     (* Locally compute CWs and SRs for each selected transition *)
     let selected_cw, selected_sr =
@@ -2399,9 +2412,8 @@ struct
           else sh)
         constraints
     in
-
     let sharding_constraints = List.combine selected_transitions constraints in
-    print_endline
+    Printf.eprintf "\n%s\n"
     @@ String.concat "\n"
          (List.map
             (fun (t, sc) -> t ^ ": \n" ^ pp_sharding sc)
@@ -2469,7 +2481,6 @@ struct
         (senv, []) cmod.contr.ccomps
     in
 
-    (* print_endline @@ SAEnv.pp senv; *)
     let summaries = List.rev summaries in
     (* SECURITY / UNTRUSTED INPUT: validate command line arguments *)
     (* Important: selected_transitions must actually exist in contract AND
@@ -2481,12 +2492,16 @@ struct
       validate_transitions selected_transitions all_transitions
     in
     let%bind accepted_weak_reads = mapM ~f:weak_read_of_str weak_reads_str in
-    let _ =
+    let%bind sharding_constraints, field_pcms =
       get_sharding_info ~selected_transitions ~accepted_weak_reads cmod
-        summaries;
-      print_endline "\n"
+        summaries
     in
-    pure summaries
-
-  (* pure senv *)
+    let sharding_constraints =
+      List.map
+        (fun (t, ss) -> (t, ShardingSummary.elements ss))
+        sharding_constraints
+    in
+    (* pure summaries *)
+    (* pure senv *)
+    pure (sharding_constraints, field_pcms)
 end

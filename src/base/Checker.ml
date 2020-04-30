@@ -171,26 +171,13 @@ let analyze_print_gas cmod typed_elibs =
       in
       res
 
-let analyze_print_sharding cmod typed_elibs selected_transitions weak_reads_str =
+let analyze_sharding cmod typed_elibs selected_transitions weak_reads_str =
   let res = SA.sa_module selected_transitions weak_reads_str cmod typed_elibs in
   match res with
   | Error msg ->
       pout @@ scilla_error_to_string msg;
       res
-  | Ok cpol ->
-      plog
-      @@ sprintf
-            "\n[Sharding analysis]:\n module [%s] is successfully analyzed.\n"
-            (get_id cmod.contr.cname);
-      let _ =
-        List.iter
-          ~f:(fun (comp, summ, const) ->
-            pout
-            @@ sprintf "State footprint for transition %s(%s):\n%sSharding constraints:\n%s\n"
-                  (get_id comp.comp_name) (String.concat ~sep:", " (List.map ~f:(fun (i, _) -> get_id i) comp.comp_params)) (SA.pp_summary summ) (SA.pp_sharding const)) cpol
-      in
-      (* pout @@ (SA.SAEnv.pp cpol); *)
-      res
+  | Ok cpol -> res
 
 let check_cashflow typed_cmod token_fields =
   let param_field_tags, ctr_tags = CF.main typed_cmod token_fields in
@@ -304,17 +291,28 @@ let check_cmodule cli =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
-    let%bind _ =
-    if cli.sa_flag then
-      wrap_error_with_gas remaining_gas
-      @@ (pure @@ Some (analyze_print_sharding typed_cmod typed_elibs cli.sa_transitions cli.sa_accepted_weak_reads))
-    else pure @@ None
-  in
-    pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
+    let%bind sa_info_opt =
+      if cli.sa_flag then
+        let%bind r =
+          wrap_error_with_gas remaining_gas
+            (analyze_sharding typed_cmod typed_elibs cli.sa_transitions
+               cli.sa_accepted_weak_reads)
+        in
+        pure @@ Some r
+      else pure @@ None
+    in
+    pure
+    @@ ( cmod,
+         tenv,
+         event_info,
+         type_info,
+         cf_info_opt,
+         sa_info_opt,
+         remaining_gas )
   in
   match r with
   | Error (s, g) -> fatal_error_gas s g
-  | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
+  | Ok (cmod, _, event_info, type_info, cf_info_opt, sa_info_opt, g) ->
       check_version cmod.smver;
       let output =
         if cli.p_contract_info then
@@ -334,6 +332,19 @@ let check_cmodule cli =
         | None -> output
         | Some cf_info ->
             ("cashflow_tags", JSON.CashflowInfo.get_json cf_info) :: output
+      in
+      let output =
+        match sa_info_opt with
+        | None -> output
+        | Some (sc, fpcm) ->
+            let sc_json =
+              List.map
+                ~f:(fun (t, tsc) ->
+                  (t, List.map ~f:SA.sharding_constraint_to_json tsc))
+                sc
+            in
+            ("sharding_info", JSON.ShardingInfo.get_json (sc_json, fpcm))
+            :: output
       in
       let output =
         (* This part only has warnings and gas_remaining, which we output as JSON
