@@ -22,246 +22,352 @@ open Sexplib.Std
 open ErrorUtils
 open Identifier
 
-(*******************************************************)
-(*                         Types                       *)
-(*******************************************************)
+module type ScillaType = sig
+  module TIdentifier : ScillaIdentifier
 
-type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
-[@@deriving sexp, equal]
+  type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
 
-type prim_typ =
-  | Int_typ of int_bit_width
-  | Uint_typ of int_bit_width
-  | String_typ
-  | Bnum_typ
-  | Msg_typ
-  | Event_typ
-  | Exception_typ
-  | Bystr_typ
-  | Bystrx_typ of int
-[@@deriving equal]
+  val int_bit_width_to_string : int_bit_width -> string
 
-let sexp_of_prim_typ = function
-  | Int_typ Bits32 -> Sexp.Atom "Int32"
-  | Int_typ Bits64 -> Sexp.Atom "Int64"
-  | Int_typ Bits128 -> Sexp.Atom "Int128"
-  | Int_typ Bits256 -> Sexp.Atom "Int256"
-  | Uint_typ Bits32 -> Sexp.Atom "Uint32"
-  | Uint_typ Bits64 -> Sexp.Atom "Uint64"
-  | Uint_typ Bits128 -> Sexp.Atom "Uint128"
-  | Uint_typ Bits256 -> Sexp.Atom "Uint256"
-  | String_typ -> Sexp.Atom "String"
-  | Bnum_typ -> Sexp.Atom "BNum"
-  | Msg_typ -> Sexp.Atom "Message"
-  | Event_typ -> Sexp.Atom "Event"
-  | Exception_typ -> Sexp.Atom "Exception"
-  | Bystr_typ -> Sexp.Atom "ByStr"
-  | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
+  type prim_typ =
+    | Int_typ of int_bit_width
+    | Uint_typ of int_bit_width
+    | String_typ
+    | Bnum_typ
+    | Msg_typ
+    | Event_typ
+    | Exception_typ
+    | Bystr_typ
+    | Bystrx_typ of int
+  [@@deriving equal, sexp]
 
-let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
+  val pp_prim_typ : prim_typ -> string
 
-type t =
-  | PrimType of prim_typ
-  | MapType of t * t
-  | FunType of t * t
-  | ADT of loc Identifier.t * t list
-  | TypeVar of string
-  | PolyFun of string * t
-  | Unit
-[@@deriving sexp]
+  type t =
+    | PrimType of prim_typ
+    | MapType of t * t
+    | FunType of t * t
+    | ADT of loc TIdentifier.t * t list
+    | TypeVar of string
+    | PolyFun of string * t
+    | Unit
+  [@@deriving sexp]
 
-let int_bit_width_to_string = function
-  | Bits32 -> "32"
-  | Bits64 -> "64"
-  | Bits128 -> "128"
-  | Bits256 -> "256"
+  val pp_typ : t -> string
 
-let pp_prim_typ = function
-  | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
-  | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
-  | String_typ -> "String"
-  | Bnum_typ -> "BNum"
-  | Msg_typ -> "Message"
-  | Event_typ -> "Event"
-  | Exception_typ -> "Exception"
-  | Bystr_typ -> "ByStr"
-  | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+  (****************************************************************)
+  (*                     Type substitutions                       *)
+  (****************************************************************)
 
-let rec pp_typ = function
-  | PrimType t -> pp_prim_typ t
-  | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
-  | ADT (name, targs) ->
-      let elems =
-        get_id name :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
-      in
-      String.concat ~sep:" " elems
-  | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
-  | TypeVar tv -> tv
-  | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
-  | Unit -> sprintf "()"
+  val free_tvars : t -> string list
 
-and with_paren t =
-  match t with
-  | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
-  | _ -> pp_typ t
+  val mk_fresh_var : string list -> string -> string
 
-(****************************************************************)
-(*                     Type substitutions                       *)
-(****************************************************************)
+  val refresh_tfun : t -> string list -> t
 
-(* Return free tvars in tp
-    The return list doesn't contain duplicates *)
-let free_tvars tp =
-  let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
-  let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
-  let rec go t acc =
+  val canonicalize_tfun : t -> t
+
+  val equal : t -> t -> bool
+
+  val subst_type_in_type : string -> t -> t -> t
+
+  val subst_types_in_type : (string * t) list -> t -> t
+
+  val subst_type_in_type' : 'a TIdentifier.t -> t -> t -> t
+
+  (****************************************************************)
+  (*                     PrimType utilities                       *)
+  (****************************************************************)
+
+  val is_prim_type : t -> bool
+
+  val is_int_type : t -> bool
+
+  val is_uint_type : t -> bool
+
+  val is_bystrx_type : t -> bool
+
+  val int_width : t -> int option
+
+  val int32_typ : t
+
+  val int64_typ : t
+
+  val int128_typ : t
+
+  val int256_typ : t
+
+  val uint32_typ : t
+
+  val uint64_typ : t
+
+  val uint128_typ : t
+
+  val uint256_typ : t
+
+  val string_typ : t
+
+  val bnum_typ : t
+
+  val msg_typ : t
+
+  val event_typ : t
+
+  val exception_typ : t
+
+  val bystr_typ : t
+
+  val bystrx_typ : int -> t
+
+  (* Given a ByStrX, return integer X *)
+  val bystrx_width : t -> int option
+end
+
+module MkType (I : ScillaIdentifier) = struct
+  module TIdentifier = I
+
+  (*******************************************************)
+  (*                         Types                       *)
+  (*******************************************************)
+
+  type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
+  [@@deriving sexp, equal]
+
+  type prim_typ =
+    | Int_typ of int_bit_width
+    | Uint_typ of int_bit_width
+    | String_typ
+    | Bnum_typ
+    | Msg_typ
+    | Event_typ
+    | Exception_typ
+    | Bystr_typ
+    | Bystrx_typ of int
+  [@@deriving equal]
+
+  let sexp_of_prim_typ = function
+    | Int_typ Bits32 -> Sexp.Atom "Int32"
+    | Int_typ Bits64 -> Sexp.Atom "Int64"
+    | Int_typ Bits128 -> Sexp.Atom "Int128"
+    | Int_typ Bits256 -> Sexp.Atom "Int256"
+    | Uint_typ Bits32 -> Sexp.Atom "Uint32"
+    | Uint_typ Bits64 -> Sexp.Atom "Uint64"
+    | Uint_typ Bits128 -> Sexp.Atom "Uint128"
+    | Uint_typ Bits256 -> Sexp.Atom "Uint256"
+    | String_typ -> Sexp.Atom "String"
+    | Bnum_typ -> Sexp.Atom "BNum"
+    | Msg_typ -> Sexp.Atom "Message"
+    | Event_typ -> Sexp.Atom "Event"
+    | Exception_typ -> Sexp.Atom "Exception"
+    | Bystr_typ -> Sexp.Atom "ByStr"
+    | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
+
+  let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
+
+  type t =
+    | PrimType of prim_typ
+    | MapType of t * t
+    | FunType of t * t
+    | ADT of loc TIdentifier.t * t list
+    | TypeVar of string
+    | PolyFun of string * t
+    | Unit
+  [@@deriving sexp]
+
+  let int_bit_width_to_string = function
+    | Bits32 -> "32"
+    | Bits64 -> "64"
+    | Bits128 -> "128"
+    | Bits256 -> "256"
+
+  let pp_prim_typ = function
+    | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
+    | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
+    | String_typ -> "String"
+    | Bnum_typ -> "BNum"
+    | Msg_typ -> "Message"
+    | Event_typ -> "Event"
+    | Exception_typ -> "Exception"
+    | Bystr_typ -> "ByStr"
+    | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+
+  let rec pp_typ = function
+    | PrimType t -> pp_prim_typ t
+    | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
+    | ADT (name, targs) ->
+        let elems =
+          TIdentifier.as_string name
+          :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
+        in
+        String.concat ~sep:" " elems
+    | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
+    | TypeVar tv -> tv
+    | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
+    | Unit -> sprintf "()"
+
+  and with_paren t =
     match t with
-    | PrimType _ | Unit -> acc
-    | MapType (kt, vt) -> go kt acc |> go vt
-    | FunType (at, rt) -> go at acc |> go rt
-    | TypeVar n -> add acc n
-    | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
-    | PolyFun (arg, bt) ->
-        let acc' = go bt acc in
-        rem acc' arg
-  in
-  go tp []
+    | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
+    | _ -> pp_typ t
 
-let mk_fresh_var taken init =
-  let tmp = ref init in
-  let counter = ref 1 in
-  while List.mem taken !tmp ~equal:String.( = ) do
-    tmp := init ^ Int.to_string !counter;
-    Int.incr counter
-  done;
-  !tmp
+  (****************************************************************)
+  (*                     Type substitutions                       *)
+  (****************************************************************)
 
-(* tm[tvar := tp] *)
-let rec subst_type_in_type tvar tp tm =
-  match tm with
-  | PrimType _ | Unit -> tm
-  (* Make sure the map's type is still primitive! *)
-  | MapType (kt, vt) ->
-      let kts = subst_type_in_type tvar tp kt in
-      let vts = subst_type_in_type tvar tp vt in
-      MapType (kts, vts)
-  | FunType (at, rt) ->
-      let ats = subst_type_in_type tvar tp at in
-      let rts = subst_type_in_type tvar tp rt in
-      FunType (ats, rts)
-  | TypeVar n -> if String.(tvar = n) then tp else tm
-  | ADT (s, ts) ->
-      let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
-      ADT (s, ts')
-  | PolyFun (arg, t) ->
-      if String.(tvar = arg) then tm
-      else PolyFun (arg, subst_type_in_type tvar tp t)
+  (* Return free tvars in tp
+      The return list doesn't contain duplicates *)
+  let free_tvars tp =
+    let add vs tv = tv :: List.filter ~f:(String.( <> ) tv) vs in
+    let rem vs tv = List.filter ~f:(String.( <> ) tv) vs in
+    let rec go t acc =
+      match t with
+      | PrimType _ | Unit -> acc
+      | MapType (kt, vt) -> go kt acc |> go vt
+      | FunType (at, rt) -> go at acc |> go rt
+      | TypeVar n -> add acc n
+      | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
+      | PolyFun (arg, bt) ->
+          let acc' = go bt acc in
+          rem acc' arg
+    in
+    go tp []
 
-(* note: this is sequential substitution of multiple variables,
-          _not_ simultaneous substitution *)
-let subst_types_in_type sbst tm =
-  List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) ->
-      subst_type_in_type tvar tp acc)
+  let mk_fresh_var taken init =
+    let tmp = ref init in
+    let counter = ref 1 in
+    while List.mem taken !tmp ~equal:String.( = ) do
+      tmp := init ^ Int.to_string !counter;
+      Int.incr counter
+    done;
+    !tmp
 
-let rename_bound_vars mk_new_name update_taken =
-  let rec recursor t taken =
-    match t with
-    | MapType (kt, vt) -> MapType (kt, recursor vt taken)
-    | FunType (at, rt) -> FunType (recursor at taken, recursor rt taken)
-    | ADT (n, ts) ->
-        let ts' = List.map ts ~f:(fun w -> recursor w taken) in
-        ADT (n, ts')
-    | PrimType _ | TypeVar _ | Unit -> t
-    | PolyFun (arg, bt) ->
-        let arg' = mk_new_name taken arg in
-        let tv_new = TypeVar arg' in
-        let bt1 = subst_type_in_type arg tv_new bt in
-        let bt2 = recursor bt1 (update_taken arg' taken) in
-        PolyFun (arg', bt2)
-  in
-  recursor
+  (* tm[tvar := tp] *)
+  let rec subst_type_in_type tvar tp tm =
+    match tm with
+    | PrimType _ | Unit -> tm
+    (* Make sure the map's type is still primitive! *)
+    | MapType (kt, vt) ->
+        let kts = subst_type_in_type tvar tp kt in
+        let vts = subst_type_in_type tvar tp vt in
+        MapType (kts, vts)
+    | FunType (at, rt) ->
+        let ats = subst_type_in_type tvar tp at in
+        let rts = subst_type_in_type tvar tp rt in
+        FunType (ats, rts)
+    | TypeVar n -> if String.(tvar = n) then tp else tm
+    | ADT (s, ts) ->
+        let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
+        ADT (s, ts')
+    | PolyFun (arg, t) ->
+        if String.(tvar = arg) then tm
+        else PolyFun (arg, subst_type_in_type tvar tp t)
 
-let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
+  (* note: this is sequential substitution of multiple variables,
+            _not_ simultaneous substitution *)
+  let subst_types_in_type sbst tm =
+    List.fold_left sbst ~init:tm ~f:(fun acc (tvar, tp) ->
+        subst_type_in_type tvar tp acc)
 
-let canonicalize_tfun t =
-  (* The parser doesn't allow type names to begin with '_'. *)
-  let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
-  rename_bound_vars mk_new_name (const @@ Int.succ) t 1
+  let rename_bound_vars mk_new_name update_taken =
+    let rec recursor t taken =
+      match t with
+      | MapType (kt, vt) -> MapType (kt, recursor vt taken)
+      | FunType (at, rt) -> FunType (recursor at taken, recursor rt taken)
+      | ADT (n, ts) ->
+          let ts' = List.map ts ~f:(fun w -> recursor w taken) in
+          ADT (n, ts')
+      | PrimType _ | TypeVar _ | Unit -> t
+      | PolyFun (arg, bt) ->
+          let arg' = mk_new_name taken arg in
+          let tv_new = TypeVar arg' in
+          let bt1 = subst_type_in_type arg tv_new bt in
+          let bt2 = recursor bt1 (update_taken arg' taken) in
+          PolyFun (arg', bt2)
+    in
+    recursor
 
-(* Type equivalence *)
-let equal t1 t2 =
-  let t1' = canonicalize_tfun t1 in
-  let t2' = canonicalize_tfun t2 in
-  let rec equiv t1 t2 =
-    match (t1, t2) with
-    | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
-    | TypeVar v1, TypeVar v2 -> String.equal v1 v2
-    | Unit, Unit -> true
-    | ADT (tname1, tl1), ADT (tname2, tl2) ->
-        equal_id tname1 tname2
-        (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
-        && List.length tl1 = List.length tl2
-        && List.for_all2_exn ~f:equiv tl1 tl2
-    | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
-    | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
-        equiv t1_1 t2_1 && equiv t1_2 t2_2
-    | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
-        String.equal v1 v2 && equiv t1'' t2''
-    | _ -> false
-  in
-  equiv t1' t2'
+  let refresh_tfun = rename_bound_vars mk_fresh_var List.cons
 
-(* The same as above, but for a variable with locations *)
-let subst_type_in_type' tv = subst_type_in_type (get_id tv)
+  let canonicalize_tfun t =
+    (* The parser doesn't allow type names to begin with '_'. *)
+    let mk_new_name counter _ = "'_A" ^ Int.to_string counter in
+    rename_bound_vars mk_new_name (const @@ Int.succ) t 1
 
-(****************************************************************)
-(*                     PrimType utilities                       *)
-(****************************************************************)
+  (* Type equivalence *)
+  let equal t1 t2 =
+    let t1' = canonicalize_tfun t1 in
+    let t2' = canonicalize_tfun t2 in
+    let rec equiv t1 t2 =
+      match (t1, t2) with
+      | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
+      | TypeVar v1, TypeVar v2 -> String.equal v1 v2
+      | Unit, Unit -> true
+      | ADT (tname1, tl1), ADT (tname2, tl2) ->
+          TIdentifier.equal tname1 tname2
+          (* Cannot call type_equiv_list because we don't want to canonicalize_tfun again. *)
+          && List.length tl1 = List.length tl2
+          && List.for_all2_exn ~f:equiv tl1 tl2
+      | MapType (t1_1, t1_2), MapType (t2_1, t2_2)
+      | FunType (t1_1, t1_2), FunType (t2_1, t2_2) ->
+          equiv t1_1 t2_1 && equiv t1_2 t2_2
+      | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
+          String.equal v1 v2 && equiv t1'' t2''
+      | _ -> false
+    in
+    equiv t1' t2'
 
-let int32_typ = PrimType (Int_typ Bits32)
+  (* The same as above, but for a variable with locations *)
+  let subst_type_in_type' tv = subst_type_in_type (TIdentifier.as_string tv)
 
-let int64_typ = PrimType (Int_typ Bits64)
+  (****************************************************************)
+  (*                     PrimType utilities                       *)
+  (****************************************************************)
 
-let int128_typ = PrimType (Int_typ Bits128)
+  let int32_typ = PrimType (Int_typ Bits32)
 
-let int256_typ = PrimType (Int_typ Bits256)
+  let int64_typ = PrimType (Int_typ Bits64)
 
-let uint32_typ = PrimType (Uint_typ Bits32)
+  let int128_typ = PrimType (Int_typ Bits128)
 
-let uint64_typ = PrimType (Uint_typ Bits64)
+  let int256_typ = PrimType (Int_typ Bits256)
 
-let uint128_typ = PrimType (Uint_typ Bits128)
+  let uint32_typ = PrimType (Uint_typ Bits32)
 
-let uint256_typ = PrimType (Uint_typ Bits256)
+  let uint64_typ = PrimType (Uint_typ Bits64)
 
-let string_typ = PrimType String_typ
+  let uint128_typ = PrimType (Uint_typ Bits128)
 
-let bnum_typ = PrimType Bnum_typ
+  let uint256_typ = PrimType (Uint_typ Bits256)
 
-let msg_typ = PrimType Msg_typ
+  let string_typ = PrimType String_typ
 
-let event_typ = PrimType Event_typ
+  let bnum_typ = PrimType Bnum_typ
 
-let exception_typ = PrimType Exception_typ
+  let msg_typ = PrimType Msg_typ
 
-let bystr_typ = PrimType Bystr_typ
+  let event_typ = PrimType Event_typ
 
-let bystrx_typ b = PrimType (Bystrx_typ b)
+  let exception_typ = PrimType Exception_typ
 
-let int_width = function
-  | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
-  | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
-  | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
-  | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
-  | _ -> None
+  let bystr_typ = PrimType Bystr_typ
 
-(* Given a ByStrX string, return integer X *)
-let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
+  let bystrx_typ b = PrimType (Bystrx_typ b)
 
-let is_prim_type = function PrimType _ -> true | _ -> false
+  let int_width = function
+    | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
+    | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
+    | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
+    | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+    | _ -> None
 
-let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
+  (* Given a ByStrX string, return integer X *)
+  let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
 
-let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
+  let is_prim_type = function PrimType _ -> true | _ -> false
 
-let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
+  let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
+
+  let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
+
+  let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
+end

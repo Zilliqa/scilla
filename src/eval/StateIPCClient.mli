@@ -18,37 +18,43 @@
 
 open Scilla_base
 open ErrorUtils
+open Literal
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module IPCCLiteral = FlattenedLiteral
+module IPCCType = IPCCLiteral.LType
+module IPCCIdentifier = IPCCType.TIdentifier
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
   socket_addr:string ->
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  tp:Type.t ->
-  (Literal.t option, scilla_error list) result
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
+  (IPCCLiteral.t option, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  value:Literal.t ->
-  tp:Type.t ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  value:IPCCLiteral.t ->
+  tp:IPCCType.t ->
   (unit, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
   socket_addr:string ->
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  tp:Type.t ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
   (bool, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
   socket_addr:string ->
-  fname:loc Identifier.t ->
-  keys:Literal.t list ->
-  tp:Type.t ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
   (unit, scilla_error list) result

@@ -26,6 +26,8 @@ open Scilla_crypto
 open Snark
 open Integer256
 open Literal
+module TestSnarkLiteral = FlattenedLiteral
+open TestSnarkLiteral
 
 (* Convert a decimal string to a binary string of 32 bytes. *)
 let dec2bystr32 s =

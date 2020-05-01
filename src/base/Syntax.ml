@@ -20,8 +20,6 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open ErrorUtils
-open Identifier
-open Type
 open Literal
 
 exception SyntaxError of string * loc
@@ -227,37 +225,41 @@ end
 (*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module ScillaSyntax (SR : Rep) (ER : Rep) = struct
+module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
+  module SLiteral = Literal
+  module SType = SLiteral.LType
+  module SIdentifier = SType.TIdentifier
+
   (*******************************************************)
   (*                   Expressions                       *)
   (*******************************************************)
 
-  type payload = MLit of Literal.t | MVar of ER.rep Identifier.t
+  type payload = MLit of Literal.t | MVar of ER.rep SIdentifier.t
   [@@deriving sexp]
 
   type pattern =
     | Wildcard
-    | Binder of ER.rep Identifier.t
-    | Constructor of SR.rep Identifier.t * pattern list
+    | Binder of ER.rep SIdentifier.t
+    | Constructor of SR.rep SIdentifier.t * pattern list
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
 
   and expr =
     | Literal of Literal.t
-    | Var of ER.rep Identifier.t
-    | Let of ER.rep Identifier.t * Type.t option * expr_annot * expr_annot
+    | Var of ER.rep SIdentifier.t
+    | Let of ER.rep SIdentifier.t * SType.t option * expr_annot * expr_annot
     | Message of (string * payload) list
-    | Fun of ER.rep Identifier.t * Type.t * expr_annot
-    | App of ER.rep Identifier.t * ER.rep Identifier.t list
-    | Constr of SR.rep Identifier.t * Type.t list * ER.rep Identifier.t list
-    | MatchExpr of ER.rep Identifier.t * (pattern * expr_annot) list
-    | Builtin of ER.rep builtin_annot * ER.rep Identifier.t list
+    | Fun of ER.rep SIdentifier.t * SType.t * expr_annot
+    | App of ER.rep SIdentifier.t * ER.rep SIdentifier.t list
+    | Constr of SR.rep SIdentifier.t * SType.t list * ER.rep SIdentifier.t list
+    | MatchExpr of ER.rep SIdentifier.t * (pattern * expr_annot) list
+    | Builtin of ER.rep builtin_annot * ER.rep SIdentifier.t list
     (* Advanced features: to be added in Scilla 0.2 *)
-    | TFun of ER.rep Identifier.t * expr_annot
-    | TApp of ER.rep Identifier.t * Type.t list
+    | TFun of ER.rep SIdentifier.t * expr_annot
+    | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
-    | Fixpoint of ER.rep Identifier.t * Type.t * expr_annot
+    | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -278,31 +280,31 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type stmt_annot = stmt * SR.rep
 
   and stmt =
-    | Load of ER.rep Identifier.t * ER.rep Identifier.t
-    | Store of ER.rep Identifier.t * ER.rep Identifier.t
-    | Bind of ER.rep Identifier.t * expr_annot
+    | Load of ER.rep SIdentifier.t * ER.rep SIdentifier.t
+    | Store of ER.rep SIdentifier.t * ER.rep SIdentifier.t
+    | Bind of ER.rep SIdentifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
     | MapUpdate of
-        ER.rep Identifier.t
-        * ER.rep Identifier.t list
-        * ER.rep Identifier.t option
+        ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        * ER.rep SIdentifier.t option
     (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
     | MapGet of
-        ER.rep Identifier.t
-        * ER.rep Identifier.t
-        * ER.rep Identifier.t list
+        ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
         * bool
-    | MatchStmt of ER.rep Identifier.t * (pattern * stmt_annot list) list
-    | ReadFromBC of ER.rep Identifier.t * string
+    | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
+    | ReadFromBC of ER.rep SIdentifier.t * string
     | AcceptPayment
     (* forall l p *)
-    | Iterate of ER.rep Identifier.t * SR.rep Identifier.t
-    | SendMsgs of ER.rep Identifier.t
-    | CreateEvnt of ER.rep Identifier.t
-    | CallProc of SR.rep Identifier.t * ER.rep Identifier.t list
-    | Throw of ER.rep Identifier.t option
+    | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
+    | SendMsgs of ER.rep SIdentifier.t
+    | CreateEvnt of ER.rep SIdentifier.t
+    | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
+    | Throw of ER.rep SIdentifier.t option
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -341,24 +343,24 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
 
   type component = {
     comp_type : component_type;
-    comp_name : SR.rep Identifier.t;
-    comp_params : (ER.rep Identifier.t * Type.t) list;
+    comp_name : SR.rep SIdentifier.t;
+    comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
   }
 
-  type ctr_def = { cname : ER.rep Identifier.t; c_arg_types : Type.t list }
+  type ctr_def = { cname : ER.rep SIdentifier.t; c_arg_types : SType.t list }
 
   type lib_entry =
-    | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
-    | LibTyp of ER.rep Identifier.t * ctr_def list
+    | LibVar of ER.rep SIdentifier.t * SType.t option * expr_annot
+    | LibTyp of ER.rep SIdentifier.t * ctr_def list
 
-  type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
+  type library = { lname : SR.rep SIdentifier.t; lentries : lib_entry list }
 
   type contract = {
-    cname : SR.rep Identifier.t;
-    cparams : (ER.rep Identifier.t * Type.t) list;
+    cname : SR.rep SIdentifier.t;
+    cparams : (ER.rep SIdentifier.t * SType.t) list;
     cconstraint : expr_annot;
-    cfields : (ER.rep Identifier.t * Type.t * expr_annot) list;
+    cfields : (ER.rep SIdentifier.t * SType.t * expr_annot) list;
     ccomps : component list;
   }
 
@@ -366,11 +368,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   type cmodule = {
     smver : int;
     (* Scilla major version of the contract. *)
-    cname : SR.rep Identifier.t;
+    cname : SR.rep SIdentifier.t;
     libs : library option;
     (* lib functions defined in the module *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (SR.rep Identifier.t * SR.rep Identifier.t option) list;
+    elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     contr : contract;
   }
 
@@ -379,7 +381,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
     smver : int;
     (* Scilla major version of the library. *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (SR.rep Identifier.t * SR.rep Identifier.t option) list;
+    elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
 
@@ -393,12 +395,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let pp_cparams ps =
     let cs =
       List.map ps ~f:(fun (i, t) ->
-          get_id i ^ " : " ^ (Type.sexp_of_t t |> Sexplib.Sexp.to_string))
+          SIdentifier.as_string i ^ " : "
+          ^ (SType.sexp_of_t t |> Sexplib.Sexp.to_string))
     in
     "[" ^ String.concat ~sep:", " cs ^ "]"
 
   (* Substitute type for a type variable *)
   let rec subst_type_in_expr tvar tp erep =
+    let open SLiteral in
+    let open SType in
     let e, rep = erep in
     match e with
     | Literal l -> (Literal (subst_type_in_literal tvar tp l), rep)
@@ -408,7 +413,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
         let body_subst = subst_type_in_expr tvar tp body in
         (Fun (f, t_subst, body_subst), rep)
     | TFun (tv, body) as tf ->
-        if equal_id tv tvar then (tf, rep)
+        if SIdentifier.equal tv tvar then (tf, rep)
         else
           let body_subst = subst_type_in_expr tvar tp body in
           (TFun (tv, body_subst), rep)
@@ -453,7 +458,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   let free_vars_in_expr erep =
     (* get elements in "l" that are not in bound_vars. *)
     let get_free l bound_vars =
-      List.filter l ~f:(fun i -> not (is_mem_id i bound_vars))
+      List.filter l ~f:(fun i -> not (SIdentifier.is_mem_id i bound_vars))
     in
 
     (* The main function that does the job. *)
@@ -461,7 +466,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
       let e, _ = erep in
       match e with
       | Literal _ -> acc
-      | Var v | TApp (v, _) -> if is_mem_id v bound_vars then acc else v :: acc
+      | Var v | TApp (v, _) ->
+          if SIdentifier.is_mem_id v bound_vars then acc else v :: acc
       | Fun (f, _, body) | Fixpoint (f, _, body) ->
           recurser body (f :: bound_vars) acc
       | TFun (_, body) -> recurser body bound_vars acc
@@ -475,23 +481,28 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
           List.fold margs ~init:acc ~f:(fun acc (_, x) ->
               match x with
               | MLit _ -> acc
-              | MVar v -> if is_mem_id v bound_vars then acc else v :: acc)
+              | MVar v ->
+                  if SIdentifier.is_mem_id v bound_vars then acc else v :: acc)
       | MatchExpr (v, cs) ->
-          let fv = if is_mem_id v bound_vars then acc else v :: acc in
+          let fv =
+            if SIdentifier.is_mem_id v bound_vars then acc else v :: acc
+          in
           List.fold cs ~init:fv ~f:(fun acc (p, e) ->
               (* bind variables in pattern and recurse for expression. *)
               let bound_vars' = get_pattern_bounds p @ bound_vars in
               recurser e bound_vars' acc)
     in
     let fvs = recurser erep [] [] in
-    dedup_id_list fvs
+    SIdentifier.dedup_id_list fvs
 
   (* Is expr dependent on any ident in blist.
    * This is the same as checking if a free var
    * in expr is present in blist. *)
   let free_vars_dep_check erep blist =
     (* Utility: is any m in ml, in l. *)
-    let any_is_mem ml l = List.exists ml ~f:(fun i -> is_mem_id i l) in
+    let any_is_mem ml l =
+      List.exists ml ~f:(fun i -> SIdentifier.is_mem_id i l)
+    in
     (* Get list of free variables in expression *)
     let fvs = free_vars_in_expr erep in
     (* and check if any of them are in blist. *)
@@ -501,71 +512,82 @@ module ScillaSyntax (SR : Rep) (ER : Rep) = struct
   (*                  Better error reporting                      *)
   (****************************************************************)
   let get_failure_msg erep phase opt =
+    let open SIdentifier in
     let e, rep = erep in
     let sloc = ER.get_loc rep in
     ( ( match e with
       | Literal _ -> sprintf "Type error in literal. %s\n" phase
-      | Var i -> sprintf "Type error in variable `%s`:\n" (get_id i)
+      | Var i -> sprintf "Type error in variable `%s`:\n" (as_error_string i)
       | Let (i, _, _, _) ->
-          sprintf "Type error in the initialiser of `%s`:\n" (get_id i)
+          sprintf "Type error in the initialiser of `%s`:\n" (as_error_string i)
       | Message _ -> sprintf "Type error in message.\n"
       | Fun _ -> sprintf "Type error in function:\n"
-      | App (f, _) -> sprintf "Type error in application of `%s`:\n" (get_id f)
+      | App (f, _) ->
+          sprintf "Type error in application of `%s`:\n" (as_error_string f)
       | Constr (s, _, _) ->
-          sprintf "Type error in constructor `%s`:\n" (get_id s)
+          sprintf "Type error in constructor `%s`:\n" (as_error_string s)
       | MatchExpr (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
-            (get_id x) opt
+            (as_error_string x) opt
       | Builtin ((i, _), _) ->
           sprintf "Type error in built-in application of `%s`:\n" (pp_builtin i)
       | TApp (tf, _) ->
-          sprintf "Type error in type application of `%s`:\n" (get_id tf)
+          sprintf "Type error in type application of `%s`:\n"
+            (as_error_string tf)
       | TFun (tf, _) ->
-          sprintf "Type error in type function `%s`:\n" (get_id tf)
+          sprintf "Type error in type function `%s`:\n" (as_error_string tf)
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
-            (get_id f) ),
+            (as_error_string f) ),
       sloc )
 
   let get_failure_msg_stmt srep phase opt =
+    let open SIdentifier in
     let s, rep = srep in
     let sloc = SR.get_loc rep in
     ( ( match s with
       | Load (x, f) ->
           sprintf "Type error in reading value of `%s` into `%s`:\n %s"
-            (get_id f) (get_id x) phase
+            (as_error_string f) (as_error_string x) phase
       | Store (f, r) ->
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
-            (get_id r) (get_id f)
+            (as_error_string r) (as_error_string f)
       | Bind (x, _) ->
-          sprintf "Type error in the binding to into `%s`:\n" (get_id x)
+          sprintf "Type error in the binding to into `%s`:\n"
+            (as_error_string x)
       | MapGet (_, m, keys, _) ->
-          sprintf "Type error in getting map value %s" (get_id m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
+          sprintf "Type error in getting map value %s" (as_error_string m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->
-          sprintf "Type error in updating map %s" (get_id m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ get_id k ^ "]")
+          sprintf "Type error in updating map %s" (as_error_string m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MatchStmt (x, _) ->
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
-            (get_id x) opt
+            (as_error_string x) opt
       | ReadFromBC (x, _) ->
           sprintf "Error in reading from blockchain state into `%s`:\n"
-            (get_id x)
+            (as_error_string x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
-            (get_id p) (get_id l)
-      | SendMsgs i -> sprintf "Error in sending messages `%s`:\n" (get_id i)
-      | CreateEvnt i -> sprintf "Error in create event `%s`:\n" (get_id i)
+            (as_error_string p) (as_error_string l)
+      | SendMsgs i ->
+          sprintf "Error in sending messages `%s`:\n" (as_error_string i)
+      | CreateEvnt i ->
+          sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
-          sprintf "Error in call of procedure '%s':\n" (get_id p)
+          sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | Throw i ->
           let is =
-            match i with Some id -> "of '" ^ get_id id ^ "'" | None -> ""
+            match i with
+            | Some id -> "of '" ^ as_error_string id ^ "'"
+            | None -> ""
           in
           sprintf "Error in throw %s:\n" is ),
       sloc )
@@ -628,4 +650,5 @@ end
 (*       Syntax as generated by the parser             *)
 (*******************************************************)
 
-module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep)
+(* TODO: Change this to LocalLiteral = Literals based on local names. *)
+module ParsedSyntax = ScillaSyntax (ParserRep) (ParserRep) (FlattenedLiteral)

@@ -18,6 +18,11 @@
 
 open ErrorUtils
 open Core_kernel
+open Literal
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module DTLiteral = FlattenedLiteral
+module DTType = DTLiteral.LType
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -34,7 +39,7 @@ type adt = {
   tname : string;
   tparams : string list;
   tconstr : constructor list;
-  tmap : (string * Type.t list) list;
+  tmap : (string * DTType.t list) list;
 }
 [@@deriving equal]
 
@@ -55,7 +60,7 @@ module DataTypeDictionary : sig
     (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> Type.t list option
+  val constr_tmap : adt -> string -> DTType.t list option
 
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
@@ -66,45 +71,46 @@ module DataTypeDictionary : sig
   val add_adt : adt -> loc -> (unit, scilla_error list) result
 
   (*  Built-in ADTs  *)
-  val bool_typ : Type.t
+  val bool_typ : DTType.t
 
-  val nat_typ : Type.t
+  val nat_typ : DTType.t
 
-  val option_typ : Type.t -> Type.t
+  val option_typ : DTType.t -> DTType.t
 
-  val list_typ : Type.t -> Type.t
+  val list_typ : DTType.t -> DTType.t
 
-  val pair_typ : Type.t -> Type.t -> Type.t
+  val pair_typ : DTType.t -> DTType.t -> DTType.t
 end
 
 val scilla_list_to_ocaml :
-  Literal.t -> (Literal.t list, scilla_error list) result
+  DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
 
 val scilla_list_to_ocaml_rev :
-  Literal.t -> (Literal.t list, scilla_error list) result
+  DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
 
 module SnarkTypes : sig
   open Scilla_crypto.Snark
 
-  val scalar_type : Type.t
+  val scalar_type : DTType.t
 
-  val g1point_type : Type.t
+  val g1point_type : DTType.t
 
-  val g2point_type : Type.t
+  val g2point_type : DTType.t
 
-  val g2comp_type : Type.t
+  val g2comp_type : DTType.t
 
-  val g1g2pair_type : Type.t
+  val g1g2pair_type : DTType.t
 
-  val g1g2pair_list_type : Type.t
+  val g1g2pair_list_type : DTType.t
 
-  val scilla_scalar_to_ocaml : Literal.t -> (scalar, scilla_error list) result
+  val scilla_scalar_to_ocaml : DTLiteral.t -> (scalar, scilla_error list) result
 
-  val scilla_g1point_to_ocaml : Literal.t -> (g1point, scilla_error list) result
+  val scilla_g1point_to_ocaml :
+    DTLiteral.t -> (g1point, scilla_error list) result
 
   val scilla_g1g2pairlist_to_ocaml :
-    Literal.t -> ((g1point * g2point) list, scilla_error list) result
+    DTLiteral.t -> ((g1point * g2point) list, scilla_error list) result
 
   val ocaml_g1point_to_scilla_lit :
-    g1point -> (Literal.t, scilla_error list) result
+    g1point -> (DTLiteral.t, scilla_error list) result
 end

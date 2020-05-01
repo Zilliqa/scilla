@@ -22,20 +22,24 @@ open Result.Let_syntax
 open Scilla_base
 open MonadUtil
 open TypeUtil
-open Identifier
-open Type
 open Literal
 open Syntax
 module ER = ParserRep
 module SR = ParserRep
 module SSTypeUtil = TypeUtilities
-module EvalSyntax = ScillaSyntax (SR) (ER)
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module SSLiteral = FlattenedLiteral
+module SSType = SSLiteral.LType
+module SSIdentifier = SSType.TIdentifier
+module EvalSyntax = ScillaSyntax (SR) (ER) (SSLiteral)
+open SSIdentifier
 open EvalSyntax
 
 type ss_field = {
   fname : string;
-  ftyp : Type.t;
-  fval : Literal.t option; (* We may or may not have the value in memory. *)
+  ftyp : SSType.t;
+  fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
 
 type service_mode =
@@ -82,7 +86,7 @@ module MakeStateService () = struct
           match klist' with
           | [ k ] ->
               (* Just an assert. *)
-              if not @@ [%equal: Type.t] vt' ret_val_type then
+              if not @@ [%equal: SSType.t] vt' ret_val_type then
                 fail1
                   (sprintf
                      "StateService: Failed indexing into map %s. Internal \
@@ -275,7 +279,7 @@ module MakeStateService () = struct
     | SS (IPC _, fl) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
-              let%bind vopt, _ = fetch ~fname:(asId f.fname) ~keys:[] in
+              let%bind vopt, _ = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
               match vopt with
               | Some v -> pure (f.fname, v)
               | None ->

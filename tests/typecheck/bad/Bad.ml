@@ -25,10 +25,10 @@ open OUnit2
  * in both Scilla source parser and the JSON parser against
  * building bad literals. *)
 open Scilla_base
-open Type
-open Literal
 open PrettyPrinters
 module TestTypeUtils = TypeUtil.TypeUtilities
+open TypeUtil.TUType
+open TypeUtil.TULiteral
 open TestTypeUtils
 
 (* Given a literal "l", return a test that will assert that

@@ -19,7 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open TypeUtil
-open Identifier
+open Literal
 open Syntax
 open ErrorUtils
 
@@ -49,8 +49,14 @@ module ScillaTypeInfo
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
-  open EISyntax
+
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module TILiteral = FlattenedLiteral
+  module TIType = TILiteral.LType
+  module TIIdentifier = TIType.TIdentifier
+  module TISyntax = ScillaSyntax (SR) (ER) (TILiteral)
+  open TIIdentifier
+  open TISyntax
 
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =

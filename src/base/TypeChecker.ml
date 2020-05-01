@@ -18,8 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
-open Type
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -28,6 +27,13 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module TCLiteral = FlattenedLiteral
+module TCType = TCLiteral.LType
+module TCIdentifier = TCType.TIdentifier
+open TCIdentifier
+open TCType
 
 (*******************************************************)
 (*                   Annotations                       *)
@@ -70,8 +76,11 @@ end
 module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   module STR = SR
   module ETR = TypecheckerERep (ER)
-  module UntypedSyntax = ScillaSyntax (SR) (ER)
-  module TypedSyntax = ScillaSyntax (STR) (ETR)
+  module TCLiteral = TCLiteral
+  module TCType = TCLiteral.LType
+  module TCIdentifier = TCType.TIdentifier
+  module UntypedSyntax = ScillaSyntax (SR) (ER) (TCLiteral)
+  module TypedSyntax = ScillaSyntax (STR) (ETR) (TCLiteral)
   include TypedSyntax
   include ETR
   module TU = TypeUtilities
@@ -118,9 +127,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*               Blockchain component typing                     *)
   (*****************************************************************)
 
-  let bc_types =
-    let open Type in
-    [ (TypeUtil.blocknum_name, bnum_typ) ]
+  let bc_types = [ (TypeUtil.blocknum_name, bnum_typ) ]
 
   let lookup_bc_type x =
     match List.Assoc.find bc_types x ~equal:String.( = ) with
@@ -132,8 +139,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (**************************************************************)
 
   (* Lift 'rep ident to (inferred_type * 'rep) ident *)
-  let add_type_to_ident i typ =
-    match i with Ident (name, rep) -> Ident (name, ETR.mk_rep rep typ)
+  let add_type_to_ident i typ = mk_id (get_id i) (ETR.mk_rep (get_rep i) typ)
 
   (* Given a scrutinee type and a pattern,
      produce a list of ident -> type mappings for
@@ -380,7 +386,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               List.Assoc.find CU.msg_mandatory_field_types fld
                 ~equal:String.( = )
             with
-            | Some fld_t when not ([%equal: Type.t] fld_t seen_type) ->
+            | Some fld_t when not ([%equal: TCType.t] fld_t seen_type) ->
                 fail1
                   (sprintf
                      "Type mismatch for Message field %s. Expected %s but got \
@@ -487,7 +493,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   type stmt_tenv = {
     pure : TEnv.t;
     fields : TEnv.t;
-    procedures : (string * Type.t list) list;
+    procedures : (string * TCType.t list) list;
   }
 
   let lookup_proc env pname =
@@ -528,7 +534,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match repstmts with stmts, env -> ((s :: stmts, env), remaining_gas)
 
   let rec type_stmts env stmts get_loc remaining_gas =
-    let open Type in
     let open Datatypes.DataTypeDictionary in
     match stmts with
     | [] -> pure (([], env), remaining_gas)
@@ -651,8 +656,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
             let v_type' =
-              if valfetch then ADT (asId "Option", [ v_type ])
-              else ADT (asId "Bool", [])
+              if valfetch then ADT (mk_loc_id "Option", [ v_type ])
+              else ADT (mk_loc_id "Bool", [])
             in
             (* Update environment. *)
             let pure' = TEnv.addT (TEnv.copy env.pure) v v_type' in
@@ -870,7 +875,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     pure @@ ((new_p, new_stmts), remaining_gas)
 
   let type_component env0 tr remaining_gas :
-      ( (TypedSyntax.component * (string * Type.t list) list) * Stdint.uint64,
+      ( (TypedSyntax.component * (string * TCType.t list) list) * Stdint.uint64,
         typeCheckerErrorType * scilla_error list * Stdint.uint64 )
       result =
     let { comp_type; comp_name; comp_params; comp_body } = tr in
@@ -1130,7 +1135,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                           match entry' with
                           | LibTyp (i, _) | LibVar (i, _, _) -> i
                         in
-                        if equal_id ename ename' then
+                        if TCIdentifier.equal ename ename' then
                           err_acc
                           @ mk_error1
                               (sprintf
@@ -1292,7 +1297,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind _ =
                 mark_error_as_type_error remaining_gas
-                @@ assert_type_equiv (ADT (asId "Bool", [])) ityp.tp
+                @@ assert_type_equiv (ADT (mk_loc_id "Bool", [])) ityp.tp
               in
               pure (checked_constraint, remaining_gas)
          in

@@ -19,15 +19,20 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
-open Identifier
-open Type
-open Syntax
-open ParsedSyntax
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
+open Syntax
+
+(* TODO: Parameterise this. *)
+module RUSyntax = ParsedSyntax
+module RUType = RUSyntax.SType
+module RUIdentifier = RUSyntax.SIdentifier
+open RUIdentifier
+open RUType
+open RUSyntax
 
 let get_init_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
@@ -75,7 +80,7 @@ let import_lib id =
    Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
    to the type itself because we want to eliminate the idea of namespaces right here. *)
 type 'a nspace_tree = {
-  nspace : 'a Identifier.t option;
+  nspace : 'a SIdentifier.t option;
   dep_ns : 'a nspace_tree list;
 }
 
@@ -96,7 +101,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 plog
                 @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
                      (get_id id) nname;
-                asIdL nname (get_rep id)
+                mk_id nname (get_rep id)
             | _ -> id
           in
           let rename_in_type t env =
@@ -268,14 +273,14 @@ let import_libs names init_file =
           match List.Assoc.find name_map (get_id n) ~equal:String.( = ) with
           | Some n' ->
               (* Use a known source location for the mapped id. *)
-              (asIdL n' (get_rep n), n, namespace)
+              (mk_id n' (get_rep n), n, namespace)
           | None -> (n, n, namespace))
     in
     List.fold_left
       ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
         if List.mem stack (get_id name) ~equal:String.( = ) then
           let errmsg =
-            if equal_id mapped_name name then
+            if RUIdentifier.equal mapped_name name then
               sprintf "Cyclic dependence found when importing %s." (get_id name)
             else
               sprintf
@@ -322,7 +327,7 @@ let import_all_libs ldirs =
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
             let lib_name = chop_extension (basename file) in
-            Some (asId lib_name, None (* no import-as *))
+            Some (mk_loc_id lib_name, None (* no import-as *))
           else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)

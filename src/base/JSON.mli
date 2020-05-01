@@ -16,6 +16,12 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+open Literal
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module JSONLiteral = FlattenedLiteral
+module JSONType = JSONLiteral.LType
+
 (* The state input is a json containing an array state variables.
  * Each state variable is a list of the following key value pairs:
  *    "vname" : "variable name"
@@ -27,23 +33,23 @@ module ContractState : sig
    *  Returns a list of (vname:string,value:literal) items
    *  from the json in the input filename. Invalid inputs in the json are ignored 
    *)
-  val get_json_data : string -> (string * Literal.t) list
+  val get_json_data : string -> (string * JSONLiteral.t) list
 
   (* 
    * Prints a list of state variables (string, literal)
    * as a json and returns it as a string.
    * pp enables pretty printing.
    *)
-  val state_to_string : ?pp:bool -> (string * Literal.t) list -> string
+  val state_to_string : ?pp:bool -> (string * JSONLiteral.t) list -> string
 
   (* Get a json object from given states *)
-  val state_to_json : (string * Literal.t) list -> Yojson.Basic.t
+  val state_to_json : (string * JSONLiteral.t) list -> Yojson.Basic.t
 
   (* Given an init.json filename, return extlib fields *)
   val get_init_extlibs : string -> (string * string) list
 
   (* Convert a single JSON serialized literal back to its Scilla value. *)
-  val jstring_to_literal : string -> Type.t -> Literal.t
+  val jstring_to_literal : string -> JSONType.t -> JSONLiteral.t
 end
 
 (*  Message json parsing and printing. A message json has three mandatory
@@ -69,12 +75,12 @@ end
     }
  *)
 module Message : sig
-  val get_json_data : string -> (string * Literal.t) list
+  val get_json_data : string -> (string * JSONLiteral.t) list
   (** Parses and returns a list of (pname,pval), with
   "_tag", "_sender" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
 
-  val message_to_jstring : ?pp:bool -> (string * Literal.t) list -> string
+  val message_to_jstring : ?pp:bool -> (string * JSONLiteral.t) list -> string
   (** 
    ** Prints a message (string, literal) as a json to the 
    ** and returns the string. pp enables pretty printing.
@@ -85,11 +91,11 @@ module Message : sig
    **)
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
-  val message_to_json : (string * Literal.t) list -> Yojson.Basic.t
+  val message_to_json : (string * JSONLiteral.t) list -> Yojson.Basic.t
 end
 
 module BlockChainState : sig
-  val get_json_data : string -> (string * Literal.t) list
+  val get_json_data : string -> (string * JSONLiteral.t) list
   (** 
    **  Returns a list of (vname:string,value:literal) items
    **  from the json in the input filename.
@@ -133,30 +139,34 @@ module ContractInfo : sig
         }
   *)
   val get_string :
-    int -> contract -> (string * (string * Type.t) list) list -> string
+    int -> contract -> (string * (string * JSONType.t) list) list -> string
 
   val get_json :
-    int -> contract -> (string * (string * Type.t) list) list -> Yojson.Basic.t
+    int ->
+    contract ->
+    (string * (string * JSONType.t) list) list ->
+    Yojson.Basic.t
 end
 
 module Event : sig
-  val event_to_jstring : ?pp:bool -> (string * Literal.t) list -> string
+  val event_to_jstring : ?pp:bool -> (string * JSONLiteral.t) list -> string
   (** 
    ** Prints an Event "(string, literal) list" as a json to the 
    ** and returns the string. pp enables pretty printing.
    **)
 
   (* Same as Event_to_jstring, but instead gives out raw json, not it's string *)
-  val event_to_json : (string * Literal.t) list -> Yojson.Basic.t
+  val event_to_json : (string * JSONLiteral.t) list -> Yojson.Basic.t
 end
 
 module TypeInfo : sig
   val type_info_to_json :
-    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list -> Yojson.Basic.t
+    (string * JSONType.t * ErrorUtils.loc * ErrorUtils.loc) list ->
+    Yojson.Basic.t
 
   val type_info_to_jstring :
     ?pp:bool ->
-    (string * Type.t * ErrorUtils.loc * ErrorUtils.loc) list ->
+    (string * JSONType.t * ErrorUtils.loc * ErrorUtils.loc) list ->
     string
 end
 

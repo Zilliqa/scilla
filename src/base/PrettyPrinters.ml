@@ -18,12 +18,16 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Type
 open Literal
 open Syntax
 open Yojson
 open ErrorUtils
 open Stdint
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module PPLiteral = FlattenedLiteral
+module PPType = PPLiteral.LType
+module PPIdentifier = PPType.TIdentifier
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -57,12 +61,13 @@ and adtargs_to_json vlist =
 and adttyps_to_json tlist =
   match tlist with
   | t1 :: tn ->
-      let j1 = `String (pp_typ t1) in
+      let j1 = `String (PPType.pp_typ t1) in
       let jtn = adttyps_to_json tn in
       j1 :: jtn
   | _ -> []
 
 and literal_to_json lit =
+  let open PPLiteral in
   match lit with
   | StringLit x | BNum x -> `String x
   | ByStr bs -> `String (Bystr.hex_encoding bs)
@@ -203,6 +208,7 @@ let scilla_version_string =
   sprintf "%d.%d.%d" major minor patch
 
 let rec pp_literal_simplified l =
+  let open PPLiteral in
   match l with
   | StringLit s -> "(String " ^ "\"" ^ s ^ "\"" ^ ")"
   (* (bit-width, value) *)
@@ -241,7 +247,7 @@ let rec pp_literal_simplified l =
             kv ""
         ^ "]"
       in
-      "(Map " ^ pp_typ kt ^ " " ^ pp_typ vt ^ " " ^ items ^ ")"
+      "(Map " ^ PPType.pp_typ kt ^ " " ^ PPType.pp_typ vt ^ " " ^ items ^ ")"
   | ADTValue (cn, _, al) -> (
       match cn with
       | "Cons" ->
@@ -296,6 +302,8 @@ let pp_literal_list ls =
   sprintf "[ %s]" cs
 
 let pp_typ_map s =
-  let ps = List.map s ~f:(fun (k, v) -> sprintf " [%s : %s]" k (pp_typ v)) in
+  let ps =
+    List.map s ~f:(fun (k, v) -> sprintf " [%s : %s]" k (PPType.pp_typ v))
+  in
   let cs = String.concat ~sep:",\n" ps in
   sprintf "{%s }" cs

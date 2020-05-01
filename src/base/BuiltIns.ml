@@ -18,8 +18,6 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
-open Type
 open Literal
 open Syntax
 open ErrorUtils
@@ -30,6 +28,13 @@ open Stdint
 open TypeUtil
 open Integer256
 open TypeUtilities
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module BILiteral = FlattenedLiteral
+module BIType = BILiteral.LType
+module BIIdentifier = BIType.TIdentifier
+open BIType
+open BILiteral
 
 module UsefulLiterals = struct
   let true_lit = ADTValue ("True", [], [])
@@ -202,7 +207,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_elab t ts =
       match ts with
-      | [ i1; i2 ] when [%equal: Type.t] i1 i2 && is_int_type i1 ->
+      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -213,7 +218,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let binop_elab t ts =
       match ts with
-      | [ i1; i2 ] when [%equal: Type.t] i1 i2 && is_int_type i1 ->
+      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -319,7 +324,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_elab t ts =
       match ts with
-      | [ i1; i2 ] when is_int_type i1 && [%equal: Type.t] i2 uint32_typ ->
+      | [ i1; i2 ] when is_int_type i1 && [%equal: BIType.t] i2 uint32_typ ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -405,7 +410,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_elab sc ts =
       match ts with
-      | [ i1; i2 ] when [%equal: Type.t] i1 i2 && is_uint_type i1 ->
+      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -416,7 +421,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let binop_elab sc ts =
       match ts with
-      | [ i1; i2 ] when [%equal: Type.t] i1 i2 && is_uint_type i1 ->
+      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -523,7 +528,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let pow_elab t ts =
       match ts with
-      | [ i1; i2 ] when is_uint_type i1 && [%equal: Type.t] i2 uint32_typ ->
+      | [ i1; i2 ] when is_uint_type i1 && [%equal: BIType.t] i2 uint32_typ ->
           elab_tfun_with_args_no_gas t [ i1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -632,7 +637,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_nat ls _ =
       match ls with
       | [ UintLit (Uint32L n) ] ->
-          let rec nat_builder (i : Uint32.t) (acc : Literal.t) =
+          let rec nat_builder (i : Uint32.t) (acc : BILiteral.t) =
             if [%equal: uint32] i Uint32.zero then acc
             else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [ acc ]))
           in
@@ -795,7 +800,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ts with
       | [ bstyp1; bstyp2 ]
         when (* We want both types to be ByStr with equal width. *)
-             is_bystrx_type bstyp1 && [%equal: Type.t] bstyp1 bstyp2 ->
+             is_bystrx_type bstyp1 && [%equal: BIType.t] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1144,7 +1149,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when [%equal: Type.t] kt u ->
+      | [ MapType (kt, vt); u ] when [%equal: BIType.t] kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1166,7 +1171,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let put_elab sc ts =
       match ts with
       | [ MapType (kt, vt); kt'; vt' ]
-        when [%equal: Type.t] kt kt' && [%equal: Type.t] vt vt' ->
+        when [%equal: BIType.t] kt kt' && [%equal: BIType.t] vt vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1189,7 +1194,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); kt' ] when [%equal: Type.t] kt kt' ->
+      | [ MapType (kt, vt); kt' ] when [%equal: BIType.t] kt kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1197,7 +1202,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let get ls rt =
       match (ls, rt) with
       | [ Map (_, entries); key ], ADT (tname, [ targ ])
-        when Core_kernel.String.(get_id tname = "Option") -> (
+        when Core_kernel.String.(BIIdentifier.get_id tname = "Option") -> (
           let res = Caml.Hashtbl.find_opt entries key in
           match res with None -> pure @@ none_lit targ | Some v -> some_lit v )
       | _ -> builtin_fail "Map.get" ls
@@ -1211,7 +1216,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc ts =
       match ts with
-      | [ MapType (kt, vt); u ] when [%equal: Type.t] kt u ->
+      | [ MapType (kt, vt); u ] when [%equal: BIType.t] kt u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _ -> fail0 "Failed to elaborate"
 
@@ -1284,11 +1289,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   module BuiltInDictionary = struct
     (* Elaborates the operation type based on the arguments types *)
     type elaborator =
-      Type.t -> Type.t list -> (Type.t, scilla_error list) result
+      BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
 
     (* Takes the expected type as an argument to elaborate the result *)
     type built_in_executor =
-      Literal.t list -> Type.t -> (Literal.t, scilla_error list) result
+      BILiteral.t list -> BIType.t -> (BILiteral.t, scilla_error list) result
 
     (* A built-in record type:
        * arity
@@ -1297,7 +1302,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
          to support polymorphism -- e.g., for ints and maps
        * executor - operational semantics of the built-in
     *)
-    type built_in_record = int * Type.t * elaborator * built_in_executor
+    type built_in_record = int * BIType.t * elaborator * built_in_executor
 
     [@@@ocamlformat "disable"]
 

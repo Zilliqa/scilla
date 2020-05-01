@@ -19,8 +19,6 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
-open Identifier
-open Literal
 open Syntax
 open FrontEndParser
 open ErrorUtils
@@ -101,10 +99,11 @@ let input_state_json filename =
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (balance_label, UintLit (Uint128L balance)) in
+  let bal_lit = (balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
+  let open JSON.JSONLiteral in
   `List
     (List.map mlist ~f:(function
       | Msg m -> JSON.Message.message_to_json m
@@ -114,6 +113,7 @@ let output_message_json gas_remaining mlist =
             gas_remaining))
 
 let output_event_json elist =
+  let open JSON.JSONLiteral in
   List.map elist ~f:(function
     | Msg m -> JSON.Event.event_to_json m
     | _ -> `Null)
@@ -277,7 +277,7 @@ let run_with_args args =
                 (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                 let%bind _ =
                   mapM field_vals ~f:(fun (s, v) ->
-                      update ~fname:(asId s) ~keys:[] ~value:v)
+                      update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[] ~value:v)
                 in
                 finalize ()
               with
@@ -305,7 +305,7 @@ let run_with_args args =
                   )
                   gas_remaining
             in
-            let m = Msg mmsg in
+            let m = JSON.JSONLiteral.Msg mmsg in
 
             let cstate, gas_remaining' =
               if is_ipc then

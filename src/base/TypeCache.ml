@@ -18,7 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
+open Literal
 open Syntax
 open ErrorUtils
 open TypeUtil
@@ -34,14 +34,15 @@ module StdlibTypeCacher
     (SR : Rep)
     (ER : Rep) =
 struct
-  module L = ScillaSyntax (SR) (ER)
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module L = ScillaSyntax (SR) (ER) (FlattenedLiteral)
   module MakeTEnv = Q (R) (ER)
-
-  type t = MakeTEnv.TEnv.t
-
   open L
+  open SIdentifier
   open MakeTEnv
   open Cryptokit
+
+  type t = MakeTEnv.TEnv.t
 
   let hash s = transform_string (Hexa.encode ()) (hash_string (Hash.sha2 256) s)
 
@@ -113,7 +114,7 @@ struct
                     | Ok typ ->
                         let loc = ER.parse_rep loc_s in
                         (* TODO: parse loc_s *)
-                        let id = asIdL name_s loc in
+                        let id = mk_id name_s loc in
                         Some (id, typ)
                     | Error _ -> None )
                 | _ ->

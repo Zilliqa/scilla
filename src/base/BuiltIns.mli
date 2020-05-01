@@ -19,26 +19,34 @@
 open Syntax
 open ErrorUtils
 open Core_kernel
+open Literal
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module BILiteral = FlattenedLiteral
+module BIType = BILiteral.LType
 
 module UsefulLiterals : sig
-  val true_lit : Literal.t
+  val true_lit : BILiteral.t
 
-  val false_lit : Literal.t
+  val false_lit : BILiteral.t
 
-  val to_Bool : bool -> Literal.t
+  val to_Bool : bool -> BILiteral.t
 
-  val some_lit : Literal.t -> (Literal.t, ErrorUtils.scilla_error list) result
+  val some_lit :
+    BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
 
-  val none_lit : Type.t -> Literal.t
+  val none_lit : BIType.t -> BILiteral.t
 
   val pair_lit :
-    Literal.t -> Literal.t -> (Literal.t, ErrorUtils.scilla_error list) result
+    BILiteral.t ->
+    BILiteral.t ->
+    (BILiteral.t, ErrorUtils.scilla_error list) result
 end
 
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
     type built_in_executor =
-      Literal.t list -> Type.t -> (Literal.t, scilla_error list) result
+      BILiteral.t list -> BIType.t -> (BILiteral.t, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool
@@ -47,10 +55,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
      *)
     val find_builtin_op :
       ER.rep builtin_annot ->
-      Type.t list ->
-      (Type.t * Type.t * built_in_executor, scilla_error list) result
+      BIType.t list ->
+      (BIType.t * BIType.t * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
-  val elab_id : Type.t -> Type.t list -> (Type.t, scilla_error list) result
+  val elab_id :
+    BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
 end

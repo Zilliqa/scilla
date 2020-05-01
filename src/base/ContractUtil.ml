@@ -18,13 +18,17 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
 open Literal
 open Syntax
 open MonadUtil
 open Stdint
 open Core_kernel.Result.Let_syntax
 open PrettyPrinters
+
+(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+module CULiteral = FlattenedLiteral
+module CUType = CULiteral.LType
+module CUIdentifier = CUType.TIdentifier
 
 (*****************************************************)
 (*                Message payload                    *)
@@ -63,7 +67,8 @@ module MessagePayload = struct
 
   let get_sender =
     get_value_for_entry sender_label (function
-      | ByStrX bs as a when Bystrx.width bs = address_length -> Some (pure a)
+      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
+          Some (pure a)
       | _ -> None)
 
   let get_amount =
@@ -102,21 +107,24 @@ let extlibs_label = "_extlibs"
 let no_store_fields = [ balance_label ]
 
 module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
-  module ContractUtilSyntax = ScillaSyntax (SR) (ER)
+  module ContractUtilSyntax = ScillaSyntax (SR) (ER) (CULiteral)
   open ContractUtilSyntax
 
   let balance_field =
-    let open Type in
-    (asIdL balance_label ER.uint128_rep, uint128_typ)
+    let open CUType in
+    (CUIdentifier.mk_id balance_label ER.uint128_rep, uint128_typ)
 
   let append_implict_contract_params tparams =
-    let open Type in
-    let creation_block = (asIdL creation_block_label ER.bnum_rep, bnum_typ) in
+    let open CUType in
+    let creation_block =
+      (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ)
+    in
     let this_address =
-      (asIdL this_address_label ER.address_rep, bystrx_typ address_length)
+      ( CUIdentifier.mk_id this_address_label ER.address_rep,
+        bystrx_typ address_length )
     in
     let scilla_version_init =
-      (asIdL scilla_version_label ER.uint32_rep, uint32_typ)
+      (CUIdentifier.mk_id scilla_version_label ER.uint32_rep, uint32_typ)
     in
     creation_block :: scilla_version_init :: this_address :: tparams
 
@@ -127,21 +135,22 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         not (List.mem nonevalargs (fst a) ~equal:String.( = )))
 
   let append_implict_comp_params cparams =
-    let open Type in
+    let open CUType in
     let sender =
-      ( asIdL MessagePayload.sender_label ER.address_rep,
+      ( CUIdentifier.mk_id MessagePayload.sender_label ER.address_rep,
         bystrx_typ address_length )
     in
     let amount =
-      (asIdL MessagePayload.amount_label ER.uint128_rep, uint128_typ)
+      ( CUIdentifier.mk_id MessagePayload.amount_label ER.uint128_rep,
+        uint128_typ )
     in
     amount :: sender :: cparams
 
   let msg_mandatory_field_types =
     [
-      (MessagePayload.tag_label, Type.string_typ);
-      (MessagePayload.amount_label, Type.uint128_typ);
-      (MessagePayload.recipient_label, Type.bystrx_typ address_length);
+      (MessagePayload.tag_label, CUType.string_typ);
+      (MessagePayload.amount_label, CUType.uint128_typ);
+      (MessagePayload.recipient_label, CUType.bystrx_typ address_length);
     ]
 
   (* Iterate over all messages in the contract, accumuating result. 
@@ -157,13 +166,15 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
       | Fixpoint _ -> pure acc
       (* Recursion. *)
       | Let (b', _, (e1, _), (e2, _)) ->
-          let%bind acc' = expr_folder (ER.get_loc @@ get_rep b') e1 acc in
+          let%bind acc' =
+            expr_folder (ER.get_loc @@ CUIdentifier.get_rep b') e1 acc
+          in
           expr_folder loc e2 acc'
       | Fun (_, _, (e', _)) | TFun (_, (e', _)) -> expr_folder loc e' acc
       | MatchExpr (p, pl) ->
           foldM
             ~f:(fun acc (_, (e', _)) ->
-              expr_folder (ER.get_loc @@ get_rep p) e' acc)
+              expr_folder (ER.get_loc @@ CUIdentifier.get_rep p) e' acc)
             ~init:acc pl
     in
 
@@ -176,7 +187,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         ~f:(fun acc le ->
           match le with
           | LibVar (b, _, (ex, _)) ->
-              expr_folder (ER.get_loc @@ get_rep b) ex acc
+              expr_folder (ER.get_loc @@ CUIdentifier.get_rep b) ex acc
           | LibTyp _ -> pure acc)
         ~init lentries
     in
@@ -198,7 +209,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
                       ~init:acc clauses
                 (* Every message created gets bound to some variable. *)
                 | Bind (b, (e, _)) ->
-                    expr_folder (ER.get_loc @@ get_rep b) e acc
+                    expr_folder (ER.get_loc @@ CUIdentifier.get_rep b) e acc
                 | _ -> (* Uninteresting statement. *) pure acc
               in
               stmt_iter stmt_list' acc'

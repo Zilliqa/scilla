@@ -18,8 +18,6 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
-open Type
 open Literal
 open Syntax
 open ErrorUtils
@@ -30,8 +28,14 @@ open TypeUtil
 open BuiltIns
 open PrettyPrinters
 module JSONTypeUtilities = TypeUtilities
+module JSONLiteral = FlattenedLiteral
+module JSONType = JSONLiteral.LType
+module JSONIdentifier = JSONType.TIdentifier
 module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
 open JSONTypeUtilities
+open JSONIdentifier
+open JSONType
+open JSONLiteral
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -123,7 +127,9 @@ let rec json_to_adtargs cname tlist ajs =
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    JSONParser.constr_pattern_arg_types_exn (ADT (asId dt.tname, tlist)) cname
+    JSONParser.constr_pattern_arg_types_exn
+      (ADT (mk_loc_id dt.tname, tlist))
+      cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
@@ -309,8 +315,9 @@ module ContractState = struct
             List.map lit' ~f:(fun sp ->
                 match sp with
                 | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when [%equal: Type.t] t1 Type.string_typ
-                       && [%equal: Type.t] t2 (Type.bystrx_typ address_length)
+                  when [%equal: JSONType.t] t1 JSONType.string_typ
+                       && [%equal: JSONType.t] t2
+                            (JSONType.bystrx_typ address_length)
                        && Bystrx.width bs = address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
@@ -341,10 +348,13 @@ module Message = struct
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
-    let tag = (tag_label, build_prim_lit_exn Type.string_typ tags) in
-    let amount = (amount_label, build_prim_lit_exn Type.uint128_typ amounts) in
+    let tag = (tag_label, build_prim_lit_exn JSONType.string_typ tags) in
+    let amount =
+      (amount_label, build_prim_lit_exn JSONType.uint128_typ amounts)
+    in
     let sender =
-      (sender_label, build_prim_lit_exn (Type.bystrx_typ address_length) senders)
+      ( sender_label,
+        build_prim_lit_exn (JSONType.bystrx_typ address_length) senders )
     in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params = List.map pjlist ~f:jobj_to_statevar in
@@ -413,7 +423,7 @@ module ContractInfo = struct
   open Syntax.ParsedSyntax
 
   let get_json cmver (contr : contract)
-      (event_info : (string * (string * Type.t) list) list) =
+      (event_info : (string * (string * JSONType.t) list) list) =
     (* 0. contract version *)
     let verj = ("scilla_major_version", `String (Int.to_string cmver)) in
     (* 1. contract name *)
@@ -508,7 +518,7 @@ module ContractInfo = struct
     finalj
 
   let get_string cver (contr : contract)
-      (event_info : (string * (string * Type.t) list) list) =
+      (event_info : (string * (string * JSONType.t) list) list) =
     pretty_to_string (get_json cver contr event_info)
 end
 

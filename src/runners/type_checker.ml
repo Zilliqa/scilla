@@ -20,8 +20,6 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
 open Scilla_base
-open Identifier
-open Type
 open Syntax
 open TypeUtil
 open RecursionPrinciples
@@ -61,7 +59,7 @@ let check_typing e elibs gas =
   let open TC.TypeEnv in
   let rec_lib =
     {
-      ParsedSyntax.lname = asId "rec_lib";
+      ParsedSyntax.lname = TCIdentifier.mk_loc_id "rec_lib";
       ParsedSyntax.lentries = recursion_principles;
     }
   in
@@ -100,7 +98,9 @@ let run () =
       | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
           match check_patterns typed_erep with
           | Ok _ -> (
-              let tj = [ ("type", `String (pp_typ e_typ.tp)) ] in
+              let tj =
+                [ ("type", `String (FrontEndParser.FEPType.pp_typ e_typ.tp)) ]
+              in
               let output_j =
                 `Assoc
                   ( if cli.p_type_info then

@@ -20,20 +20,23 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Sexplib.Std
-open Identifier
-open Type
 open Literal
 open Syntax
 open MonadUtil
 open Result.Let_syntax
 open Datatypes
 open PrettyPrinters
+module TULiteral = FlattenedLiteral
+module TUType = TULiteral.LType
+module TUIdentifier = TUType.TIdentifier
+open TUIdentifier
+open TUType
 
 (****************************************************************)
 (*                Inferred types and qualifiers                 *)
 (****************************************************************)
 
-type 'rep inferred_type = { tp : Type.t; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : TUType.t; qual : 'rep } [@@deriving sexp]
 
 module type QualifiedTypes = sig
   type t
@@ -42,7 +45,7 @@ module type QualifiedTypes = sig
 
   val sexp_of_t : t -> Sexp.t
 
-  val mk_qualified_type : Type.t -> t inferred_type
+  val mk_qualified_type : TUType.t -> t inferred_type
 end
 
 module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
@@ -57,7 +60,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
   val rr_pp : resolve_result -> string
 
-  val mk_qual_tp : Type.t -> Q.t inferred_type
+  val mk_qual_tp : TUType.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
@@ -66,13 +69,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val mk : t
 
     (* Add to type environment *)
-    val addT : t -> R.rep Identifier.t -> Type.t -> t
+    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> t
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep Identifier.t * Type.t) list -> t
+    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> t
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep Identifier.t -> t
+    val addV : t -> R.rep TUIdentifier.t -> t
 
     (* Append env' to env in place. *)
     val append : t -> t -> t
@@ -81,7 +84,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val filterTs : t -> f:(string -> resolve_result -> bool) -> t
 
     (* Check type for well-formedness in the type environment *)
-    val is_wf_type : t -> Type.t -> (unit, scilla_error list) result
+    val is_wf_type : t -> TUType.t -> (unit, scilla_error list) result
 
     (* Resolve the identifier *)
     val resolveT :
@@ -289,10 +292,10 @@ module TypeUtilities = struct
     List.length tlist1 = List.length tlist2
     && not
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not ([%equal: Type.t] t1 t2)))
+              not ([%equal: TUType.t] t1 t2)))
 
   let assert_type_equiv expected given =
-    if [%equal: Type.t] expected given then pure ()
+    if [%equal: TUType.t] expected given then pure ()
     else
       fail0
       @@ sprintf "Type mismatch: %s expected, but %s provided."
@@ -300,7 +303,7 @@ module TypeUtilities = struct
 
   (* TODO: make this charge gas *)
   let assert_type_equiv_with_gas expected given remaining_gas =
-    if [%equal: Type.t] expected given then pure remaining_gas
+    if [%equal: TUType.t] expected given then pure remaining_gas
     else
       Error
         ( TypeError,
@@ -338,10 +341,11 @@ module TypeUtilities = struct
         not @@ List.is_empty seen_adts
     | PrimType _ ->
         (* Messages and Events are not serialisable in terms of contract parameters *)
-        Type.(
-          (not @@ [%equal: Type.t] t msg_typ) || [%equal: Type.t] t event_typ)
+        TUType.(
+          (not @@ [%equal: TUType.t] t msg_typ)
+          || [%equal: TUType.t] t event_typ)
     | ADT (tname, ts) -> (
-        if List.mem seen_adts tname ~equal:equal_id then true
+        if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
           (* Inductive ADT - ignore this branch *)
         else
           (* Check that ADT is serializable *)
@@ -366,11 +370,11 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure Type.msg_typ
+    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure TUType.msg_typ
     else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
-      pure Type.event_typ
+      pure TUType.event_typ
     else if List.Assoc.mem m exception_label ~equal:String.( = ) then
-      pure Type.exception_typ
+      pure TUType.exception_typ
     else fail0 "Invalid message construct. Not any of send, event or exception."
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
@@ -565,7 +569,7 @@ module TypeUtilities = struct
     let plen = List.length adt.tparams in
     let alen = List.length targs in
     let%bind _ = validate_param_length cn plen alen in
-    let res_typ = ADT (asId adt.tname, targs) in
+    let res_typ = ADT (mk_loc_id adt.tname, targs) in
     match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
     | Some ctparams ->
@@ -609,7 +613,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail0 "Checking an empty type list."
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not ([%equal: Type.t] t t')) with
+        match List.find ts' ~f:(fun t' -> not ([%equal: TUType.t] t t')) with
         | None -> pure ()
         | Some _ ->
             fail0
@@ -621,7 +625,7 @@ module TypeUtilities = struct
   (****************************************************************)
 
   let literal_type l =
-    let open Type in
+    let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
     | IntLit (Int64L _) -> pure int64_typ
@@ -640,13 +644,13 @@ module TypeUtilities = struct
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
     | ADTValue (cname, ts, _) ->
         let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-        pure @@ ADT (asId adt.tname, ts)
+        pure @@ ADT (mk_loc_id adt.tname, ts)
     | Clo _ -> fail0 @@ "Cannot type runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type runtime type function."
 
   (* Verifies a literal to be wellformed and returns it's type. *)
   let rec is_wellformed_lit l =
-    let open Type in
+    let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
     | IntLit (Int64L _) -> pure int64_typ
@@ -674,7 +678,7 @@ module TypeUtilities = struct
           fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
         else pure msg_typ
     | Map ((kt, vt), kv) ->
-        if Type.is_prim_type kt then
+        if TUType.is_prim_type kt then
           (* Verify that all key/vals conform to kt,vt, recursively. *)
           let%bind valid =
             Caml.Hashtbl.fold
@@ -684,7 +688,8 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ ([%equal: Type.t] kt kt' && [%equal: Type.t] vt vt'))
+                  pure
+                  @@ ([%equal: TUType.t] kt kt' && [%equal: TUType.t] vt vt'))
               kv (pure true)
           in
           if not valid then
@@ -709,11 +714,11 @@ module TypeUtilities = struct
                tname (List.length args) cname
           (* Verify that the types of args match that declared. *)
         else
-          let res = ADT (asId tname, ts) in
+          let res = ADT (mk_loc_id tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
           let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:[%equal: Type.t]
+            List.for_all2_exn tmap arg_typs ~f:[%equal: TUType.t]
           in
           if not args_valid then
             fail0

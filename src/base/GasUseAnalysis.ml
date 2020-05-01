@@ -19,8 +19,7 @@
 
 open Core_kernel.Result.Let_syntax
 open TypeUtil
-open Identifier
-open Type
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -37,17 +36,23 @@ module ScillaGUA
 struct
   module SER = SR
   module EER = ER
-  module GUASyntax = ScillaSyntax (SR) (ER)
+
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module GUALiteral = FlattenedLiteral
+  module GUAType = GUALiteral.LType
+  module GUAIdentifier = GUAType.TIdentifier
+  module GUASyntax = ScillaSyntax (SR) (ER) (GUALiteral)
   module TU = TypeUtilities
   module Gas = Gas.ScillaGas (SR) (ER)
+  open GUAIdentifier
   open GUASyntax
 
   let mk_typed_id i t =
-    asIdL i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+    mk_id i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
 
   type sizeref =
     (* Refer to the size of a variable. *)
-    | Base of ER.rep Identifier.t
+    | Base of ER.rep GUAIdentifier.t
     (* For Lengths of Lists and Maps. *)
     | Length of sizeref
     (* For Elements of Lists and Maps. *)
@@ -65,17 +70,17 @@ struct
     | BApp of builtin * sizeref list
     (* The growth of accummulator (a recurrence) in list_foldr.
      * The semantics is similar to SApp, except that, the ressize of
-     * applying "Identifier.t" is taken as a recurence and solved for the
+     * applying "GUAIdentifier.t" is taken as a recurence and solved for the
      * length of the second sizeref (accumulator) actual. The first
      * sizeref actual is Element(list being folded). *)
-    | RFoldAcc of ER.rep Identifier.t * sizeref * sizeref
+    | RFoldAcc of ER.rep GUAIdentifier.t * sizeref * sizeref
     (* Same as RFoldAcc, but for list_foldl:
      * order of the two sizeref actuals are reversed. *)
-    | LFoldAcc of ER.rep Identifier.t * sizeref * sizeref
+    | LFoldAcc of ER.rep GUAIdentifier.t * sizeref * sizeref
     (* Lambda for unknown sizeref (from applying higher order functions). 
-     * TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
+     * TODO: Use "sizeref" instead of "GUAIdentifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | SApp of ER.rep Identifier.t * sizeref list
+    | SApp of ER.rep GUAIdentifier.t * sizeref list
     (* When we cannot determine the size *)
     | Intractable of string
 
@@ -84,9 +89,9 @@ struct
     (* Gas use depends on size of a value *)
     | SizeOf of sizeref
     (* Applying a higher order argument (function) and its arguments. *)
-    (* TODO: Use "sizeref" instead of "Identifier.t" to handle applying wrapped functions,
+    (* TODO: Use "sizeref" instead of "GUAIdentifier.t" to handle applying wrapped functions,
              where for example `x = fst arg` and we're applying `x`. *)
-    | GApp of ER.rep Identifier.t * sizeref list
+    | GApp of ER.rep GUAIdentifier.t * sizeref list
     (* Gas usage polynomial which is known and needs to be expanded. 
      * When a GApp resolves successfully, we replace it with GPol. *)
     | GPol of guref polynomial
@@ -95,7 +100,7 @@ struct
    * The identifier list specifies the arguments which must be substituted.
    * Signatures that contain "GApp/SApp" will (recursively) be substituted for
    * the final signature to not have these lambdas. *)
-  type signature = ER.rep Identifier.t list * sizeref * guref polynomial
+  type signature = ER.rep GUAIdentifier.t list * sizeref * guref polynomial
 
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
@@ -772,7 +777,7 @@ struct
   let builtin_cost (ops, opl') params =
     let opl = ER.get_loc opl' in
 
-    let open Type in
+    let open GUAType in
     (* Types of our paramters. *)
     let tparams = List.map (fun p -> (ER.get_type (get_rep p)).tp) params in
 
@@ -950,8 +955,8 @@ struct
         (* We have the function signature ready, apply and expand it. *)
         (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
         let srparams = List.map (fun i -> Base i) actuals in
-        let u = SApp (asIdL (pp_builtin b) rep, srparams) in
-        let v = single_simple_pn (GApp (asIdL (pp_builtin b) rep, srparams)) in
+        let u = SApp (mk_id (pp_builtin b) rep, srparams) in
+        let v = single_simple_pn (GApp (mk_id (pp_builtin b) rep, srparams)) in
         (* Expand all lambdas that we can. *)
         let%bind ressize', gup' = resolve_expand genv' u v in
         (* TODO: Return value having no arguments implies partial application not supported. *)
@@ -1089,7 +1094,7 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = mk_typed_id "a" (ADT (asId "List", [ TypeVar "'A" ])) in
+    let a = mk_typed_id "a" (ADT (mk_loc_id "List", [ TypeVar "'A" ])) in
     let g =
       mk_typed_id "g"
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))
@@ -1212,7 +1217,7 @@ struct
       genv idlist
 
   let gua_component genv (comp : component) =
-    let open Type in
+    let open GUAType in
     let si a t = mk_typed_id a t in
     let all_params =
       [
@@ -1276,7 +1281,9 @@ struct
     (* Bind contract parameters. *)
     let si a t = mk_typed_id a t in
     let all_cparams =
-      [ (si ContractUtil.creation_block_label Type.bnum_typ, Type.bnum_typ) ]
+      [
+        (si ContractUtil.creation_block_label GUAType.bnum_typ, GUAType.bnum_typ);
+      ]
       @ cmod.contr.cparams
     in
     let genv_cparams =

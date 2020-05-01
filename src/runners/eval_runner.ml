@@ -20,7 +20,6 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
 open Scilla_eval
-open Identifier
 open Syntax
 open FrontEndParser
 open RunnerUtil
@@ -50,7 +49,7 @@ let run () =
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let clib =
         {
-          TC.UntypedSyntax.lname = asId "dummy";
+          TC.UntypedSyntax.lname = TC.TCIdentifier.mk_loc_id "dummy";
           TC.UntypedSyntax.lentries = [];
         }
       in

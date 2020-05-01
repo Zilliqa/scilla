@@ -22,7 +22,9 @@ open Lexing
 open ErrorUtils
 open MonadUtil
 open ParserFaults
+open Syntax
 module MInter = ScillaParser.MenhirInterpreter
+module FEPType = ParsedSyntax.SType
 
 (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
 let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)

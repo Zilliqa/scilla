@@ -19,21 +19,72 @@
 open Core_kernel
 open ErrorUtils
 
-type 'rep t = Ident of string * 'rep [@@deriving sexp]
+module type QualifiedName = sig
+  type t [@@deriving sexp, equal, compare]
 
-let asId i = Ident (i, dummy_loc)
+  val as_string : t -> string
 
-let asIdL i loc = Ident (i, loc)
+  val as_error_string : t -> string
+end
 
-let get_id i = match i with Ident (x, _) -> x
+module FlattenedName = struct
+  type t = string [@@deriving sexp, equal, compare]
 
-let get_rep i = match i with Ident (_, l) -> l
+  let as_string n = n
 
-(* A few utilities on id. *)
-let equal_id a b = String.(get_id a = get_id b)
+  let as_error_string n = n
+end
 
-let compare_id a b = String.(compare (get_id a) (get_id b))
+module type ScillaIdentifier = sig
+  module Name : QualifiedName
 
-let dedup_id_list l = List.dedup_and_sort ~compare:compare_id l
+  type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp]
 
-let is_mem_id i l = List.exists l ~f:(equal_id i)
+  val mk_loc_id : Name.t -> loc t
+
+  val mk_id : Name.t -> 'a -> 'a t
+
+  val get_id : 'a t -> Name.t
+
+  val get_rep : 'a t -> 'a
+
+  val as_string : 'a t -> string
+
+  val as_error_string : 'a t -> string
+
+  (* A few utilities on id. *)
+  val equal : 'a t -> 'b t -> bool
+
+  val compare : 'a t -> 'b t -> int
+
+  val dedup_id_list : 'a t list -> 'a t list
+
+  val is_mem_id : 'a t -> 'a t list -> bool
+end
+
+module MkIdentifier (Name : QualifiedName) = struct
+  module Name = Name
+
+  type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
+
+  let mk_id i r = Ident (i, r)
+
+  let mk_loc_id i = mk_id i dummy_loc
+
+  let get_id i = match i with Ident (x, _) -> x
+
+  let get_rep i = match i with Ident (_, l) -> l
+
+  let as_string i = Name.as_string (get_id i)
+
+  let as_error_string i = Name.as_error_string (get_id i)
+
+  (* A few utilities on id. *)
+  let equal a b = Name.equal (get_id a) (get_id b)
+
+  let compare a b = Name.compare (get_id a) (get_id b)
+
+  let dedup_id_list l = List.dedup_and_sort ~compare l
+
+  let is_mem_id i l = List.exists l ~f:(equal i)
+end

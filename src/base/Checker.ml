@@ -18,7 +18,6 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
 open Syntax
 open ErrorUtils
 open PrettyPrinters
@@ -66,7 +65,7 @@ let check_recursion cmod elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Recursion Check]:\n module [%s] is successfully checked.\n"
-         (get_id cmod.contr.cname);
+         (RecIdentifier.get_id cmod.contr.cname);
   res
 
 let check_recursion_lmod lmod elibs =
@@ -75,7 +74,7 @@ let check_recursion_lmod lmod elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Recursion Check]:\n lmodule [%s] is successfully checked.\n"
-         (get_id lmod.libs.lname);
+         (RecIdentifier.get_id lmod.libs.lname);
   res
 
 (* Type check the contract with external libraries *)
@@ -87,7 +86,7 @@ let check_typing cmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog
         @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n"
-             (get_id cmod.contr.cname);
+             (TCIdentifier.get_id cmod.contr.cname);
         let open Stdint.Uint64 in
         plog
         @@ sprintf "Gas remaining after typechecking: %s units.\n"
@@ -107,7 +106,7 @@ let check_typing_lmod lmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog
         @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n"
-             (get_id lmod.libs.lname);
+             (TCIdentifier.get_id lmod.libs.lname);
         let open Stdint.Uint64 in
         plog
         @@ sprintf "Gas remaining after typechecking: %s units.\n"
@@ -121,7 +120,7 @@ let check_patterns e rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n"
-         (get_id e.contr.cname);
+         (PMC.PCIdentifier.get_id e.contr.cname);
   res
 
 let check_patterns_lmodule e rlibs elibs =
@@ -136,7 +135,7 @@ let check_sanity m rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
-         (get_id m.contr.cname);
+         (SC.SCIdentifier.get_id m.contr.cname);
   res
 
 let check_sanity_lmod m rlibs elibs =
@@ -144,7 +143,7 @@ let check_sanity_lmod m rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
-         (get_id m.libs.lname);
+         (SC.SCIdentifier.get_id m.libs.lname);
   res
 
 let check_accepts m = AC.contr_sanity m
@@ -159,13 +158,14 @@ let analyze_print_gas cmod typed_elibs =
       plog
       @@ sprintf
            "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n"
-           (get_id cmod.contr.cname);
+           (GUA.GUAIdentifier.get_id cmod.contr.cname);
       let _ =
         List.iter
           ~f:(fun (i, pol) ->
             pout
             @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n"
-                 (get_id i) (GUA.sprint_gup pol))
+                 (GUA.GUAIdentifier.get_id i)
+                 (GUA.sprint_gup pol))
           cpol
       in
       res

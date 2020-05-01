@@ -18,8 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
-open Identifier
-open Type
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -31,12 +30,19 @@ open Datatypes
 (*****************************************************************)
 
 module ScillaRecursion (SR : Rep) (ER : Rep) = struct
-  module PreRecursionSyntax = ScillaSyntax (SR) (ER)
+  module PreRecursionSyntax = ScillaSyntax (SR) (ER) (FlattenedLiteral)
   module SRecRep = SR
   module ERecRep = ER
-  module RecursionSyntax = ScillaSyntax (SRecRep) (ERecRep)
+
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module RecLiteral = FlattenedLiteral
+  module RecType = RecLiteral.LType
+  module RecIdentifier = RecType.TIdentifier
+  module RecursionSyntax = ScillaSyntax (SRecRep) (ERecRep) (RecLiteral)
   include RecursionSyntax
   include ERecRep
+  open RecIdentifier
+  open RecType
   open PreRecursionSyntax
 
   let wrap_recursion_err e ?(opt = "") = wrap_err e "ADT" ~opt

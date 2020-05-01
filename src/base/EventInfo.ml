@@ -1,9 +1,26 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2020 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open TypeUtil
-open Identifier
-open Type
+open Literal
 open Syntax
 open ContractUtil.MessagePayload
 open MonadUtil
@@ -15,13 +32,16 @@ module ScillaEventInfo
       val get_type : rep -> PlainTypes.t inferred_type
     end) =
 struct
-  module SER = SR
-  module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
-  module TU = TypeUtilities
+  module EILiteral = FlattenedLiteral
+  module EIType = EILiteral.LType
+  module EIIdentifier = EIType.TIdentifier
+  module EISyntax = ScillaSyntax (SR) (ER) (EILiteral)
+  module EITU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
+  open EIIdentifier
+  open EIType
   open EISyntax
-  open TU
+  open EITU
   open SCU
 
   (* Given a contract, return a list of events it may create,
@@ -77,7 +97,7 @@ struct
                 && (* Check that each entry in tlist is equal to the same entry in m_types. *)
                 List.for_all tlist ~f:(fun (n1, t1) ->
                     List.exists m_types ~f:(fun (n2, t2) ->
-                        String.(n1 = n2) && [%equal: Type.t] t2 t1))
+                        String.(n1 = n2) && [%equal: EIType.t] t2 t1))
               in
               if not @@ matcher m_types tlist then
                 fail1

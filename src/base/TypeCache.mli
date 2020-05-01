@@ -19,7 +19,8 @@
 (*****************************************************************)
 (*                    Library type caching                       *)
 (*****************************************************************)
-
+open Identifier
+open Type
 open Syntax
 open TypeUtil
 
@@ -29,15 +30,19 @@ module StdlibTypeCacher
     (SR : Rep)
     (ER : Rep) : sig
   module L : sig
+    module SIdentifier : ScillaIdentifier
+
+    module SType : ScillaType
+
     type expr_annot
 
     type ctr_def
 
     type lib_entry =
-      | LibVar of ER.rep Identifier.t * Type.t option * expr_annot
-      | LibTyp of ER.rep Identifier.t * ctr_def list
+      | LibVar of ER.rep SIdentifier.t * SType.t option * expr_annot
+      | LibTyp of ER.rep SIdentifier.t * ctr_def list
 
-    type library = { lname : SR.rep Identifier.t; lentries : lib_entry list }
+    type library = { lname : SR.rep SIdentifier.t; lentries : lib_entry list }
   end
 
   type t = Q(R)(ER).TEnv.t

@@ -19,7 +19,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open TypeUtil
-open Identifier
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -34,10 +34,16 @@ module ScillaSanityChecker
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
+
+  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
+  module SCLiteral = FlattenedLiteral
+  module SCType = SCLiteral.LType
+  module SCIdentifier = SCType.TIdentifier
+  module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
-  open EISyntax
+  open SCIdentifier
+  open SCSyntax
   open SCU
 
   (* Warning level to use when contract loads/stores entire Maps. *)
@@ -105,7 +111,7 @@ struct
         e
         @ check_duplicate_ident
             (fun _ -> eloc)
-            (List.map msg ~f:(fun (s, _) -> asIdL s SR.string_rep))
+            (List.map msg ~f:(fun (s, _) -> mk_id s SR.string_rep))
       in
 
       (* Either "_tag" or "_eventname" must be present. *)
@@ -244,7 +250,7 @@ struct
        * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
        * Make this an error by just using fail1 below instead of warn1. *)
       let bounds = get_pattern_bounds pat in
-      match List.find_a_dup ~compare:compare_id bounds with
+      match List.find_a_dup ~compare:SCIdentifier.compare bounds with
       | Some v ->
           warn1
             (Printf.sprintf
