@@ -20,17 +20,11 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
 open Scilla_eval
-open Syntax
 open FrontEndParser
 open RunnerUtil
 open ErrorUtils
 open GlobalConfig
 open PrettyPrinters
-module PSRep = ParserRep
-module PERep = ParserRep
-module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
-module TCSRep = TC.OutputSRep
-module TCERep = TC.OutputERep
 
 let default_gas_limit = Stdint.Uint64.of_int 2000
 
@@ -46,27 +40,20 @@ let run () =
   in
   match parse_expr_from_file filename with
   | Ok e -> (
-      (* Since this is not a contract, we have no in-contract lib defined. *)
-      let clib =
-        {
-          TC.UntypedSyntax.lname = TC.TCIdentifier.mk_loc_id "dummy";
-          TC.UntypedSyntax.lentries = [];
-        }
-      in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
       let elibs = import_all_libs lib_dirs in
-      let envres = Eval.init_libraries (Some clib) elibs in
+      (* Since this is not a contract, we have no in-contract lib defined. *)
+      let envres = Eval.init_libraries None elibs in
       let env, gas_remaining =
         match envres Eval.init_gas_kont gas_limit with
         | Ok (env', gas_remaining) -> (env', gas_remaining)
         | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
       in
       let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
-      let res' = Eval.exp_eval_wrapper e env in
-      let res = res' Eval.init_gas_kont gas_remaining in
+      let res = Eval.(exp_eval_wrapper e env init_gas_kont gas_remaining) in
       match res with
       | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
       | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
