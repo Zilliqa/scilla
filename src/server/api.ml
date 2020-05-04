@@ -73,4 +73,15 @@ module API (R : RPC) = struct
          typechecking";
       ]
       (checker_argv @-> returning checker_return checker_error)
+
+  let sharding_param = Param.mk ~name:"req" Rpc.Types.string
+
+  let sharding_return = Param.mk Rpc.Types.string
+
+  let sharding_error = RPCError.err
+
+  let sharding =
+    declare "shard"
+      [ "Make sharding decision" ]
+      (sharding_param @-> returning sharding_return sharding_error)
 end

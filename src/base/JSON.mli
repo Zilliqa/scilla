@@ -202,4 +202,14 @@ module ShardingInfo : sig
   val get_json :
     (string * Yojson.Basic.t list) list * (string * string) list ->
     Yojson.Basic.t
+
+  val get_request_type : string -> string
+
+  val get_request_data :
+    string ->
+    (Yojson.Basic.t -> 'a) ->
+    (int * int * int * int)
+    * 'a Core_kernel.List.t
+    * string Core_kernel.List.t
+    * (string * Syntax.literal) list
 end

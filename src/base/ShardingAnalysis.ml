@@ -59,6 +59,10 @@ struct
   let pp_compare (pfa : pseudofield) (pfb : pseudofield) =
     String.compare (pp_pseudofield pfa) (pp_pseudofield pfb)
 
+  let mk_id f =
+    let dummy_type = Unit in
+    ER.mk_id (mk_ident f) dummy_type
+
   (* Turn, e.g. balances[_sender][to] into pseudofield *)
   let pp_of_str str =
     let ds = String.map (fun c -> if c = '[' || c = ']' then '|' else c) str in
@@ -66,10 +70,6 @@ struct
     (* Filter out empty component at the end *)
     let components =
       List.filter (fun s -> not @@ String.equal s "") components
-    in
-    let mk_id f =
-      let dummy_type = Unit in
-      ER.mk_id (mk_ident f) dummy_type
     in
     match components with
     | [ f ] -> pure @@ (mk_id f, None)
@@ -314,17 +314,63 @@ struct
     | CUnsat -> "CUnsat"
 
   let sharding_constraint_to_json sc : Yojson.Basic.t =
-    `Assoc [
-    match sc with
-    | CMustBeUserAddr i -> ("CMustBeUserAddr", `String (get_id i))
-    | CMustNotHaveDuplicates dl ->
-      let l = List.map (fun (a, b) ->  `List [`String (get_id a) ; `String (get_id b)]) dl in
-      ("CMustNotHaveDuplicates", `List l)
-    | CSenderShard -> ("CSenderShard", `Null)
-    | CContractShard -> ("CContractShard", `Null)
-    | CAccess pf -> ("CAccess", `String (pp_pseudofield pf))
-    | CUnsat -> ("CUnsat", `Null)
-    ]
+    let ctype, carg =
+      match sc with
+      | CMustBeUserAddr i -> ("CMustBeUserAddr", `String (get_id i))
+      | CMustNotHaveDuplicates dl ->
+          let l =
+            List.map
+              (fun (a, b) -> `List [ `String (get_id a); `String (get_id b) ])
+              dl
+          in
+          ("CMustNotHaveDuplicates", `List l)
+      | CSenderShard -> ("CSenderShard", `Null)
+      | CContractShard -> ("CContractShard", `Null)
+      | CAccess pf -> ("CAccess", `String (pp_pseudofield pf))
+      | CUnsat -> ("CUnsat", `Null)
+    in
+    `Assoc [ ("ctype", `String ctype); ("carg", carg) ]
+
+  let json_to_sharding_constraint js : sharding_constraint =
+    let ctype = Basic.Util.member "ctype" js in
+    match ctype with
+    | `String ctype ->
+        let carg = Basic.Util.member "carg" js in
+        if String.compare ctype "CMustBeUserAddr" = 0 then
+          match carg with `String i -> CMustBeUserAddr (mk_id i) | _ -> CUnsat
+        else if String.compare ctype "CMustNotHaveDuplicates" = 0 then
+          match carg with
+          | `List al ->
+              let all_args_good =
+                List.for_all
+                  (fun pair ->
+                    match pair with
+                    | `List [ `String _; `String _ ] -> true
+                    | _ -> false)
+                  al
+              in
+              if not all_args_good then CUnsat
+              else
+                let args =
+                  List.map
+                    (fun pair ->
+                      match pair with
+                      | `List [ `String a; `String b ] -> (mk_id a, mk_id b)
+                      | _ -> (mk_id "", mk_id ""))
+                    al
+                in
+                CMustNotHaveDuplicates args
+          | _ -> CUnsat
+        else if String.compare ctype "CSenderShard" = 0 then CSenderShard
+        else if String.compare ctype "CContractShard" = 0 then CContractShard
+        else if String.compare ctype "CAccess" = 0 then
+          match carg with
+          | `String pf -> (
+              match pp_of_str pf with Ok pf -> CAccess pf | _ -> CUnsat )
+          | _ -> CUnsat
+        else CUnsat
+    | _ -> CUnsat
+
   module OrderedShardingConstraint = struct
     type t = sharding_constraint
 
@@ -1012,6 +1058,11 @@ struct
   (* END functions to do with detecting spurious match exprs/stmts  *)
 
   (* TODO: move PCMs into a separate file *)
+  (* This is a "special" PCM, which does not follow the structure of others *)
+  module State_Split_PCM = struct
+    let pcm_identifier = "state_split"
+  end
+
   (* Generic addition PCM for all signed and unsigned types *)
   module Integer_Addition_PCM = struct
     let pcm_identifier = "integer_add"
@@ -2040,32 +2091,6 @@ struct
       (fun c -> match c with CUnsat -> true | _ -> false)
       ss
 
-  type state_fragment = string
-
-  type shard_id = int
-
-  module type ShardingDecider = sig
-    val pcm_identifier : pcm_ident
-
-    val get_shard : unit
-
-    (* ancestor -> temp -> delta -> delta_shard_id -> merged *)
-    val join :
-      state_fragment ->
-      state_fragment ->
-      state_fragment ->
-      shard_id ->
-      state_fragment
-  end
-
-  module StateSplitDecider = struct
-    let pcm_identifier = "state_split"
-
-    let get_shard = ()
-
-    let join ancestor temp delta delta_shard_id = delta
-  end
-
   (* TODO: make this more type safe *)
   let compose_sd_identifier base extra = base ^ "+" ^ extra
 
@@ -2184,7 +2209,7 @@ struct
     let pcms = allocate_field_pcms local_pcms in
     let default_assignment =
       List.map
-        (fun (f, _, _) -> (get_id f, StateSplitDecider.pcm_identifier))
+        (fun (f, _, _) -> (get_id f, State_Split_PCM.pcm_identifier))
         cmod.contr.cfields
     in
     let assigned_field_pcms =
@@ -2271,11 +2296,11 @@ struct
                     let has_non_cw = is_mem_id f noncomm_writes in
                     let pcm =
                       match (has_non_cw, has_cw) with
-                      | _, false -> StateSplitDecider.pcm_identifier
+                      | _, false -> State_Split_PCM.pcm_identifier
                       | false, true -> List.assoc (get_id f) pcm_strs
                       | true, true ->
                           let cw_pcm = List.assoc (get_id f) pcm_strs in
-                          compose_sd_identifier StateSplitDecider.pcm_identifier
+                          compose_sd_identifier State_Split_PCM.pcm_identifier
                             cw_pcm
                     in
                     (get_id f, pcm))

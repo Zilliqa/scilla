@@ -54,6 +54,10 @@ let from_file f =
   let thunk () = Basic.from_file f in
   json_exn_wrapper thunk ~filename:f
 
+let from_string s =
+  let thunk () = Basic.from_string s in
+  json_exn_wrapper thunk
+
 let parse_typ_exn t =
   match FrontEndParser.parse_type t with
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
@@ -72,6 +76,10 @@ let to_list_exn j =
 
 let to_string_exn j =
   let thunk () = Basic.Util.to_string j in
+  json_exn_wrapper thunk
+
+let to_int_exn j =
+  let thunk () = Basic.Util.to_int j in
   json_exn_wrapper thunk
 
 (* Given a literal, return its full type name *)
@@ -333,8 +341,7 @@ module Message = struct
   (** Parses and returns a list of (pname,pval), with
   "_tag" and "_amount" at the beginning of this list.
   Invalid inputs in the json are ignored **)
-  let get_json_data filename =
-    let json = from_file filename in
+  let get_message_data json =
     let tags = member_exn tag_label json |> to_string_exn in
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in
@@ -350,6 +357,14 @@ module Message = struct
     let pjlist = member_exn "params" json |> to_list_exn in
     let params = List.map pjlist ~f:jobj_to_statevar in
     tag :: amount :: sender :: params
+
+  let get_json_data filename =
+    let json = from_file filename in
+    get_message_data json
+
+  let get_json_from_str str =
+    let json = from_string str in
+    get_message_data json
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
@@ -585,6 +600,24 @@ module CashflowInfo = struct
 end
 
 module ShardingInfo = struct
+  let req_type_label = "req_type"
+
+  let sender_shard_label = "sender_shard"
+
+  let con_shard_label = "contract_shard"
+
+  let ds_shard_label = "ds_shard"
+
+  let num_shards_label = "num_shards"
+
+  let param_contracts_label = "param_contracts"
+
+  let sh_info_label = "sharding_info"
+
+  let tc_label = "transition_constraints"
+
+  let tx_data_label = "tx_data"
+
   let get_json (sharding_constraints, field_pcms) =
     `Assoc
       [
@@ -594,4 +627,36 @@ module ShardingInfo = struct
           `Assoc
             (List.map sharding_constraints ~f:(fun (t, sc) -> (t, `List sc))) );
       ]
+
+  let get_request_type req_str =
+    let json = from_string req_str in
+    member_exn req_type_label json |> to_string_exn
+
+  (* Takes the json_to_sharding constraint function as argument *)
+  let get_request_data req_str js_to_sc =
+    let json = from_string req_str in
+    let sender_shard = member_exn sender_shard_label json |> to_int_exn in
+    let con_shard = member_exn con_shard_label json |> to_int_exn in
+    let ds_shard = member_exn ds_shard_label json |> to_int_exn in
+    let num_shards = member_exn num_shards_label json |> to_int_exn in
+    let param_contracts =
+      let l = member_exn param_contracts_label json |> to_list_exn in
+      List.map ~f:to_string_exn l
+    in
+    let tx_data = member_exn tx_data_label json |> Message.get_message_data in
+    (* It's convenient to have this as a string *)
+    let tag =
+      member_exn tag_label (member_exn tx_data_label json) |> to_string_exn
+    in
+    (* Only extract the constraints related to called transition *)
+    let tr_constrs =
+      let tc =
+        member_exn tag @@ member_exn tc_label @@ member_exn sh_info_label json
+      in
+      List.map ~f:js_to_sc (tc |> to_list_exn)
+    in
+    ( (sender_shard, con_shard, ds_shard, num_shards),
+      tr_constrs,
+      param_contracts,
+      tx_data )
 end

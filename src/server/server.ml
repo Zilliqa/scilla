@@ -21,6 +21,7 @@ open DebugMessage
 open ErrorUtils
 open Api
 open IPCUtil
+open Sharding
 
 (* You can swap the RPC engine, by using a different monad here,
    note however that if you are using an asynchronous one, like
@@ -41,6 +42,12 @@ let mk_handler callback args =
   with FatalError msg ->
     IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
 
+(* Take a dictionary as parameter, rather than "argv" *)
+let mk_handler_dict callback param =
+  try IDL.ErrM.return @@ callback (Some param)
+  with FatalError msg ->
+    IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
+
 (* Request handler. *)
 let handler rpc conn =
   let ic = Unix.in_channel_of_descr conn in
@@ -56,7 +63,10 @@ let handler rpc conn =
       Rpc.failure
         (RPCError.rpc_of_t
            RPCError.
-             { code = 0; message = "scilla-server: incorrect invocation" })
+             {
+               code = 0;
+               message = "scilla-server: incorrect invocation " ^ msg;
+             })
   in
   let str = Jsonrpc.string_of_response ~version:Jsonrpc.V2 res in
   IPCUtil.send_delimited oc str
@@ -83,7 +93,7 @@ let rec serve rpc ~socket =
 
 let sock_path = "/tmp/scilla-server.sock"
 
-let num_pending = 5
+let num_pending = 1000
 
 let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   pout "Starting Scilla server...\n";
@@ -95,6 +105,7 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   (* Handlers *)
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
+  Server.sharding @@ mk_handler_dict (Sharding.run ~exe_name:"get-shard");
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this
