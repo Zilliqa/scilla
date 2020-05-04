@@ -1,7 +1,7 @@
 (*
   This file is part of scilla.
 
-  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  Copyright (c) 2020 - present Zilliqa Research Pvt. Ltd.
   
   scilla is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
@@ -16,11 +16,19 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+%parameter<Literal : Literal.ScillaLiteral>
+
 %{
+  open Literal
   open Syntax
   open ErrorUtils
-  (* TODO: Parameterise the parser based on the names of the parser *)
-  open ParsedSyntax
+
+  module ParserSyntax = ScillaSyntax (ParserRep) (ParserRep) (Literal)
+  module ParserIdentifier = ParserSyntax.SIdentifier
+  module ParserName = ParserIdentifier.Name
+  open ParserSyntax
+
+  let to_loc_id s loc = SIdentifier.mk_id (ParserName.parse_simple_name s) loc
 
   let to_prim_type_exn d loc =
     let open SType in
@@ -44,12 +52,14 @@
              Bystrx_typ b
            else raise (SyntaxError ("Invalid primitive type", loc))
 
-  let to_type d sloc =
+  let to_type n sloc =
+    let d = ParserName.as_string n in
     let open SType in
     try PrimType (to_prim_type_exn d sloc)
-    with | _ -> ADT (SIdentifier.mk_id d sloc, [])
+    with | _ -> ADT (SIdentifier.mk_id n sloc, [])
 
-  let to_map_key_type_exn d loc =
+  let to_map_key_type_exn n loc =
+    let d = ParserName.as_string n in
     let exn () = SyntaxError (("Invalid map key type " ^ d), loc) in
     try
       let open SType in
@@ -64,7 +74,8 @@
     | None -> raise (SyntaxError (("Invalid " ^ (SType.pp_prim_typ t) ^ " literal " ^ v), loc))
 
   let build_bool_literal v loc =
-    (Literal (BuiltIns.UsefulLiterals.to_Bool v), loc)
+    (Literal (build_bool_lit v), loc)
+
 %}
 
 (* Identifiers *)
@@ -143,27 +154,27 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <Syntax.ParsedSyntax.expr_annot> exp_term
-%start <Syntax.ParsedSyntax.SType.t> type_term
-%start <Syntax.ParsedSyntax.stmt_annot list> stmts_term
-%start <Syntax.ParsedSyntax.cmodule> cmodule
-%start <Syntax.ParsedSyntax.lmodule> lmodule
+%start <ParserSyntax.expr_annot> exp_term
+%start <ParserSyntax.SType.t> type_term
+%start <ParserSyntax.stmt_annot list> stmts_term
+%start <ParserSyntax.cmodule> cmodule
+%start <ParserSyntax.lmodule> lmodule
 
 %%
 
 sid :
-| name = ID { name }
-| name = SPID { name }
-| ns = CID; PERIOD; name = ID { ns ^ "." ^ name }
+| name = ID { ParserName.parse_simple_name name }
+| name = SPID { ParserName.parse_simple_name name }
+| ns = CID; PERIOD; name = ID { ParserName.parse_qualified_name ns name }
 
 sident :
-| name = ID { SIdentifier.mk_id name (toLoc $startpos) }
-| name = SPID { SIdentifier.mk_id name (toLoc $startpos) }
-| ns = CID; PERIOD; name = ID { SIdentifier.mk_id (ns ^ "." ^ name) (toLoc $startpos) }
+| name = ID { ParserIdentifier.mk_id (ParserName.parse_simple_name name) (toLoc $startpos) }
+| name = SPID { ParserIdentifier.mk_id (ParserName.parse_simple_name name) (toLoc $startpos) }
+| ns = CID; PERIOD; name = ID { ParserIdentifier.mk_id (ParserName.parse_qualified_name ns name) (toLoc $startpos) }
 
 scid :
-| name = CID { name }
-| ns = CID; PERIOD; name = CID { ns ^ "." ^ name }
+| name = CID { ParserName.parse_simple_name name }
+| ns = CID; PERIOD; name = CID { ParserName.parse_qualified_name ns name }
 
 (***********************************************)
 (*                  Types                      *)
@@ -217,14 +228,14 @@ simple_exp :
 | LET; x = ID;
   t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
-  {(Let (SIdentifier.mk_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
+  {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
 (* Function *)
 | FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun (SIdentifier.mk_id i (toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
+  { (Fun ( to_loc_id i (toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
-  { (App (SIdentifier.mk_id f (toLoc $startpos(f)), args), toLoc $startpos ) }
+  { (App (ParserIdentifier.mk_id f (toLoc $startpos(f)), args), toLoc $startpos ) }
 (* Atomic expression *)
 | a = atomic_exp {a}
 (* Built-in call *)
@@ -244,16 +255,16 @@ simple_exp :
   }
 (* Match expression *)
 | MATCH; x = sid; WITH; cs=list(exp_pm_clause); END
-  { (MatchExpr (SIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos) }
+  { (MatchExpr (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos) }
 (* Type function *)
 | TFUN; i = TID ARROW; e = exp
-  { (TFun (SIdentifier.mk_id i (toLoc $startpos(i)), e), toLoc $startpos) }
+  { (TFun ( to_loc_id i (toLoc $startpos(i)), e), toLoc $startpos) }
 (* Type application *)
 | AT; f = sid; targs = nonempty_list(targ)
-  { (TApp (SIdentifier.mk_id f (toLoc $startpos(f)), targs), toLoc $startpos) }
+  { (TApp (ParserIdentifier.mk_id f (toLoc $startpos(f)), targs), toLoc $startpos) }
 
 atomic_exp :
-| i = sid       { (Var (SIdentifier.mk_id i (toLoc $startpos(i))), toLoc $startpos) }
+| i = sid       { (Var (ParserIdentifier.mk_id i (toLoc $startpos(i))), toLoc $startpos) }
 | l = lit      { (Literal l, toLoc $startpos) }
 
 lit :
@@ -281,20 +292,21 @@ map_access:
 
 pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (SIdentifier.mk_id x (toLoc $startpos(x))) }
-| c = scid; ps = list(arg_pattern) { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), ps) }
+| x = ID { Binder (to_loc_id x (toLoc $startpos(x))) }
+| c = scid; ps = list(arg_pattern) { Constructor (ParserIdentifier.mk_id c (toLoc $startpos(c)), ps) }
 
 arg_pattern:
 | UNDERSCORE { Wildcard }
-| x = ID { Binder (SIdentifier.mk_id x (toLoc $startpos(x))) }
-| c = scid;  { Constructor (SIdentifier.mk_id c (toLoc $startpos(c)), []) }
+| x = ID { Binder (to_loc_id x (toLoc $startpos(x))) }
+| c = scid;  { Constructor (ParserIdentifier.mk_id c (toLoc $startpos(c)), []) }
 | LPAREN; p = pattern RPAREN; { p }
 
 exp_pm_clause:
 | BAR ; p = pattern ; ARROW ; e = exp { p, e }
+
 msg_entry :
-| i = sid; COLON;  l = lit { i, MLit l }
-| i = sid; COLON;  v = sid  { i,  MVar (SIdentifier.mk_id v (toLoc $startpos(v))) }
+| i = sid; COLON;  l = lit { ParserName.as_string i, MLit l }
+| i = sid; COLON;  v = sid  { ParserName.as_string i,  MVar (ParserIdentifier.mk_id v (toLoc $startpos(v))) }
 
 builtin_args :
 | args = nonempty_list(sident) { args }
@@ -314,24 +326,24 @@ type_term :
 (***********************************************)
 
 stmt:
-| l = ID; FETCH; r = sid   { (Load (SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; ASSIGN; r = sid { (Store (SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; EQ; r = exp    { (Bind (SIdentifier.mk_id l (toLoc $startpos(l)), r), toLoc $startpos) }
-| l = ID; FETCH; AND; c = CID { (ReadFromBC (SIdentifier.mk_id l (toLoc $startpos(l)), c), toLoc $startpos) }
+| l = ID; FETCH; r = sid   { (Load (to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
+| l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
+| l = ID; FETCH; AND; c = CID { (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
-  { MapGet(SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+  { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
-  { MapGet(SIdentifier.mk_id l (toLoc $startpos(l)), SIdentifier.mk_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+  { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
-  { MapUpdate(SIdentifier.mk_id l (toLoc $startpos(l)), keys, Some (SIdentifier.mk_id r (toLoc $startpos(r)))), toLoc $startpos }
+  { MapUpdate( to_loc_id l (toLoc $startpos(l)), keys, Some (ParserIdentifier.mk_id r (toLoc $startpos(r)))), toLoc $startpos }
 | DELETE; l = ID; keys = nonempty_list(map_access)
-  { MapUpdate(SIdentifier.mk_id l (toLoc $startpos(l)), keys, None), toLoc $startpos }
+  { MapUpdate( to_loc_id l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| SEND; m = sid;          { (SendMsgs (SIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
-| EVENT; m = sid; { (CreateEvnt (SIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (SIdentifier.mk_id m (toLoc $startpos)))), toLoc $startpos }
+| SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
+| EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
+| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos)))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
-  { (MatchStmt (SIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
+  { (MatchStmt (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
   p = component_id;
   args = list(sident)
@@ -354,7 +366,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { SIdentifier.mk_id n (toLoc $startpos(n)), t }
+| n = ID; COLON; t = typ { to_loc_id n (toLoc $startpos(n)), t }
 
 component:
 | t = transition
@@ -381,8 +393,8 @@ transition:
       comp_body = ss } }
 
 component_id:
-| c = CID { SIdentifier.mk_id c (toLoc $startpos(c)) }
-| i = ID { SIdentifier.mk_id i (toLoc $startpos(i)) }
+| c = CID { to_loc_id c (toLoc $startpos(c)) }
+| i = ID { to_loc_id i (toLoc $startpos(i)) }
 
 component_params:
 | LPAREN; params = separated_list(COMMA, param_pair); RPAREN;
@@ -395,7 +407,7 @@ component_body:
 field:
 | FIELD; f = ID; COLON; t=typ;
   EQ; rhs = exp
-  { SIdentifier.mk_id f (toLoc $startpos(f)), t, rhs }
+  { to_loc_id f (toLoc $startpos(f)), t, rhs }
 
 with_constraint:
 | WITH; f = exp; ARROW
@@ -407,7 +419,7 @@ contract:
   ct = ioption(with_constraint);
   fs = list(field);
   comps = list(component)
-  { { cname   = SIdentifier.mk_id c (toLoc $startpos(c));
+  { { cname   = to_loc_id c (toLoc $startpos(c));
       cparams = params;
       cconstraint = Core_kernel.Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
@@ -415,22 +427,22 @@ contract:
 
 tconstr :
 | BAR; tn = CID;
-  { { cname = SIdentifier.mk_id tn (toLoc $startpos); c_arg_types = [] } }
+    { { cname = to_loc_id tn (toLoc $startpos); c_arg_types = [] } }
 | BAR; tn = CID; OF; t = nonempty_list(targ);
-  { { cname = SIdentifier.mk_id tn (toLoc $startpos); c_arg_types = t }}
+    { { cname = to_loc_id tn (toLoc $startpos); c_arg_types = t }}
 
 libentry :
 | LET; ns = ID;
   t = ioption(type_annot)
-  EQ; e= exp { LibVar (SIdentifier.mk_id ns (toLoc $startpos(ns)), t, e) }
+  EQ; e= exp { LibVar (to_loc_id ns (toLoc $startpos(ns)), t, e) }
 | TYPE; tname = CID
-  { LibTyp (SIdentifier.mk_id tname (toLoc $startpos), []) }
+  { LibTyp (to_loc_id tname (toLoc $startpos), []) }
 | TYPE; tname = CID; EQ; constrs = nonempty_list(tconstr)
-  { LibTyp (SIdentifier.mk_id tname (toLoc $startpos), constrs) }
+  { LibTyp (to_loc_id tname (toLoc $startpos), constrs) }
 
 library :
 | LIBRARY; n = CID; ls = list(libentry);
-  { {lname = SIdentifier.mk_id n (toLoc $startpos);
+  { {lname = to_loc_id n (toLoc $startpos);
      lentries = ls } }
 
 lmodule :
@@ -439,8 +451,8 @@ lmodule :
       elibs = els; libs = l } }
 
 importname :
-| c = CID { SIdentifier.mk_id c (toLoc $startpos), None }
-| c1 = CID AS c2 = CID { SIdentifier.mk_id c1 (toLoc $startpos(c1)), Some ( SIdentifier.mk_id c2 (toLoc $startpos(c2)))}
+| c = CID { to_loc_id c (toLoc $startpos), None }
+| c1 = CID AS c2 = CID { to_loc_id c1 (toLoc $startpos(c1)), Some ( to_loc_id c2 (toLoc $startpos(c2)))}
 
 imports :
 | IMPORT; els = list(importname) { els }

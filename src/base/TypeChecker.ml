@@ -1306,7 +1306,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              Ok (checked_constraint, remaining_gas, emsgs)
          | Error (TypeError, e, g) ->
              Ok
-               ( ( TypedSyntax.Literal BuiltIns.UsefulLiterals.false_lit,
+               ( ( TypedSyntax.Literal TCLiteral.false_lit,
                    ETR.dummy_rep ),
                  g,
                  emsgs @ e )

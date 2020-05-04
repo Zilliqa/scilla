@@ -372,7 +372,7 @@ struct
          | Ok ckd_constraint -> Ok (ckd_constraint, emsgs)
          | Error msg ->
              Ok
-               ( ( CheckedPatternSyntax.Literal BuiltIns.UsefulLiterals.false_lit,
+               ( ( CheckedPatternSyntax.Literal PCLiteral.false_lit,
                    EPR.dummy_rep ),
                  emsgs @ msg )
        in

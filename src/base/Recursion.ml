@@ -536,7 +536,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                    cname;
                    cparams = [];
                    cconstraint =
-                     ( RecursionSyntax.Literal BuiltIns.UsefulLiterals.false_lit,
+                     ( RecursionSyntax.Literal RecLiteral.false_lit,
                        ERecRep.dummy_rep );
                    cfields = [];
                    ccomps = [];
