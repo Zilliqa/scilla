@@ -34,7 +34,6 @@ open RUIdentifier
 open RUType
 open RUSyntax
 
-
 let get_init_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
     plog (sprintf "Invalid init json %s file" filename);

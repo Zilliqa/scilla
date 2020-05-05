@@ -51,8 +51,8 @@ end
 (*******************************************************)
 
 module type Syn = sig
-
   module SLiteral : ScillaLiteral
+
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
 
@@ -72,11 +72,15 @@ module type Syn = sig
   and expr =
     | Literal of SLiteral.t
     | Var of ParserRep.rep SIdentifier.t
-    | Let of ParserRep.rep SIdentifier.t * SType.t option * expr_annot * expr_annot
+    | Let of
+        ParserRep.rep SIdentifier.t * SType.t option * expr_annot * expr_annot
     | Message of (string * payload) list
     | Fun of ParserRep.rep SIdentifier.t * SType.t * expr_annot
     | App of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t list
-    | Constr of ParserRep.rep SIdentifier.t * SType.t list * ParserRep.rep SIdentifier.t list
+    | Constr of
+        ParserRep.rep SIdentifier.t
+        * SType.t list
+        * ParserRep.rep SIdentifier.t list
     | MatchExpr of ParserRep.rep SIdentifier.t * (pattern * expr_annot) list
     | Builtin of ParserRep.rep builtin_annot * ParserRep.rep SIdentifier.t list
     (* Advanced features: to be added in Scilla 0.2 *)
@@ -108,7 +112,8 @@ module type Syn = sig
         * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t list
         * bool
-    | MatchStmt of ParserRep.rep SIdentifier.t * (pattern * stmt_annot list) list
+    | MatchStmt of
+        ParserRep.rep SIdentifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ParserRep.rep SIdentifier.t * string
     | AcceptPayment
     (* forall l p *)
@@ -129,13 +134,19 @@ module type Syn = sig
     comp_body : stmt_annot list;
   }
 
-  type ctr_def = { cname : ParserRep.rep SIdentifier.t; c_arg_types : SType.t list }
+  type ctr_def = {
+    cname : ParserRep.rep SIdentifier.t;
+    c_arg_types : SType.t list;
+  }
 
   type lib_entry =
     | LibVar of ParserRep.rep SIdentifier.t * SType.t option * expr_annot
     | LibTyp of ParserRep.rep SIdentifier.t * ctr_def list
 
-  type library = { lname : ParserRep.rep SIdentifier.t; lentries : lib_entry list }
+  type library = {
+    lname : ParserRep.rep SIdentifier.t;
+    lentries : lib_entry list;
+  }
 
   type contract = {
     cname : ParserRep.rep SIdentifier.t;
@@ -153,7 +164,8 @@ module type Syn = sig
     libs : library option;
     (* lib functions defined in the module *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t option) list;
+    elibs :
+      (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t option) list;
     contr : contract;
   }
 
@@ -162,10 +174,10 @@ module type Syn = sig
     smver : int;
     (* Scilla major version of the library. *)
     (* List of imports / external libs with an optional namespace. *)
-    elibs : (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t option) list;
+    elibs :
+      (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
-
 end
 
 (*******************************************************)

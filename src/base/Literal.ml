@@ -181,7 +181,6 @@ module type ScillaLiteral = sig
   val build_none_lit : LType.t -> t
 
   val build_pair_lit : t -> LType.t -> t -> LType.t -> t
-  
 end
 
 module MkLiteral (T : ScillaType) = struct
@@ -479,7 +478,6 @@ module MkLiteral (T : ScillaType) = struct
   let build_none_lit t = ADTValue ("None", [ t ], [])
 
   let build_pair_lit l1 t1 l2 t2 = ADTValue ("Pair", [ t1; t2 ], [ l1; l2 ])
-
 end
 
 module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))

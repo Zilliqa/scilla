@@ -23,7 +23,6 @@ open ErrorUtils
 open MonadUtil
 open ParserFaults
 open ParserUtil
-
 module Parser = ScillaParser.Make (ParserSyntax)
 module Lexer = ScillaLexer.MkLexer (ParserSyntax)
 module MInter = Parser.MenhirInterpreter
@@ -76,8 +75,6 @@ let parse_expr s = parse_string Parser.Incremental.exp_term s
 let parse_expr_from_file filename =
   parse_file Parser.Incremental.exp_term filename
 
-let parse_lmodule filename =
-  parse_file Parser.Incremental.lmodule filename
+let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
 
-let parse_cmodule filename =
-  parse_file Parser.Incremental.cmodule filename
+let parse_cmodule filename = parse_file Parser.Incremental.cmodule filename

@@ -619,4 +619,3 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
     | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
 end
-

@@ -31,7 +31,8 @@ module JSONTypeUtilities = TypeUtilities
 module JSONLiteral = FlattenedLiteral
 module JSONType = JSONLiteral.LType
 module JSONIdentifier = JSONType.TIdentifier
-module JSONBuiltIns = ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+module JSONBuiltIns =
+  ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 open JSONTypeUtilities
 open JSONIdentifier
 open JSONType

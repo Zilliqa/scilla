@@ -418,7 +418,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ UintLit x; UintLit y ] -> pure @@ build_bool_lit ([%equal: uint_lit] x y)
+      | [ UintLit x; UintLit y ] ->
+          pure @@ build_bool_lit ([%equal: uint_lit] x y)
       | _ -> builtin_fail "Uint.eq: unsupported types" ls
 
     let add ls _ =
@@ -796,7 +797,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ build_bool_lit (Bystrx.equal bs1 bs2)
+      | [ ByStrX bs1; ByStrX bs2 ] ->
+          pure @@ build_bool_lit (Bystrx.equal bs1 bs2)
       | _ -> builtin_fail "Crypto.eq" ls
 
     let hash_type =
