@@ -16,14 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-%parameter<Literal : Literal.ScillaLiteral>
+%parameter<S : ParserUtil.Syn>
 
 %{
-  open Literal
   open Syntax
   open ErrorUtils
 
-  module ParserSyntax = ScillaSyntax (ParserRep) (ParserRep) (Literal)
+  module ParserSyntax = S
   module ParserIdentifier = ParserSyntax.SIdentifier
   module ParserName = ParserIdentifier.Name
   open ParserSyntax
@@ -74,7 +73,7 @@
     | None -> raise (SyntaxError (("Invalid " ^ (SType.pp_prim_typ t) ^ " literal " ^ v), loc))
 
   let build_bool_literal v loc =
-    (Literal (build_bool_lit v), loc)
+    (Literal (SLiteral.build_bool_lit v), loc)
 
 %}
 
@@ -154,11 +153,11 @@
 (* %nonassoc NEG *)
 %right TARROW
 
-%start <ParserSyntax.expr_annot> exp_term
-%start <ParserSyntax.SType.t> type_term
-%start <ParserSyntax.stmt_annot list> stmts_term
-%start <ParserSyntax.cmodule> cmodule
-%start <ParserSyntax.lmodule> lmodule
+%start <S.expr_annot> exp_term
+%start <S.SType.t> type_term
+%start <S.stmt_annot list> stmts_term
+%start <S.cmodule> cmodule
+%start <S.lmodule> lmodule
 
 %%
 

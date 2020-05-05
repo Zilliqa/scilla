@@ -21,7 +21,7 @@ open Result.Let_syntax
 open Scilla_base
 open MonadUtil
 open Literal
-open Syntax
+open ParserUtil
 open JSON
 open TypeUtil
 open StateIPCIdl

@@ -21,8 +21,7 @@
 
 open Scilla_base
 open Literal
-open Syntax
-open ParsedSyntax
+open ParserUtil.ParserSyntax
 open ErrorUtils
 
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)

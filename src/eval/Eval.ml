@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
+open ParserUtil
 open Syntax
 open ErrorUtils
 open EvalUtil

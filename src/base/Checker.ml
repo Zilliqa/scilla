@@ -18,6 +18,7 @@
 
 open Core_kernel
 open! Int.Replace_polymorphic_compare
+open ParserUtil
 open Syntax
 open ErrorUtils
 open PrettyPrinters
@@ -33,6 +34,7 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
+module Parser = ScillaParser.Make (ParserSyntax)
 module PSRep = ParserRep
 module PERep = ParserRep
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
@@ -202,9 +204,9 @@ let wrap_error_with_gas gas res =
 let check_lmodule cli =
   let r =
     let initial_gas = cli.gas_limit in
-    let%bind (lmod : ParsedSyntax.lmodule) =
+    let%bind (lmod : ParserSyntax.lmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file ScillaParser.Incremental.lmodule
+      @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
     let elibs = import_libs lmod.elibs cli.init_file in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
@@ -244,9 +246,9 @@ let check_lmodule cli =
 let check_cmodule cli =
   let r =
     let initial_gas = cli.gas_limit in
-    let%bind (cmod : ParsedSyntax.cmodule) =
+    let%bind (cmod : ParserSyntax.cmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file ScillaParser.Incremental.cmodule
+      @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
     let elibs = import_libs cmod.elibs cli.init_file in

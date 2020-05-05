@@ -101,7 +101,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* String operations *)
   module String = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
@@ -191,7 +190,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* Integer operations *)
   module Int = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -394,7 +392,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* Unsigned integer operation *)
   module Uint = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -645,7 +642,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   (* Working with block numbers *)
   (***********************************************************)
   module BNum = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ

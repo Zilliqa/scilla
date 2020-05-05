@@ -19,6 +19,7 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
+open ParserUtil
 open Literal
 open Syntax
 open ErrorUtils
@@ -244,7 +245,7 @@ module Configuration = struct
       in
       match g with
       | G_MapGet (i, _) ->
-          let is_member_lit = to_Bool is_member in
+          let is_member_lit = EvalLiteral.build_bool_lit is_member in
           let g' = G_MapGet (i, Some is_member_lit) in
           pure (is_member_lit, g')
       | _ ->

@@ -18,11 +18,16 @@
 
 {
 open Lexing
-open ScillaParser
 open Big_int
 open Base
 
-exception Error of string
+(* Must be instantiated using the same syntax struct as the parser *)
+module MkLexer (S : ParserUtil.Syn) = struct
+
+  module Parser = ScillaParser.Make (S)
+  open Parser
+
+  exception Error of string
 
 }
 
@@ -152,3 +157,7 @@ and comment braces =
   | newline   { new_line lexbuf; comment braces lexbuf}
   | _         { comment braces lexbuf}
   | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
+
+{
+end
+}
