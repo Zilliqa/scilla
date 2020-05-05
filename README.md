@@ -20,7 +20,9 @@ Zilliqa - the underlying blockchain platform on which Scilla contracts are run, 
 
 A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
 
-## Installation
+## Building Scilla
+
+If you don't want to setup and build Scilla from source, skip this section to follow the opam installation instructions.
 
 ### 1. Cloning source code
 
@@ -41,6 +43,50 @@ found in [INSTALL.md](./INSTALL.md).
 To build the project from the root folder:
 ```
 make
+```
+
+### Installation
+
+Scilla can be installed into your opam switch as
+
+```
+make install
+```
+
+and can similarly be uninstalled as
+
+```
+make uninstall
+```
+
+## Installing Scilla with opam
+Scilla can be installed using OCaml's package manager `opam`.
+
+### Installing Scilla from GitHub
+
+To install the development version of Scilla package make sure you are using
+the correct opam switch and execute the following
+
+```shell
+opam pin add scilla git+https://github.com/Zilliqa/scilla#master --yes
+```
+
+### Installing Scilla from your local repo
+
+```shell
+cd <scilla-repo>
+# It is important to pick the right git branch because opam pins the package to the current branch
+git checkout master
+opam install ./scilla.opam
+```
+
+If you are using a local opam switch (see [here](https://github.com/Zilliqa/scilla/blob/master/INSTALL.md#installing-opam-packages))
+in you local Scilla repo (`~/path/to/scilla`), then most likely you will want to reuse the same local switch for your Scilla-based project.
+To do that create a symlink `_opam` as follows:
+
+```shell
+cd <scilla-based-project-repo>
+ln -s ~/path/to/scilla/_opam _opam
 ```
 
 ## Running the binary
