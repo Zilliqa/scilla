@@ -32,6 +32,8 @@ open Sharding
 module M = Idl.IdM
 module IDL = Idl.Make (M)
 
+let () = Printexc.record_backtrace true
+
 module Server = API (IDL.GenServer ())
 
 (* Makes a handler that executes the given [callback] with [args] and returns it. **)
@@ -59,13 +61,18 @@ let handler rpc conn =
      should ensure that the computation is started by a runner *)
   let res =
     try M.run (rpc req)
-    with _ ->
+    with ex ->
       Rpc.failure
         (RPCError.rpc_of_t
            RPCError.
              {
                code = 0;
-               message = "scilla-server: incorrect invocation " ^ msg;
+               message =
+                 Printf.sprintf
+                   "scilla-server: incorrect invocation (%s / %s) %s"
+                   (Exn.to_string ex)
+                   (Printexc.get_backtrace ())
+                   msg;
              })
   in
   let str = Jsonrpc.string_of_response ~version:Jsonrpc.V2 res in
@@ -105,7 +112,7 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   (* Handlers *)
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
-  Server.sharding @@ mk_handler_dict (Sharding.run ~exe_name:"get-shard");
+  Server.sharding @@ mk_handler_dict (Sharding.run ~exe_name:"scilla-sharder");
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this

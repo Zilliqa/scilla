@@ -33,8 +33,8 @@ module API (R : RPC) = struct
         namespace = None;
         description =
           [
-            "This is a functor used to generate clients and servers that \
-             follow the JSON RPC protocol";
+            "This is a functor used to generate clients and servers \
+             that              follow the JSON RPC protocol";
           ];
         version = (1, 0, 0);
       }
@@ -69,8 +69,8 @@ module API (R : RPC) = struct
   let checker =
     declare "check"
       [
-        "Parse Scilla contract and perform a number of static checks including \
-         typechecking";
+        "Parse Scilla contract and perform a number of static checks \
+         including          typechecking";
       ]
       (checker_argv @-> returning checker_return checker_error)
 

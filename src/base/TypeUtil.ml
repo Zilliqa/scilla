@@ -384,6 +384,10 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
+  (* What is the type of the bottom-level value? *)
+  let rec map_bottom_type mt =
+    match mt with MapType (_, vt) -> map_bottom_type vt | _ -> mt
+
   let pp_typ_list ts =
     let tss = List.map ~f:(fun t -> pp_typ t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)

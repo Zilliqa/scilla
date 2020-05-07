@@ -82,6 +82,10 @@ let to_int_exn j =
   let thunk () = Basic.Util.to_int j in
   json_exn_wrapper thunk
 
+let to_assoc_exn j =
+  let thunk () = Basic.Util.to_assoc j in
+  json_exn_wrapper thunk
+
 (* Given a literal, return its full type name *)
 let literal_type_exn l =
   let t = literal_type l in
@@ -260,6 +264,12 @@ let get_string_literal l = match l with StringLit sl -> Some sl | _ -> None
 
 let get_uint_literal l =
   match l with UintLit il -> Some (string_of_uint_lit il) | _ -> None
+
+let get_integer_literal l =
+  match l with
+  | UintLit il -> Some (string_of_uint_lit il)
+  | IntLit il -> Some (string_of_int_lit il)
+  | _ -> None
 
 let get_address_literal l =
   match l with
@@ -618,11 +628,35 @@ module ShardingInfo = struct
 
   let tx_data_label = "tx_data"
 
+  let addr_label = "addr"
+
+  let field_pcms_label = "field_pcms"
+
+  let pcm_name_label = "pcm_name"
+
+  let pcm_type_label = "pcm_type"
+
+  let shard_id_label = "shard_id"
+
+  let states_label = "states"
+
+  let ancestor_label = "ancestor"
+
+  let temp_label = "temp"
+
+  let shard_label = "shard"
+
   let get_json (sharding_constraints, field_pcms) =
     `Assoc
       [
         ( "field_pcms",
-          `Assoc (List.map field_pcms ~f:(fun (f, p) -> (f, `String p))) );
+          `Assoc
+            (List.map field_pcms ~f:(fun (f, (p, t)) ->
+                 ( f,
+                   `Assoc
+                     [
+                       ("pcm_name", `String p); ("pcm_type", `String (pp_typ t));
+                     ] ))) );
         ( "transition_constraints",
           `Assoc
             (List.map sharding_constraints ~f:(fun (t, sc) -> (t, `List sc))) );
@@ -633,7 +667,7 @@ module ShardingInfo = struct
     member_exn req_type_label json |> to_string_exn
 
   (* Takes the json_to_sharding constraint function as argument *)
-  let get_request_data req_str js_to_sc =
+  let get_shard_request_data req_str js_to_sc =
     let json = from_string req_str in
     let sender_shard = member_exn sender_shard_label json |> to_int_exn in
     let con_shard = member_exn con_shard_label json |> to_int_exn in
@@ -659,4 +693,29 @@ module ShardingInfo = struct
       tr_constrs,
       param_contracts,
       tx_data )
+
+  let get_join_request_data req_str =
+    let json = from_string req_str in
+    let addr = member_exn addr_label json |> to_string_exn in
+    let shard_id = member_exn shard_id_label json |> to_int_exn in
+    let fpcj =
+      to_assoc_exn
+      @@ member_exn field_pcms_label
+      @@ member_exn sh_info_label json
+    in
+    let field_pcms =
+      List.map fpcj (fun (f, fj) ->
+          ( f,
+            ( member_exn pcm_name_label fj |> to_string_exn,
+              member_exn pcm_type_label fj |> to_string_exn ) ))
+    in
+    let stsj = to_assoc_exn @@ member_exn states_label json in
+    let states =
+      List.map stsj (fun (s, sj) ->
+          ( s,
+            member_exn ancestor_label sj |> to_string_exn,
+            member_exn temp_label sj |> to_string_exn,
+            member_exn shard_label sj |> to_string_exn ))
+    in
+    (addr, shard_id, field_pcms, states)
 end

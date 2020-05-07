@@ -64,8 +64,12 @@ struct
     ER.mk_id (mk_ident f) dummy_type
 
   (* Turn, e.g. balances[_sender][to] into pseudofield *)
-  let pp_of_str str =
-    let ds = String.map (fun c -> if c = '[' || c = ']' then '|' else c) str in
+  let pp_of_str ?(extra_sep = []) str =
+    let ds =
+      String.map
+        (fun c -> if c = '[' || c = ']' || List.mem c extra_sep then '|' else c)
+        str
+    in
     let components = String.split_on_char '|' ds in
     (* Filter out empty component at the end *)
     let components =
@@ -1060,7 +1064,7 @@ struct
   (* TODO: move PCMs into a separate file *)
   (* This is a "special" PCM, which does not follow the structure of others *)
   module State_Split_PCM = struct
-    let pcm_identifier = "state_split"
+    let pcm_identifier = "owner_overwrites"
   end
 
   (* Generic addition PCM for all signed and unsigned types *)
@@ -2209,7 +2213,8 @@ struct
     let pcms = allocate_field_pcms local_pcms in
     let default_assignment =
       List.map
-        (fun (f, _, _) -> (get_id f, State_Split_PCM.pcm_identifier))
+        (fun (f, t, _) ->
+          (get_id f, (State_Split_PCM.pcm_identifier, TU.map_bottom_type t)))
         cmod.contr.cfields
     in
     let assigned_field_pcms =
@@ -2290,7 +2295,7 @@ struct
               (* Assign PCMs to all fields *)
               let assignment =
                 List.map
-                  (fun (f, _, _) ->
+                  (fun (f, t, _) ->
                     (* the same field can be written to both commutatively and non-commutatively *)
                     let has_cw = is_mem_id f commutative_writes in
                     let has_non_cw = is_mem_id f noncomm_writes in
@@ -2303,12 +2308,12 @@ struct
                           compose_sd_identifier State_Split_PCM.pcm_identifier
                             cw_pcm
                     in
-                    (get_id f, pcm))
+                    (get_id f, (pcm, TU.map_bottom_type t)))
                   cmod.contr.cfields
               in
               Printf.eprintf "%s\n" @@ "Global PCM assignment: "
               ^ String.concat ", "
-                  (List.map (fun (f, pcm) -> f ^ ": " ^ pcm) assignment);
+                  (List.map (fun (f, (pcm, _)) -> f ^ ": " ^ pcm) assignment);
               assignment
           (* Revert to always-OK state splitting strategy if fancier strategies don't pan out *)
           | false -> default_assignment )
@@ -2334,7 +2339,7 @@ struct
                 (* This is a comutative write; we need to ensure it's under the global PCM *)
                 match is_comm_write op constant_fields with
                 | true, Some local_pcm ->
-                    let global_pcm = List.assoc (get_id f) field_pcms in
+                    let global_pcm = fst @@ List.assoc (get_id f) field_pcms in
                     (* It's an exclusive access if it's not compatible with the global PCM *)
                     not @@ is_pcm_compatible local_pcm global_pcm
                 (* If somehow this isn't commutative, there's a bug somewhere *)

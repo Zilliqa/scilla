@@ -138,6 +138,8 @@ module TypeUtilities : sig
 
   val map_depth : typ -> int
 
+  val map_bottom_type : typ -> typ
+
   (****************************************************************)
   (*             Utility function for matching types              *)
   (****************************************************************)

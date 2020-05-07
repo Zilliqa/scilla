@@ -16,6 +16,10 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
+val build_prim_lit_exn : Syntax.typ -> string -> Syntax.literal
+
+val get_integer_literal : Syntax.literal -> string option
+
 (* The state input is a json containing an array state variables.
  * Each state variable is a list of the following key value pairs:
  *    "vname" : "variable name"
@@ -200,16 +204,23 @@ end
 
 module ShardingInfo : sig
   val get_json :
-    (string * Yojson.Basic.t list) list * (string * string) list ->
+    (string * Yojson.Basic.t list) list * (string * (string * Syntax.typ)) list ->
     Yojson.Basic.t
 
   val get_request_type : string -> string
 
-  val get_request_data :
+  val get_shard_request_data :
     string ->
     (Yojson.Basic.t -> 'a) ->
     (int * int * int * int)
-    * 'a Core_kernel.List.t
-    * string Core_kernel.List.t
+    * 'a list
+    * string list
     * (string * Syntax.literal) list
+
+  val get_join_request_data :
+    string ->
+    string
+    * int
+    * (string * (string * string)) list
+    * (string * string * string * string) list
 end
