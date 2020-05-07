@@ -460,7 +460,6 @@ imports :
 cmodule:
 | SCILLA_VERSION; cver = NUMLIT; els = imports; ls = option(library); c = contract; EOF
   { { smver = Big_int.int_of_big_int cver;
-      cname = c.cname;
       libs = ls;
       elibs = els;
       contr = c } }

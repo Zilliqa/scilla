@@ -160,12 +160,11 @@ module type Syn = sig
   type cmodule = {
     smver : int;
     (* Scilla major version of the contract. *)
-    cname : ParserRep.rep SIdentifier.t;
     libs : library option;
     (* lib functions defined in the module *)
-    (* List of imports / external libs with an optional namespace. *)
     elibs :
       (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t option) list;
+    (* List of imports / external libs with an optional namespace. *)
     contr : contract;
   }
 

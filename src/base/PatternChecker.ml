@@ -345,10 +345,7 @@ struct
         checked_elibs )
 
   let pm_check_module md rlibs elibs =
-    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr }
-        =
-      md
-    in
+    let { smver = mod_smver; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let init_msg =
       sprintf "Type error(s) in contract %s:\n"
@@ -395,7 +392,6 @@ struct
          pure
            ( {
                CheckedPatternSyntax.smver = mod_smver;
-               CheckedPatternSyntax.cname = mod_cname;
                CheckedPatternSyntax.libs = checked_lib;
                CheckedPatternSyntax.elibs = mod_elibs;
                CheckedPatternSyntax.contr =

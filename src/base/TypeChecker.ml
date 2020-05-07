@@ -1251,10 +1251,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         * Stdint.uint64,
         scilla_error list * Stdint.uint64 )
       result =
-    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr }
-        =
-      md
-    in
+    let { smver = mod_smver; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let msg = sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname) in
     strip_error_type
@@ -1357,7 +1354,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
          pure
            ( ( {
                  TypedSyntax.smver = mod_smver;
-                 TypedSyntax.cname = mod_cname;
                  TypedSyntax.libs = typed_clibs;
                  TypedSyntax.elibs = mod_elibs;
                  TypedSyntax.contr =

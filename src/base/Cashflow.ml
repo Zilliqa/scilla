@@ -260,13 +260,12 @@ struct
     { CFSyntax.lname; CFSyntax.lentries = List.map ~f:init_tag_entry lentries }
 
   let cf_init_tag_module cmod token_fields =
-    let { smver; cname; libs; elibs; contr } = cmod in
+    let { smver; libs; elibs; contr } = cmod in
     let res_libs =
       match libs with None -> None | Some l -> Some (cf_init_tag_library l)
     in
     {
       CFSyntax.smver;
-      CFSyntax.cname;
       CFSyntax.libs = res_libs;
       CFSyntax.elibs;
       CFSyntax.contr = cf_init_tag_contract contr token_fields;
@@ -2006,9 +2005,9 @@ struct
       final_ctr_tag_map )
 
   let cf_tag_module m =
-    let { smver; cname; libs; elibs; contr } = m in
+    let { smver; libs; elibs; contr } = m in
     let new_contr, ctr_tag_map = cf_tag_contract contr in
-    ({ smver; cname; libs; elibs; contr = new_contr }, ctr_tag_map)
+    ({ smver; libs; elibs; contr = new_contr }, ctr_tag_map)
 
   (*******************************************************)
   (*                Main entry function                  *)
