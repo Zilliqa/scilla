@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
+open ParserUtil
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open FrontEndParser
@@ -25,9 +25,9 @@ open FrontEndParser
 (*    Recursion principles for built-in ADTs               *)
 (***********************************************************)
 
-open ParsedSyntax
-open ParsedSyntax.SIdentifier
-open ParsedSyntax.SType
+open ParserSyntax
+open ParserSyntax.SIdentifier
+open ParserSyntax.SType
 
 let parse_expr_wrapper expr =
   match parse_expr expr with

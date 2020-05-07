@@ -37,22 +37,16 @@ open BIType
 open BILiteral
 
 module UsefulLiterals = struct
-  let true_lit = ADTValue ("True", [], [])
-
-  let false_lit = ADTValue ("False", [], [])
-
-  let to_Bool b = if b then true_lit else false_lit
-
   let some_lit l =
     let%bind t = literal_type l in
-    pure @@ ADTValue ("Some", [ t ], [ l ])
+    pure @@ build_some_lit l t
 
-  let none_lit t = ADTValue ("None", [ t ], [])
+  let none_lit t = build_none_lit t
 
   let pair_lit l1 l2 =
     let%bind t1 = literal_type l1 in
     let%bind t2 = literal_type l2 in
-    pure @@ ADTValue ("Pair", [ t1; t2 ], [ l1; l2 ])
+    pure @@ build_pair_lit l1 t1 l2 t2
 end
 
 module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
@@ -107,7 +101,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* String operations *)
   module String = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
@@ -118,7 +111,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ StringLit x; StringLit y ] -> pure @@ to_Bool String.(x = y)
+      | [ StringLit x; StringLit y ] -> pure @@ build_bool_lit String.(x = y)
       | _ -> builtin_fail "String.eq" ls
 
     let concat_arity = 2
@@ -197,7 +190,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* Integer operations *)
   module Int = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -224,7 +216,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ IntLit x; IntLit y ] -> pure @@ to_Bool ([%equal: int_lit] x y)
+      | [ IntLit x; IntLit y ] -> pure @@ build_bool_lit ([%equal: int_lit] x y)
       | _ -> builtin_fail "Int.eq: unsupported types" ls
 
     let add ls _ =
@@ -350,13 +342,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       try
         match ls with
         | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-            pure @@ to_Bool (Int32_safe.lt x y)
+            pure @@ build_bool_lit (Int32_safe.lt x y)
         | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-            pure @@ to_Bool (Int64_safe.lt x y)
+            pure @@ build_bool_lit (Int64_safe.lt x y)
         | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-            pure @@ to_Bool (Int128_safe.lt x y)
+            pure @@ build_bool_lit (Int128_safe.lt x y)
         | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-            pure @@ to_Bool (Int256_safe.lt x y)
+            pure @@ build_bool_lit (Int256_safe.lt x y)
         | _ -> builtin_fail "Int.lt: unsupported types" ls
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.lt: an overflow/underflow occurred" ls
@@ -400,7 +392,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   (* Unsigned integer operation *)
   module Uint = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -427,7 +418,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ UintLit x; UintLit y ] -> pure @@ to_Bool ([%equal: uint_lit] x y)
+      | [ UintLit x; UintLit y ] ->
+          pure @@ build_bool_lit ([%equal: uint_lit] x y)
       | _ -> builtin_fail "Uint.eq: unsupported types" ls
 
     let add ls _ =
@@ -577,13 +569,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       try
         match ls with
         | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-            pure @@ to_Bool (Uint32_safe.lt x y)
+            pure @@ build_bool_lit (Uint32_safe.lt x y)
         | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-            pure @@ to_Bool (Uint64_safe.lt x y)
+            pure @@ build_bool_lit (Uint64_safe.lt x y)
         | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-            pure @@ to_Bool (Uint128_safe.lt x y)
+            pure @@ build_bool_lit (Uint128_safe.lt x y)
         | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-            pure @@ to_Bool (Uint256_safe.lt x y)
+            pure @@ build_bool_lit (Uint256_safe.lt x y)
         | _ -> builtin_fail "Uint.lt: unsupported types" ls
       with IntOverflow | IntUnderflow ->
         builtin_fail "Uint.lt: an overflow/underflow occurred" ls
@@ -651,7 +643,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   (* Working with block numbers *)
   (***********************************************************)
   module BNum = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
 
     let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
@@ -660,7 +651,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ BNum x; BNum y ] -> pure @@ to_Bool Core_kernel.String.(x = y)
+      | [ BNum x; BNum y ] -> pure @@ build_bool_lit Core_kernel.String.(x = y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
@@ -673,7 +664,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           pure
             (let i1 = big_int_of_string x in
              let i2 = big_int_of_string y in
-             to_Bool (lt_big_int i1 i2))
+             build_bool_lit (lt_big_int i1 i2))
       | _ -> builtin_fail "BNum.blt" ls
 
     let badd_arity = 2
@@ -806,7 +797,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq ls _ =
       match ls with
-      | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ to_Bool (Bystrx.equal bs1 bs2)
+      | [ ByStrX bs1; ByStrX bs2 ] ->
+          pure @@ build_bool_lit (Bystrx.equal bs1 bs2)
       | _ -> builtin_fail "Crypto.eq" ls
 
     let hash_type =
@@ -1003,7 +995,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               (Bystr.to_raw_bytes msg)
               (Bystrx.to_raw_bytes signature)
           with
-          | Some v -> pure @@ to_Bool v
+          | Some v -> pure @@ build_bool_lit v
           | None -> builtin_fail "schnorr_verify: internal error" ls )
       | _ -> builtin_fail "schnorr_verify" ls
 
@@ -1055,7 +1047,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               (Bystr.to_raw_bytes msg)
               (Bystrx.to_raw_bytes signature)
           in
-          pure @@ to_Bool v
+          pure @@ build_bool_lit v
       | _ -> builtin_fail "ecdsa_verify" ls
 
     let schnorr_get_address_type =
@@ -1129,7 +1121,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           let%bind pairs' = scilla_g1g2pairlist_to_ocaml pairs in
           match Snark.alt_bn128_pairing_product pairs' with
           | None -> pure @@ none_lit bool_typ
-          | Some b -> some_lit (to_Bool b) )
+          | Some b -> some_lit (build_bool_lit b) )
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
   end
 
@@ -1157,7 +1149,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ Map (_, entries); key ] ->
           let res = Caml.Hashtbl.mem entries key in
-          pure @@ to_Bool res
+          pure @@ build_bool_lit res
       | _ -> builtin_fail "Map.contains" ls
 
     let put_arity = 3

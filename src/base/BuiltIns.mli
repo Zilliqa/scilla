@@ -26,12 +26,6 @@ module BILiteral = FlattenedLiteral
 module BIType = BILiteral.LType
 
 module UsefulLiterals : sig
-  val true_lit : BILiteral.t
-
-  val false_lit : BILiteral.t
-
-  val to_Bool : bool -> BILiteral.t
-
   val some_lit :
     BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
 

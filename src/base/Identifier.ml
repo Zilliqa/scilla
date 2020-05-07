@@ -25,6 +25,10 @@ module type QualifiedName = sig
   val as_string : t -> string
 
   val as_error_string : t -> string
+
+  val parse_simple_name : string -> t
+
+  val parse_qualified_name : string -> string -> t
 end
 
 module FlattenedName = struct
@@ -33,6 +37,10 @@ module FlattenedName = struct
   let as_string n = n
 
   let as_error_string n = n
+
+  let parse_simple_name n = n
+
+  let parse_qualified_name ns n = ns ^ "." ^ n
 end
 
 module type ScillaIdentifier = sig

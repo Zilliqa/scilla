@@ -4,8 +4,7 @@ open Stdint
 open OUnit2
 open Scilla_base
 open Literal
-open Syntax
-open ParsedSyntax
+open ParserUtil.ParserSyntax
 open PrettyPrinters
 module TestSyntaxLiteral = FlattenedLiteral
 module TestSyntaxType = TestSyntaxLiteral.LType

@@ -22,9 +22,11 @@ open Lexing
 open ErrorUtils
 open MonadUtil
 open ParserFaults
-open Syntax
-module MInter = ScillaParser.MenhirInterpreter
-module FEPType = ParsedSyntax.SType
+open ParserUtil
+module Parser = ScillaParser.Make (ParserSyntax)
+module Lexer = ScillaLexer.MkLexer (ParserSyntax)
+module MInter = Parser.MenhirInterpreter
+module FEPType = ParserSyntax.SType
 
 (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
 let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
@@ -32,7 +34,7 @@ let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
 let parse_lexbuf checkpoint_starter lexbuf filename =
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
   (* Supply of tokens *)
-  let supplier = MInter.lexer_lexbuf_to_supplier ScillaLexer.read lexbuf in
+  let supplier = MInter.lexer_lexbuf_to_supplier Lexer.read lexbuf in
   (* Parsing checkpoint, determines what we parse for *)
   let checkpoint = checkpoint_starter lexbuf.lex_curr_p in
   let success a = pure a in
@@ -53,9 +55,9 @@ let parse_lexbuf checkpoint_starter lexbuf filename =
     fail_err error_message lexbuf
   in
   try MInter.loop_handle success failure supplier checkpoint with
-  | ScillaLexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
+  | Lexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
   | Syntax.SyntaxError (msg, loc) -> fail1 ("Syntax error: " ^ msg) loc
-  | ScillaParser.Error -> fail_err "Syntax error." lexbuf
+  | Parser.Error -> fail_err "Syntax error." lexbuf
 
 let parse_file checkpoint_starter filename =
   In_channel.with_file filename ~f:(fun inx ->
@@ -66,15 +68,13 @@ let parse_string checkpoint_starter s =
   let lexbuf = Lexing.from_string s in
   parse_lexbuf checkpoint_starter lexbuf "Prelude"
 
-let parse_type s = parse_string ScillaParser.Incremental.type_term s
+let parse_type s = parse_string Parser.Incremental.type_term s
 
-let parse_expr s = parse_string ScillaParser.Incremental.exp_term s
+let parse_expr s = parse_string Parser.Incremental.exp_term s
 
 let parse_expr_from_file filename =
-  parse_file ScillaParser.Incremental.exp_term filename
+  parse_file Parser.Incremental.exp_term filename
 
-let parse_lmodule filename =
-  parse_file ScillaParser.Incremental.lmodule filename
+let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
 
-let parse_cmodule filename =
-  parse_file ScillaParser.Incremental.cmodule filename
+let parse_cmodule filename = parse_file Parser.Incremental.cmodule filename

@@ -103,7 +103,7 @@ module BlockChainState : sig
 end
 
 module ContractInfo : sig
-  open Syntax.ParsedSyntax
+  open ParserUtil.ParserSyntax
 
   (* Given a parsed contract, give a string JSON with these details:
        {

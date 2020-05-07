@@ -165,6 +165,22 @@ module type ScillaLiteral = sig
 
   (* String conversion from uint_typ *)
   val string_of_uint_lit : uint_lit -> string
+
+  (*******************************************************)
+  (*                 Useful literals                     *)
+  (*******************************************************)
+
+  val true_lit : t
+
+  val false_lit : t
+
+  val build_bool_lit : bool -> t
+
+  val build_some_lit : t -> LType.t -> t
+
+  val build_none_lit : LType.t -> t
+
+  val build_pair_lit : t -> LType.t -> t -> LType.t -> t
 end
 
 module MkLiteral (T : ScillaType) = struct
@@ -446,6 +462,22 @@ module MkLiteral (T : ScillaType) = struct
     | Bystr_typ -> Some (ByStr (Bystr.parse_hex v))
     | Bystrx_typ _ -> Some (ByStrX (Bystrx.parse_hex v))
     | _ -> None
+
+  (*******************************************************)
+  (*                 Useful literals                     *)
+  (*******************************************************)
+
+  let true_lit = ADTValue ("True", [], [])
+
+  let false_lit = ADTValue ("False", [], [])
+
+  let build_bool_lit b = if b then true_lit else false_lit
+
+  let build_some_lit l t = ADTValue ("Some", [ t ], [ l ])
+
+  let build_none_lit t = ADTValue ("None", [ t ], [])
+
+  let build_pair_lit l1 t1 l2 t2 = ADTValue ("Pair", [ t1; t2 ], [ l1; l2 ])
 end
 
 module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))

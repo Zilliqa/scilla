@@ -20,7 +20,7 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Printf
 open Scilla_base
-open Syntax
+open ParserUtil
 open TypeUtil
 open RecursionPrinciples
 open RunnerUtil
@@ -34,6 +34,7 @@ open TypeInfo
 open ErrorUtils
 module PSRep = ParserRep
 module PERep = ParserRep
+module Parser = ScillaParser.Make (ParserSyntax)
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
@@ -43,9 +44,7 @@ module GUA_Checker = ScillaGUA (TCSRep) (TCERep)
 
 (* Check that the expression parses *)
 let check_parsing filename =
-  match
-    FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename
-  with
+  match FrontEndParser.parse_file Parser.Incremental.exp_term filename with
   | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
   | Ok e ->
       plog
@@ -59,8 +58,8 @@ let check_typing e elibs gas =
   let open TC.TypeEnv in
   let rec_lib =
     {
-      ParsedSyntax.lname = TCIdentifier.mk_loc_id "rec_lib";
-      ParsedSyntax.lentries = recursion_principles;
+      ParserSyntax.lname = TCIdentifier.mk_loc_id "rec_lib";
+      ParserSyntax.lentries = recursion_principles;
     }
   in
   let%bind (_typed_rec_libs, tenv0), remaining_gas =
@@ -85,9 +84,7 @@ let run () =
   set_debug_level Debug_None;
   let filename = cli.input_file in
   let gas_limit = cli.gas_limit in
-  match
-    FrontEndParser.parse_file ScillaParser.Incremental.exp_term filename
-  with
+  match FrontEndParser.parse_file Parser.Incremental.exp_term filename with
   | Ok e -> (
       (* Get list of stdlib dirs. *)
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in

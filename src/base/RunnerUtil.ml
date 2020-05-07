@@ -24,12 +24,12 @@ open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
-open Syntax
 
 (* TODO: Parameterise this. *)
-module RUSyntax = ParsedSyntax
+module RUSyntax = ParserUtil.ParserSyntax
 module RUType = RUSyntax.SType
 module RUIdentifier = RUSyntax.SIdentifier
+module Parser = ScillaParser.Make (RUSyntax)
 open RUIdentifier
 open RUType
 open RUSyntax
@@ -70,7 +70,7 @@ let import_lib id =
         let initf = d ^/ name ^. "json" in
         (libf, get_init_extlibs initf)
   in
-  match FrontEndParser.parse_file ScillaParser.Incremental.lmodule fname with
+  match FrontEndParser.parse_file Parser.Incremental.lmodule fname with
   | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);

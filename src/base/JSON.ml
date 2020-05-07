@@ -31,7 +31,8 @@ module JSONTypeUtilities = TypeUtilities
 module JSONLiteral = FlattenedLiteral
 module JSONType = JSONLiteral.LType
 module JSONIdentifier = JSONType.TIdentifier
-module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
+module JSONBuiltIns =
+  ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 open JSONTypeUtilities
 open JSONIdentifier
 open JSONType
@@ -420,7 +421,7 @@ module BlockChainState = struct
 end
 
 module ContractInfo = struct
-  open Syntax.ParsedSyntax
+  open ParserUtil.ParserSyntax
 
   let get_json cmver (contr : contract)
       (event_info : (string * (string * JSONType.t) list) list) =
