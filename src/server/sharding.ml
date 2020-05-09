@@ -25,6 +25,7 @@ open PrettyPrinters
 open Stdint
 open Integer256
 open BuiltIns
+open TypeUtil
 module PSRep = ParserRep
 module PERep = ParserRep
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
@@ -35,13 +36,16 @@ module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 module SA = ScillaSA (TCSRep) (TCERep)
 module BuiltIns = ScillaBuiltIns (PSRep) (PERep)
+module TU = TypeUtilities
 
 let acc_addr_size = 20
 
 let state_index_separator = Char.of_int_exn 0x16
+
 (* Painful: "\u0016" is an escaped character in C++ and JSON, but not in OCaml. The OCaml
   equivalent is "\u{0016}". We have this so we can manually translate. *)
 let cpp_index_separator = "\\u0016"
+
 let ocaml_index_separator = String.of_char state_index_separator
 
 let get_shard_req = "get_shard"
@@ -64,7 +68,6 @@ module type StateJoiner = sig
     state_fragment ->
     state_fragment ->
     state_fragment ->
-    shard_id ->
     state_fragment
 end
 
@@ -72,13 +75,13 @@ module StateSplitJoiner = struct
   let applicable_to = SA.State_Split_PCM.pcm_identifier
 
   (* Overwrite *)
-  let join typ ancestor temp shard shard_id = shard
+  let join typ ancestor temp shard = shard
 end
 
 module IntegerAddJoiner = struct
   let applicable_to = SA.Integer_Addition_PCM.pcm_identifier
 
-  let join typ ancestor temp shard shard_id =
+  let join typ ancestor temp shard =
     let zero_empty x = if String.length x = 0 then "0" else x in
     let ancestor, temp, shard =
       (zero_empty ancestor, zero_empty temp, zero_empty shard)
@@ -88,7 +91,8 @@ module IntegerAddJoiner = struct
         let conv x =
           (* The values we get from Zilliqa AccountStore are quoted strings! *)
           let xs = String.strip ~drop:(fun c -> Char.compare c '"' = 0) x in
-          JSON.build_prim_lit_exn typ xs in
+          JSON.build_prim_lit_exn typ xs
+        in
         let an, tm, sh = (conv ancestor, conv temp, conv shard) in
         let add, sub =
           match
@@ -140,17 +144,48 @@ let integer_add_join = (module IntegerAddJoiner : StateJoiner)
 
 let joiners = [ overwrite_join; integer_add_join ]
 
-let find_join_function pcm_name =
-  let applicable_joiners =
-    List.filter joiners (fun (module P : StateJoiner) ->
-        String.compare P.applicable_to pcm_name = 0)
+(* state_is_owned is only relevant for composite PCMs,
+    e.g. owner_ovewrites+integer_add *)
+let find_join_function state_is_owned pcm_name =
+  let find_join searched_pcm =
+    let applicable_joiners =
+      List.filter joiners (fun (module P : StateJoiner) ->
+          String.compare P.applicable_to searched_pcm = 0)
+    in
+    let join_functions =
+      List.map applicable_joiners (fun (module P : StateJoiner) -> P.join)
+    in
+    match List.hd join_functions with
+    | Some jf -> jf
+    | None ->
+        raise (mk_internal_error ("No join function found for " ^ pcm_name))
   in
-  let join_functions =
-    List.map applicable_joiners (fun (module P : StateJoiner) -> P.join)
-  in
-  match List.hd join_functions with
-  | Some jf -> jf
-  | None -> StateSplitJoiner.join
+  (* Handle composite PCMs via compensating functions *)
+  (* Example:
+      overwrite+integer_add : join =
+        if own -> shard + (temp - ancestor)		(write + compensation)
+        else -> temp + (shard - ancestor)	  	(integer_add)
+  *)
+  let pcm_parts = String.split_on_chars pcm_name ~on:[ '+' ] in
+  let is_composite = List.length pcm_parts = 2 in
+  match (is_composite, state_is_owned) with
+  | false, _ -> find_join pcm_name
+  (* Own the state: must apply compensating function *)
+  | true, true ->
+      let pcm = List.nth_exn pcm_parts 1 in
+      let raw_join = find_join pcm in
+      (* Arguments intentionally swapped: that's how a compensation function is defined! *)
+      (* TODO: find better way to name arguments when compensating *)
+      (* Maybe temp = main_source and shard = diff_source i.e. diff = shard/diff_source - ancestor *)
+      let compensated_join typ ancestor temp shard =
+        raw_join typ ancestor shard temp
+      in
+      compensated_join
+  (* Don't own the state *)
+  | true, false ->
+      let pcm = List.nth_exn pcm_parts 1 in
+      let raw_join = find_join pcm in
+      raw_join
 
 type shard_allocation = AnyShard | Shard of int | DSShard
 
@@ -220,12 +255,13 @@ let literal_to_shard (lit : Syntax.literal) con_shard num_shards =
   in
   let log_str = pp_literal lit ^ " --> " ^ string_of_int si in
   literal_log := log_str :: !literal_log;
-  Shard si
+  si
 
 (* Allocate a pseudofield access to a shard *)
 (* Possible extension: pf_to_shard can be provided by contract writer *)
+(* IMPORTANT: pf_to_shard and concrete_pf_to_shard should have the same behaviour! *)
 let pf_to_shard (pf : SA.pseudofield) con_shard num_shards params =
-  let default = Shard con_shard in
+  let default = con_shard in
   match pf with
   (* normal field access *)
   | _, None -> default
@@ -239,6 +275,16 @@ let pf_to_shard (pf : SA.pseudofield) con_shard num_shards params =
       | None -> default )
   (* This shouldn't happen *)
   | _, Some [] -> default
+
+(* Concrete pseudofield = map keys are replaced with their values! *)
+(* IMPORTANT: pf_to_shard and concrete_pf_to_shard should have the same behaviour! *)
+let concrete_pf_to_shard (pf : SA.pseudofield) field_type con_shard num_shards =
+  let default = con_shard in
+  match (pf, field_type) with
+  | (_, Some (k :: _)), MapType (kt, _) ->
+      let key_literal = JSON.build_prim_lit_exn kt (get_id k) in
+      literal_to_shard key_literal con_shard num_shards
+  | _ -> default
 
 let get_shard req_data =
   let ( (sender_shard, con_shard, ds_shard, num_shards),
@@ -276,7 +322,7 @@ let get_shard req_data =
               Bool.compare x true = 0)
         in
         if dups_exist then DSShard else AnyShard
-    | SA.CAccess pf -> pf_to_shard pf con_shard num_shards params
+    | SA.CAccess pf -> Shard (pf_to_shard pf con_shard num_shards params)
   in
   let sh_alloc = List.map tr_constrs sc_to_shard in
   let shard = List.fold_left sh_alloc ~init:AnyShard ~f:shard_combine in
@@ -293,31 +339,42 @@ let get_shard req_data =
   (sh_log, shard_id)
 
 let make_get_shard_resp sh_log sh_id =
-  let log_json = List.map sh_log (fun s -> `String s) in
-  let lit_log_json = List.map !literal_log (fun s -> `String s) in
+  (* let log_json = List.map sh_log (fun s -> `String s) in
+     let lit_log_json = List.map !literal_log (fun s -> `String s) in *)
   let json =
     `Assoc
       [
-        ("log", `List log_json);
-        ("lit_log", `List lit_log_json);
+        (* ("log", `List log_json);
+           ("lit_log", `List lit_log_json); *)
         ("shard", `Int sh_id);
       ]
   in
   Yojson.Basic.to_string json
 
-let state_to_pseudofield st =
-  (* Work-around a bug in the JSON parsing of the RPC library *)
-  let st = String.substr_replace_all st ~pattern:cpp_index_separator ~with_:ocaml_index_separator in
+let state_to_concrete_pseudofield st =
+  (* Work-around a bug in the JSON parsing of the RPC library? *)
+  let st =
+    String.substr_replace_all st ~pattern:cpp_index_separator
+      ~with_:ocaml_index_separator
+  in
+  (* Workaround: replace quotes *)
+  let st = String.substr_replace_all st ~pattern:"\"" ~with_:"" in
   let st_components = String.split st ~on:state_index_separator in
   (* Filter out empty components, esp. the one at the end *)
-  let st_components = List.filter st_components (fun s -> not @@ String.equal s "") in
+  let st_components =
+    List.filter st_components (fun s -> not @@ String.equal s "")
+  in
+  (* literal_log := Printf.sprintf "Components: %s" (String.concat ~sep:"|" st_components) :: !literal_log; *)
   let tl_stc = List.tl st_components in
   match tl_stc with
   | Some tl_stc -> (
       let st_strip_addr =
         String.concat ~sep:(String.of_char state_index_separator) tl_stc
       in
-      let res = SA.pp_of_str st_strip_addr in
+      (* literal_log := Printf.sprintf "st_strip_addr: %s" st_strip_addr :: !literal_log; *)
+      let res =
+        SA.pp_of_str ~extra_sep:[ state_index_separator ] st_strip_addr
+      in
       match res with
       | Ok pf -> pf
       | Error s ->
@@ -325,37 +382,49 @@ let state_to_pseudofield st =
   | None -> raise (mk_invalid_json (Printf.sprintf "Invalid state name %s" st))
 
 let join req_data =
-  let addr, shard_id, field_pcms, states = req_data in
+  let (con_shard, num_shards), shard_id, field_pcms, states = req_data in
+  (* let field_names = List.map field_pcms (fun (a, _) -> a)  in *)
+  (* literal_log := Printf.sprintf "Field names: %s" (String.concat ~sep:", " field_names) :: !literal_log; *)
   let join_state (st_id, ancestor, temp, shard) =
-    let field, keys = state_to_pseudofield st_id in
+    let field, keys = state_to_concrete_pseudofield st_id in
     let field_name = get_id field in
-    literal_log := Printf.sprintf "%s -> %s" st_id field_name :: !literal_log;
+    literal_log := Printf.sprintf "%s => %s" st_id field_name :: !literal_log;
     (* Just overwrite fields that are managed by the blockchain rather
        than the contract, e.g. map_depth and sharding_info *)
     let opt_found = List.Assoc.find field_pcms ~equal:String.equal field_name in
     match opt_found with
-    | Some (pcm_name, pcm_type) ->
+    | Some (pcm_name, field_type) ->
         let field_type =
-          match FrontEndParser.parse_type pcm_type with
+          match FrontEndParser.parse_type field_type with
           | Ok t -> t
           | Error s ->
               raise
-                (mk_invalid_json (Printf.sprintf "Invalid type %s" pcm_type))
+                (mk_invalid_json (Printf.sprintf "Invalid type %s" field_type))
         in
-        let join_fn = find_join_function pcm_name in
-        let joined = join_fn field_type ancestor temp shard shard_id in
+        let state_owner_shard =
+          concrete_pf_to_shard (field, keys) field_type con_shard num_shards
+        in
+        let state_is_owned = Int.equal state_owner_shard shard_id in
+        (* literal_log :=
+           Printf.sprintf "%s -> owner_id: %d | shard_id: %d" st_id
+             state_owner_shard shard_id
+           :: !literal_log; *)
+        let join_fn = find_join_function state_is_owned pcm_name in
+        let bottom_field_type = TU.map_bottom_type field_type in
+        let joined = join_fn bottom_field_type ancestor temp shard in
         (st_id, joined)
     | None -> (st_id, shard)
+    (* raise (mk_internal_error ("Could not find sharding information for field " ^ field_name)) *)
   in
   List.map states ~f:join_state
 
 let make_join_resp states =
-  let lit_log_json = List.map !literal_log (fun s -> `String s) in
+  (* let lit_log_json = List.map !literal_log (fun s -> `String s) in *)
   let states_dict =
     `Assoc (List.map states (fun (st_id, joined) -> (st_id, `String joined)))
   in
   let json =
-    `Assoc [ ("states", states_dict); ("lit_log", `List lit_log_json) ]
+    `Assoc [ ("states", states_dict) (* ("lit_log", `List lit_log_json) *) ]
   in
   Yojson.Basic.to_string json
 

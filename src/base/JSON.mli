@@ -219,7 +219,7 @@ module ShardingInfo : sig
 
   val get_join_request_data :
     string ->
-    string
+    (int * int)
     * int
     * (string * (string * string)) list
     * (string * string * string * string) list

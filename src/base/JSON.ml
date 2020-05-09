@@ -628,13 +628,11 @@ module ShardingInfo = struct
 
   let tx_data_label = "tx_data"
 
-  let addr_label = "addr"
-
   let field_pcms_label = "field_pcms"
 
   let pcm_name_label = "pcm_name"
 
-  let pcm_type_label = "pcm_type"
+  let field_type_label = "field_type"
 
   let shard_id_label = "shard_id"
 
@@ -649,15 +647,16 @@ module ShardingInfo = struct
   let get_json (sharding_constraints, field_pcms) =
     `Assoc
       [
-        ( "field_pcms",
+        ( field_pcms_label,
           `Assoc
             (List.map field_pcms ~f:(fun (f, (p, t)) ->
                  ( f,
                    `Assoc
                      [
-                       ("pcm_name", `String p); ("pcm_type", `String (pp_typ t));
+                       (pcm_name_label, `String p);
+                       (field_type_label, `String (pp_typ t));
                      ] ))) );
-        ( "transition_constraints",
+        ( tc_label,
           `Assoc
             (List.map sharding_constraints ~f:(fun (t, sc) -> (t, `List sc))) );
       ]
@@ -696,8 +695,9 @@ module ShardingInfo = struct
 
   let get_join_request_data req_str =
     let json = from_string req_str in
-    let addr = member_exn addr_label json |> to_string_exn in
     let shard_id = member_exn shard_id_label json |> to_int_exn in
+    let con_shard = member_exn con_shard_label json |> to_int_exn in
+    let num_shards = member_exn num_shards_label json |> to_int_exn in
     let fpcj =
       to_assoc_exn
       @@ member_exn field_pcms_label
@@ -707,7 +707,7 @@ module ShardingInfo = struct
       List.map fpcj (fun (f, fj) ->
           ( f,
             ( member_exn pcm_name_label fj |> to_string_exn,
-              member_exn pcm_type_label fj |> to_string_exn ) ))
+              member_exn field_type_label fj |> to_string_exn ) ))
     in
     let stsj = to_assoc_exn @@ member_exn states_label json in
     let states =
@@ -717,5 +717,5 @@ module ShardingInfo = struct
             member_exn temp_label sj |> to_string_exn,
             member_exn shard_label sj |> to_string_exn ))
     in
-    (addr, shard_id, field_pcms, states)
+    ((con_shard, num_shards), shard_id, field_pcms, states)
 end

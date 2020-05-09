@@ -2213,8 +2213,7 @@ struct
     let pcms = allocate_field_pcms local_pcms in
     let default_assignment =
       List.map
-        (fun (f, t, _) ->
-          (get_id f, (State_Split_PCM.pcm_identifier, TU.map_bottom_type t)))
+        (fun (f, t, _) -> (get_id f, (State_Split_PCM.pcm_identifier, t)))
         cmod.contr.cfields
     in
     let assigned_field_pcms =
@@ -2308,7 +2307,7 @@ struct
                           compose_sd_identifier State_Split_PCM.pcm_identifier
                             cw_pcm
                     in
-                    (get_id f, (pcm, TU.map_bottom_type t)))
+                    (get_id f, (pcm, t)))
                   cmod.contr.cfields
               in
               Printf.eprintf "%s\n" @@ "Global PCM assignment: "
