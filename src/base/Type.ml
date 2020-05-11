@@ -23,11 +23,10 @@ open ErrorUtils
 open Identifier
 
 module PrimType = struct
-
   type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
   [@@deriving sexp, equal]
 
-  type t = 
+  type t =
     | Int_typ of int_bit_width
     | Uint_typ of int_bit_width
     | String_typ
@@ -74,12 +73,11 @@ module PrimType = struct
     | Exception_typ -> "Exception"
     | Bystr_typ -> "ByStr"
     | Bystrx_typ b -> "ByStr" ^ Int.to_string b
-
 end
 
 module type ScillaType = sig
   module TIdentifier : ScillaIdentifier
- 
+
   type t =
     | PrimType of PrimType.t
     | MapType of t * t
