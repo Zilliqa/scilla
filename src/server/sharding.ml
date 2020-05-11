@@ -75,7 +75,7 @@ module StateSplitJoiner = struct
   let applicable_to = SA.State_Split_PCM.pcm_identifier
 
   (* Overwrite *)
-  let join typ ancestor temp shard = shard
+  let join _ _ _ shard = shard
 end
 
 module IntegerAddJoiner = struct
@@ -114,14 +114,14 @@ module IntegerAddJoiner = struct
           let diff =
             match sub [ sh; an ] typ with
             | Ok res -> res
-            | Error s ->
+            | Error _ ->
                 raise
                   (mk_internal_error "Substraction (shard - ancestor) failed")
           in
           let final =
             match add [ tm; diff ] typ with
             | Ok res -> res
-            | Error s ->
+            | Error _ ->
                 raise (mk_internal_error "Addition (temp + diff) failed")
           in
           final
@@ -149,11 +149,11 @@ let joiners = [ overwrite_join; integer_add_join ]
 let find_join_function state_is_owned pcm_name =
   let find_join searched_pcm =
     let applicable_joiners =
-      List.filter joiners (fun (module P : StateJoiner) ->
+      List.filter joiners ~f:(fun (module P : StateJoiner) ->
           String.compare P.applicable_to searched_pcm = 0)
     in
     let join_functions =
-      List.map applicable_joiners (fun (module P : StateJoiner) -> P.join)
+      List.map applicable_joiners ~f:(fun (module P : StateJoiner) -> P.join)
     in
     match List.hd join_functions with
     | Some jf -> jf
@@ -268,7 +268,7 @@ let pf_to_shard (pf : SA.pseudofield) con_shard num_shards params =
   (* map access; shard based on first key's value *)
   | _, Some (k :: _) -> (
       let kv =
-        List.find params (fun (n, l) -> String.compare n (get_id k) = 0)
+        List.find params ~f:(fun (n, _) -> String.compare n (get_id k) = 0)
       in
       match kv with
       | Some (_, v) -> literal_to_shard v con_shard num_shards
@@ -300,14 +300,14 @@ let get_shard req_data =
     | SA.CContractShard -> Shard con_shard
     | SA.CMustBeUserAddr i ->
         let is_con =
-          List.mem param_contracts (get_id i) (fun a b ->
+          List.mem param_contracts (get_id i) ~equal:(fun a b ->
               String.compare a b = 0)
         in
         if is_con then DSShard else AnyShard
     | SA.CMustNotHaveDuplicates dl ->
         let have_dups (a, b) =
           let find x =
-            List.find params (fun (n, l) -> String.compare n (get_id x) = 0)
+            List.find params ~f:(fun (n, _) -> String.compare n (get_id x) = 0)
           in
           let fa, fb = (find a, find b) in
           match (fa, fb) with
@@ -318,13 +318,13 @@ let get_shard req_data =
           | _ -> false
         in
         let dups_exist =
-          List.for_all (List.map dl have_dups) (fun x ->
+          List.for_all (List.map dl ~f:have_dups) ~f:(fun x ->
               Bool.compare x true = 0)
         in
         if dups_exist then DSShard else AnyShard
     | SA.CAccess pf -> Shard (pf_to_shard pf con_shard num_shards params)
   in
-  let sh_alloc = List.map tr_constrs sc_to_shard in
+  let sh_alloc = List.map tr_constrs ~f:sc_to_shard in
   let shard = List.fold_left sh_alloc ~init:AnyShard ~f:shard_combine in
   let sh_log =
     List.map2_exn tr_constrs sh_alloc ~f:(fun c sh ->
@@ -338,7 +338,7 @@ let get_shard req_data =
   in
   (sh_log, shard_id)
 
-let make_get_shard_resp sh_log sh_id =
+let make_get_shard_resp _ sh_id =
   (* let log_json = List.map sh_log (fun s -> `String s) in
      let lit_log_json = List.map !literal_log (fun s -> `String s) in *)
   let json =
@@ -362,7 +362,7 @@ let state_to_concrete_pseudofield st =
   let st_components = String.split st ~on:state_index_separator in
   (* Filter out empty components, esp. the one at the end *)
   let st_components =
-    List.filter st_components (fun s -> not @@ String.equal s "")
+    List.filter st_components ~f:(fun s -> not @@ String.equal s "")
   in
   (* literal_log := Printf.sprintf "Components: %s" (String.concat ~sep:"|" st_components) :: !literal_log; *)
   let tl_stc = List.tl st_components in
@@ -377,7 +377,7 @@ let state_to_concrete_pseudofield st =
       in
       match res with
       | Ok pf -> pf
-      | Error s ->
+      | Error _ ->
           raise (mk_invalid_json (Printf.sprintf "Invalid state name %s" st)) )
   | None -> raise (mk_invalid_json (Printf.sprintf "Invalid state name %s" st))
 
@@ -397,7 +397,7 @@ let join req_data =
         let field_type =
           match FrontEndParser.parse_type field_type with
           | Ok t -> t
-          | Error s ->
+          | Error _ ->
               raise
                 (mk_invalid_json (Printf.sprintf "Invalid type %s" field_type))
         in
@@ -421,7 +421,7 @@ let join req_data =
 let make_join_resp states =
   (* let lit_log_json = List.map !literal_log (fun s -> `String s) in *)
   let states_dict =
-    `Assoc (List.map states (fun (st_id, joined) -> (st_id, `String joined)))
+    `Assoc (List.map states ~f:(fun (st_id, joined) -> (st_id, `String joined)))
   in
   let json =
     `Assoc [ ("states", states_dict) (* ("lit_log", `List lit_log_json) *) ]
@@ -429,7 +429,7 @@ let make_join_resp states =
   Yojson.Basic.to_string json
 
 let run req ~exe_name =
-  literal_log := [];
+  literal_log := [ exe_name ];
   match req with
   | Some req_str ->
       let req_type =

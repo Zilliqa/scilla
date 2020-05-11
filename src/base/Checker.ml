@@ -177,7 +177,7 @@ let analyze_sharding cmod typed_elibs selected_transitions weak_reads_str =
   | Error msg ->
       pout @@ scilla_error_to_string msg;
       res
-  | Ok cpol -> res
+  | Ok _ -> res
 
 let check_cashflow typed_cmod token_fields =
   let param_field_tags, ctr_tags = CF.main typed_cmod token_fields in

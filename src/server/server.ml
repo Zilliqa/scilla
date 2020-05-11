@@ -21,7 +21,6 @@ open DebugMessage
 open ErrorUtils
 open Api
 open IPCUtil
-open Sharding
 
 (* You can swap the RPC engine, by using a different monad here,
    note however that if you are using an asynchronous one, like

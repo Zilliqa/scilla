@@ -372,10 +372,6 @@ module Message = struct
     let json = from_file filename in
     get_message_data json
 
-  let get_json_from_str str =
-    let json = from_string str in
-    get_message_data json
-
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
@@ -704,14 +700,14 @@ module ShardingInfo = struct
       @@ member_exn sh_info_label json
     in
     let field_pcms =
-      List.map fpcj (fun (f, fj) ->
+      List.map fpcj ~f:(fun (f, fj) ->
           ( f,
             ( member_exn pcm_name_label fj |> to_string_exn,
               member_exn field_type_label fj |> to_string_exn ) ))
     in
     let stsj = to_assoc_exn @@ member_exn states_label json in
     let states =
-      List.map stsj (fun (s, sj) ->
+      List.map stsj ~f:(fun (s, sj) ->
           ( s,
             member_exn ancestor_label sj |> to_string_exn,
             member_exn temp_label sj |> to_string_exn,
