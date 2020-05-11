@@ -369,6 +369,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> fail0 "Failed to elaborate"
 
     let to_int_helper ls w =
+      let open Type.PrimType in
       let%bind xs =
         match ls with
         | [ IntLit x ] -> pure @@ string_of_int_lit x
@@ -596,6 +597,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> fail0 "Failed to elaborate"
 
     let to_uint_helper ls w =
+      let open Type.PrimType in
       let%bind xs =
         match ls with
         | [ IntLit x ] -> pure @@ string_of_int_lit x

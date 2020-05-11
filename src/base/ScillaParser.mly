@@ -30,7 +30,7 @@
   let to_loc_id s loc = SIdentifier.mk_id (ParserName.parse_simple_name s) loc
 
   let to_prim_type_exn d loc =
-    let open SType in
+    let open Type.PrimType in
     match d with
     | "Int32" -> Int_typ Bits32
     | "Int64" -> Int_typ Bits64
@@ -70,7 +70,7 @@
   let build_prim_literal_exn t v loc =
     match SLiteral.build_prim_literal t v with
     | Some l -> l
-    | None -> raise (SyntaxError (("Invalid " ^ (SType.pp_prim_typ t) ^ " literal " ^ v), loc))
+    | None -> raise (SyntaxError (("Invalid " ^ (Type.PrimType.pp_prim_typ t) ^ " literal " ^ v), loc))
 
   let build_bool_literal v loc =
     (Literal (SLiteral.build_bool_lit v), loc)

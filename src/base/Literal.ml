@@ -149,10 +149,10 @@ module type ScillaLiteral = sig
   (*            PrimType Literal utilities                        *)
   (****************************************************************)
 
-  val build_prim_literal : LType.prim_typ -> string -> t option
+  val build_prim_literal : PrimType.t -> string -> t option
 
   (* Is string representation of integer valid for integer typ. *)
-  val validate_int_string : LType.prim_typ -> string -> bool
+  val validate_int_string : PrimType.t -> string -> bool
 
   (* Get bit-width if int_lit. *)
   val int_lit_width : int_lit -> int
@@ -375,6 +375,7 @@ module MkLiteral (T : ScillaType) = struct
 
   (* Is string representation of integer valid for integer typ. *)
   let validate_int_string pt x =
+    let open PrimType in
     let open String in
     try
       match pt with
@@ -451,6 +452,7 @@ module MkLiteral (T : ScillaType) = struct
           else false)
 
   let build_prim_literal pt v =
+    let open PrimType in
     match pt with
     | Int_typ _ | Uint_typ _ -> build_int pt v
     | String_typ -> Option.some_if (validate_string_literal v) (StringLit v)
