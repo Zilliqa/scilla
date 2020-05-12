@@ -24,7 +24,7 @@ open Identifier
 
 module PrimType = struct
   type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
-  [@@deriving sexp, equal]
+  [@@deriving sexp, equal, compare]
 
   type t =
     | Int_typ of int_bit_width
@@ -36,7 +36,7 @@ module PrimType = struct
     | Exception_typ
     | Bystr_typ
     | Bystrx_typ of int
-  [@@deriving equal, sexp]
+  [@@deriving equal, sexp, compare]
 
   let sexp_of_t = function
     | Int_typ Bits32 -> Sexp.Atom "Int32"
