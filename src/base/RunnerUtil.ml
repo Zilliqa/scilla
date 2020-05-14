@@ -52,9 +52,8 @@ let get_init_extlibs filename =
                 filename)
       else name_addr_pairs
     with Invalid_json s ->
-      (* Inability to fetch extlibs info from init json shouldn't be fatal error. *)
-      plog (scilla_error_to_string s);
-      []
+      fatal_error
+        (s @ mk_error0 (sprintf "Unable to parse JSON file %s. " filename))
 
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
@@ -358,6 +357,8 @@ let parse_cli args ~exe_name =
   let r_type_info = ref false in
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
+  let r_validate_json = ref true in
+
   let speclist =
     [
       ( "-version",
@@ -402,6 +403,9 @@ let parse_cli args ~exe_name =
       ( "-typeinfo",
         Arg.Unit (fun () -> r_type_info := true),
         "Print types of variables with location" );
+      ( "-disable-validate-json",
+        Arg.Unit (fun () -> r_validate_json := false),
+        "Disable validation of input JSONs" );
     ]
   in
 
@@ -433,6 +437,7 @@ let parse_cli args ~exe_name =
   in
   if not @@ List.is_empty !r_cf_token_fields then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
+  GlobalConfig.set_validate_json !r_validate_json;
   {
     input_file = !r_input_file;
     stdlib_dirs = !r_stdlib_dir;

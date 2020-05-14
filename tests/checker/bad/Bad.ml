@@ -165,7 +165,7 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
 
   let additional_libdirs = [ [ "checker"; "bad"; "lib" ] ]
 
-  let tests = [ "extlib_dup_entry.scilla" ]
+  let tests = [ "extlib_dup_entry.scilla"; "bad_init.scilla" ]
 
   let exit_code : Unix.process_status = WEXITED 1
 end)
