@@ -43,8 +43,11 @@ open JSONLiteral
 (****************************************************************)
 
 let json_exn_wrapper = JSONParser.json_exn_wrapper
+
 let member_exn = JSONParser.member_exn
+
 let to_string_exn = JSONParser.to_string_exn
+
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let from_file f =
@@ -107,9 +110,7 @@ let rec json_to_adtargs cname tlist ajs =
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    constr_pattern_arg_types_exn
-      (ADT (mk_loc_id dt.tname, tlist))
-      cname
+    constr_pattern_arg_types_exn (ADT (mk_loc_id dt.tname, tlist)) cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
@@ -211,8 +212,7 @@ let jobj_to_statevar json =
   let tstring = member_exn "type" json |> to_string_exn in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () then
-    (n, json_to_lit t v)
+  if GlobalConfig.validate_json () then (n, json_to_lit t v)
   else (n, JSONParser.parse_json t v)
 
 (****************************************************************)
