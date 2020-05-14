@@ -34,12 +34,31 @@ open JSONTypeUtilities
 (***** Exception and wrappers ********)
 (*************************************)
 
+let json_exn_wrapper ?filename thunk =
+  try thunk () with
+  | Yojson.Json_error s
+  | Yojson.Basic.Util.Undefined (s, _)
+  | Yojson.Basic.Util.Type_error (s, _) ->
+      raise (mk_invalid_json s)
+  | _ -> (
+      match filename with
+      | Some f ->
+          raise
+            (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
+      | None ->
+          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
+      )
+
 let member_exn m j =
-  let open Basic.Util in
-  let v = member m j in
+  let thunk () = Basic.Util.member m j in
+  let v = json_exn_wrapper thunk in
   match v with
   | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
+
+let to_string_exn j =
+  let thunk () = Basic.Util.to_string j in
+  json_exn_wrapper thunk
 
 let constr_pattern_arg_types_exn dt cname =
   match constr_pattern_arg_types dt cname with
@@ -92,33 +111,33 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
     match t with
     | PrimType pt -> (
         match pt with
-        | String_typ -> fun j -> StringLit (Util.to_string j)
-        | Bnum_typ -> fun j -> BNum (Util.to_string j)
-        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
-        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
+        | String_typ -> fun j -> StringLit (to_string_exn j)
+        | Bnum_typ -> fun j -> BNum (to_string_exn j)
+        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
+        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
         | Int_typ Bits32 ->
-            fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
+            fun j -> IntLit (Int32L (Int32.of_string (to_string_exn j)))
         | Int_typ Bits64 ->
-            fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
+            fun j -> IntLit (Int64L (Int64.of_string (to_string_exn j)))
         | Int_typ Bits128 ->
             fun j ->
-              IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
+              IntLit (Int128L (Stdint.Int128.of_string (to_string_exn j)))
         | Int_typ Bits256 ->
             fun j ->
-              IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
+              IntLit (Int256L (Integer256.Int256.of_string (to_string_exn j)))
         | Uint_typ Bits32 ->
             fun j ->
-              UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
+              UintLit (Uint32L (Stdint.Uint32.of_string (to_string_exn j)))
         | Uint_typ Bits64 ->
             fun j ->
-              UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
+              UintLit (Uint64L (Stdint.Uint64.of_string (to_string_exn j)))
         | Uint_typ Bits128 ->
             fun j ->
-              UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
+              UintLit (Uint128L (Stdint.Uint128.of_string (to_string_exn j)))
         | Uint_typ Bits256 ->
             fun j ->
               UintLit
-                (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
+                (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
         | _ -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
@@ -202,7 +221,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
         let adt_parser cn_parsers j =
           let cn =
             match j with
-            | `Assoc _ -> member_exn "constructor" j |> Util.to_string
+            | `Assoc _ -> member_exn "constructor" j |> to_string_exn
             | `List _ ->
                 "Cons" (* for efficiency, Lists can be stored flatly. *)
             | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")
