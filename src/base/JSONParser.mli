@@ -27,9 +27,14 @@ module JSONLiteral = TypeUtil.TULiteral
 (***** Exception and wrappers ********)
 (*************************************)
 
+val json_exn_wrapper : ?filename:string -> (unit -> 'a) -> 'a
+
 (* member_exn k obj returns the value associated with the key k in the JSON object obj,
    or raises an exception if k is not present in obj. *)
 val member_exn : string -> Basic.t -> Basic.t
+
+(* String JSON value to OCaml string with exceptions translated. *)
+val to_string_exn : Yojson.Basic.t -> string
 
 (* Wrapper for constr_pattern_arg_types. Throws Invalid_json exception instead of using result type *)
 val constr_pattern_arg_types_exn : JSONType.t -> string -> JSONType.t list

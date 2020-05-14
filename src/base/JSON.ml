@@ -42,20 +42,10 @@ open JSONLiteral
 (*                    Exception wrappers                        *)
 (****************************************************************)
 
-let json_exn_wrapper ?filename thunk =
-  try thunk () with
-  | Yojson.Json_error s
-  | Yojson.Basic.Util.Undefined (s, _)
-  | Yojson.Basic.Util.Type_error (s, _) ->
-      raise (mk_invalid_json s)
-  | _ -> (
-      match filename with
-      | Some f ->
-          raise
-            (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
-      | None ->
-          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
-      )
+let json_exn_wrapper = JSONParser.json_exn_wrapper
+let member_exn = JSONParser.member_exn
+let to_string_exn = JSONParser.to_string_exn
+let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let from_file f =
   let thunk () = Basic.from_file f in
@@ -66,19 +56,8 @@ let parse_typ_exn t =
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
   | Ok s -> s
 
-let member_exn m j =
-  let thunk () = Basic.Util.member m j in
-  let v = json_exn_wrapper thunk in
-  match v with
-  | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
-  | j -> j
-
 let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
-  json_exn_wrapper thunk
-
-let to_string_exn j =
-  let thunk () = Basic.Util.to_string j in
   json_exn_wrapper thunk
 
 (* Given a literal, return its full type name *)
@@ -128,7 +107,7 @@ let rec json_to_adtargs cname tlist ajs =
   (* For each component literal of our ADT, calculate it's type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    JSONParser.constr_pattern_arg_types_exn
+    constr_pattern_arg_types_exn
       (ADT (mk_loc_id dt.tname, tlist))
       cname
   in
@@ -232,7 +211,7 @@ let jobj_to_statevar json =
   let tstring = member_exn "type" json |> to_string_exn in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () (* TODO: Add command line flag. *) then
+  if GlobalConfig.validate_json () then
     (n, json_to_lit t v)
   else (n, JSONParser.parse_json t v)
 
