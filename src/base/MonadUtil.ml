@@ -132,6 +132,14 @@ let rec tryM ~f ls ~msg =
       match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
 
+(* Monadic Option.map for error *)
+let rec option_mapM ~f opt_val =
+  match opt_val with
+  | None -> pure None
+  | Some v ->
+      let%bind z = f v in
+      pure @@ Some z
+
 (****************************************************************)
 (*           A gas-aware monad for `Eval` and related utilites  *)
 (****************************************************************)
