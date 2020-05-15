@@ -22,14 +22,11 @@ open Sexplib.Std
 open ErrorUtils
 open Identifier
 
-module type ScillaType = sig
-  module TIdentifier : ScillaIdentifier
-
+module PrimType = struct
   type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
+  [@@deriving sexp, equal, compare]
 
-  val int_bit_width_to_string : int_bit_width -> string
-
-  type prim_typ =
+  type t =
     | Int_typ of int_bit_width
     | Uint_typ of int_bit_width
     | String_typ
@@ -39,12 +36,50 @@ module type ScillaType = sig
     | Exception_typ
     | Bystr_typ
     | Bystrx_typ of int
-  [@@deriving equal, sexp]
+  [@@deriving equal, sexp, compare]
 
-  val pp_prim_typ : prim_typ -> string
+  let sexp_of_t = function
+    | Int_typ Bits32 -> Sexp.Atom "Int32"
+    | Int_typ Bits64 -> Sexp.Atom "Int64"
+    | Int_typ Bits128 -> Sexp.Atom "Int128"
+    | Int_typ Bits256 -> Sexp.Atom "Int256"
+    | Uint_typ Bits32 -> Sexp.Atom "Uint32"
+    | Uint_typ Bits64 -> Sexp.Atom "Uint64"
+    | Uint_typ Bits128 -> Sexp.Atom "Uint128"
+    | Uint_typ Bits256 -> Sexp.Atom "Uint256"
+    | String_typ -> Sexp.Atom "String"
+    | Bnum_typ -> Sexp.Atom "BNum"
+    | Msg_typ -> Sexp.Atom "Message"
+    | Event_typ -> Sexp.Atom "Event"
+    | Exception_typ -> Sexp.Atom "Exception"
+    | Bystr_typ -> Sexp.Atom "ByStr"
+    | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
+
+  let t_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
+
+  let int_bit_width_to_string = function
+    | Bits32 -> "32"
+    | Bits64 -> "64"
+    | Bits128 -> "128"
+    | Bits256 -> "256"
+
+  let pp_prim_typ = function
+    | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
+    | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
+    | String_typ -> "String"
+    | Bnum_typ -> "BNum"
+    | Msg_typ -> "Message"
+    | Event_typ -> "Event"
+    | Exception_typ -> "Exception"
+    | Bystr_typ -> "ByStr"
+    | Bystrx_typ b -> "ByStr" ^ Int.to_string b
+end
+
+module type ScillaType = sig
+  module TIdentifier : ScillaIdentifier
 
   type t =
-    | PrimType of prim_typ
+    | PrimType of PrimType.t
     | MapType of t * t
     | FunType of t * t
     | ADT of loc TIdentifier.t * t list
@@ -130,42 +165,8 @@ module MkType (I : ScillaIdentifier) = struct
   (*                         Types                       *)
   (*******************************************************)
 
-  type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
-  [@@deriving sexp, equal]
-
-  type prim_typ =
-    | Int_typ of int_bit_width
-    | Uint_typ of int_bit_width
-    | String_typ
-    | Bnum_typ
-    | Msg_typ
-    | Event_typ
-    | Exception_typ
-    | Bystr_typ
-    | Bystrx_typ of int
-  [@@deriving equal]
-
-  let sexp_of_prim_typ = function
-    | Int_typ Bits32 -> Sexp.Atom "Int32"
-    | Int_typ Bits64 -> Sexp.Atom "Int64"
-    | Int_typ Bits128 -> Sexp.Atom "Int128"
-    | Int_typ Bits256 -> Sexp.Atom "Int256"
-    | Uint_typ Bits32 -> Sexp.Atom "Uint32"
-    | Uint_typ Bits64 -> Sexp.Atom "Uint64"
-    | Uint_typ Bits128 -> Sexp.Atom "Uint128"
-    | Uint_typ Bits256 -> Sexp.Atom "Uint256"
-    | String_typ -> Sexp.Atom "String"
-    | Bnum_typ -> Sexp.Atom "BNum"
-    | Msg_typ -> Sexp.Atom "Message"
-    | Event_typ -> Sexp.Atom "Event"
-    | Exception_typ -> Sexp.Atom "Exception"
-    | Bystr_typ -> Sexp.Atom "ByStr"
-    | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
-
-  let prim_typ_of_sexp _ = failwith "prim_typ_of_sexp is not implemented"
-
   type t =
-    | PrimType of prim_typ
+    | PrimType of PrimType.t
     | MapType of t * t
     | FunType of t * t
     | ADT of loc TIdentifier.t * t list
@@ -174,25 +175,8 @@ module MkType (I : ScillaIdentifier) = struct
     | Unit
   [@@deriving sexp]
 
-  let int_bit_width_to_string = function
-    | Bits32 -> "32"
-    | Bits64 -> "64"
-    | Bits128 -> "128"
-    | Bits256 -> "256"
-
-  let pp_prim_typ = function
-    | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
-    | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
-    | String_typ -> "String"
-    | Bnum_typ -> "BNum"
-    | Msg_typ -> "Message"
-    | Event_typ -> "Event"
-    | Exception_typ -> "Exception"
-    | Bystr_typ -> "ByStr"
-    | Bystrx_typ b -> "ByStr" ^ Int.to_string b
-
   let rec pp_typ = function
-    | PrimType t -> pp_prim_typ t
+    | PrimType t -> PrimType.pp_prim_typ t
     | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
     | ADT (name, targs) ->
         let elems =
@@ -299,7 +283,7 @@ module MkType (I : ScillaIdentifier) = struct
     let t2' = canonicalize_tfun t2 in
     let rec equiv t1 t2 =
       match (t1, t2) with
-      | PrimType p1, PrimType p2 -> [%equal: prim_typ] p1 p2
+      | PrimType p1, PrimType p2 -> [%equal: PrimType.t] p1 p2
       | TypeVar v1, TypeVar v2 -> String.equal v1 v2
       | Unit, Unit -> true
       | ADT (tname1, tl1), ADT (tname2, tl2) ->
