@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open ErrorUtils
 open MonadUtil
@@ -49,14 +50,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                   Dictionary helpers                       *)
   (**************************************************************)
 
-  type def_loc =
-    | External of string
-    | Local
+  (* Name dictionaries *)
+  type str_str_dict = (string, string) List.Assoc.t
+  type name_dicts = { ns_dict : str_str_dict ;
+                      simp_var_dict : str_str_dict ;
+                      simp_typ_dict : str_str_dict ;
+                      simp_ctr_dict : str_str_dict }
   
-  let add_local_var_to_dict dict var = List.Assoc.add dict
-      ~equal:String.(=) var Local
-      
-  let add_local_id_to_dict dict id = add_local_var_to_dict dict (as_string id)
+  let remove_local_id_from_dict dict var = List.Assoc.remove dict
+      ~equal:[%equal : LocalName.t] var
     
   (**************************************************************)
   (*                   Disambiguate names                       *)
@@ -67,16 +69,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     match nm with
     | SimpleLocal n ->
         (match List.Assoc.find simpname_adr_dict n ~equal:String.(=) with
-         | Some (External adr) ->
+         | Some adr ->
              (* Imported simple name *)
              pure (GlobalName.QualifiedGlobal (adr, n), n)
-         | Some Local ->
-             (* Name is locally defined, or a builtin *)
-             pure (GlobalName.SimpleGlobal n, n)
          | None ->
-             (* Name undefined *)
-             fail0 @@
-             sprintf "Undefined variable %s" n)
+             (* Locally defined or builtin name *)
+             pure (GlobalName.SimpleGlobal n, n))
     | QualifiedLocal (ns, n) ->
         match List.Assoc.find ns_adr_dict ns ~equal:String.(=) with
         | Some adr -> pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)
@@ -92,7 +90,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                   Disambiguate types                       *)
   (**************************************************************)
 
-  let rec disambiguate_type ns_adr_dict simpname_adr_dict t =
+  let rec disambiguate_type ns_dict simp_typ_dict t =
     let module PostDisType = PostDisSyntax.SType in
     let rec recurse t =
       match t with
@@ -106,15 +104,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_res_t = recurse res_t in
           pure @@ PostDisType.FunType (dis_arg_t, dis_res_t)
       | ADT (t_name, targs) ->
-          let%bind dis_t_name = disambiguate_identifier ns_adr_dict simpname_adr_dict t_name in
+          let%bind dis_t_name = disambiguate_identifier ns_dict simp_typ_dict t_name in
           let%bind dis_targs = mapM targs ~f:recurse in
           pure @@ PostDisType.ADT (dis_t_name, dis_targs)
       | TypeVar tvar ->
           pure @@ PostDisType.TypeVar tvar
       | PolyFun (tvar, t) ->
-          (* tvar is now in scope, so disambiguate as local *)
-          let t_simpname_adr_dict = add_local_var_to_dict simpname_adr_dict tvar in
-          let%bind dis_t = disambiguate_type ns_adr_dict t_simpname_adr_dict t in
+          let%bind dis_t = disambiguate_type ns_dict simp_typ_dict t in
           pure @@ PostDisType.PolyFun (tvar, dis_t)
       | Unit -> pure @@ PostDisType.Unit
     in
@@ -124,7 +120,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                Disambiguate expressions                    *)
   (**************************************************************)
 
-  let disambiguate_literal ns_adr_dict simpname_adr_dict l =
+  let disambiguate_literal dicts l =
+    let { ns_dict ; simp_var_dict ; simp_typ_dict ; simp_ctr_dict } = dicts in
     let module ResLit = PostDisSyntax.SLiteral in
     let rec recurser l =
       match l with
@@ -144,12 +141,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | ByStr w ->
           let as_hex = Bystr.hex_encoding w in
           pure @@ ResLit.ByStr (ResLit.Bystr.parse_hex as_hex)
+      (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | ADTValue (s, ts, ls) ->
+          let%bind dis_s = disambiguate_identifier
           let%bind dis_ts = mapM ts
-              ~f:(fun t -> disambiguate_type ns_adr_dict simpname_adr_dict t) in
+              ~f:(fun t -> disambiguate_type ns_dict simp_typ_dict t) in
           let%bind dis_ls = mapM ls ~f:recurser in
           pure @@ PostDisSyntax.SLiteral.ADTValue (s, dis_ts, dis_ls)
-      (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | Msg msg_entries ->
           let%bind res_msg_entries = foldrM msg_entries ~init:[]
               ~f:(fun acc (label, l) ->
@@ -158,8 +156,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
           let open Sexplib.Std in (* Use Sexplib.Std hashtable *)
-          let%bind res_kt = disambiguate_type ns_adr_dict simpname_adr_dict kt in
-          let%bind res_vt = disambiguate_type ns_adr_dict simpname_adr_dict vt in
+          let%bind res_kt = disambiguate_type ns_dict simp_typ_dict kt in
+          let%bind res_vt = disambiguate_type ns_dict simp_typ_dict vt in
           let flat_table = Hashtbl.fold (fun k v acc -> (k, v) :: acc) mentries [] in
           let%bind res_flat_table = mapM flat_table
               ~f:(fun (k, v) ->
@@ -177,13 +175,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     recurser l
     
-  let rec disambiguate_exp ns_adr_dict simpname_adr_dict erep =
-    let mk_dis_helper f = f ns_adr_dict simpname_adr_dict in
-    let dis_id_helper = mk_dis_helper disambiguate_identifier in
-    (* Bloody ML value restriction! *)
-    let dis_ctr_helper = mk_dis_helper disambiguate_identifier in
-    let dis_typ_helper = mk_dis_helper disambiguate_type in
-    let dis_lit_helper = mk_dis_helper disambiguate_literal in
+  let rec disambiguate_exp dicts erep =
+    let { ns_dict ; simp_var_dict ; simp_typ_dict ; simp_ctr_dict } = dicts in
+    let mk_dis_helper f simp_dict = f ns_dict simp_dict in
+    let dis_var_helper new_simp_var_dict = mk_dis_helper disambiguate_identifier simp_var_dict in
+    let dis_ctr_helper = mk_dis_helper disambiguate_identifier simp_ctr_dict in
+    let dis_typ_helper = mk_dis_helper disambiguate_type simp_typ_dict in
+    let dis_lit_helper new_simp_var_dict = mk_dis_helper disambiguate_literal dicts in
     let rec recurser erep = 
       let e, rep = erep in
       let new_e =
@@ -281,6 +279,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         | Some ns_id -> Some (as_string ns_id, as_string import_name)
         | None -> None) in
     let dis_libs = 
+
+(* TODO: Ensure that imported simple names are unique - otherwise it won't work. *)
+(* TODO: Also remember to deal with builtins that may have been shadowed *)
     
 *)    
 end
