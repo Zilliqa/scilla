@@ -122,7 +122,7 @@ module type ScillaLiteral = sig
     (* A dynamic map of literals *)
     | Map of mtype * (t, t) Hashtbl.t
     (* A constructor in HNF *)
-    | ADTValue of string * LType.t list * t list
+    | ADTValue of LType.TIdentifier.Name.t * LType.t list * t list
     (* An embedded closure *)
     | Clo of
         (t ->
@@ -323,7 +323,7 @@ module MkLiteral (T : ScillaType) = struct
     (* A dynamic map of literals *)
     | Map of mtype * (t, t) Hashtbl.t
     (* A constructor in HNF *)
-    | ADTValue of string * LType.t list * t list
+    | ADTValue of LType.TIdentifier.Name.t * LType.t list * t list
     (* An embedded closure *)
     | Clo of
         (t ->
@@ -469,17 +469,23 @@ module MkLiteral (T : ScillaType) = struct
   (*                 Useful literals                     *)
   (*******************************************************)
 
-  let true_lit = ADTValue ("True", [], [])
+  let true_lit =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "True", [], [])
 
-  let false_lit = ADTValue ("False", [], [])
+  let false_lit =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "False", [], [])
 
   let build_bool_lit b = if b then true_lit else false_lit
 
-  let build_some_lit l t = ADTValue ("Some", [ t ], [ l ])
+  let build_some_lit l t =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Some", [ t ], [ l ])
 
-  let build_none_lit t = ADTValue ("None", [ t ], [])
+  let build_none_lit t =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "None", [ t ], [])
 
-  let build_pair_lit l1 t1 l2 t2 = ADTValue ("Pair", [ t1; t2 ], [ l1; l2 ])
+  let build_pair_lit l1 t1 l2 t2 =
+    ADTValue
+      (LType.TIdentifier.Name.parse_simple_name "Pair", [ t1; t2 ], [ l1; l2 ])
 end
 
 module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))
