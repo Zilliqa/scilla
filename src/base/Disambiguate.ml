@@ -58,13 +58,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                       simp_ctr_dict : str_str_dict }
   
   let remove_local_id_from_dict dict var = List.Assoc.remove dict
-      ~equal:[%equal : LocalName.t] var
+      ~equal:String.(=) var
     
   (**************************************************************)
   (*                   Disambiguate names                       *)
   (**************************************************************)
 
-  let disambiguate_name ns_adr_dict simpname_adr_dict nm =
+  let disambiguate_name ns_dict simpname_adr_dict nm =
     let open LocalName in
     match nm with
     | SimpleLocal n ->
@@ -76,14 +76,25 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
              (* Locally defined or builtin name *)
              pure (GlobalName.SimpleGlobal n, n))
     | QualifiedLocal (ns, n) ->
-        match List.Assoc.find ns_adr_dict ns ~equal:String.(=) with
+        match List.Assoc.find ns_dict ns ~equal:String.(=) with
         | Some adr -> pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)
         | None ->
             fail0 @@
             sprintf "Name qualifier %s is not a legal namespace" ns
 
-  let disambiguate_identifier ns_adr_dict simpname_adr_dict id =
-    let%bind dis_name = disambiguate_name ns_adr_dict simpname_adr_dict (get_id id) in
+  let disambiguate_new_local id =
+    let open LocalName in
+    let%bind dis_name = 
+      match (get_id id) with
+      | SimpleLocal n -> pure (GlobalName.SimpleGlobal n, n)
+      | QualifiedLocal (ns, n) -> 
+          fail0 @@
+          sprintf "Illegal variable name: %s.%s" ns n
+    in
+    pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
+  
+  let disambiguate_identifier ns_dict simpname_adr_dict id =
+    let%bind dis_name = disambiguate_name ns_dict simpname_adr_dict (get_id id) in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
   
   (**************************************************************)
@@ -120,8 +131,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                Disambiguate expressions                    *)
   (**************************************************************)
 
-  let disambiguate_literal dicts l =
-    let { ns_dict ; simp_var_dict ; simp_typ_dict ; simp_ctr_dict } = dicts in
+  let disambiguate_literal (dicts : name_dicts) l =
     let module ResLit = PostDisSyntax.SLiteral in
     let rec recurser l =
       match l with
@@ -143,11 +153,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ ResLit.ByStr (ResLit.Bystr.parse_hex as_hex)
       (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | ADTValue (s, ts, ls) ->
-          let%bind dis_s = disambiguate_identifier
+          let%bind dis_s = disambiguate_name dicts.ns_dict dicts.simp_ctr_dict s in
           let%bind dis_ts = mapM ts
-              ~f:(fun t -> disambiguate_type ns_dict simp_typ_dict t) in
+              ~f:(fun t -> disambiguate_type dicts.ns_dict dicts.simp_typ_dict t) in
           let%bind dis_ls = mapM ls ~f:recurser in
-          pure @@ PostDisSyntax.SLiteral.ADTValue (s, dis_ts, dis_ls)
+          pure @@ PostDisSyntax.SLiteral.ADTValue (dis_s, dis_ts, dis_ls)
       | Msg msg_entries ->
           let%bind res_msg_entries = foldrM msg_entries ~init:[]
               ~f:(fun acc (label, l) ->
@@ -156,8 +166,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
           let open Sexplib.Std in (* Use Sexplib.Std hashtable *)
-          let%bind res_kt = disambiguate_type ns_dict simp_typ_dict kt in
-          let%bind res_vt = disambiguate_type ns_dict simp_typ_dict vt in
+          let%bind res_kt = disambiguate_type dicts.ns_dict dicts.simp_typ_dict kt in
+          let%bind res_vt = disambiguate_type dicts.ns_dict dicts.simp_typ_dict vt in
           let flat_table = Hashtbl.fold (fun k v acc -> (k, v) :: acc) mentries [] in
           let%bind res_flat_table = mapM flat_table
               ~f:(fun (k, v) ->
@@ -174,39 +184,54 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           raise (mk_internal_error "Type abstraction literal found in disambiguation phase")
     in
     recurser l
-    
-  let rec disambiguate_exp dicts erep =
-    let { ns_dict ; simp_var_dict ; simp_typ_dict ; simp_ctr_dict } = dicts in
-    let mk_dis_helper f simp_dict = f ns_dict simp_dict in
-    let dis_var_helper new_simp_var_dict = mk_dis_helper disambiguate_identifier simp_var_dict in
-    let dis_ctr_helper = mk_dis_helper disambiguate_identifier simp_ctr_dict in
-    let dis_typ_helper = mk_dis_helper disambiguate_type simp_typ_dict in
-    let dis_lit_helper new_simp_var_dict = mk_dis_helper disambiguate_literal dicts in
-    let rec recurser erep = 
+
+  let disambiguate_pattern ns_dict simp_ctr_dict p =
+    let rec recurser p =
+      match p with
+      | Wildcard ->
+          pure (PostDisSyntax.Wildcard, [])
+      | Binder x ->
+          let%bind dis_x = disambiguate_new_local x in
+          (* x is in scope as a local in rhs, so remove from var dictionary *)
+          pure (PostDisSyntax.Binder dis_x, [x])
+      | Constructor (ctr, ps) ->
+          let%bind dis_ctr = disambiguate_identifier ns_dict simp_ctr_dict ctr in
+          let%bind dis_ps, bounds = foldrM ps ~init:([], []) ~f:(fun (p_acc, bounds_acc) p' ->
+              let%bind dis_p', bounds' = recurser p' in
+              pure (dis_p' :: p_acc, bounds' @ bounds_acc)) in
+          pure (PostDisSyntax.Constructor (dis_ctr, dis_ps), bounds)
+    in
+    recurser p
+
+  let rec disambiguate_exp (dicts : name_dicts) erep =
+    let disambiguate_identifier_helper simp_var_dict id = disambiguate_identifier dicts.ns_dict simp_var_dict id in
+    let disambiguate_type_helper t = disambiguate_type dicts.ns_dict dicts.simp_typ_dict t in
+    let disambiguate_literal_helper l = disambiguate_literal dicts l in
+    let rec recurser simp_var_dict erep = 
       let e, rep = erep in
-      let new_e =
+      let%bind new_e =
         match e with
         | Literal l ->
-            let%bind dis_l = dis_lit_helper l in
+            let%bind dis_l = disambiguate_literal dicts l in
             pure @@ PostDisSyntax.Literal dis_l
         | Var id ->
-            let%bind dis_id = dis_id_helper id in
+            let%bind dis_id = disambiguate_identifier_helper dicts.simp_var_dict id in
             pure @@ PostDisSyntax.Var dis_id
         | Let (id, t, lhs, rhs) ->
-            let%bind dis_id = dis_id_helper id in
-            let%bind dis_t = option_mapM t ~f:dis_typ_helper in
-            let%bind dis_lhs = recurser lhs in
-            (* id is now in scope, so disambiguate as local *)
-            let rhs_simpname_adr_dict = add_local_id_to_dict simpname_adr_dict id in
-            let%bind dis_rhs = disambiguate_exp ns_adr_dict rhs_simpname_adr_dict rhs in
+            let%bind dis_id = disambiguate_new_local id in
+            let%bind dis_t = option_mapM t ~f:disambiguate_type_helper in
+            let%bind dis_lhs = recurser dicts.simp_var_dict lhs in
+            (* id is in scope as a local in rhs, so remove from var dictionary *)
+            let rhs_simp_var_dict = remove_local_id_from_dict dicts.simp_var_dict (as_string id) in
+            let%bind dis_rhs = recurser rhs_simp_var_dict rhs in
             pure @@ PostDisSyntax.Let (dis_id, dis_t, dis_lhs, dis_rhs)
         | Message mentries ->
             let disambiguate_payload = function
               | MLit l ->
-                  let%bind dis_l = dis_lit_helper l in
+                  let%bind dis_l = disambiguate_literal_helper l in
                   pure @@ PostDisSyntax.MLit dis_l
               | MVar id ->
-                  let%bind dis_id = dis_id_helper id in
+                  let%bind dis_id = disambiguate_identifier_helper dicts.simp_var_dict id in
                   pure @@ PostDisSyntax.MVar dis_id
             in
             let%bind dis_mentries = mapM mentries
@@ -215,34 +240,57 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                     pure @@ (l, dis_p)) in
             pure @@ PostDisSyntax.Message dis_mentries
         | Fun (id, t, body) ->
-            let%bind dis_id = dis_id_helper id in
-            let%bind dis_t = dis_typ_helper t in
-            (* id is now in scope, so disambiguate as local *)
-            let body_simpname_adr_dict = add_local_id_to_dict simpname_adr_dict id in
-            let%bind dis_body = disambiguate_exp ns_adr_dict body_simpname_adr_dict body in
+            let%bind dis_id = disambiguate_new_local id in
+            let%bind dis_t = disambiguate_type_helper t in
+            (* id is in scope as a local in body, so remove from var dictionary *)
+            let body_simp_var_dict = remove_local_id_from_dict dicts.simp_var_dict (as_string id) in
+            let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fun (dis_id, dis_t, dis_body)
         | App (f, args) ->
-            let%bind dis_f = dis_id_helper f in
-            let%bind dis_args = mapM args ~f:dis_id_helper in
+            let%bind dis_f = disambiguate_identifier_helper dicts.simp_var_dict f in
+            let%bind dis_args = mapM args ~f:(disambiguate_identifier_helper dicts.simp_var_dict) in
             pure @@ PostDisSyntax.App (dis_f, dis_args)
         | Constr (c, ts, args) ->
-            let%bind dis_c = dis_ctr_helper c in
-            let%bind dis_ts_args = mapM ts ~f:dis_typ_helper in
-            let%bind dis_args = mapM args ~f:dis_id_helper in
+            let%bind dis_c = disambiguate_identifier_helper dicts.simp_ctr_dict c in
+            let%bind dis_ts_args = mapM ts ~f:disambiguate_type_helper in
+            let%bind dis_args = mapM args ~f:(disambiguate_identifier_helper dicts.simp_var_dict) in
             pure @@ PostDisSyntax.Constr (dis_c, dis_ts_args, dis_args)
-
-  (* TODO: types and variables live in separate namespaces, so need to have be in different dictionaries :-( *)
-
-  
-  (* 
-    | MatchExpr of ER.rep SIdentifier.t * (pattern * expr_annot) list
-    | Builtin of ER.rep builtin_annot * ER.rep SIdentifier.t list
-    (* Advanced features: to be added in Scilla 0.2 *)
-    | TFun of ER.rep SIdentifier.t * expr_annot
-    | TApp of ER.rep SIdentifier.t * SType.t list
-    (* Fixpoint combinator: used to implement recursion principles *)
-    | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
- *)      
+        | MatchExpr (x, pes) ->
+            let%bind dis_x = disambiguate_identifier_helper dicts.simp_var_dict x in
+            let%bind dis_pes = mapM pes ~f:(fun (p, erep') ->
+                let%bind dis_p, bounds = disambiguate_pattern dicts.ns_dict dicts.simp_ctr_dict p in
+                (* bounds are in scope as locals in e, so remove from var dictionary *)
+                let erep'_simp_var_dict = List.fold bounds ~init:dicts.simp_var_dict
+                    ~f:(fun simp_var_dict' x ->
+                        remove_local_id_from_dict simp_var_dict' (as_string x)) in
+                let%bind dis_erep' = recurser erep'_simp_var_dict erep' in
+                pure (dis_p, dis_erep'))
+            in
+            pure @@ PostDisSyntax.MatchExpr (dis_x, dis_pes)
+        | Builtin (b, args) ->
+            let%bind dis_args = mapM args ~f:(disambiguate_identifier_helper dicts.simp_var_dict) in
+            pure @@ PostDisSyntax.Builtin (b, dis_args)
+        | TFun (tvar, body) ->
+            let%bind dis_tvar = disambiguate_new_local tvar in
+            (* tvar is in scope as a type, but won't affect disambiguation, 
+               so don't worry about removing it from the environment *)
+            let%bind dis_body = recurser dicts.simp_var_dict body in
+            pure @@ PostDisSyntax.TFun (dis_tvar, dis_body)
+        | TApp (f, targs) ->
+            let%bind dis_f = disambiguate_identifier_helper dicts.simp_var_dict f in
+            let%bind dis_targs = mapM targs ~f:disambiguate_type_helper in
+            pure @@ PostDisSyntax.TApp (dis_f, dis_targs)
+        | Fixpoint (f, t, body) ->
+            let%bind dis_f = disambiguate_new_local f in
+            let%bind dis_t = disambiguate_type_helper t in
+            (* f is in scope as a local in body, so remove from var dictionary *)
+            let body_simp_var_dict = remove_local_id_from_dict dicts.simp_var_dict (as_string f) in
+            let%bind dis_body = recurser body_simp_var_dict body in
+            pure @@ PostDisSyntax.Fixpoint (dis_f, dis_t, dis_body)
+      in
+      pure @@ (new_e, rep)
+    in
+    recurser dicts.simp_var_dict erep
 
   (**************************************************************)
   (*                 Disambiguate libraries                     *)
@@ -285,4 +333,3 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     
 *)    
 end
-
