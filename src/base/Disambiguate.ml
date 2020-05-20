@@ -54,6 +54,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   type str_str_dict = (string, string) List.Assoc.t
   type name_dicts = { ns_dict : str_str_dict ;
                       simp_var_dict : str_str_dict ;
+                      simp_field_dict : str_str_dict ;
                       simp_typ_dict : str_str_dict ;
                       simp_ctr_dict : str_str_dict }
   
@@ -64,11 +65,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                   Disambiguate names                       *)
   (**************************************************************)
 
-  let disambiguate_name ns_dict simpname_adr_dict nm =
+  let disambiguate_name ns_dict simpname_dict nm =
     let open LocalName in
     match nm with
     | SimpleLocal n ->
-        (match List.Assoc.find simpname_adr_dict n ~equal:String.(=) with
+        (match List.Assoc.find simpname_dict n ~equal:String.(=) with
          | Some adr ->
              (* Imported simple name *)
              pure (GlobalName.QualifiedGlobal (adr, n), n)
@@ -93,8 +94,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
   
-  let disambiguate_identifier ns_dict simpname_adr_dict id =
-    let%bind dis_name = disambiguate_name ns_dict simpname_adr_dict (get_id id) in
+  let disambiguate_identifier ns_dict simpname_dict id =
+    let%bind dis_name = disambiguate_name ns_dict simpname_dict (get_id id) in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
   
   (**************************************************************)
@@ -306,7 +307,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         match s with
         | Load (x, f) ->
             let%bind dis_x = local_id_as_global_name x in
-            let%bind dis_f = disambiguate_identifier_helper simp_var_dict_acc f in
+            let%bind dis_f = disambiguate_identifier_helper dicts.simp_field_dict f in
             (* x is now in scope as a local, so remove from var dictionary *)
             let new_simp_var_dict = remove_local_id_from_dict simp_var_dict_acc (as_string x) in
             pure @@ (PostDisSyntax.Load (dis_x, dis_f), new_simp_var_dict)
@@ -349,7 +350,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             pure @@ (PostDisSyntax.ReadFromBC (dis_x, f), simp_var_dict_acc)
         | AcceptPayment ->
             pure @@ (PostDisSyntax.AcceptPayment, simp_var_dict_acc)
-        (* forall l p *)
         | Iterate (l, proc) ->
             let%bind dis_l = disambiguate_identifier_helper simp_var_dict_acc l in
             let%bind dis_proc = local_id_as_global_name proc in
@@ -371,23 +371,108 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       pure @@ (new_simp_var_dict, (dis_s, rep) :: dis_stmts_acc_rev)
     in
     let%bind _, dis_stmts_rev = foldM stmts ~init:(dicts.simp_var_dict, []) ~f:folder in
-    pure dis_stmts_rev
+    pure (List.rev dis_stmts_rev)
   
+  (**************************************************************)
+  (*                 Disambiguate components                    *)
+  (**************************************************************)
+
+  let disambiguate_component (dicts : name_dicts) comp =
+    let { comp_type ; comp_name ; comp_params ; comp_body } = comp in
+    let%bind dis_comp_name = local_id_as_global_name comp_name in
+    let%bind dis_comp_params = mapM comp_params ~f:(fun (x, t) ->
+        let%bind dis_x = local_id_as_global_name x in
+        let%bind dis_t = disambiguate_type dicts.ns_dict dicts.simp_typ_dict t in
+        pure (dis_x, dis_t))
+    in
+    (* comp_params are now in scope as locals, so remove from var dictionary *)
+    let body_simp_var_dict = List.fold_left comp_params ~init:dicts.simp_var_dict
+        ~f:(fun dict (x, _) -> remove_local_id_from_dict dict (as_string x))
+    in
+    let body_dicts = { dicts with simp_var_dict = body_simp_var_dict } in
+    let%bind dis_comp_body = disambiguate_stmts body_dicts comp_body in
+    pure @@ { PostDisSyntax.comp_type = comp_type ;
+              PostDisSyntax.comp_name = dis_comp_name ;
+              PostDisSyntax.comp_params = dis_comp_params ;
+              PostDisSyntax.comp_body = dis_comp_body }
+
   (**************************************************************)
   (*                 Disambiguate libraries                     *)
   (**************************************************************)
 
-  
-    
-(*  
-  let disambiguate_library lib =
-    let { lname; lentries } = lib in
-    let disambiguate_lib_entry = function
-      | LibVar (id, t, init) ->
-          
-        
-    let dis_lentries = List.map lentries ~f:(fun 
+  let disambiguate_lib_entry (dicts : name_dicts) libentry =
+    match libentry with
+    | LibVar (x, topt, e) ->
+        let%bind dis_x = local_id_as_global_name x in
+        let%bind dis_topt = option_mapM topt
+            ~f:(disambiguate_type dicts.ns_dict dicts.simp_typ_dict)
+        in
+        let%bind dis_e = disambiguate_exp dicts e in
+        (* x is now in scope as a local, so remove from var dictionary *)
+        let res_dicts = { dicts with simp_var_dict = remove_local_id_from_dict dicts.simp_var_dict (as_string x) } in
+        pure @@ (PostDisSyntax.LibVar (dis_x, dis_topt, dis_e), res_dicts)
+    | LibTyp (tname, ctrs) ->
+        let%bind dis_tname = local_id_as_global_name tname in
+        let%bind dis_ctrs = mapM ctrs ~f:(fun ctr ->
+            let { cname ; c_arg_types } = ctr in
+            let%bind dis_cname = local_id_as_global_name cname in
+            let%bind dis_c_arg_types = mapM c_arg_types
+                ~f:(disambiguate_type dicts.ns_dict dicts.simp_typ_dict)
+            in
+            pure { PostDisSyntax.cname = dis_cname;
+                   PostDisSyntax.c_arg_types = dis_c_arg_types })
+        in
+        (* tname is now in scope as a local type, and ctrs are in scope as local constructors, 
+           so remove from dictionaries *)
+        let res_typ_dict = remove_local_id_from_dict dicts.simp_typ_dict (as_string tname) in
+        let res_ctr_dict = List.fold_left ctrs ~init:dicts.simp_ctr_dict
+            ~f:(fun dict ctr ->
+                let { cname ; c_arg_types } = ctr in
+                remove_local_id_from_dict dict (as_string cname)) in
+        let res_dicts = { dicts with
+                          simp_typ_dict = res_typ_dict ;
+                          simp_ctr_dict = res_ctr_dict } in
+        pure @@ (PostDisSyntax.LibTyp (dis_tname, dis_ctrs), res_dicts)
 
+  let disambiguate_library (dicts : name_dicts) lib =
+    let { lname; lentries } = lib in
+    let%bind dis_lname = local_id_as_global_name lname in
+    let%bind dis_lentries_rev, _ = foldM lentries ~init:([], dicts)
+        ~f:(fun (dis_lentries_acc_rev, dicts_acc) lentry ->
+            let%bind dis_lentry, new_dicts = disambiguate_lib_entry dicts_acc lentry in
+            pure (dis_lentry :: dis_lentries_acc_rev, new_dicts))
+    in
+    (* Toplevel names defined in the library are potentially in scope somewhere, 
+       so must be collected and returned *)
+    let lib_simp_vars_rev, lib_typs_rev, lib_ctrs_rev =
+      List.fold_left lentries ~init:([], [], []) ~f:(fun (vars_acc, typs_acc, ctrs_acc) lentry ->
+        match lentry with
+        | LibVar (x, _, _) -> ((as_string x) :: vars_acc, typs_acc, ctrs_acc)
+        | LibTyp (tname, ctrs) ->
+            let new_ctrs = List.fold_left ctrs ~init:ctrs_acc
+                ~f:(fun ctrs_acc' ctr -> (as_string ctr.cname) :: ctrs_acc')
+            in
+            (vars_acc, (as_string tname) :: typs_acc, new_ctrs))
+    in
+    let rec reverse_remove_duplicates seen rest =
+      match rest with
+      | [] -> seen
+      | x :: xs ->
+          let new_seen = x :: (List.filter seen ~f:(fun v -> not String.(v = x))) in
+          reverse_remove_duplicates new_seen xs
+    in
+    let lib_simp_vars_def = reverse_remove_duplicates lib_simp_vars_rev in
+    let lib_simp_typs_def = reverse_remove_duplicates lib_typs_rev in
+    let lib_simp_ctrs_def = reverse_remove_duplicates lib_ctrs_rev in
+    pure @@ ({ PostDisSyntax.lname = dis_lname ;
+               PostDisSyntax.lentries = List.rev dis_lentries_rev },
+             lib_simp_vars_def,
+             lib_simp_typs_def,
+             lib_simp_ctrs_def)
+    
+
+      
+(*  
   (**************************************************************)
   (*                  Disambiguate modules                      *)
   (**************************************************************)
