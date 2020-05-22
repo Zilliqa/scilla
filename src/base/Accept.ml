@@ -75,11 +75,11 @@ struct
          we don't know what will happen on each in advance. *)
       List.fold_left stmts ~init:seen
         ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
-          let loc = stmt_loc stmt in
           match fst stmt with
           | AcceptPayment ->
               (* Add this accept statement to the list of accepts
                * already seen on each code path reaching this point. *)
+              let loc = stmt_loc stmt in
               List.map seen2 ~f:(fun accepts -> loc :: accepts)
           | MatchStmt (_ident, branches) ->
               (* For each branch in the match statement we have a
