@@ -104,7 +104,7 @@ struct
       let dup_accept_warning (group : loc list) : unit =
         warn2
           ( sprintf
-              "transition %s had a potential code path with duplicate accept \
+              "transition %s has a potential code path with duplicate accept \
                statements:\n"
               (ACIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
