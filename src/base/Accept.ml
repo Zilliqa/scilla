@@ -99,9 +99,7 @@ struct
         List.map (find_accept_groups transition.comp_body) ~f:List.rev
       in
 
-      let accept_loc_end (l : loc) =
-        match l with { fname; lnum; cnum } -> { fname; lnum; cnum = cnum + 6 }
-      in
+      let accept_loc_end (l : loc) = { l with cnum = l.cnum + 6 } in
 
       let dup_accept_warning (group : loc list) : unit =
         warn2
