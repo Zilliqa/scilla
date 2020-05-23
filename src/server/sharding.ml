@@ -274,6 +274,9 @@ let literal_to_shard (lit : Syntax.literal) con_shard num_shards =
     | ByStrX s ->
         let h = Bystrx.to_raw_bytes s in
         addr_to_shard h con_shard num_shards
+    | StringLit s ->
+        let h = Cryptokit.hash_string (Cryptokit.Hash.sha2 256) s in
+        addr_to_shard h con_shard num_shards
     | _ -> con_shard
   in
   (* let log_str = pp_literal lit ^ " --> " ^ string_of_int si in
