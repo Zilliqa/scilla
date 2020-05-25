@@ -133,7 +133,7 @@ let rec tryM ~f ls ~msg =
   | [] -> Error (msg ())
 
 (* Monadic Option.map for error *)
-let rec option_mapM ~f opt_val =
+let option_mapM ~f opt_val =
   match opt_val with
   | None -> pure None
   | Some v ->
