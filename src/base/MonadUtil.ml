@@ -117,13 +117,13 @@ let liftPair2 x m =
   pure (x, z)
 
 (* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
+ * Returns () if all elements satisfy f. *)
 let rec forallM ~f ls =
   match ls with
   | x :: ls' ->
       let%bind _ = f x in
       forallM ~f ls'
-  | [] -> pure true
+  | [] -> pure ()
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg =
@@ -216,13 +216,13 @@ module EvalMonad = struct
     pure (x, z)
 
   (* Return the first error applying f to elements of ls.
-   * Returns true if all elements satisfy f. *)
+   * Returns () if all elements satisfy f. *)
   let rec forallM ~f ls =
     match ls with
     | x :: ls' ->
         let%bind _ = f x in
         forallM ~f ls'
-    | [] -> pure true
+    | [] -> pure ()
 
   (* Try all variants in the list, pick the first successful one *)
   let tryM ~f ls ~msg =

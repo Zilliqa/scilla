@@ -56,7 +56,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   let recursion_typ is_adt_in_scope t =
     let rec walk t =
       match t with
-      | PrimType _ | TypeVar _ | Unit -> pure @@ true
+      | PrimType _ | TypeVar _ | Unit -> pure ()
       | MapType (t1, t2) | FunType (t1, t2) ->
           let%bind _ = walk t1 in
           walk t2
@@ -96,7 +96,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             let%bind _ =
               match t with
               | Some t' -> recursion_typ is_adt_in_scope t'
-              | None -> pure @@ true
+              | None -> pure ()
             in
             let%bind new_body = walk body in
             pure @@ RecursionSyntax.Let (x, t, new_e1, new_body)
@@ -286,7 +286,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            let%bind _ =
              match t with
              | Some t' -> recursion_typ is_adt_in_scope t'
-             | None -> pure @@ true
+             | None -> pure ()
            in
            pure @@ (RecursionSyntax.LibVar (n, t, new_e), None)
     | LibTyp (tname, ctr_defs) ->
