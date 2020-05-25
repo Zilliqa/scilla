@@ -121,7 +121,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 ~f:(fun (p, e) ->
                   let%bind new_p = recursion_pattern is_adt_ctr_in_scope p in
                   let%bind new_e = walk e in
-                  pure @@ (new_p, new_e))
+                  pure (new_p, new_e))
                 pes
             in
             pure @@ RecursionSyntax.MatchExpr (x, new_pes)
@@ -139,7 +139,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             let%bind new_e = walk e in
             pure @@ RecursionSyntax.Fixpoint (x, t, new_e)
       in
-      pure @@ (new_e, rep)
+      pure (new_e, rep)
     in
     walk erep
 
@@ -164,7 +164,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 ~f:(fun (p, ss) ->
                   let%bind new_p = recursion_pattern is_adt_ctr_in_scope p in
                   let%bind new_ss = mapM ~f:walk ss in
-                  pure @@ (new_p, new_ss))
+                  pure (new_p, new_ss))
                 pss
             in
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
@@ -182,7 +182,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
       in
-      pure @@ (new_s, rep)
+      pure (new_s, rep)
     in
     walk srep
 
@@ -221,7 +221,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind new_e =
             recursion_exp is_adt_in_scope is_adt_ctr_in_scope e
           in
-          pure @@ (x, t, new_e))
+          pure (x, t, new_e))
         cfields
     in
     let%bind recursion_ccomps_rev, _ =
@@ -236,7 +236,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             | CompTrans -> acc_procs
             | CompProc -> get_id comp.comp_name :: acc_procs
           in
-          pure @@ (checked_component :: acc_comps, new_acc_procs))
+          pure (checked_component :: acc_comps, new_acc_procs))
     in
     pure
     @@ {
@@ -288,7 +288,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
              | Some t' -> recursion_typ is_adt_in_scope t'
              | None -> pure ()
            in
-           pure @@ (RecursionSyntax.LibVar (n, t, new_e), None)
+           pure (RecursionSyntax.LibVar (n, t, new_e), None)
     | LibTyp (tname, ctr_defs) ->
         wrap_with_info
           ( sprintf "Type error in library type %s:\n" (get_id tname),
@@ -326,7 +326,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            in
            (* Add type to ADTs in scope once checked. Adding the type after checking prevents inductive definitions. *)
            pure
-           @@ ( RecursionSyntax.LibTyp (tname, checked_ctr_defs),
+           ( RecursionSyntax.LibTyp (tname, checked_ctr_defs),
                 Some
                   ( {
                       Datatypes.tname = get_id tname;
@@ -382,14 +382,14 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
              (* LibVar *)
              | None ->
                  pure
-                 @@ ( new_entry :: rec_entries,
+                 ( new_entry :: rec_entries,
                       datatypes,
                       adts_in_scope,
                       adt_ctrs_in_scope )
              (* LibTyp *)
              | Some (adt, loc) ->
                  pure
-                 @@ ( new_entry :: rec_entries,
+                 ( new_entry :: rec_entries,
                       (adt, loc) :: datatypes,
                       adt.tname :: adts_in_scope,
                       List.map adt.tconstr ~f:(fun ctr -> ctr.cname)
@@ -397,7 +397,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            ~init:([], [], [], []) lentries
        in
        pure
-       @@ ( {
+       ( {
               RecursionSyntax.lname;
               RecursionSyntax.lentries = List.rev recursion_entries;
             },
@@ -453,8 +453,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         ~f:(fun (rec_rprins_acc, emsgs_acc) rprin ->
           match
             recursion_lib_entry
-              (fun _ -> pure @@ ())
-              (fun _ -> pure @@ ())
+              (fun _ -> pure ())
+              (fun _ -> pure ())
               rprin
           with
           | Ok (rec_rprin, _) -> Ok (rec_rprin :: rec_rprins_acc, emsgs_acc)
@@ -488,14 +488,14 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
        if List.is_empty emsgs then
          pure
-         @@ ( {
+         ( {
                 RecursionSyntax.smver = md.smver;
                 RecursionSyntax.libs = recursion_md_libs';
                 RecursionSyntax.elibs = md.elibs;
               },
               recursion_rprins,
               recursion_elibs )
-       else fail @@ emsgs
+       else fail emsgs
 
   let recursion_module (md : cmodule) (recursion_principles : lib_entry list)
       (ext_libs : libtree list) :
@@ -519,14 +519,14 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                let%bind _ =
                  DataTypeDictionary.lookup_name ~sloc:(get_rep n) (get_id n)
                in
-               pure @@ ())
+               pure ())
              (fun n ->
                let%bind _ =
                  DataTypeDictionary.lookup_constructor
                    ~sloc:(SR.get_loc (get_rep n))
                    (get_id n)
                in
-               pure @@ ())
+               pure ())
              contr
          with
          | Ok rec_contr -> Ok (rec_contr, emsgs)
@@ -546,7 +546,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
        if List.is_empty emsgs then
          pure
-         @@ ( {
+         ( {
                 RecursionSyntax.smver;
                 RecursionSyntax.libs = recursion_md_libs;
                 RecursionSyntax.elibs;
@@ -554,7 +554,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
               },
               recursion_rprins,
               recursion_elibs )
-       else fail @@ emsgs
+       else fail emsgs
 
   (**************************************************************)
   (*                    Staging API                             *)
