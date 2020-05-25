@@ -244,29 +244,21 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
        }
 
   let recursion_adt_constructor_arg is_adt_in_scope t error_loc =
-    let rec walk t =
-      match t with
-      | PrimType t -> pure @@ PrimType t
-      | MapType (t1, t2) ->
-          let%bind checked_t1 = walk t1 in
-          let%bind checked_t2 = walk t2 in
-          pure @@ MapType (checked_t1, checked_t2)
-      | FunType (t1, t2) ->
-          let%bind checked_t1 = walk t1 in
-          let%bind checked_t2 = walk t2 in
-          pure @@ FunType (checked_t1, checked_t2)
+    let rec walk = function
+      | PrimType _ | Unit -> pure ()
+      | MapType (t1, t2) | FunType (t1, t2) ->
+          let%bind _ = walk t1 in
+          walk t2
       | ADT (s, targs) ->
           (* Only allow ADTs that are already in scope. This prevents mutually inductive definitions. *)
           let%bind _ = is_adt_in_scope s in
-          let%bind checked_targs = mapM targs ~f:walk in
-          pure @@ ADT (s, checked_targs)
+          forallM targs ~f:walk
       | TypeVar _ ->
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
       | PolyFun _ ->
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
-      | Unit -> pure @@ Unit
     in
     walk t
 
@@ -290,23 +282,17 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           ( sprintf "Type error in library type %s:\n" (get_id tname),
             ER.get_loc (get_rep tname) )
         @@ let%bind checked_ctr_defs =
-             mapM
-               ~f:(fun ({ cname; c_arg_types } : ctr_def) ->
+             mapM ctr_defs ~f:(fun ({ cname; c_arg_types } : ctr_def) ->
                  let error_loc = ER.get_loc (get_rep cname) in
-                 let%bind recursion_c_arg_types =
-                   mapM
-                     ~f:(fun c_arg ->
+                 let%bind _ =
+                   forallM c_arg_types ~f:(fun c_arg ->
                        recursion_adt_constructor_arg is_adt_in_scope c_arg
                          error_loc)
-                     c_arg_types
                  in
-                 pure
-                 @@ {
-                      RecursionSyntax.cname;
-                      RecursionSyntax.c_arg_types = recursion_c_arg_types;
-                    })
-               ctr_defs
+                 pure RecursionSyntax.{ cname; c_arg_types })
            in
+           (* TODO: can we refactor the conversion between ctr_def and constructor types?
+                    cf. Eval.ml, init_lib_entries function *)
            let datatype_ctrs, datatype_tmap =
              List.fold_right ctr_defs ~init:([], [])
                ~f:(fun ctr_def (ctrs, maps) ->
