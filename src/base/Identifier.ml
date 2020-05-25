@@ -46,12 +46,10 @@ module FlattenedName = struct
   let parse_qualified_name = flatten_name
 end
 
-
 (* Local names within a contract.
    Name qualifiers refer to the contract's import namespaces.
    Fields, parameters, variables and type variables are never qualified. *)
 module LocalName = struct
-
   type t =
     | SimpleLocal of string (* name *)
     | QualifiedLocal of string * string (* Namespace and name *)
@@ -66,33 +64,28 @@ module LocalName = struct
   let parse_simple_name n = SimpleLocal n
 
   let parse_qualified_name ns n = QualifiedLocal (ns, n)
-
 end
 
 (* Global, canonical names.
    Name qualifiers refer to the defining library's address.
    Fields, parameters, variables and type variables are never qualified. *)
 module GlobalName = struct
-
   type t_name =
     | SimpleGlobal of string (* name *)
     | QualifiedGlobal of string * string (* address and name *)
   [@@deriving sexp, equal, compare]
 
-  type t = t_name * string (* error string *)
-  [@@deriving sexp, equal, compare]
-  
-  let as_string = function
-    | (SimpleGlobal n, _) -> n
-    | (QualifiedGlobal (ns, n), _) -> flatten_name ns n
+  type t = t_name * string (* error string *) [@@deriving sexp, equal, compare]
 
-  let as_error_string = function
-    | (_, s) -> s
+  let as_string = function
+    | SimpleGlobal n, _ -> n
+    | QualifiedGlobal (ns, n), _ -> flatten_name ns n
+
+  let as_error_string = function _, s -> s
 
   let parse_simple_name n = (SimpleGlobal n, n)
 
   let parse_qualified_name ns n = (QualifiedGlobal (ns, n), flatten_name ns n)
-
 end
 
 module type ScillaIdentifier = sig
