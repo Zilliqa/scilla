@@ -45,10 +45,6 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   open RecType
   open PreRecursionSyntax
 
-  let wrap_recursion_err e ?(opt = "") = wrap_err e "ADT" ~opt
-
-  let wrap_recursion_serr s ?(opt = "") = wrap_serr s "ADT" ~opt
-
   (**************************************************************)
   (*                  Checking libraries                        *)
   (**************************************************************)
