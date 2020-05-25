@@ -75,11 +75,11 @@ struct
          we don't know what will happen on each in advance. *)
       List.fold_left stmts ~init:seen
         ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
-          let loc = stmt_loc stmt in
           match fst stmt with
           | AcceptPayment ->
               (* Add this accept statement to the list of accepts
                * already seen on each code path reaching this point. *)
+              let loc = stmt_loc stmt in
               List.map seen2 ~f:(fun accepts -> loc :: accepts)
           | MatchStmt (_ident, branches) ->
               (* For each branch in the match statement we have a
@@ -99,14 +99,12 @@ struct
         List.map (find_accept_groups transition.comp_body) ~f:List.rev
       in
 
-      let accept_loc_end (l : loc) =
-        match l with { fname; lnum; cnum } -> { fname; lnum; cnum = cnum + 6 }
-      in
+      let accept_loc_end (l : loc) = { l with cnum = l.cnum + 6 } in
 
       let dup_accept_warning (group : loc list) : unit =
         warn2
           ( sprintf
-              "transition %s had a potential code path with duplicate accept \
+              "transition %s has a potential code path with duplicate accept \
                statements:\n"
               (ACIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
