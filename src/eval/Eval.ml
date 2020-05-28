@@ -317,7 +317,9 @@ let rec stmt_eval conf stmts =
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = { conf'' with env = conf.env } in
-          let%bind () = stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc in
+          let%bind () =
+            stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc
+          in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in

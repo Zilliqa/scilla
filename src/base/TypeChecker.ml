@@ -255,7 +255,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (rhstyp, rep) ),
              remaining_gas )
     | Constr (cname, ts, actuals) ->
-        let%bind () = Result.ignore_m @@ mark_error_as_type_error remaining_gas @@ mapM ts ~f:(TEnv.is_wf_type tenv)
+        let%bind () =
+          Result.ignore_m
+          @@ mark_error_as_type_error remaining_gas
+          @@ mapM ts ~f:(TEnv.is_wf_type tenv)
         in
         let open Datatypes.DataTypeDictionary in
         let%bind _, constr =
@@ -353,7 +356,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
                remaining_gas )
     | TApp (tf, arg_types) ->
-        let%bind () = Result.ignore_m @@ mark_error_as_type_error remaining_gas @@ mapM arg_types ~f:(TEnv.is_wf_type tenv)
+        let%bind () =
+          Result.ignore_m
+          @@ mark_error_as_type_error remaining_gas
+          @@ mapM arg_types ~f:(TEnv.is_wf_type tenv)
         in
         let%bind tfres =
           mark_error_as_type_error remaining_gas
@@ -784,7 +790,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  in
                  match lookup_proc env p with
                  | Some arg_typs ->
-                     let%bind () = Result.ignore_m @@ mark_error_as_type_error remaining_gas @@ proc_type_applies arg_typs targs
+                     let%bind () =
+                       Result.ignore_m
+                       @@ mark_error_as_type_error remaining_gas
+                       @@ proc_type_applies arg_typs targs
                      in
                      pure (typed_actuals, remaining_gas)
                  | None ->

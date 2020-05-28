@@ -339,7 +339,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         pure ()
       else
         (* Check if the name is a builtin ADT *)
-        DataTypeDictionary.lookup_constructor ~sloc:(SR.get_loc (get_rep ctr_name)) (get_id ctr_name)
+        DataTypeDictionary.lookup_constructor
+          ~sloc:(SR.get_loc (get_rep ctr_name))
+          (get_id ctr_name)
         |> Result.ignore_m
     in
     wrap_with_info
@@ -489,8 +491,14 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
        let%bind recursion_contr, emsgs =
          match
            recursion_contract
-             (fun n -> Result.ignore_m @@ DataTypeDictionary.lookup_name ~sloc:(get_rep n) (get_id n))
-             (fun n -> Result.ignore_m @@ DataTypeDictionary.lookup_constructor ~sloc:(SR.get_loc (get_rep n)) (get_id n))
+             (fun n ->
+               Result.ignore_m
+               @@ DataTypeDictionary.lookup_name ~sloc:(get_rep n) (get_id n))
+             (fun n ->
+               Result.ignore_m
+               @@ DataTypeDictionary.lookup_constructor
+                    ~sloc:(SR.get_loc (get_rep n))
+                    (get_id n))
              contr
          with
          | Ok rec_contr -> Ok (rec_contr, emsgs)
