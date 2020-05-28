@@ -116,7 +116,7 @@ let rec deserialize_value value tp =
               List.sort m.m ~compare:(fun (k1, _) (k2, _) ->
                   String.compare k1 k2)
             in
-            iterM m ~f:(fun (k, v) ->
+            forallM m ~f:(fun (k, v) ->
                 let%bind k' = deserialize_literal k kt in
                 let%bind v' = deserialize_value v vt in
                 Caml.Hashtbl.add mlit k' v';
