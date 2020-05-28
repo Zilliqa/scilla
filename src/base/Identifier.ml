@@ -46,13 +46,20 @@ module FlattenedName = struct
   let parse_qualified_name = flatten_name
 end
 
-(* Local names within a contract.
+(* Localised names within a contract.
    Name qualifiers refer to the contract's import namespaces.
    Fields, parameters, variables and type variables are never qualified. *)
 module LocalName = struct
   type t =
-    | SimpleLocal of string (* name *)
-    | QualifiedLocal of string * string (* Namespace and name *)
+    (* A SimpleLocal is a name that is either defined within the module, or
+       defined in an external library imported without a namespace, i.e.
+       "import X" *)
+    | SimpleLocal of string
+    (* A QualifiedLocal is a name that is defined in an external library imported
+       with a namespace, i.e., "import X as Y".
+       The first string is the namespace "Y".
+       The second string is the externally defined name. *)
+    | QualifiedLocal of string * string
   [@@deriving sexp, equal, compare]
 
   let as_string = function
@@ -71,7 +78,12 @@ end
    Fields, parameters, variables and type variables are never qualified. *)
 module GlobalName = struct
   type t_name =
+    (* A SimpleGlobal is a name defined within the module. *)
     | SimpleGlobal of string (* name *)
+    (* A QualifiedGlobal is a name that is defined in an external library.
+       The first string is the address of the external library (which
+       corresponds to the filename of the library file).
+       The second string is the externally defined name. *)
     | QualifiedGlobal of string * string (* address and name *)
   [@@deriving sexp, equal, compare]
 

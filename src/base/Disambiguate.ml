@@ -569,7 +569,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     (* Toplevel names defined in the library are potentially in scope somewhere,
        so must be collected and returned *)
-    let lib_simp_vars_rev, lib_typs_rev, lib_ctrs_rev =
+    let lib_simp_vars_def, lib_simp_typs_def, lib_simp_ctrs_def =
       List.fold_left lentries ~init:([], [], [])
         ~f:(fun (vars_acc, typs_acc, ctrs_acc) lentry ->
           match lentry with
@@ -581,21 +581,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               in
               (vars_acc, as_string tname :: typs_acc, new_ctrs))
     in
-    let reverse_remove_duplicates l =
-      let rec recurser seen rest =
-        match rest with
-        | [] -> seen
-        | x :: xs ->
-            let new_seen =
-              x :: List.filter seen ~f:(fun v -> not String.(v = x))
-            in
-            recurser new_seen xs
-      in
-      recurser [] l
-    in
-    let lib_simp_vars_def = reverse_remove_duplicates lib_simp_vars_rev in
-    let lib_simp_typs_def = reverse_remove_duplicates lib_typs_rev in
-    let lib_simp_ctrs_def = reverse_remove_duplicates lib_ctrs_rev in
     pure
     @@ ( {
            PostDisSyntax.lname = dis_lname;
