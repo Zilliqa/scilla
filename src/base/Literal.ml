@@ -489,3 +489,5 @@ module MkLiteral (T : ScillaType) = struct
 end
 
 module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))
+module LocalLiteral = MkLiteral (MkType (MkIdentifier (LocalName)))
+module GlobalLiteral = MkLiteral (MkType (MkIdentifier (GlobalName)))
