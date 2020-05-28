@@ -255,7 +255,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | Constr of SR.rep SIdentifier.t * SType.t list * ER.rep SIdentifier.t list
     | MatchExpr of ER.rep SIdentifier.t * (pattern * expr_annot) list
     | Builtin of ER.rep builtin_annot * ER.rep SIdentifier.t list
-    (* Advanced features: to be added in Scilla 0.2 *)
     | TFun of ER.rep SIdentifier.t * expr_annot
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
