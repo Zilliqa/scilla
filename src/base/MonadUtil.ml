@@ -74,6 +74,15 @@ let rec foldM ~f ~init ls =
       foldM ~f ~init:res ls'
   | [] -> pure init
 
+(* Monad version of fold2 *)
+let rec fold2M ~f ~init ls ms ~msg =
+  match (ls, ms) with
+  | x :: ls', y :: ms' ->
+      let%bind res = f init x y in
+      fold2M ~f ~init:res ls' ms' ~msg
+  | [], [] -> pure init
+  | _ -> fail @@ msg ()
+
 (* Monadic fold-right for error *)
 let rec foldrM ~f ~init ls =
   match ls with
@@ -101,13 +110,6 @@ let rec map2M ~f ls ms ~msg =
   | [], [] -> pure []
   | _ -> fail @@ msg ()
 
-let rec iterM ~f ls =
-  match ls with
-  | x :: ls' ->
-      let%bind _ = f x in
-      iterM ~f ls'
-  | [] -> pure ()
-
 let liftPair1 m x =
   let%bind z = m in
   pure (z, x)
@@ -117,13 +119,13 @@ let liftPair2 x m =
   pure (x, z)
 
 (* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
+ * Returns () if all elements satisfy f. *)
 let rec forallM ~f ls =
   match ls with
   | x :: ls' ->
       let%bind _ = f x in
       forallM ~f ls'
-  | [] -> pure true
+  | [] -> pure ()
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg =
@@ -139,6 +141,23 @@ let option_mapM ~f opt_val =
   | Some v ->
       let%bind z = f v in
       pure @@ Some z
+
+(* Monadic version of List.fold_map *)
+let fold_mapM ~f ~init l =
+  let%bind acc, l'_rev =
+    foldM ~init:(init, [])
+      ~f:(fun (accacc, lrevacc) lel ->
+        let%bind accacc', lel' = f accacc lel in
+        pure (accacc', lel' :: lrevacc))
+      l
+  in
+  pure (acc, List.rev l'_rev)
+
+(* Monadic wrapper around any container's fold (Set, Map etc). *)
+(* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
+let wrapM_folder ~folder ~f ~init l =
+  let f' acc e = match acc with Error _ -> acc | Ok acc' -> f acc' e in
+  folder l ~init:(Ok init) ~f:f'
 
 (****************************************************************)
 (*           A gas-aware monad for `Eval` and related utilites  *)
@@ -224,13 +243,13 @@ module EvalMonad = struct
     pure (x, z)
 
   (* Return the first error applying f to elements of ls.
-   * Returns true if all elements satisfy f. *)
+   * Returns () if all elements satisfy f. *)
   let rec forallM ~f ls =
     match ls with
     | x :: ls' ->
         let%bind _ = f x in
         forallM ~f ls'
-    | [] -> pure true
+    | [] -> pure ()
 
   (* Try all variants in the list, pick the first successful one *)
   let tryM ~f ls ~msg =

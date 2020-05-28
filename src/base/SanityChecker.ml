@@ -277,14 +277,14 @@ struct
           check_warn_redef cparams cfields pnames [] i;
           expr_iter e_body cparams cfields pnames
       | MatchExpr (_, clauses) ->
-          iterM
+          forallM
             ~f:(fun (pat, mbody) ->
               let%bind _ = pattern_iter pat cparams cfields pnames in
               expr_iter mbody cparams cfields pnames)
             clauses
 
     let shadowing_libentries lentries =
-      iterM
+      forallM
         ~f:(fun lentry ->
           match lentry with
           | LibTyp _ -> pure ()
@@ -292,7 +292,7 @@ struct
         lentries
 
     let rec shadowing_libtree ltree =
-      let%bind _ = iterM ~f:(fun dep -> shadowing_libtree dep) ltree.deps in
+      let%bind _ = forallM ~f:(fun dep -> shadowing_libtree dep) ltree.deps in
       shadowing_libentries ltree.libn.lentries
 
     let shadowing_cmod (cmod : cmodule) =
@@ -310,7 +310,7 @@ struct
 
       (* Check if a field shadows any contract parameter. *)
       let%bind _ =
-        iterM
+        forallM
           ~f:(fun (f, _, finit_expr) ->
             check_warn_redef cparams [] [] [] f;
             expr_iter finit_expr cparams [] [])
@@ -322,7 +322,7 @@ struct
       in
 
       (* Go through each component. *)
-      iterM
+      forallM
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
           List.iter c.comp_params ~f:(fun (p, _) ->
@@ -344,7 +344,7 @@ struct
                     pure (get_id x :: acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
                     let%bind () =
-                      iterM
+                      forallM
                         ~f:(fun (pat, mbody) ->
                           let%bind _ =
                             pattern_iter pat cparams cfields pnames
@@ -371,14 +371,14 @@ struct
       (elibs : libtree list) =
     let%bind _ = basic_sanity cmod in
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in
-    let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
+    let%bind _ = forallM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind _ = CheckShadowing.shadowing_cmod cmod in
     pure ()
 
   let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list)
       (elibs : libtree list) =
     let%bind _ = CheckShadowing.shadowing_libentries rlibs in
-    let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
+    let%bind _ = forallM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind _ = CheckShadowing.shadowing_lmod lmod in
     pure ()
 end
