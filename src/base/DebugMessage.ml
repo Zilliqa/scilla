@@ -29,6 +29,15 @@ let plog msg =
           Out_channel.output_string h msg)
   | Debug_None -> ()
 
+(* Verbose print to log file *)
+let pvlog msg =
+  match get_debug_level () with
+  | Debug_Verbose ->
+      let fname = get_log_file () in
+      Out_channel.with_file fname ~append:true ~f:(fun h ->
+          Out_channel.output_string h (msg ()))
+  | Debug_Normal | Debug_None -> ()
+
 (* Prints to stdout and log file *)
 let pout msg =
   Out_channel.output_string Out_channel.stdout msg;

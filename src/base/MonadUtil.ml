@@ -74,6 +74,15 @@ let rec foldM ~f ~init ls =
       foldM ~f ~init:res ls'
   | [] -> pure init
 
+(* Monad version of fold2 *)
+let rec fold2M ~f ~init ls ms ~msg =
+  match (ls, ms) with
+  | x :: ls', y :: ms' ->
+      let%bind res = f init x y in
+      fold2M ~f ~init:res ls' ms' ~msg
+  | [], [] -> pure init
+  | _ -> fail @@ msg ()
+
 (* Monadic fold-right for error *)
 let rec foldrM ~f ~init ls =
   match ls with
@@ -131,6 +140,23 @@ let rec tryM ~f ls ~msg =
   | x :: ls' -> (
       match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
+
+(* Monadic version of List.fold_map *)
+let fold_mapM ~f ~init l =
+  let%bind acc, l'_rev =
+    foldM ~init:(init, [])
+      ~f:(fun (accacc, lrevacc) lel ->
+        let%bind accacc', lel' = f accacc lel in
+        pure (accacc', lel' :: lrevacc))
+      l
+  in
+  pure (acc, List.rev l'_rev)
+
+(* Monadic wrapper around any container's fold (Set, Map etc). *)
+(* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
+let wrapM_folder ~folder ~f ~init l =
+  let f' acc e = match acc with Error _ -> acc | Ok acc' -> f acc' e in
+  folder l ~init:(Ok init) ~f:f'
 
 (****************************************************************)
 (*           A gas-aware monad for `Eval` and related utilites  *)
