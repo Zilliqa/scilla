@@ -123,7 +123,7 @@ let liftPair2 x m =
 let rec forallM ~f ls =
   match ls with
   | x :: ls' ->
-      let%bind _ = f x in
+      let%bind () = f x in
       forallM ~f ls'
   | [] -> pure ()
 
@@ -247,7 +247,7 @@ module EvalMonad = struct
   let rec forallM ~f ls =
     match ls with
     | x :: ls' ->
-        let%bind _ = f x in
+        let%bind () = f x in
         forallM ~f ls'
     | [] -> pure ()
 

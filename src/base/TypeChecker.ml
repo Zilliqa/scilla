@@ -156,7 +156,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind arg_types = constr_pattern_arg_types atyp (get_id cn) in
           let plen = List.length arg_types in
           let alen = List.length ps in
-          let%bind _ = validate_param_length (get_id cn) plen alen in
+          let%bind () = validate_param_length (get_id cn) plen alen in
           let tps_pts = List.zip_exn arg_types ps in
           let%bind typed_ps, tps =
             foldrM ~init:([], tlist) tps_pts ~f:(fun (ps, ts) (t, pt) ->
@@ -189,7 +189,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         @@ ( (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep)),
              remaining_gas )
     | Fun (arg, t, body) ->
-        let%bind _ =
+        let%bind () =
           mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv t
         in
         let tenv' = TEnv.addT (TEnv.copy tenv) arg t in
@@ -223,7 +223,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              mark_error_as_type_error remaining_gas
              @@ BuiltInDictionary.find_builtin_op b targs
            in
-           let%bind _ =
+           let%bind () =
              mark_error_as_type_error remaining_gas
              @@ TEnv.is_wf_type tenv ret_typ
            in
@@ -255,8 +255,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (rhstyp, rep) ),
              remaining_gas )
     | Constr (cname, ts, actuals) ->
-        let%bind _ =
-          mark_error_as_type_error remaining_gas
+        let%bind () =
+          Result.ignore_m
+          @@ mark_error_as_type_error remaining_gas
           @@ mapM ts ~f:(TEnv.is_wf_type tenv)
         in
         let open Datatypes.DataTypeDictionary in
@@ -311,7 +312,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              let cl_types =
                List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t)
              in
-             let%bind _ =
+             let%bind () =
                mark_error_as_type_error remaining_gas
                @@ assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types)
              in
@@ -328,7 +329,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let%bind ((_, (bt, _)) as typed_b), remaining_gas =
           type_expr tenv' body remaining_gas
         in
-        let%bind _ =
+        let%bind () =
           mark_error_as_type_error remaining_gas @@ assert_type_equiv t bt.tp
         in
         pure
@@ -355,8 +356,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
                remaining_gas )
     | TApp (tf, arg_types) ->
-        let%bind _ =
-          mark_error_as_type_error remaining_gas
+        let%bind () =
+          Result.ignore_m
+          @@ mark_error_as_type_error remaining_gas
           @@ mapM arg_types ~f:(TEnv.is_wf_type tenv)
         in
         let%bind tfres =
@@ -368,7 +370,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let%bind res_type, remaining_gas =
           elab_tfun_with_args tftyp arg_types remaining_gas
         in
-        let%bind _ =
+        let%bind () =
           mark_error_as_type_error remaining_gas
           @@ TEnv.is_wf_type tenv res_type
         in
@@ -400,7 +402,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let%bind (_, (lt, _)), remaining_gas =
                 type_expr tenv (Literal l, rep) remaining_gas
               in
-              let%bind _ =
+              let%bind () =
                 mark_error_as_type_error remaining_gas @@ check_field_type lt.tp
               in
               pure @@ (TypedSyntax.MLit l, remaining_gas)
@@ -411,7 +413,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let t = rr_typ r in
               let rtp = t.tp in
-              let%bind _ =
+              let%bind () =
                 mark_error_as_type_error remaining_gas @@ check_field_type rtp
               in
               if is_serializable_type rtp then
@@ -441,7 +443,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
 
   and app_type tenv ftyp actuals remaining_gas =
     (* Type-check function application *)
-    let%bind _ =
+    let%bind () =
       mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv ftyp
     in
     let%bind targs, typed_actuals, remaining_gas =
@@ -450,7 +452,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let%bind res_type =
       mark_error_as_type_error remaining_gas @@ fun_type_applies ftyp targs
     in
-    let%bind _ =
+    let%bind () =
       mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv res_type
     in
     pure @@ (typed_actuals, mk_qual_tp res_type, remaining_gas)
@@ -512,7 +514,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind k_t =
             TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k))
           in
-          let%bind _ = assert_type_equiv kt (rr_typ k_t).tp in
+          let%bind () = assert_type_equiv kt (rr_typ k_t).tp in
           let%bind typed_keys, res = helper vt rest in
           let typed_k = add_type_to_ident k (rr_typ k_t) in
           pure @@ (typed_k :: typed_keys, res)
@@ -581,7 +583,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      @@ TEnv.resolveT env.pure (get_id r)
                           ~lopt:(Some (get_rep r))
                    in
-                   let%bind _ =
+                   let%bind () =
                      mark_error_as_type_error remaining_gas
                      @@ assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
                    in
@@ -626,7 +628,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                               ~lopt:(Some (get_rep v))
                        in
                        let typed_v = rr_typ v_resolv in
-                       let%bind _ =
+                       let%bind () =
                          mark_error_as_type_error remaining_gas
                          @@ assert_type_equiv v_type typed_v.tp
                        in
@@ -744,7 +746,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             let i_type = rr_typ r in
             let expected = list_typ msg_typ in
-            let%bind _ =
+            let%bind () =
               wrap_type_serr stmt
               @@ mark_error_as_type_error remaining_gas
               @@ assert_type_equiv expected i_type.tp
@@ -764,7 +766,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
             in
             let i_type = rr_typ r in
-            let%bind _ =
+            let%bind () =
               wrap_type_serr stmt
               @@ mark_error_as_type_error remaining_gas
               @@ assert_type_equiv event_typ i_type.tp
@@ -788,11 +790,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  in
                  match lookup_proc env p with
                  | Some arg_typs ->
-                     let%bind _ =
-                       mark_error_as_type_error remaining_gas
+                     let%bind () =
+                       Result.ignore_m
+                       @@ mark_error_as_type_error remaining_gas
                        @@ proc_type_applies arg_typs targs
                      in
-                     pure @@ (typed_actuals, remaining_gas)
+                     pure (typed_actuals, remaining_gas)
                  | None ->
                      Error
                        (mk_type_error0
@@ -814,7 +817,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let l_type = rr_typ lt in
             match lookup_proc env p with
             | Some [ arg_typ ] ->
-                let%bind _ =
+                let%bind () =
                   wrap_type_serr stmt
                   @@ mark_error_as_type_error remaining_gas
                   (* The procedure accepts an element of l. *)
@@ -846,7 +849,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
                 in
                 let i_type = rr_typ r in
-                let%bind _ =
+                let%bind () =
                   wrap_type_serr stmt
                   @@ mark_error_as_type_error remaining_gas
                   @@ assert_type_equiv exception_typ i_type.tp
@@ -944,7 +947,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                type_expr tenv fe remaining_gas
              in
              let actual = ar.tp in
-             let%bind _ =
+             let%bind () =
                mark_error_as_type_error remaining_gas'
                @@ assert_type_equiv ft actual
              in
@@ -974,7 +977,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           | LibTyp (n, ts) -> `Snd (n, ts))
     in
     (* recursion primitives must not contain type declarations *)
-    let%bind _ =
+    let%bind () =
       match lib_types with
       | _ :: _ ->
           Error
@@ -994,7 +997,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         @@ let%bind ((_, (ar, _)) as typed_body), remaining_gas' =
              type_expr env0 body remaining_gas
            in
-           let%bind _ =
+           let%bind () =
              match topt with
              | Some tannot ->
                  mark_error_as_type_error remaining_gas'
@@ -1035,7 +1038,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    sprintf "Type error in library type %s:\n\n" (get_id tname)
                  in
                  wrap_type_error_with_info (msg, ER.get_loc (get_rep tname))
-                 @@ let%bind _ =
+                 @@ let%bind () =
                       mark_error_as_type_error remaining_gas
                       @@ type_lib_typ_ctrs env ctr_defs
                     in
@@ -1058,7 +1061,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    | Ok (res', remaining_gas) ->
                        (* This went good. *)
                        let ((_, (tr, _)) as typed_e) = res' in
-                       let%bind _ =
+                       let%bind () =
                          match ltopt with
                          | Some tannot ->
                              mark_error_as_type_error remaining_gas
@@ -1292,7 +1295,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            @@ let%bind ((_, (ityp, _)) as checked_constraint), remaining_gas =
                 type_expr tenv3 cconstraint remaining_gas
               in
-              let%bind _ =
+              let%bind () =
                 mark_error_as_type_error remaining_gas
                 @@ assert_type_equiv (ADT (mk_loc_id "Bool", [])) ityp.tp
               in

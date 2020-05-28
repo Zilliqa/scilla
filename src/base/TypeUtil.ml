@@ -186,10 +186,10 @@ functor
         let rec is_wf_typ' t' tb =
           match t' with
           | MapType (kt, vt) ->
-              let%bind _ = is_wf_typ' kt tb in
+              let%bind () = is_wf_typ' kt tb in
               is_wf_typ' vt tb
           | FunType (at, rt) ->
-              let%bind _ = is_wf_typ' at tb in
+              let%bind () = is_wf_typ' at tb in
               is_wf_typ' rt tb
           | ADT (n, ts) ->
               let open Datatypes.DataTypeDictionary in
@@ -402,7 +402,7 @@ module TypeUtilities = struct
   let rec fun_type_applies ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
-        let%bind _ = assert_type_equiv argt a in
+        let%bind () = assert_type_equiv argt a in
         fun_type_applies rest ats
     | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
@@ -568,7 +568,7 @@ module TypeUtilities = struct
     let adt = refresh_adt adt' taken in
     let plen = List.length adt.tparams in
     let alen = List.length targs in
-    let%bind _ = validate_param_length cn plen alen in
+    let%bind () = validate_param_length cn plen alen in
     let res_typ = ADT (mk_loc_id adt.tname, targs) in
     match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
@@ -587,7 +587,7 @@ module TypeUtilities = struct
         if String.(adt.tname = get_id name) then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
-          let%bind _ = validate_param_length cn plen alen in
+          let%bind () = validate_param_length cn plen alen in
           pure targs
         else
           fail0

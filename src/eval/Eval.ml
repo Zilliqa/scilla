@@ -260,17 +260,17 @@ let rec stmt_eval conf stmts =
       | Load (x, r) ->
           let%bind l, scon = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = Configuration.lookup conf r in
           let%bind scon = Configuration.store x v in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf sts
       | Bind (x, e) ->
           let%bind lval, _ = exp_eval_wrapper_no_cps e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
-          let%bind _ = stmt_gas_wrap G_Bind sloc in
+          let%bind () = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
       | MapUpdate (m, klist, ropt) ->
           let%bind klist' =
@@ -284,7 +284,7 @@ let rec stmt_eval conf stmts =
             | None -> pure None
           in
           let%bind scon = Configuration.map_update m klist' v in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf sts
       | MapGet (x, m, klist, fetchval) ->
           let%bind klist' =
@@ -292,12 +292,12 @@ let rec stmt_eval conf stmts =
           in
           let%bind l, scon = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind _ = stmt_gas_wrap G_ReadFromBC sloc in
+          let%bind () = stmt_gas_wrap G_ReadFromBC sloc in
           stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
           let%bind v = Env.lookup conf.env x in
@@ -317,24 +317,26 @@ let rec stmt_eval conf stmts =
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = { conf'' with env = conf.env } in
-          let%bind _ = stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc in
+          let%bind () =
+            stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc
+          in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
-          let%bind _ = stmt_gas_wrap G_AcceptPayment sloc in
+          let%bind () = stmt_gas_wrap G_AcceptPayment sloc in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)
       | SendMsgs ms ->
           let%bind ms_resolved = Configuration.lookup conf ms in
           let%bind conf', scon = Configuration.send_messages conf ms_resolved in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved = Configuration.lookup conf params in
           let%bind conf', scon =
             Configuration.create_event conf eparams_resolved
           in
-          let%bind _ = stmt_gas_wrap scon sloc in
+          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | CallProc (p, actuals) ->
           (* Resolve the actuals *)
@@ -346,7 +348,7 @@ let rec stmt_eval conf stmts =
           in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
-          let%bind _ = stmt_gas_wrap G_CallProc sloc in
+          let%bind () = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
       | Iterate (l, p) ->
           let%bind l_actual = Env.lookup conf.env l in
@@ -359,7 +361,7 @@ let rec stmt_eval conf stmts =
                 let%bind conf' =
                   try_apply_as_procedure confacc proc p_rest [ arg ]
                 in
-                let%bind _ = stmt_gas_wrap G_CallProc sloc in
+                let%bind () = stmt_gas_wrap G_CallProc sloc in
                 pure conf')
           in
           stmt_eval conf' sts
@@ -530,7 +532,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)
-  let%bind _ =
+  let%bind () =
     forallM
       ~f:(fun a ->
         let%bind atyp = fromR @@ literal_type (snd a) in
@@ -545,14 +547,14 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
               if String.(get_id ps = fst a) && [%equal: EvalType.t] pt at then
-                pure true
+                pure ()
               else fail0 "")
             cparams ~msg:emsg
         in
         pure mp)
       args
   in
-  let%bind _ =
+  let%bind () =
     forallM
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
@@ -560,7 +562,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
           fail0
             (sprintf "Parameter %s must occur exactly once in input.\n"
                (get_id p))
-        else pure true)
+        else pure ())
       cparams
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
@@ -568,7 +570,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
     List.fold_left ~init:libenv args ~f:(fun e (p, v) -> Env.bind e p v)
   in
   (* Evaluate constraint, and abort if false *)
-  let%bind _ = eval_constraint cconstraint' env in
+  let%bind () = eval_constraint cconstraint' env in
   let%bind field_values = init_fields env cfields in
   let fields = List.map cfields ~f:(fun (f, t, _) -> (get_id f, t)) in
   let balance = init_bal in
@@ -580,7 +582,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
 let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
-  let%bind _ =
+  let%bind () =
     forallM
       ~f:(fun (s, lc) ->
         let%bind t_lc = fromR @@ literal_type lc in
@@ -594,7 +596,7 @@ let create_cur_state_fields initcstate curcstate =
             ~f:(fun (t, li) ->
               let%bind t1 = fromR @@ literal_type lc in
               let%bind t2 = fromR @@ literal_type li in
-              if String.(s = t) && [%equal: EvalType.t] t1 t2 then pure true
+              if String.(s = t) && [%equal: EvalType.t] t1 t2 then pure ()
               else fail0 "")
             initcstate ~msg:emsg
         in
@@ -602,12 +604,12 @@ let create_cur_state_fields initcstate curcstate =
       curcstate
   in
   (* Each entry name is unique *)
-  let%bind _ =
+  let%bind () =
     forallM
       ~f:(fun (e, _) ->
         if List.count curcstate ~f:(fun (e', _) -> String.(e = e')) > 1 then
           fail0 (sprintf "Field %s occurs more than once in input.\n" e)
-        else pure true)
+        else pure ())
       initcstate
   in
   (* Get only those fields from initcstate that are not in curcstate *)
@@ -627,7 +629,7 @@ let init_module md initargs curargs init_bal bstate elibs =
   in
   let%bind curfield_vals = create_cur_state_fields field_vals curargs in
   (* blockchain input provided is only validated and not used here. *)
-  let%bind _ = check_blockchain_entries bstate in
+  let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
   pure (contr, cstate, curfield_vals)
 
