@@ -177,7 +177,7 @@ struct
         let t = ER.get_type r in
         let msg = sprintf " of type %s" (PCType.pp_typ t.tp) in
         wrap_pmcheck_err erep ~opt:msg
-        @@ let%bind _ = pm_check_clauses t.tp clauses in
+        @@ let%bind () = Result.ignore_m @@ pm_check_clauses t.tp clauses in
            let%bind checked_clauses =
              mapM
                ~f:(fun (p, e) ->
@@ -218,7 +218,7 @@ struct
               wrap_pmcheck_serr srep
               @@
               let t = ER.get_type r in
-              let%bind _ = pm_check_clauses t.tp clauses in
+              let%bind () = Result.ignore_m @@ pm_check_clauses t.tp clauses in
               let%bind checked_clauses =
                 mapM
                   ~f:(fun (p, ss) ->

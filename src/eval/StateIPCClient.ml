@@ -188,7 +188,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   in
   let%bind q' = encode_serialized_query q in
   let%bind value' = encode_serialized_value (serialize_field value) in
-  let%bind _ =
+  let%bind () =
     let thunk () =
       translate_res
       @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value'
@@ -231,7 +231,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let%bind q' = encode_serialized_query q in
   let dummy_val = "" in
   (* This will be ignored by the blockchain. *)
-  let%bind _ =
+  let%bind () =
     let thunk () =
       translate_res
       @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val

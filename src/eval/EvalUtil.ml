@@ -308,7 +308,7 @@ module Configuration = struct
     (* Note: We don't need a whole lot of checks as the checker does it. *)
     let validate_msg_payload pl =
       let has_tag = List.Assoc.mem pl "tag" ~equal:String.( = ) in
-      if has_tag then pure true
+      if has_tag then pure ()
       else
         fail0
         @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
@@ -316,9 +316,9 @@ module Configuration = struct
     in
     match ls with
     | Msg pl :: tl ->
-        let%bind _ = validate_msg_payload pl in
+        let%bind () = validate_msg_payload pl in
         validate_messages tl
-    | [] -> pure true
+    | [] -> pure ()
     | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
   let validate_outgoing_message m' =

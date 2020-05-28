@@ -229,7 +229,7 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
-        let%bind _ =
+        let%bind () =
           StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
         in
         if not @@ List.is_empty keys then
@@ -258,12 +258,12 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
-        let%bind _ = StateIPCClient.remove ~socket_addr ~fname ~keys ~tp in
+        let%bind () = StateIPCClient.remove ~socket_addr ~fname ~keys ~tp in
         pure @@ G_MapUpdate (List.length keys, None)
     | Local ->
         let%bind _, g = update_local ~fname ~keys None fields in
         (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
-        pure @@ g
+        pure g
 
   (* Expensive operation, use with care. *)
   let get_full_state () =

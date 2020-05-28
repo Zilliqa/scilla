@@ -216,13 +216,9 @@ let check_lmodule cli =
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs
         initial_gas
     in
-    let%bind _ =
-      wrap_error_with_gas remaining_gas
-      @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
+    let%bind () = Result.ignore_m @@ wrap_error_with_gas remaining_gas @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
     in
-    let%bind _ =
-      wrap_error_with_gas remaining_gas
-      @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
+    let%bind () = Result.ignore_m @@ wrap_error_with_gas remaining_gas @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
     in
     pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
   in
@@ -267,18 +263,14 @@ let check_cmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
-    let%bind _ =
+    let%bind () =
       wrap_error_with_gas remaining_gas
       @@ check_sanity typed_cmod typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
     in
-    let%bind _ =
-      if cli.gua_flag then
-        wrap_error_with_gas remaining_gas
-        @@ analyze_print_gas typed_cmod typed_elibs
-      else pure []
+    let%bind () = Result.ignore_m @@ if cli.gua_flag then wrap_error_with_gas remaining_gas @@ analyze_print_gas typed_cmod typed_elibs else pure []
     in
     let cf_info_opt =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
