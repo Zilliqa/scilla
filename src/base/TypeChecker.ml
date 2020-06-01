@@ -922,8 +922,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let lib_vars, lib_types =
       List.partition_map rec_libs ~f:(fun le ->
           match le with
-          | LibVar (n, t, e) -> `Fst (n, t, e)
-          | LibTyp (n, ts) -> `Snd (n, ts))
+          | LibVar (n, t, e) -> First (n, t, e)
+          | LibTyp (n, ts) -> Second (n, ts))
     in
     (* recursion primitives must not contain type declarations *)
     let%bind () =

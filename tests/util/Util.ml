@@ -84,20 +84,16 @@ let output_verifier goldoutput_file msg print_diff output =
   (* load all data from file *)
   let gold_output = In_channel.read_all goldoutput_file in
   let pp_diff fmt =
-    let config =
-      let open Patdiff_lib.Configuration in
-      parse (Config.t_of_sexp (Sexp.of_string default))
-    in
-    let open Patdiff_lib in
-    let gold = { Patdiff_core.name = goldoutput_file; text = gold_output } in
-    let out = { Patdiff_core.name = "test output"; text = output } in
-    let open Patdiff_lib.Compare_core in
-    match diff_strings config ~prev:gold ~next:out with
+    let open Patdiff_kernel in
+    let gold = Diff_input.{ name = goldoutput_file; text = gold_output } in
+    let out = Diff_input.{ name = "test output"; text = output } in
+    let open Patdiff.Compare_core in
+    match diff_strings Configuration.default ~prev:gold ~next:out with
     | `Same -> ()
     | `Different s ->
         (* s contains ANSI color codes *)
-        Format.pp_force_newline fmt ();
-        Format.pp_print_string fmt s
+        Caml.Format.pp_force_newline fmt ();
+        Caml.Format.pp_print_string fmt s
   in
   if print_diff then
     assert_equal
@@ -135,7 +131,7 @@ module type TestSuiteInput = sig
 
   val json_errors : bool
 
-  val exit_code : Unix.process_status
+  val exit_code : UnixLabels.process_status
 
   val additional_libdirs : string list list
 

@@ -70,7 +70,7 @@ let setup ~sock_path ~num_pending =
   Unix.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
   Unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
-  let socket = Unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
+  let socket = Unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ()) in
   Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_path);
   Unix.listen socket ~backlog:num_pending;
   pout @@ Printf.sprintf "Scilla Server is listening on %s\n" sock_path;

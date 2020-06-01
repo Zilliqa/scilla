@@ -28,9 +28,9 @@ let testsuit_gas_limit = "8000"
 
 let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 
-let succ_code : Unix.process_status = WEXITED 0
+let succ_code : UnixLabels.process_status = WEXITED 0
 
-let fail_code : Unix.process_status = WEXITED 1
+let fail_code : UnixLabels.process_status = WEXITED 1
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for

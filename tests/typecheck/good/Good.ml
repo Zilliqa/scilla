@@ -211,7 +211,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "map_value_type_pair.scilexp";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 0
+  let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
 let tests env =

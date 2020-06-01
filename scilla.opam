@@ -6,10 +6,10 @@ bug-reports: "https://github.com/Zilliqa/scilla/issues"
 dev-repo: "git+https://github.com/Zilliqa/scilla.git"
 license: "GPL-3.0"
 depends: [
-  "ocaml" {>= "4.07.1" & < "4.10~"}
+  "ocaml" {>= "4.08.0" & < "4.11~"}
   "dune" {>= "2.0"}
   "menhir"
-  "core" {>= "v0.12.4" & < "v0.13~"}
+  "core" {>= "v0.14.0" & < "v0.15~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
   "angstrom" {>= "0.11.0" & < "0.14~"}
   "bisect_ppx" {>= "2.0.0" & < "2.3~"}
@@ -21,13 +21,13 @@ depends: [
   "yojson" {>= "1.7.0" & < "1.8~"}
   "ocaml-protoc" {>= "1.2.0" & < "2.1~"}
   "ppx_deriving" {>= "4.2.1" & < "4.5~"}
-  "ppx_sexp_conv" {>= "v0.12.0" & < "v0.13~"}
-  "ppx_compare" {>= "v0.12.0" & < "v0.13~"}
+  "ppx_sexp_conv" {>= "v0.14.0" & < "v0.15~"}
+  "ppx_compare" {>= "v0.14.0" & < "v0.15~"}
   "ppx_deriving_rpc" {>= "6.0.0" & < "8.0~"}
   "secp256k1" {>= "0.4.0" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.7~"}
   "ounit" {>= "2.0.8" & < "2.3~"}
-  "patdiff" {>= "v0.12.1" & < "v0.13~"}
+  "patdiff" {>= "v0.14.0" & < "v0.15~"}
   "conf-cmake" {build}
   "conf-gcc" {build}
   "conf-g++" {build}

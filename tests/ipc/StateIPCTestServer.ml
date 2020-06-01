@@ -77,7 +77,7 @@ module MakeServer () = struct
   let prepare_server sock_addr =
     (try Unix.unlink sock_addr with Unix.Unix_error (Unix.ENOENT, _, _) -> ());
     let socket =
-      Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+      Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
     in
     Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
     Unix.listen socket ~backlog:num_pending_requests;
@@ -177,7 +177,7 @@ let start_server ~sock_addr =
       ServerModule.IPCTestServer.update_state_value (fun q v ->
           IDL.T.return @@ ServerModule.update_state_value q v);
       let server = ServerModule.prepare_server sock_addr in
-      let _ = Thread.create server () in
+      let _ = Thread.create ~on_uncaught_exn:`Kill_whole_process server () in
       Hashtbl.replace thread_pool sock_addr ServerModule.table
 
 let stop_server ~sock_addr =

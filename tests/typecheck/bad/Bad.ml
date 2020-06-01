@@ -191,7 +191,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type-renaming-should-be-allowed.scilexp";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 let tests env = "bad" >::: [ lit_typ_tests; Tests.tests env ]

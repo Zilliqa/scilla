@@ -53,7 +53,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "pm_unreachable_nesting2.scilla";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 let tests env = "bad" >::: [ Tests.tests env ]

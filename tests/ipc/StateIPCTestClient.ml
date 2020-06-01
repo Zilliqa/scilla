@@ -82,7 +82,7 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
   in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
   let ic, oc =
