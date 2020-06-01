@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
