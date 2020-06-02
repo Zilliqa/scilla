@@ -34,18 +34,6 @@ module type QualifiedName = sig
   val parse_qualified_name : string -> string -> t
 end
 
-module FlattenedName = struct
-  type t = string [@@deriving sexp, equal, compare]
-
-  let as_string n = n
-
-  let as_error_string n = n
-
-  let parse_simple_name n = n
-
-  let parse_qualified_name = flatten_name
-end
-
 (* Localised names within a contract.
    Name qualifiers refer to the contract's import namespaces.
    Fields, parameters, variables and type variables are never qualified. *)

@@ -20,47 +20,35 @@ open ErrorUtils
 open Core_kernel
 open Literal
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module DTLiteral = FlattenedLiteral
+module DTLiteral = GlobalLiteral
 module DTType = DTLiteral.LType
+module DTIdentifier = DTType.TIdentifier
+module DTName = DTIdentifier.Name
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
-type constructor = {
-  cname : string;
-  (* constructor name *)
-  arity : int; (* How many arguments it takes *)
-}
-[@@deriving equal]
-
-type adt = {
-  tname : string;
-  tparams : string list;
-  tconstr : constructor list;
-  tmap : (string * DTType.t list) list;
-}
-[@@deriving equal]
-
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
-
+  type adt
+  type constructor
+  
   (* Re-initialize environment with the built-in ADTs *)
   val reinit : unit -> unit
 
   (*  Get ADT by name  *)
   val lookup_name :
-    ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
+    ?sloc:ErrorUtils.loc -> DTName.t -> (adt, scilla_error list) result
 
   (*  Get ADT by the constructor  *)
   val lookup_constructor :
     ?sloc:ErrorUtils.loc ->
-    string ->
+    DTName.t ->
     (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> DTType.t list option
+  val constr_tmap : adt -> DTName.t -> DTType.t list option
 
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
