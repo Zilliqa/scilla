@@ -201,7 +201,7 @@ module Key = struct
       Sk buf
     | false -> invalid_arg "Key.read_sk_exn: secret key is invalid"
 
-  let read_sk ctx ?pos buf =
+  let read_sk ctx ?pos:_ buf =
     try Ok (read_sk_exn ctx buf) with
     | Invalid_argument msg -> Error msg
 
@@ -216,7 +216,7 @@ module Key = struct
     if (pk_parse ctx outbuf inbuf) then Pk outbuf
     else invalid_arg "Key.read_pk_exn: public key is invalid"
 
-  let read_pk ctx ?pos buf =
+  let read_pk ctx ?pos:_ buf =
     try Ok (read_pk_exn ctx buf) with
     | Invalid_argument msg -> Error msg
 
@@ -313,7 +313,7 @@ module Sign = struct
       P signature
     else invalid_arg "Sign.read_exn: signature could not be parsed"
 
-  let read ctx ?pos buf =
+  let read ctx ?pos:_ buf =
     try Ok (read_exn ctx buf) with
     | Invalid_argument msg -> Error msg
 
@@ -326,7 +326,7 @@ module Sign = struct
       P signature
     else invalid_arg "Sign.read_der_exn: signature could not be parsed"
 
-  let read_der ctx ?pos buf =
+  let read_der ctx ?pos:_ buf =
     try Ok (read_der_exn ctx buf) with
     | Invalid_argument msg -> Error msg
 
@@ -446,7 +446,7 @@ module Sign = struct
     type a. Context.t -> pk:Key.public Key.t -> msg:msg -> signature:a t -> bool =
     fun ctx ~pk ~msg ~signature -> match signature with
       | P signature -> verify_plain_exn ctx ~pk msg signature
-      | R signature as r ->
+      | R _signature as r ->
         let P signature = to_plain ctx r in
         verify_plain_exn ctx ~pk msg signature
 

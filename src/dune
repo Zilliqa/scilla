@@ -13,4 +13,4 @@
  (deps
   (:< config/discover.exe))
  (action
-  (run %{<} -ocamlc %{ocamlc})))
+  (run %{<})))
