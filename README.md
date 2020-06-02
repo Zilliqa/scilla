@@ -23,6 +23,7 @@ You can improve this wrapper by submitting a pull request.
 Thanks to all contributors:
 - Vincent Bernardoff
 - Yoichi Hirai
+- Anton Trunov
 
 
 ## Donation
