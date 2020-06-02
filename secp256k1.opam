@@ -35,6 +35,7 @@ depends: [
   "alcotest" {with-test & >= "0.8.1"}
   "odoc" {with-test & >= "1.3.0"}
   "base-bigarray"
+  "conf-secp256k1"
 ]
 
 depexts: []
