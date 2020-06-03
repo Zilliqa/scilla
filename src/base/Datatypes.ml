@@ -33,31 +33,31 @@ open DTLiteral
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
+(* A tagged constructor *)
+type constructor = {
+  cname : DTName.t;
+  (* constructor name *)
+  arity : int; (* How many arguments it takes *)
+}
+[@@deriving equal]
+
+(* An Algebraic Data Type *)
+type adt = {
+  tname : DTName.t;
+  (* type name *)
+  tparams : string list;
+  (* type parameters *)
+
+  (* supported constructors *)
+  tconstr : constructor list;
+  (* Mapping for constructors' types
+     The arity of the constructor is the same as the length
+     of the list, so the types are mapped correspondingly. *)
+  tmap : (DTName.t * DTType.t list) list;
+}
+[@@deriving equal]
+
 module DataTypeDictionary = struct
-
-  (* A tagged constructor *)
-  type constructor = {
-    cname : DTName.t;
-    (* constructor name *)
-    arity : int; (* How many arguments it takes *)
-  }
-  [@@deriving equal]
-
-  (* An Algebraic Data Type *)
-  type adt = {
-    tname : DTName.t;
-    (* type name *)
-    tparams : string list;
-    (* type parameters *)
-
-    (* supported constructors *)
-    tconstr : constructor list;
-    (* Mapping for constructors' types
-       The arity of the constructor is the same as the length
-       of the list, so the types are mapped correspondingly. *)
-    tmap : (DTName.t * DTType.t list) list;
-  }
-  [@@deriving equal]
 
   let dtname_of_string str = DTName.parse_simple_name str
   let dtid_of_string str = DTIdentifier.mk_loc_id @@ dtname_of_string str
@@ -206,7 +206,10 @@ let match_simple_names n m = [%equal: DTName.t] n m
 let is_nil_ctr_name = match_simple_names DataTypeDictionary.c_nil.cname
 let is_cons_ctr_name = match_simple_names DataTypeDictionary.c_cons.cname
 let is_pair_ctr_name = match_simple_names DataTypeDictionary.c_pair.cname
-  
+let is_zero_ctr_name = match_simple_names DataTypeDictionary.c_zero.cname
+let is_succ_ctr_name = match_simple_names DataTypeDictionary.c_succ.cname
+let is_list_adt_name = match_simple_names DataTypeDictionary.t_list.tname
+
 (* Convert Scilla list to OCaml list.
  * Not tail recursive. Don't use for long lists. *)
 let scilla_list_to_ocaml v =

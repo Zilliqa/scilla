@@ -29,11 +29,33 @@ module DTName = DTIdentifier.Name
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
+(* A tagged constructor *)
+type constructor = {
+  cname : DTName.t;
+  (* constructor name *)
+  arity : int; (* How many arguments it takes *)
+}
+[@@deriving equal]
+
+(* An Algebraic Data Type *)
+type adt = {
+  tname : DTName.t;
+  (* type name *)
+  tparams : string list;
+  (* type parameters *)
+
+  (* supported constructors *)
+  tconstr : constructor list;
+  (* Mapping for constructors' types
+     The arity of the constructor is the same as the length
+     of the list, so the types are mapped correspondingly. *)
+  tmap : (DTName.t * DTType.t list) list;
+}
+[@@deriving equal]
+
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
-  type adt
-  type constructor
-  
+    
   (* Re-initialize environment with the built-in ADTs *)
   val reinit : unit -> unit
 
@@ -70,6 +92,13 @@ module DataTypeDictionary : sig
   val pair_typ : DTType.t -> DTType.t -> DTType.t
 end
 
+val is_nil_ctr_name : DTName.t -> bool
+val is_cons_ctr_name : DTName.t -> bool
+val is_pair_ctr_name : DTName.t -> bool
+val is_zero_ctr_name : DTName.t -> bool
+val is_succ_ctr_name : DTName.t -> bool
+val is_list_adt_name : DTName.t -> bool
+  
 val scilla_list_to_ocaml :
   DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
 

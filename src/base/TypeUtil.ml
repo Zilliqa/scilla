@@ -26,9 +26,10 @@ open MonadUtil
 open Result.Let_syntax
 open Datatypes
 open PrettyPrinters
-module TULiteral = FlattenedLiteral
+module TULiteral = GlobalLiteral
 module TUType = TULiteral.LType
 module TUIdentifier = TUType.TIdentifier
+module TUName = TUIdentifier.Name
 open TUIdentifier
 open TUType
 
@@ -149,7 +150,7 @@ functor
 
       let addT env id tp =
         let _ =
-          Hashtbl.add env.tenv (get_id id)
+          Hashtbl.add env.tenv (as_string id)
             { qt = Q.mk_qualified_type tp; rep = get_rep id }
         in
         env
@@ -158,7 +159,7 @@ functor
         List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
 
       let addV env id =
-        let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in
+        let _ = Hashtbl.add env.tvars (as_string id) (get_rep id) in
         env
 
       (* Append env' to env in place. *)
@@ -197,7 +198,7 @@ functor
               if List.length ts <> List.length adt.tparams then
                 fail1
                   (sprintf "ADT type %s expects %d arguments but got %d.\n"
-                     (get_id n) (List.length adt.tparams) (List.length ts))
+                     (as_error_string n) (List.length adt.tparams) (List.length ts))
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
@@ -345,12 +346,13 @@ module TypeUtilities = struct
           (not @@ [%equal: TUType.t] t msg_typ)
           || [%equal: TUType.t] t event_typ)
     | ADT (tname, ts) -> (
+        let open DataTypeDictionary in
         if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
           (* Inductive ADT - ignore this branch *)
         else
           (* Check that ADT is serializable *)
           match
-            DataTypeDictionary.lookup_name ~sloc:(get_rep tname) (get_id tname)
+            lookup_name ~sloc:(get_rep tname) (get_id tname)
           with
           | Error _ -> false (* Handle errors outside *)
           | Ok adt ->
@@ -537,13 +539,13 @@ module TypeUtilities = struct
   let validate_param_length cn plen alen =
     if plen <> alen then
       fail0
-      @@ sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
-           alen
+      @@ sprintf "Constructor %s expects %d type arguments, but got %d."
+        (TUName.as_error_string cn) plen alen
     else pure ()
 
   (* Avoid variable clashes *)
   let refresh_adt adt taken =
-    let { tparams; tmap; _ } = adt in
+    let { tparams ; tmap ; _ } = adt in
     let tkn = tparams @ taken in
     let subst = List.map tparams ~f:(fun tp -> (tp, mk_fresh_var tkn tp)) in
     let tparams' = List.unzip subst |> snd in
@@ -570,7 +572,7 @@ module TypeUtilities = struct
     let alen = List.length targs in
     let%bind () = validate_param_length cn plen alen in
     let res_typ = ADT (mk_loc_id adt.tname, targs) in
-    match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
+    match List.Assoc.find adt.tmap cn ~equal:[%equal : TUName.t] with
     | None -> pure res_typ
     | Some ctparams ->
         let tmap = List.zip_exn adt.tparams targs in
@@ -584,7 +586,7 @@ module TypeUtilities = struct
   let extract_targs cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
-        if String.(adt.tname = get_id name) then
+        if [%equal : TUName.t ] adt.tname (get_id name) then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
           let%bind () = validate_param_length cn plen alen in
@@ -594,7 +596,7 @@ module TypeUtilities = struct
           @@ sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               adt.tname (get_id name)
+               (TUName.as_error_string adt.tname) (as_string name)
     | _ -> fail0 @@ sprintf "Not an algebraic data type: %s" (pp_typ atyp)
 
   let constr_pattern_arg_types atyp cn =
@@ -706,12 +708,12 @@ module TypeUtilities = struct
           @@ sprintf
                "Wrong number of type parameters for ADT %s (%i) in constructor \
                 %s."
-               tname (List.length ts) cname
+               (TUName.as_error_string tname) (List.length ts) (TUName.as_error_string cname)
         else if not (List.length args = constr.arity) then
           fail0
           @@ sprintf
                "Wrong number of arguments to ADT %s (%i) in constructor %s."
-               tname (List.length args) cname
+               (TUName.as_error_string tname) (List.length args) (TUName.as_error_string cname)
           (* Verify that the types of args match that declared. *)
         else
           let res = ADT (mk_loc_id tname, ts) in

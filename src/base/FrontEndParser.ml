@@ -23,10 +23,14 @@ open ErrorUtils
 open MonadUtil
 open ParserFaults
 open ParserUtil
-module Parser = ScillaParser.Make (ParserSyntax)
-module Lexer = ScillaLexer.MkLexer (ParserSyntax)
+open Literal
+(* Module files, expression file and type files use LocalLiteral, because
+   name qualifiers are locally defined namespaces. *)
+module ModuleSyntax = ParserSyntax (LocalLiteral)
+module Parser = ScillaParser.Make (ModuleSyntax)
+module Lexer = ScillaLexer.MkLexer (ModuleSyntax)
 module MInter = Parser.MenhirInterpreter
-module FEPType = ParserSyntax.SType
+module FEPType = ModuleSyntax.SType
 
 (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
 let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
