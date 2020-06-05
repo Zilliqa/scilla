@@ -21,10 +21,10 @@ open ErrorUtils
 open Literal
 open Syntax
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module TULiteral = FlattenedLiteral
+module TULiteral = GlobalLiteral
 module TUType = TULiteral.LType
 module TUIdentifier = TUType.TIdentifier
+module TUName = TUIdentifier.Name
 
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = { tp : TUType.t; qual : 'rep } [@@deriving sexp]
@@ -217,16 +217,16 @@ module TypeUtilities : sig
 
   (*  Get elaborated type for a constructor and list of type arguments *)
   val elab_constr_type :
-    string -> TUType.t list -> (TUType.t, scilla_error list) result
+    TUName.t -> TUType.t list -> (TUType.t, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
      pattern-matching. *)
   val constr_pattern_arg_types :
-    TUType.t -> string -> (TUType.t list, scilla_error list) result
+    TUType.t -> TUName.t -> (TUType.t list, scilla_error list) result
 
   val validate_param_length :
-    string -> int -> int -> (unit, scilla_error list) result
+    TUName.t -> int -> int -> (unit, scilla_error list) result
 
   val assert_all_same_type : TUType.t list -> (unit, scilla_error list) result
 end
