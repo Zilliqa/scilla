@@ -60,8 +60,16 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     simp_ctr_dict : str_str_dict;
   }
 
+  let add_key_and_lib_filename_to_dict dict key value =
+    List.Assoc.add dict ~equal:String.( = ) key value
+  
   let remove_local_id_from_dict dict var =
     List.Assoc.remove dict ~equal:String.( = ) var
+
+  let check_duplicate_dict_entry dict key msg =
+    match List.Assoc.find dict ~equal:String.( = ) key with
+    | Some _ -> fail0 msg
+    | None -> pure ()
 
   (**************************************************************)
   (*                   Disambiguate names                       *)
@@ -538,14 +546,30 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   PostDisSyntax.c_arg_types = dis_c_arg_types;
                 })
         in
-        (* tname is now in scope as a local type, and ctrs are in scope as local constructors,
-           so remove from dictionaries *)
-        let res_typ_dict =
-          remove_local_id_from_dict dicts.simp_typ_dict (as_string tname)
+        (* tname is now in scope as a local type, and ctrs are in scope as local constructors.
+           Reject name clashes with imported types and constructors.
+           Then map simple names to the address of the current module. *)
+        let filename = (ER.get_loc (get_rep tname)).fname in
+        let%bind res_typ_dict =
+          let msg =
+            sprintf "Type name %s clashes with previously defined or imported type"
+              (as_string tname)
+          in
+          let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string tname) msg in
+          pure @@
+          add_key_and_lib_filename_to_dict dicts.simp_typ_dict (as_string tname) filename
         in
-        let res_ctr_dict =
-          List.fold_left ctrs ~init:dicts.simp_ctr_dict ~f:(fun dict ctr ->
-              remove_local_id_from_dict dict (as_string ctr.cname))
+        let%bind res_ctr_dict =
+          let mk_msg cname =
+            sprintf "Constructor name %s clashes with previously defined or imported constructor"
+              (as_string cname)
+          in
+          foldM ctrs ~init:dicts.simp_ctr_dict ~f:(fun dict (ctr : ctr_def) ->
+              let ctr_name = ctr.cname in
+              let msg = mk_msg ctr_name in
+              let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string ctr_name) msg in
+              pure @@
+              add_key_and_lib_filename_to_dict dicts.simp_ctr_dict (as_string ctr_name) filename)
         in
         let res_dicts =
           {
@@ -665,10 +689,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       pure
         (String.sub lib_filename ~pos:0 ~len:(String.length lib_filename - 8))
     in
-    let list_assoc_find_helper dict key =
-      List.Assoc.find dict ~equal:String.( = ) key
-    in
-
     (* Build dictionaries *)
     foldM imports ~init:([], [], [], [])
       ~f:(fun ( ns_dict_acc,
@@ -679,14 +699,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               ->
         let%bind lib = find_lib libname extlibs in
         let%bind lib_filename = find_lib_filename lib in
-        let add_key_and_lib_filename_to_dict dict key =
-          List.Assoc.add dict ~equal:String.( = ) key lib_filename
-        in
-        let check_duplicate dict key msg =
-          match list_assoc_find_helper dict key with
-          | Some _ -> fail0 msg
-          | None -> pure ()
-        in
         match ns_opt with
         | Some ns ->
             (* Namespace defined - only add to namespace dictionary *)
@@ -694,9 +706,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let msg =
               sprintf "Duplicate namespace %s in imports" (as_string ns)
             in
-            let%bind _ = check_duplicate ns_dict_acc (as_string ns) msg in
+            let%bind () = check_duplicate_dict_entry ns_dict_acc (as_string ns) msg in
             let ns_dict =
-              add_key_and_lib_filename_to_dict ns_dict_acc (as_string ns)
+              add_key_and_lib_filename_to_dict ns_dict_acc (as_string ns) lib_filename
             in
             pure
               (ns_dict, simp_var_dict_acc, simp_typ_dict_acc, simp_ctr_dict_acc)
@@ -722,13 +734,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         sprintf "Variable %s imported from multiple sources"
                           (as_string x)
                       in
-                      let%bind _ =
-                        check_duplicate simp_var_dict_acc (as_string x) msg
+                      let%bind () =
+                        check_duplicate_dict_entry simp_var_dict_acc (as_string x) msg
                       in
                       (* Add x -> lib_filename to var dictionary *)
                       let simp_var_dict =
                         add_key_and_lib_filename_to_dict simp_var_dict_acc'
-                          (as_string x)
+                          (as_string x) lib_filename
                       in
                       pure
                         (simp_var_dict, simp_typ_dict_acc', simp_ctr_dict_acc')
@@ -739,13 +751,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         sprintf "Type %s imported from multiple sources"
                           (as_string tname)
                       in
-                      let%bind _ =
-                        check_duplicate simp_typ_dict_acc' (as_string tname) msg
+                      let%bind () =
+                        check_duplicate_dict_entry simp_typ_dict_acc' (as_string tname) msg
                       in
                       (* Add tname -> lib_filename to type dictionary *)
                       let simp_typ_dict =
                         add_key_and_lib_filename_to_dict simp_typ_dict_acc'
-                          (as_string tname)
+                          (as_string tname) lib_filename
                       in
                       (* Deal with constructors *)
                       let%bind simp_ctr_dict =
@@ -757,14 +769,14 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                                 "Constructor %s imported from multiple sources"
                                 (as_string ctr_def.cname)
                             in
-                            let%bind _ =
-                              check_duplicate dict_acc (as_string ctr_def.cname)
+                            let%bind () =
+                              check_duplicate_dict_entry dict_acc (as_string ctr_def.cname)
                                 msg
                             in
                             (* Add ctr_def.cname -> lib_filename to ctr dictionary *)
                             let simp_ctr_dict =
                               add_key_and_lib_filename_to_dict dict_acc
-                                (as_string ctr_def.cname)
+                                (as_string ctr_def.cname) lib_filename
                             in
                             pure simp_ctr_dict)
                       in
