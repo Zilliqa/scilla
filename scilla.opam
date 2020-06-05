@@ -7,7 +7,7 @@ dev-repo: "git+https://github.com/Zilliqa/scilla.git"
 license: "GPL-3.0"
 depends: [
   "ocaml" {>= "4.07.1" & < "4.10~"}
-  "dune" {build & >= "2.0"}
+  "dune" {>= "2.0"}
   "menhir"
   "core" {>= "v0.12.4" & < "v0.13~"}
   "bitstring" {>= "3.1.0" & < "3.2~"}
