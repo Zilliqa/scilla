@@ -92,13 +92,19 @@ module DataTypeDictionary : sig
   val pair_typ : DTType.t -> DTType.t -> DTType.t
 end
 
+val is_true_ctr_name : DTName.t -> bool
+val is_false_ctr_name : DTName.t -> bool
 val is_nil_ctr_name : DTName.t -> bool
 val is_cons_ctr_name : DTName.t -> bool
+val is_list_adt_name : DTName.t -> bool
 val is_pair_ctr_name : DTName.t -> bool
+val is_pair_adt_name : DTName.t -> bool
 val is_zero_ctr_name : DTName.t -> bool
 val is_succ_ctr_name : DTName.t -> bool
-val is_list_adt_name : DTName.t -> bool
-  
+val is_none_ctr_name : DTName.t -> bool
+val is_some_ctr_name : DTName.t -> bool
+val is_option_adt_name : DTName.t -> bool
+
 val scilla_list_to_ocaml :
   DTLiteral.t -> (DTLiteral.t list, scilla_error list) result
 

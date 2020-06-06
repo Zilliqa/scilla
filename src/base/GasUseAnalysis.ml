@@ -37,19 +37,26 @@ struct
   module SER = SR
   module EER = ER
 
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module GUALiteral = FlattenedLiteral
+  module GUALiteral = GlobalLiteral
   module GUAType = GUALiteral.LType
   module GUAIdentifier = GUAType.TIdentifier
+  module GUAName = GUAIdentifier.Name
   module GUASyntax = ScillaSyntax (SR) (ER) (GUALiteral)
   module TU = TypeUtilities
   module Gas = Gas.ScillaGas (SR) (ER)
   open GUAIdentifier
   open GUASyntax
 
-  let mk_typed_id i t =
-    mk_id i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+  let guaname_of_string = GUAName.parse_simple_name
 
+  let mk_gua_id i = mk_id @@ guaname_of_string i
+    
+  let mk_typed_id i t =
+    mk_id (guaname_of_string i) (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+
+  let mk_typed_id_from_name i t =
+    mk_id i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+  
   type sizeref =
     (* Refer to the size of a variable. *)
     | Base of ER.rep GUAIdentifier.t
@@ -104,7 +111,7 @@ struct
 
   (* Given a size reference, print a description for it. *)
   let rec sprint_sizeref = function
-    | Base v -> get_id v
+    | Base v -> as_error_string v
     (* For Lengths of Lists and Maps. *)
     | Length sr' -> "Length of: " ^ sprint_sizeref sr'
     (* For Elements of Lists and Maps. *)
@@ -135,17 +142,17 @@ struct
             "" srlist
         ^ ")"
     | SApp (id, srlist) ->
-        "SApp " ^ get_id id ^ "( "
+        "SApp " ^ as_error_string id ^ "( "
         ^ List.fold_left
             (fun acc sr ->
               acc ^ (if acc = "" then "" else ",") ^ sprint_sizeref sr)
             "" srlist
         ^ ")"
     | RFoldAcc (id, lel, acc) ->
-        "RFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", "
+        "RFoldAcc " ^ as_error_string id ^ " (" ^ sprint_sizeref lel ^ ", "
         ^ sprint_sizeref acc ^ ")"
     | LFoldAcc (id, lel, acc) ->
-        "LFoldAcc " ^ get_id id ^ " (" ^ sprint_sizeref lel ^ ", "
+        "LFoldAcc " ^ as_error_string id ^ " (" ^ sprint_sizeref lel ^ ", "
         ^ sprint_sizeref acc ^ ")"
     | Intractable s -> "Cannot determine size: " ^ s
 
@@ -153,7 +160,7 @@ struct
   let rec sprint_guref = function
     | SizeOf s -> sprint_sizeref s
     | GApp (id, gurlist) ->
-        "Cost of calling " ^ get_id id ^ "("
+        "Cost of calling " ^ as_error_string id ^ "("
         ^ List.fold_left
             (fun acc gur ->
               acc ^ (if acc = "" then "" else ", ") ^ sprint_sizeref gur)
@@ -191,7 +198,7 @@ struct
       if params = [] then ""
       else
         "Parameter list: "
-        ^ List.fold_left (fun acc p -> acc ^ get_id p ^ " ") "( " params
+        ^ List.fold_left (fun acc p -> acc ^ as_error_string p ^ " ") "( " params
         ^ ")\n"
     in
     args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: "
@@ -601,7 +608,7 @@ struct
         match s with
         | Base v ->
             let%bind _, resr, _ =
-              GUAEnv.resolvS genv (get_id v) ~lopt:(Some (get_rep v))
+              GUAEnv.resolvS genv (as_string v) ~lopt:(Some (get_rep v))
             in
             pure resr
         | Length s' ->
@@ -628,7 +635,7 @@ struct
             pure @@ MFun (s, srlist')
         | SApp (id, srlist) ->
             let%bind args, sr, _ =
-              GUAEnv.resolvS genv (get_id id) ~lopt:(Some (get_rep id))
+              GUAEnv.resolvS genv (as_string id) ~lopt:(Some (get_rep id))
             in
             if args = [] then
               (* No known expansion  *)
@@ -643,7 +650,7 @@ struct
         | RFoldAcc (id, ls, accbase) | LFoldAcc (id, accbase, ls) ->
             let rfold = match s with RFoldAcc _ -> true | _ -> false in
             let%bind args, sr, _ =
-              GUAEnv.resolvS genv (get_id id) ~lopt:(Some (get_rep id))
+              GUAEnv.resolvS genv (as_string id) ~lopt:(Some (get_rep id))
             in
             if args = [] then
               (* No known expansion  *)
@@ -702,7 +709,7 @@ struct
           pure @@ SizeOf r
       | GApp (id, gurlist) ->
           let%bind args, _, gup =
-            GUAEnv.resolvS genv (get_id id) ~lopt:(Some (get_rep id))
+            GUAEnv.resolvS genv (as_string id) ~lopt:(Some (get_rep id))
           in
           if args = [] then
             (* No known expansion  *)
@@ -742,36 +749,42 @@ struct
 
   (* For a pattern "pat" match on "msref", add binders to genv. *)
   let rec bind_pattern genv msref pat =
+    let open Datatypes in
     match pat with
     | Wildcard -> pure genv
-    | Binder i -> pure @@ GUAEnv.addS genv (get_id i) ([], msref, empty_pn)
-    | Constructor (cname, plist) -> (
-        match get_id cname with
-        | "True" | "False" | "Nil" | "None" -> pure @@ genv
-        | "Some" ->
-            (* TypeChecker will ensure that plist has unit length. *)
-            let arg = List.nth plist 0 in
-            bind_pattern genv msref arg
-        | "Cons" ->
-            (* TypeChecker will ensure that plist has two elements. *)
-            let arg0 = List.nth plist 0 in
-            let arg1 = List.nth plist 1 in
-            let%bind genv' = bind_pattern genv (Element msref) arg0 in
-            let%bind genv'' = bind_pattern genv' msref arg1 in
-            pure genv''
-        | "Pair" ->
-            (* TypeChecker will ensure that plist has two elements. *)
-            let arg0 = List.nth plist 0 in
-            let arg1 = List.nth plist 1 in
-            (* Bind both to the original element. *)
-            let%bind genv' = bind_pattern genv msref arg0 in
-            let%bind genv'' = bind_pattern genv' msref arg1 in
-            pure genv''
-        | _ ->
-            fail0
-              (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                 (get_id cname)) )
-
+    | Binder i -> pure @@ GUAEnv.addS genv (as_string i) ([], msref, empty_pn)
+    | Constructor (cname, _)
+      when is_true_ctr_name (get_id cname)
+        || is_false_ctr_name (get_id cname)
+        || is_nil_ctr_name (get_id cname)
+        || is_none_ctr_name (get_id cname) -> pure @@ genv
+    | Constructor (cname, plist)
+      when is_some_ctr_name (get_id cname) ->
+        (* TypeChecker will ensure that plist has unit length. *)
+        let arg = List.nth plist 0 in
+        bind_pattern genv msref arg
+    | Constructor (cname, plist)
+      when is_cons_ctr_name (get_id cname) ->
+        (* TypeChecker will ensure that plist has two elements. *)
+        let arg0 = List.nth plist 0 in
+        let arg1 = List.nth plist 1 in
+        let%bind genv' = bind_pattern genv (Element msref) arg0 in
+        let%bind genv'' = bind_pattern genv' msref arg1 in
+        pure genv''
+    | Constructor (cname, plist)
+      when is_pair_ctr_name (get_id cname) ->
+        (* TypeChecker will ensure that plist has two elements. *)
+        let arg0 = List.nth plist 0 in
+        let arg1 = List.nth plist 1 in
+        (* Bind both to the original element. *)
+        let%bind genv' = bind_pattern genv msref arg0 in
+        let%bind genv'' = bind_pattern genv' msref arg1 in
+        pure genv''
+    | Constructor (cname, _) ->
+        fail0
+          (Printf.sprintf "Unsupported constructor %s in gas analysis."
+             (GUAIdentifier.as_error_string cname))
+          
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
   let builtin_cost (ops, opl') params =
@@ -928,14 +941,14 @@ struct
         pure @@ ([], SPol (const_pn ss), cc)
     | Var i ->
         let%bind args, ressize, gup =
-          GUAEnv.resolvS genv (get_id i) ~lopt:(Some (get_rep i))
+          GUAEnv.resolvS genv (as_string i) ~lopt:(Some (get_rep i))
         in
         pure (args, ressize, add_pn gup cc)
     | Fun (arg, _, body) ->
         (* Add a sizeref for arg into env for the body to reference to. *)
         let b = Base arg in
         let (p : signature) = ([], b, empty_pn) in
-        let genv' = GUAEnv.addS genv (get_id arg) p in
+        let genv' = GUAEnv.addS genv (as_string arg) p in
         let%bind sargs, rsize, rgas = gua_expr genv' body in
         (* We have signature for the body, just add arg as a parameter to that function signature. *)
         pure (arg :: sargs, rsize, add_pn rgas cc)
@@ -955,15 +968,15 @@ struct
         (* We have the function signature ready, apply and expand it. *)
         (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
         let srparams = List.map (fun i -> Base i) actuals in
-        let u = SApp (mk_id (pp_builtin b) rep, srparams) in
-        let v = single_simple_pn (GApp (mk_id (pp_builtin b) rep, srparams)) in
+        let u = SApp (mk_gua_id (pp_builtin b) rep, srparams) in
+        let v = single_simple_pn (GApp (mk_gua_id (pp_builtin b) rep, srparams)) in
         (* Expand all lambdas that we can. *)
         let%bind ressize', gup' = resolve_expand genv' u v in
         (* TODO: Return value having no arguments implies partial application not supported. *)
         pure ([], ressize', add_pn gup' cc)
     | Let (i, _, lhs, rhs) ->
         let%bind lhs_sig = gua_expr genv lhs in
-        let genv' = GUAEnv.addS genv (get_id i) lhs_sig in
+        let genv' = GUAEnv.addS genv (as_string i) lhs_sig in
         let%bind rhs_sig = gua_expr genv' rhs in
         (* gas consumption is sum of both. *)
         let args, ressize, gup = rhs_sig in
@@ -972,71 +985,74 @@ struct
         let p = if lhs_args <> [] then gup else add_pn gup gup' in
         pure (args, ressize, add_pn p cc)
     | Constr (cname, _, actuals) ->
+        let open Datatypes in
+        let cname_as_name = get_id cname in
         let%bind ressize =
-          match get_id cname with
-          | "True" | "False" -> pure @@ SPol (const_pn 1)
-          | "Nil" -> pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
-          | "None" -> pure @@ SPol (const_pn 1)
-          | "Some" ->
-              (* TypeChecker will ensure that actuals has unit length. *)
-              let arg = List.nth actuals 0 in
-              let%bind _, compsize, _ =
-                GUAEnv.resolvS genv (get_id arg) ~lopt:(Some (get_rep arg))
-              in
-              pure @@ compsize
-          | "Pair" ->
-              (* TypeChecker will ensure that actuals has two elements. *)
-              let arg0 = List.nth actuals 0 in
-              let arg1 = List.nth actuals 1 in
-              let%bind _, compsize0, _ =
-                GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some (get_rep arg0))
-              in
-              let%bind _, compsize1, _ =
-                GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some (get_rep arg1))
-              in
-              let compsize0' = sizeref_to_pol compsize0 in
-              let compsize1' = sizeref_to_pol compsize1 in
-              pure @@ SPol (add_pn compsize0' compsize1')
-          | "Cons" -> (
-              (* TypeChecker will ensure that actuals has two elements. *)
-              let arg0 = List.nth actuals 0 in
-              let arg1 = List.nth actuals 1 in
-              let%bind _, compsize0, _ =
-                GUAEnv.resolvS genv (get_id arg0) ~lopt:(Some (get_rep arg0))
-              in
-              let%bind _, compsize1, _ =
-                GUAEnv.resolvS genv (get_id arg1) ~lopt:(Some (get_rep arg1))
-              in
-              match compsize1 with
-              | Base _ ->
-                  (* Cons a b : Container((Length(b)+1), Element(b)) *)
-                  let el = Element compsize1 in
-                  let len =
-                    SPol
-                      (add_pn
-                         (single_simple_pn @@ Length compsize1)
-                         (const_pn 1))
-                  in
-                  pure @@ Container (len, el)
-              | Container (SPol len, elm) ->
-                  (* Just add 1 to the length. *)
-                  pure @@ Container (SPol (add_pn len (const_pn 1)), elm)
-              | _ ->
-                  (* what to do? *)
-                  pure
-                  @@ SPol
-                       (add_pn (sizeref_to_pol compsize0)
-                          (sizeref_to_pol compsize1)) )
-          | _ ->
-              fail1
-                (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                   (get_id cname))
-                (ER.get_loc rep)
-        in
+          if is_true_ctr_name cname_as_name || is_false_ctr_name cname_as_name
+          then pure @@ SPol (const_pn 1)
+          else if is_nil_ctr_name cname_as_name
+          then pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
+          else if is_none_ctr_name cname_as_name
+          then pure @@ SPol (const_pn 1)
+          else if is_some_ctr_name cname_as_name
+          then (* TypeChecker will ensure that actuals has unit length. *)
+            let arg = List.nth actuals 0 in
+            let%bind _, compsize, _ =
+              GUAEnv.resolvS genv (as_string arg) ~lopt:(Some (get_rep arg))
+            in
+            pure @@ compsize
+          else if is_pair_ctr_name cname_as_name
+          then (* TypeChecker will ensure that actuals has two elements. *)
+            let arg0 = List.nth actuals 0 in
+            let arg1 = List.nth actuals 1 in
+            let%bind _, compsize0, _ =
+              GUAEnv.resolvS genv (as_string arg0) ~lopt:(Some (get_rep arg0))
+            in
+            let%bind _, compsize1, _ =
+              GUAEnv.resolvS genv (as_string arg1) ~lopt:(Some (get_rep arg1))
+            in
+            let compsize0' = sizeref_to_pol compsize0 in
+            let compsize1' = sizeref_to_pol compsize1 in
+            pure @@ SPol (add_pn compsize0' compsize1')
+          else if is_cons_ctr_name cname_as_name
+          then (* TypeChecker will ensure that actuals has two elements. *)
+            let arg0 = List.nth actuals 0 in
+            let arg1 = List.nth actuals 1 in
+            let%bind _, compsize0, _ =
+              GUAEnv.resolvS genv (as_string arg0) ~lopt:(Some (get_rep arg0))
+            in
+            let%bind _, compsize1, _ =
+              GUAEnv.resolvS genv (as_string arg1) ~lopt:(Some (get_rep arg1))
+            in
+            match compsize1 with
+            | Base _ ->
+                (* Cons a b : Container((Length(b)+1), Element(b)) *)
+                let el = Element compsize1 in
+                let len =
+                  SPol
+                    (add_pn
+                       (single_simple_pn @@ Length compsize1)
+                       (const_pn 1))
+                in
+                pure @@ Container (len, el)
+            | Container (SPol len, elm) ->
+                (* Just add 1 to the length. *)
+                pure @@ Container (SPol (add_pn len (const_pn 1)), elm)
+            | _ ->
+                (* what to do? *)
+                pure
+                @@ SPol
+                  (add_pn (sizeref_to_pol compsize0)
+                     (sizeref_to_pol compsize1))
+          else fail1
+              (Printf.sprintf "Unsupported constructor %s in gas analysis."
+                 (as_error_string cname))
+              (ER.get_loc rep)
+        in 
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
         let%bind _, xsize, _ =
-          GUAEnv.resolvS genv (get_id x) ~lopt:(Some (get_rep x))
+          GUAEnv.resolvS genv (as_string x) ~lopt:(Some (get_rep x))
         in
         (*   TODO: If the return type of the MatchExpr is a function then
          *     the arguments (first Element of the signature) cannot be
@@ -1063,7 +1079,7 @@ struct
           pure (args, bsize, add_pn bgu cc)
     | Fixpoint (f, _, _) ->
         fail1
-          (Printf.sprintf "Fixpoint %s not supported." (get_id f))
+          (Printf.sprintf "Fixpoint %s not supported." (as_error_string f))
           (ER.get_loc (get_rep f))
     | TFun (_, body) ->
         (* Nothing to do except analyzing the body. *)
@@ -1071,7 +1087,7 @@ struct
         pure (sargs, rsize, add_pn rgas cc)
     | TApp (tf, _) ->
         (* Just return the signature of tf. *)
-        GUAEnv.resolvS genv (get_id tf) ~lopt:(Some (get_rep tf))
+        GUAEnv.resolvS genv (as_string tf) ~lopt:(Some (get_rep tf))
     | Message plist ->
         (* Similar to "Literal", we only spend a small cost (cc) for message creation
          * but charge based on size of message in SendStmt. *)
@@ -1084,7 +1100,7 @@ struct
                   pure (add_pn acc (const_pn lc))
               | MVar i ->
                   let%bind _, irs, _ =
-                    GUAEnv.resolvS genv (get_id i) ~lopt:(Some (get_rep i))
+                    GUAEnv.resolvS genv (as_string i) ~lopt:(Some (get_rep i))
                   in
                   pure (add_pn acc (sizeref_to_pol irs)))
             ~init:empty_pn plist
@@ -1094,7 +1110,7 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = mk_typed_id "a" (ADT (mk_loc_id "List", [ TypeVar "'A" ])) in
+    let a = mk_typed_id "a" (Datatypes.DataTypeDictionary.list_typ (TypeVar "'A")) in
     let g =
       mk_typed_id "g"
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))
@@ -1129,17 +1145,17 @@ struct
             (* The cost of load depends on the size of the state variable. *)
             let gupol' = add_pn gupol (single_simple_pn (SizeOf (Base r))) in
             let signx = ([], Base r, empty_pn) in
-            let genv' = GUAEnv.addS genv (get_id x) signx in
+            let genv' = GUAEnv.addS genv (as_string x) signx in
             gua_stmt genv' gupol' sts
         | Store (_, r) ->
             (* The cost of store depends on the original size and the new size *)
             (* TODO: Incorporate actual cost from Gas.ml which has max() and subtract. *)
-            let%bind _, rs, _ = GUAEnv.resolvS genv (get_id r) in
+            let%bind _, rs, _ = GUAEnv.resolvS genv (as_string r) in
             let gupol' = add_pn gupol (single_simple_pn (SizeOf rs)) in
             gua_stmt genv gupol' sts
         | Bind (x, e) ->
             let%bind a, s, p = gua_expr genv e in
-            let genv' = GUAEnv.addS genv (get_id x) (a, s, p) in
+            let genv' = GUAEnv.addS genv (as_string x) (a, s, p) in
             (* Simple constant const for binding. *)
             let gupol' = add_pn gupol (const_pn 1) in
             (* if a is empty, accumulate the cost of executing expr. *)
@@ -1150,7 +1166,7 @@ struct
             let%bind c =
               match ropt with
               | Some i ->
-                  let%bind _, rs, _ = GUAEnv.resolvS genv (get_id i) in
+                  let%bind _, rs, _ = GUAEnv.resolvS genv (as_string i) in
                   pure @@ single_simple_pn (SizeOf rs)
                   (* update *)
               | None -> pure @@ empty_pn
@@ -1172,7 +1188,7 @@ struct
                 (* TODO: How to represent result of `exists` in map? ?*)
                 (([], Base m, empty_pn), nindices)
             in
-            let genv' = GUAEnv.addS genv (get_id x) sign in
+            let genv' = GUAEnv.addS genv (as_string x) sign in
             let gupol' = add_pn pol gupol in
             gua_stmt genv' gupol' sts
         | ReadFromBC (x, _) ->
@@ -1180,11 +1196,11 @@ struct
             let signx = ([], SPol (const_pn 1), empty_pn) in
             (* Constant cost of 1 to load a blockchain variable. *)
             let gupol' = add_pn gupol (const_pn 1) in
-            let genv' = GUAEnv.addS genv (get_id x) signx in
+            let genv' = GUAEnv.addS genv (as_string x) signx in
             gua_stmt genv' gupol' sts
         | MatchStmt (x, clauses) ->
             let%bind _, xsize, _ =
-              GUAEnv.resolvS genv (get_id x) ~lopt:(Some (get_rep x))
+              GUAEnv.resolvS genv (as_string x) ~lopt:(Some (get_rep x))
             in
             let num_clauses = const_pn (List.length clauses) in
             let%bind gupol' =
@@ -1202,7 +1218,7 @@ struct
         | SendMsgs i | CreateEvnt i ->
             (* We can at best convey the size of i *)
             let%bind _, s, _ =
-              GUAEnv.resolvS genv (get_id i) ~lopt:(Some (get_rep i))
+              GUAEnv.resolvS genv (as_string i) ~lopt:(Some (get_rep i))
             in
             let gupol' = add_pn gupol (single_simple_pn (SizeOf s)) in
             gua_stmt genv gupol' sts
@@ -1213,7 +1229,7 @@ struct
     List.fold_left
       (fun acc_genv i ->
         let i' = Base i in
-        GUAEnv.addS acc_genv (get_id i) ([], i', empty_pn))
+        GUAEnv.addS acc_genv (as_string i) ([], i', empty_pn))
       genv idlist
 
   let gua_component genv (comp : component) =
@@ -1241,7 +1257,7 @@ struct
         match le with
         | LibVar (lname, _, lexp) ->
             let%bind esig = gua_expr genv lexp in
-            pure @@ GUAEnv.addS genv (get_id lname) esig
+            pure @@ GUAEnv.addS genv (as_string lname) esig
         | LibTyp _ -> pure genv)
       ~init:genv lel
 
@@ -1261,7 +1277,7 @@ struct
               GUAEnv.filterS genv_lib ~f:(fun name ->
                   List.exists
                     (function
-                      | LibTyp _ -> false | LibVar (i, _, _) -> get_id i = name)
+                      | LibTyp _ -> false | LibVar (i, _, _) -> String.(as_string i = name))
                     lib.libn.lentries
                   || GUAEnv.existsS genv_folds name)
             in
@@ -1279,7 +1295,7 @@ struct
     in
 
     (* Bind contract parameters. *)
-    let si a t = mk_typed_id a t in
+    let si a t = mk_typed_id_from_name a t in
     let all_cparams =
       [
         (si ContractUtil.creation_block_label GUAType.bnum_typ, GUAType.bnum_typ);

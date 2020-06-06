@@ -61,7 +61,7 @@ module DataTypeDictionary = struct
 
   let dtname_of_string str = DTName.parse_simple_name str
   let dtid_of_string str = DTIdentifier.mk_loc_id @@ dtname_of_string str
-  
+
   (* Booleans *)
   let c_true = { cname = dtname_of_string "True"; arity = 0 }
 
@@ -203,12 +203,18 @@ end
 
 (* Helper functions for matching against names *)
 let match_simple_names n m = [%equal: DTName.t] n m
+let is_true_ctr_name = match_simple_names DataTypeDictionary.c_true.cname
+let is_false_ctr_name = match_simple_names DataTypeDictionary.c_false.cname
 let is_nil_ctr_name = match_simple_names DataTypeDictionary.c_nil.cname
 let is_cons_ctr_name = match_simple_names DataTypeDictionary.c_cons.cname
+let is_list_adt_name = match_simple_names DataTypeDictionary.t_list.tname
 let is_pair_ctr_name = match_simple_names DataTypeDictionary.c_pair.cname
+let is_pair_adt_name = match_simple_names DataTypeDictionary.t_product.tname
 let is_zero_ctr_name = match_simple_names DataTypeDictionary.c_zero.cname
 let is_succ_ctr_name = match_simple_names DataTypeDictionary.c_succ.cname
-let is_list_adt_name = match_simple_names DataTypeDictionary.t_list.tname
+let is_none_ctr_name = match_simple_names DataTypeDictionary.c_none.cname
+let is_some_ctr_name = match_simple_names DataTypeDictionary.c_some.cname
+let is_option_adt_name = match_simple_names DataTypeDictionary.t_option.tname
 
 (* Convert Scilla list to OCaml list.
  * Not tail recursive. Don't use for long lists. *)

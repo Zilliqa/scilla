@@ -29,10 +29,10 @@ open TypeUtil
 open Integer256
 open TypeUtilities
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module BILiteral = FlattenedLiteral
+module BILiteral = GlobalLiteral
 module BIType = BILiteral.LType
 module BIIdentifier = BIType.TIdentifier
+module BIName = BIIdentifier.Name
 open BIType
 open BILiteral
 
@@ -379,8 +379,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       in
       let iptyp = Int_typ w in
       match build_prim_literal iptyp xs with
-      | Some lit -> pure (ADTValue ("Some", [ PrimType iptyp ], [ lit ]))
-      | None -> pure (ADTValue ("None", [ PrimType iptyp ], []))
+      | Some lit -> pure @@ build_some_lit lit (PrimType iptyp)
+      | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_int32 ls _ = to_int_helper ls Bits32
 
@@ -608,8 +608,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
       let iptyp = Uint_typ w in
       match build_prim_literal iptyp xs with
-      | Some lit -> pure (ADTValue ("Some", [ PrimType iptyp ], [ lit ]))
-      | None -> pure (ADTValue ("None", [ PrimType iptyp ], []))
+      | Some lit -> pure @@ build_some_lit lit (PrimType iptyp)
+      | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_uint32 ls _ = to_uint_helper ls Bits32
 
@@ -633,10 +633,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ UintLit (Uint32L n) ] ->
           let rec nat_builder (i : Uint32.t) (acc : BILiteral.t) =
             if [%equal: uint32] i Uint32.zero then acc
-            else nat_builder (Uint32.pred i) (ADTValue ("Succ", [], [ acc ]))
+            else nat_builder (Uint32.pred i) (build_succ_lit acc)
           in
-          let zero = ADTValue ("Zero", [], []) in
-          pure @@ nat_builder n zero
+          pure @@ nat_builder n zero_lit
       (* Other integer widths can be in the library, using integer conversions. *)
       | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls
   end
@@ -771,7 +770,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                 Core_kernel.String.concat ~sep:"" raw_strings
             | ADTValue (cons_name, _, params) ->
                 let raw_params = List.map params ~f:raw_bytes in
-                Core_kernel.String.concat ~sep:"" (cons_name :: raw_params)
+                Core_kernel.String.concat ~sep:"" (BIName.as_string cons_name :: raw_params)
             | Clo _fun -> "(Clo <fun>)"
             | TAbs _fun -> "(Tabs <fun>)"
           in
@@ -1196,7 +1195,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let get ls rt =
       match (ls, rt) with
       | [ Map (_, entries); key ], ADT (tname, [ targ ])
-        when Core_kernel.String.(BIIdentifier.get_id tname = "Option") -> (
+        when Datatypes.is_option_adt_name (BIIdentifier.get_id tname) -> (
           let res = Caml.Hashtbl.find_opt entries key in
           match res with None -> pure @@ none_lit targ | Some v -> some_lit v )
       | _ -> builtin_fail "Map.get" ls
@@ -1240,12 +1239,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ Map ((kt, vt), entries) ] ->
           (* The type of the output list will be "Pair (kt) (vt)" *)
           let otyp = pair_typ kt vt in
-          let nil = ADTValue ("Nil", [ otyp ], []) in
+          let nil = build_nil_lit otyp in
           let ol =
             Caml.Hashtbl.fold
               (fun k v accum ->
-                let kv = ADTValue ("Pair", [ kt; vt ], [ k; v ]) in
-                let kvl = ADTValue ("Cons", [ otyp ], [ kv; accum ]) in
+                let kv = build_pair_lit k kt v vt in
+                let kvl = build_cons_lit kv otyp accum in
                 kvl)
               entries nil
           in

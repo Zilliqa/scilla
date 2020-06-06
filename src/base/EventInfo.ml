@@ -32,7 +32,7 @@ module ScillaEventInfo
       val get_type : rep -> PlainTypes.t inferred_type
     end) =
 struct
-  module EILiteral = FlattenedLiteral
+  module EILiteral = GlobalLiteral
   module EIType = EILiteral.LType
   module EIIdentifier = EIType.TIdentifier
   module EISyntax = ScillaSyntax (SR) (ER) (EILiteral)
