@@ -71,11 +71,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | Some _ -> fail0 msg
     | None -> pure ()
 
-  let strip_filename_extension filename =
-    match String.split_on_chars ~on:['.'] filename with
-    | [ f ; "scilla" ]
-    | [ f ; "scillib" ] -> pure f
-    | _ -> fail0 @@ sprintf "Illegal filename %s" filename
+  let strip_filename_extension = Filename.chop_extension
   
   (**************************************************************)
   (*                   Disambiguate names                       *)
@@ -555,7 +551,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         (* tname is now in scope as a local type, and ctrs are in scope as local constructors.
            Reject name clashes with imported types and constructors.
            Then map simple names to the address of the current module. *)
-        let%bind filename = strip_filename_extension (ER.get_loc (get_rep tname)).fname in
+        let filename = strip_filename_extension (ER.get_loc (get_rep tname)).fname in
         let%bind res_typ_dict =
           let msg =
             sprintf "Type name %s clashes with previously defined or imported type"
@@ -699,7 +695,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               (libname, ns_opt)
               ->
         let%bind lib = find_lib libname extlibs in
-        let%bind lib_filename = find_lib_filename lib in
+        let lib_filename = find_lib_filename lib in
         match ns_opt with
         | Some ns ->
             (* Namespace defined - only add to namespace dictionary *)
