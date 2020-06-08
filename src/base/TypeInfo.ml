@@ -50,8 +50,7 @@ struct
   module SER = SR
   module EER = ER
 
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module TILiteral = FlattenedLiteral
+  module TILiteral = GlobalLiteral
   module TIType = TILiteral.LType
   module TIIdentifier = TIType.TIdentifier
   module TISyntax = ScillaSyntax (SR) (ER) (TILiteral)
@@ -60,7 +59,7 @@ struct
 
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =
-    let name = get_id i in
+    let name = as_string i in
     let sloc = ER.get_loc (get_rep i) in
     (* Once Issue #134 is solved, this calculation can be avoided. *)
     let eloc = { sloc with cnum = sloc.cnum + String.length name } in
