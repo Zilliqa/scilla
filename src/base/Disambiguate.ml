@@ -71,6 +71,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | Some _ -> fail0 msg
     | None -> pure ()
 
+  let strip_filename_extension filename =
+    match String.split_on_chars ~on:['.'] filename with
+    | [ f ; "scilla" ]
+    | [ f ; "scillib" ] -> pure f
+    | _ -> fail0 @@ sprintf "Illegal filename %s" filename
+  
   (**************************************************************)
   (*                   Disambiguate names                       *)
   (**************************************************************)
@@ -549,7 +555,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         (* tname is now in scope as a local type, and ctrs are in scope as local constructors.
            Reject name clashes with imported types and constructors.
            Then map simple names to the address of the current module. *)
-        let filename = (ER.get_loc (get_rep tname)).fname in
+        let%bind filename = strip_filename_extension (ER.get_loc (get_rep tname)).fname in
         let%bind res_typ_dict =
           let msg =
             sprintf "Type name %s clashes with previously defined or imported type"
@@ -682,12 +688,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     (* Find the address of an external library *)
     let find_lib_filename (lib : PostDisSyntax.library) =
       (* Find file name = address of external library *)
-      let lib_filename =
-        (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname
-      in
-      (* Strip .scillib extension *)
-      pure
-        (String.sub lib_filename ~pos:0 ~len:(String.length lib_filename - 8))
+      strip_filename_extension (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname
     in
     (* Build dictionaries *)
     foldM imports ~init:([], [], [], [])
