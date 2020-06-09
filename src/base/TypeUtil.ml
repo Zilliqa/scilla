@@ -82,9 +82,6 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   (* Add many type variables to the environment. *)
     val addVs : t -> R.rep TIdentifier.t list -> restore list
 
-    (* Append env' to env in place. *)
-    val append : t -> t -> restore list
-
     (* Remove the latest binding for the argument. *)
     val remT : t -> R.rep TIdentifier.t -> restore list
 
@@ -181,14 +178,6 @@ functor
 
       let addVs env ids =
         List.fold_left ~init:[] ~f:(fun rl id -> addV env id @ rl) ids
-
-      (* Append env' to env in place. *)
-      let append env env' =
-        Hashtbl.fold
-          (fun k v rl ->
-            Hashtbl.add env.tenv k v;
-            RemT k :: rl)
-          env'.tenv []
 
       (* Remove the latest binding for the argument. *)
       let remT env id =

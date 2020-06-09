@@ -74,9 +74,6 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   (* Add many type variables to the environment. *)
     val addVs : t -> R.rep TUIdentifier.t list -> restore list
 
-    (* Append env' to env in place. *)
-    val append : t -> t -> restore list
-
     (* Remove the latest binding for the argument. *)
     val remT : t -> R.rep TUIdentifier.t -> restore list
 
