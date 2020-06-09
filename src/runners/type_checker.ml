@@ -62,12 +62,13 @@ let check_typing e elibs gas =
       ParserSyntax.lentries = recursion_principles;
     }
   in
-  let%bind (_typed_rec_libs, tenv0), remaining_gas =
-    type_library TEnv.mk rec_lib gas
+  let tenv0 = TEnv.mk() in
+  let%bind _typed_rec_libs, remaining_gas =
+    type_library tenv0 rec_lib gas
   in
   (* Step 1: Type check external libraries *)
-  let%bind _, tenv1, remaining_gas = type_libraries elibs tenv0 remaining_gas in
-  let%bind typed_e, remaining_gas = type_expr tenv1 e remaining_gas in
+  let%bind _, remaining_gas = type_libraries elibs tenv0 remaining_gas in
+  let%bind typed_e, remaining_gas = type_expr e remaining_gas tenv0 in
   pure @@ (typed_e, remaining_gas)
 
 let check_patterns e = PM_Checker.pm_check_expr e

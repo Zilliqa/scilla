@@ -65,23 +65,34 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   module TEnv : sig
     type t
 
+    type restore
+
     (* Make new type environment *)
-    val mk : t
+    val mk : unit -> t
 
     (* Add to type environment *)
-    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> t
+    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore list
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> t
+    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore list
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep TUIdentifier.t -> t
+    val addV : t -> R.rep TUIdentifier.t -> restore list
+
+  (* Add many type variables to the environment. *)
+    val addVs : t -> R.rep TIdentifier.t list -> restore list
 
     (* Append env' to env in place. *)
-    val append : t -> t -> t
+    val append : t -> t -> restore list
 
-    (* Retain only those keys for which (fb k v) is true. *)
-    val filterTs : t -> f:(string -> resolve_result -> bool) -> t
+    (* Remove the latest binding for the argument. *)
+    val remT : t -> R.rep TIdentifier.t -> restore list
+
+    (* Remove the latest bindings for the arguments. *)
+    val remTs : t -> R.rep TUIdentifier.t list -> restore list
+
+    (* Restore the environment by applying the restore list. *)
+    val restore_all : t -> restore list -> unit
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> TUType.t -> (unit, scilla_error list) result
@@ -98,9 +109,6 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
     (* Is bound in tvars? *)
     val existsV : t -> string -> bool
-
-    (* Copy the environment *)
-    val copy : t -> t
 
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
@@ -147,33 +155,58 @@ functor
         tvars : (string, R.rep) Hashtbl.t;
       }
 
+      type restore =
+        (* This relies on Caml.Hashtbl allowing adding
+         * bindings on top of existing ones and removing them
+         * to restore the older binding. Restoring working in
+         * FIFO order, i.e., most recent change restored first. *)
+        | AddT of string * resolve_result
+        | RemT of string
+        (* | AddV of string * R.rep *)
+        | RemV of string
+
       let addT env id tp =
         let _ =
           Hashtbl.add env.tenv (get_id id)
             { qt = Q.mk_qualified_type tp; rep = get_rep id }
         in
-        env
+        [ RemT (get_id id) ]
 
       let addTs env kvs =
-        List.fold_left ~init:env ~f:(fun z (k, v) -> addT z k v) kvs
+        List.fold_left ~init:[] ~f:(fun rl (k, v) -> addT env k v @ rl) kvs
 
       let addV env id =
         let _ = Hashtbl.add env.tvars (get_id id) (get_rep id) in
-        env
+        [ RemV (get_id id) ]
+
+      let addVs env ids =
+        List.fold_left ~init:[] ~f:(fun rl id -> addV env id @ rl) ids
 
       (* Append env' to env in place. *)
       let append env env' =
-        let _ = Hashtbl.iter (fun k v -> Hashtbl.add env.tenv k v) env'.tenv in
-        env
+        Hashtbl.fold
+          (fun k v rl ->
+            Hashtbl.add env.tenv k v;
+            RemT k :: rl)
+          env'.tenv []
 
-      (* Retain only those keys for which (fb k v) is true. *)
-      let filterTs env ~f =
-        let _ =
-          Hashtbl.filter_map_inplace
-            (fun k v -> if f k v then Some v else None)
-            env.tenv
-        in
-        env
+      (* Remove the latest binding for the argument. *)
+      let remT env id =
+        match Hashtbl.find_opt env.tenv (get_id id) with
+        | Some v -> Hashtbl.remove env.tenv (get_id id); [ AddT (get_id id, v) ]
+        | None -> []
+
+      (* Remove the latest bindings for the arguments. *)
+      let remTs env ks =
+        List.fold_left ~init:[] ~f:(fun rl k -> remT env k @ rl) ks
+
+      (* Restore env based on the provided restore list. *)
+      let restore_all env rl =
+        List.iter rl ~f:(function
+        | AddT (s, rr) -> Hashtbl.add env.tenv s rr
+        | RemT s -> Hashtbl.remove env.tenv s
+        (* | AddV (s, r) -> Hashtbl.add env.tvars s r *)
+        | RemV s -> Hashtbl.remove env.tvars s)
 
       let tvars env =
         Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
@@ -234,13 +267,11 @@ functor
 
       let existsV env id = Hashtbl.mem env.tvars id
 
-      let copy e = { tenv = Hashtbl.copy e.tenv; tvars = Hashtbl.copy e.tvars }
-
-      let mk =
+      let mk () =
         let t1 = Hashtbl.create 50 in
         let t2 = Hashtbl.create 10 in
         let env = { tenv = t1; tvars = t2 } in
-        copy env
+        env
     end
   end
 

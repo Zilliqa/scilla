@@ -146,7 +146,8 @@ struct
           | Some (n, h, entries) ->
               (* Verify name and hash. *)
               if String.(n = lib_name && h = hash_lib lib) then
-                Some (TEnv.addTs (TEnv.copy tenv) entries)
+                let _ = TEnv.addTs tenv entries in
+                Some tenv
               else (* name/hash does not match. TODO: print to logger. *)
                 None
           | None ->

@@ -57,23 +57,34 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   module TEnv : sig
     type t
 
+    type restore
+
     (* Make new type environment *)
-    val mk : t
+    val mk : unit -> t
 
     (* Add to type environment *)
-    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> t
+    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore list
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> t
+    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore list
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep TUIdentifier.t -> t
+    val addV : t -> R.rep TUIdentifier.t -> restore list
+
+  (* Add many type variables to the environment. *)
+    val addVs : t -> R.rep TUIdentifier.t list -> restore list
 
     (* Append env' to env in place. *)
-    val append : t -> t -> t
+    val append : t -> t -> restore list
 
-    (* Retain only those keys for which (fb k v) is true. *)
-    val filterTs : t -> f:(string -> resolve_result -> bool) -> t
+    (* Remove the latest binding for the argument. *)
+    val remT : t -> R.rep TUIdentifier.t -> restore list
+
+    (* Remove the latest bindings for the arguments. *)
+    val remTs : t -> R.rep TUIdentifier.t list -> restore list
+
+    (* Restore the environment by applying the restore list. *)
+    val restore_all : t -> restore list -> unit
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> TUType.t -> (unit, scilla_error list) result
@@ -90,9 +101,6 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
 
     (* Is bound in tvars? *)
     val existsV : t -> string -> bool
-
-    (* Copy the environment *)
-    val copy : t -> t
 
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
