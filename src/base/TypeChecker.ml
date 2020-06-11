@@ -186,35 +186,75 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let () = TEnv.restore_all cur_env rl in
     pure res
 
-  let rec type_expr (erep : UntypedSyntax.expr_annot) remaining_gas tenv =
+  let type_actuals tenv actuals remaining_gas =
+    let%bind tresults =
+      mapM actuals ~f:(fun arg ->
+          mark_error_as_type_error remaining_gas
+          @@ TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_rep arg)))
+    in
+    let tqargs = List.map tresults ~f:rr_typ in
+    let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
+    let actuals_with_types =
+      match List.zip actuals tqargs with
+      | Ok l -> l
+      | Unequal_lengths ->
+          raise
+            (mk_internal_error
+               "Different number of actuals and Types of actuals")
+    in
+    let typed_actuals =
+      List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t)
+    in
+    pure @@ (targs, typed_actuals, remaining_gas)
+
+  let app_type tenv ftyp actuals remaining_gas =
+    (* Type-check function application *)
+    let%bind () =
+      mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv ftyp
+    in
+    let%bind targs, typed_actuals, remaining_gas =
+      type_actuals tenv actuals remaining_gas
+    in
+    let%bind res_type =
+      mark_error_as_type_error remaining_gas @@ fun_type_applies ftyp targs
+    in
+    let%bind () =
+      mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv res_type
+    in
+    pure @@ (typed_actuals, mk_qual_tp res_type, remaining_gas)
+
+  let rec type_expr_cps (erep : UntypedSyntax.expr_annot) remaining_gas tenv k =
     let e, rep = erep in
     match e with
     | Literal l ->
         let%bind lt =
           mark_error_as_type_error remaining_gas @@ literal_type l
         in
-        pure @@ ((TypedSyntax.Literal l, (mk_qual_tp lt, rep)), remaining_gas)
+        k ((TypedSyntax.Literal l, (mk_qual_tp lt, rep)), remaining_gas)
     | Var i ->
         let%bind r =
           mark_error_as_type_error remaining_gas
           @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i))
         in
         let typ = rr_typ r in
-        pure
-        @@ ( (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep)),
-             remaining_gas )
+        k
+          ( (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep)),
+            remaining_gas )
     | Fun (arg, t, body) ->
         let%bind () =
           mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv t
         in
-        let%bind ((_, (bt, _)) as b), remaining_gas =
-          env_wrapper tenv Fn.id [ (arg, t) ] [] (type_expr body remaining_gas)
-        in
         let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
-        pure
-        @@ ( ( TypedSyntax.Fun (typed_arg, t, b),
-               (mk_qual_tp (FunType (t, bt.tp)), rep) ),
-             remaining_gas )
+
+        let rl = TEnv.addT tenv arg t in
+        let k' (((_, (bt, _)) as b), remaining_gas) =
+          let () = TEnv.restore_all tenv rl in
+          k
+            ( ( TypedSyntax.Fun (typed_arg, t, b),
+                (mk_qual_tp (FunType (t, bt.tp)), rep) ),
+              remaining_gas )
+        in
+        type_expr_cps body remaining_gas tenv k'
     | App (f, actuals) ->
         wrap_type_err erep
         @@ let%bind fres =
@@ -225,9 +265,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              app_type tenv (rr_typ fres).tp actuals remaining_gas
            in
            let typed_f = add_type_to_ident f (rr_typ fres) in
-           pure
-           @@ ( (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep)),
-                remaining_gas )
+           k
+             ( (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep)),
+               remaining_gas )
     | Builtin (b, actuals) ->
         wrap_type_err erep
         @@ let%bind targs, typed_actuals, remaining_gas =
@@ -243,31 +283,32 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            in
            let q_ret_typ = mk_qual_tp ret_typ in
            let q_ret_tag = ETR.mk_rep rep q_ret_typ in
-           pure
-           @@ ( ( TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals),
-                  (q_ret_typ, rep) ),
-                remaining_gas )
+           k
+             ( ( TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals),
+                 (q_ret_typ, rep) ),
+               remaining_gas )
     | Let (i, topt, lhs, rhs) ->
+        let k' (((_, (ityp, _)) as checked_lhs), remaining_gas) =
+          let%bind () =
+            match topt with
+            | Some tannot ->
+                mark_error_as_type_error remaining_gas
+                @@ assert_type_equiv tannot ityp.tp
+            | None -> pure ()
+          in
+          let typed_i = add_type_to_ident i ityp in
+          let rl = TEnv.addT tenv i ityp.tp in
+          let k'' (((_, (rhstyp, _)) as checked_rhs), remaining_gas) =
+            let () = TEnv.restore_all tenv rl in
+            k
+              ( ( TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs),
+                  (rhstyp, rep) ),
+                remaining_gas )
+          in
+          type_expr_cps rhs remaining_gas tenv k''
+        in
         (* Poor man's error reporting *)
-        let%bind ((_, (ityp, _)) as checked_lhs), remaining_gas =
-          wrap_type_err erep @@ type_expr lhs remaining_gas tenv
-        in
-        let%bind () =
-          match topt with
-          | Some tannot ->
-              mark_error_as_type_error remaining_gas
-              @@ assert_type_equiv tannot ityp.tp
-          | None -> pure ()
-        in
-        let typed_i = add_type_to_ident i ityp in
-        let%bind ((_, (rhstyp, _)) as checked_rhs), remaining_gas =
-          env_wrapper tenv Fn.id [ (i, ityp.tp) ] []
-            (type_expr rhs remaining_gas)
-        in
-        pure
-        @@ ( ( TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs),
-               (rhstyp, rep) ),
-             remaining_gas )
+        wrap_type_err erep @@ type_expr_cps lhs remaining_gas tenv k'
     | Constr (cname, ts, actuals) ->
         let%bind () =
           Result.ignore_m
@@ -297,9 +338,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind typed_actuals, apptyp, remaining_gas =
             app_type tenv ftyp actuals remaining_gas
           in
-          pure
-          @@ ( (TypedSyntax.Constr (cname, ts, typed_actuals), (apptyp, rep)),
-               remaining_gas )
+
+          k
+            ( (TypedSyntax.Constr (cname, ts, typed_actuals), (apptyp, rep)),
+              remaining_gas )
     | MatchExpr (x, clauses) ->
         if List.is_empty clauses then
           mark_error_as_type_error remaining_gas
@@ -314,41 +356,59 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let sct = (rr_typ sctyp).tp in
           let msg = sprintf " of type %s" (pp_typ sct) in
           wrap_type_err erep ~opt:msg
-            (let%bind typed_clauses_rev, remaining_gas =
-               foldM clauses ~init:([], remaining_gas)
-                 ~f:(fun (typed_clauses_acc, remaining_gas) (ptrn, ex) ->
-                   let%bind typed_clause, remaining_gas' =
-                     type_check_match_branch tenv sct ptrn ex remaining_gas
+            (let k' (typed_clauses_rev, remaining_gas) =
+               let typed_clauses = List.rev typed_clauses_rev in
+               let cl_types =
+                 List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t)
+               in
+               let%bind () =
+                 mark_error_as_type_error remaining_gas
+                 @@ assert_all_same_type
+                      (List.map ~f:(fun it -> it.tp) cl_types)
+               in
+               (* Return the first type since all they are the same *)
+               k
+                 ( ( TypedSyntax.MatchExpr
+                       (add_type_to_ident x (rr_typ sctyp), typed_clauses),
+                     (List.hd_exn cl_types, rep) ),
+                   remaining_gas )
+             in
+             let rec clauses_cps clauses (typed_clauses_acc, remaining_gas) =
+               match clauses with
+               | [] -> k' (typed_clauses_acc, remaining_gas)
+               | (ptrn, ex) :: clauses' ->
+                   let kc (typed_clause, remaining_gas') =
+                     clauses_cps clauses'
+                       (typed_clause :: typed_clauses_acc, remaining_gas')
                    in
-                   pure (typed_clause :: typed_clauses_acc, remaining_gas'))
+                   let%bind new_p, new_typings =
+                     mark_error_as_type_error remaining_gas
+                     @@ assign_types_for_pattern sct ptrn
+                   in
+                   let rl = TEnv.addTs tenv new_typings in
+                   let k' ((_ as typed_e), remaining_gas) =
+                     let () = TEnv.restore_all tenv rl in
+                     kc ((new_p, typed_e), remaining_gas)
+                   in
+                   type_expr_cps ex remaining_gas tenv k'
              in
-             let typed_clauses = List.rev typed_clauses_rev in
-             let cl_types =
-               List.map typed_clauses ~f:(fun (_, (_, (t, _))) -> t)
-             in
-             let%bind () =
-               mark_error_as_type_error remaining_gas
-               @@ assert_all_same_type (List.map ~f:(fun it -> it.tp) cl_types)
-             in
-             (* Return the first type since all they are the same *)
-             pure
-             @@ ( ( TypedSyntax.MatchExpr
-                      (add_type_to_ident x (rr_typ sctyp), typed_clauses),
-                    (List.hd_exn cl_types, rep) ),
-                  remaining_gas ))
+             clauses_cps clauses ([], remaining_gas))
     | Fixpoint (f, t, body) ->
         wrap_type_err erep
-        @@ let%bind ((_, (bt, _)) as typed_b), remaining_gas =
-             env_wrapper tenv Fn.id [ (f, t) ] [] (type_expr body remaining_gas)
-           in
-           let%bind () =
-             mark_error_as_type_error remaining_gas @@ assert_type_equiv t bt.tp
-           in
-           pure
-           @@ ( ( TypedSyntax.Fixpoint
-                    (add_type_to_ident f (mk_qual_tp t), t, typed_b),
-                  (mk_qual_tp t, rep) ),
-                remaining_gas )
+        @@
+        let rl = TEnv.addT tenv f t in
+        let k' (((_, (bt, _)) as typed_b), remaining_gas) =
+          let () = TEnv.restore_all tenv rl in
+          let%bind () =
+            mark_error_as_type_error remaining_gas @@ assert_type_equiv t bt.tp
+          in
+          k
+            ( ( TypedSyntax.Fixpoint
+                  (add_type_to_ident f (mk_qual_tp t), t, typed_b),
+                (mk_qual_tp t, rep) ),
+              remaining_gas )
+        in
+        type_expr_cps body remaining_gas tenv k'
     | TFun (tvar, body) ->
         let id = get_id tvar in
         (* XXX this is a workaround for alpha-renaming *)
@@ -358,14 +418,16 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           @@ fail0
           @@ sprintf "Type variable %s is already in use\n" id
         else
-          let%bind ((_, (bt, _)) as typed_b), remaining_gas =
-            env_wrapper tenv Fn.id [] [ tvar ] (type_expr body remaining_gas)
+          let rl = TEnv.addV tenv tvar in
+          let k' (((_, (bt, _)) as typed_b), remaining_gas) =
+            let () = TEnv.restore_all tenv rl in
+            let typed_tvar = add_type_to_ident tvar bt in
+            k
+              ( ( TypedSyntax.TFun (typed_tvar, typed_b),
+                  (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
+                remaining_gas )
           in
-          let typed_tvar = add_type_to_ident tvar bt in
-          pure
-          @@ ( ( TypedSyntax.TFun (typed_tvar, typed_b),
-                 (mk_qual_tp (PolyFun (get_id tvar, bt.tp)), rep) ),
-               remaining_gas )
+          type_expr_cps body remaining_gas tenv k'
     | TApp (tf, arg_types) ->
         let%bind () =
           Result.ignore_m
@@ -385,15 +447,15 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           mark_error_as_type_error remaining_gas
           @@ TEnv.is_wf_type tenv res_type
         in
-        pure
-        @@ ( ( TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types),
-               (mk_qual_tp res_type, rep) ),
-             remaining_gas )
+        k
+          ( ( TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types),
+              (mk_qual_tp res_type, rep) ),
+            remaining_gas )
     | Message bs ->
         let%bind msg_typ =
           mark_error_as_type_error remaining_gas @@ get_msgevnt_type bs
         in
-        let payload_type fld pld remaining_gas =
+        let payload_type fld pld remaining_gas kc =
           let check_field_type seen_type =
             match
               List.Assoc.find CU.msg_mandatory_field_types fld
@@ -410,13 +472,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           in
           match pld with
           | MLit l ->
-              let%bind (_, (lt, _)), remaining_gas =
-                type_expr (Literal l, rep) remaining_gas tenv
+              let k' ((_, (lt, _)), remaining_gas) =
+                let%bind () =
+                  mark_error_as_type_error remaining_gas
+                  @@ check_field_type lt.tp
+                in
+                kc (TypedSyntax.MLit l, remaining_gas)
               in
-              let%bind () =
-                mark_error_as_type_error remaining_gas @@ check_field_type lt.tp
-              in
-              pure @@ (TypedSyntax.MLit l, remaining_gas)
+              type_expr_cps (Literal l, rep) remaining_gas tenv k'
           | MVar i ->
               let%bind r =
                 mark_error_as_type_error remaining_gas
@@ -428,7 +491,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 mark_error_as_type_error remaining_gas @@ check_field_type rtp
               in
               if is_serializable_type rtp then
-                pure @@ (TypedSyntax.MVar (add_type_to_ident i t), remaining_gas)
+                kc (TypedSyntax.MVar (add_type_to_ident i t), remaining_gas)
               else
                 Error
                   (mk_type_error1
@@ -437,67 +500,36 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      (ER.get_loc (get_rep i))
                      remaining_gas)
         in
-        let%bind typed_bs_rev, remaining_gas =
-          (* Make sure we resolve all the payload *)
-          foldM bs ~init:([], remaining_gas)
-            ~f:(fun (typed_bs_acc, remaining_gas) (s, pld) ->
-              let%bind typed_pld, remaining_gas' =
-                payload_type s pld remaining_gas
-              in
-              let typed_bs = (s, typed_pld) in
-              pure (typed_bs :: typed_bs_acc, remaining_gas'))
+        let k' (typed_bs_rev, remaining_gas) =
+          k
+            ( ( TypedSyntax.Message (List.rev typed_bs_rev),
+                (mk_qual_tp @@ msg_typ, rep) ),
+              remaining_gas )
         in
-        pure
-        @@ ( ( TypedSyntax.Message (List.rev typed_bs_rev),
-               (mk_qual_tp @@ msg_typ, rep) ),
-             remaining_gas )
+        (* Make sure we resolve all the payload *)
+        let rec payload_cps bs (typed_bs_acc, remaining_gas) =
+          match bs with
+          | [] -> k' (typed_bs_acc, remaining_gas)
+          | (s, pld) :: bs' ->
+              let kc (typed_pld, remaining_gas') =
+                let typed_bs = (s, typed_pld) in
+                payload_cps bs' (typed_bs :: typed_bs_acc, remaining_gas')
+              in
+              payload_type s pld remaining_gas kc
+        in
+        payload_cps bs ([], remaining_gas)
 
-  and app_type tenv ftyp actuals remaining_gas =
-    (* Type-check function application *)
-    let%bind () =
-      mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv ftyp
+  let type_expr erep remaining_gas tenv =
+    let res_ref = ref None in
+    let k res =
+      res_ref := Some res;
+      pure ()
     in
-    let%bind targs, typed_actuals, remaining_gas =
-      type_actuals tenv actuals remaining_gas
-    in
-    let%bind res_type =
-      mark_error_as_type_error remaining_gas @@ fun_type_applies ftyp targs
-    in
-    let%bind () =
-      mark_error_as_type_error remaining_gas @@ TEnv.is_wf_type tenv res_type
-    in
-    pure @@ (typed_actuals, mk_qual_tp res_type, remaining_gas)
-
-  and type_check_match_branch tenv styp ptrn e remaining_gas =
-    let%bind new_p, new_typings =
-      mark_error_as_type_error remaining_gas
-      @@ assign_types_for_pattern styp ptrn
-    in
-    let%bind (_ as typed_e), remaining_gas =
-      env_wrapper tenv Fn.id new_typings [] (type_expr e remaining_gas)
-    in
-    pure @@ ((new_p, typed_e), remaining_gas)
-
-  and type_actuals tenv actuals remaining_gas =
-    let%bind tresults =
-      mapM actuals ~f:(fun arg ->
-          mark_error_as_type_error remaining_gas
-          @@ TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_rep arg)))
-    in
-    let tqargs = List.map tresults ~f:rr_typ in
-    let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
-    let actuals_with_types =
-      match List.zip actuals tqargs with
-      | Ok l -> l
-      | Unequal_lengths ->
-          raise
-            (mk_internal_error
-               "Different number of actuals and Types of actuals")
-    in
-    let typed_actuals =
-      List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t)
-    in
-    pure @@ (targs, typed_actuals, remaining_gas)
+    let%bind () = type_expr_cps erep remaining_gas tenv k in
+    match !res_ref with
+    | None ->
+        mark_error_as_type_error Stdint.Uint64.zero (fail0 "This cannot happen")
+    | Some res -> pure res
 
   (**************************************************************)
   (*                   Typing statements                        *)
@@ -1346,11 +1378,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            ccomps
            ~f:(fun ((comp_acc, proc_acc, remaining_gas'), emsgs) tr ->
              let toplevel_env =
-               {
-                 pure = env.pure;
-                 fields = env.fields;
-                 procedures = proc_acc;
-               }
+               { pure = env.pure; fields = env.fields; procedures = proc_acc }
              in
              match type_component toplevel_env tr remaining_gas' with
              | Ok ((typed_comp, proc_sigs), g) ->
