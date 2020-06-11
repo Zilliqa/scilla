@@ -34,8 +34,10 @@ module StdlibTypeCacher
     (SR : Rep)
     (ER : Rep) =
 struct
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module L = ScillaSyntax (SR) (ER) (FlattenedLiteral)
+  module TCLiteral = GlobalLiteral
+  module TCName = TCLiteral.LType.TIdentifier.Name
+  module L = ScillaSyntax (SR) (ER) (TCLiteral)
+  module TCFrontEndParser = FrontEndParser.ScillaFrontEndParser (TCLiteral)
   module MakeTEnv = Q (R) (ER)
   open L
   open SIdentifier
@@ -52,14 +54,14 @@ struct
         ~f:(fun acc lib_entry ->
           match lib_entry with
           | LibTyp _ -> acc (* TODO: cache types as well *)
-          | LibVar (lname, _, _) -> acc ^ get_id lname
+          | LibVar (lname, _, _) -> acc ^ as_string lname
           (* TODO, Issue #179: cache lexp, possibly using (spp_expr lexp)*))
         ~init:"" lib.lentries
     in
     hash s
 
   let to_json_string (lib : L.library) lib_entries =
-    let lib_name = get_id lib.lname in
+    let lib_name = as_error_string lib.lname in
     let lib_hash = hash_lib lib in
     (* Let's output to a JSON with the following format:
      * {
@@ -97,6 +99,11 @@ struct
     let name = member "name" j in
     let lhash = member "hash" j in
     let entries = member "entries" j in
+    let parse_type_name name = 
+      match String.split_on_chars ~on:['.'] name with
+      | [ t1 ; t2 ] -> Some (TCName.parse_qualified_name t1 t2)
+      | [ t1 ] -> Some (TCName.parse_simple_name t1)
+      | _ -> None in
     match (name, lhash, entries) with
     | `String n, `String h, `List elj -> (
         (* Conver the list of JSONs to a list of TEnv.tenv entries. *)
@@ -110,12 +117,11 @@ struct
                 match (name_j, type_j, loc_j) with
                 | `String name_s, `String type_s, `String loc_s -> (
                     (* Printf.printf "Parsing type: %s\n" type_s; *)
-                    match FrontEndParser.parse_type type_s with
+                    match TCFrontEndParser.parse_type type_s with
                     | Ok typ ->
                         let loc = ER.parse_rep loc_s in
                         (* TODO: parse loc_s *)
-                        let id = mk_id name_s loc in
-                        Some (id, typ)
+                        Option.map (parse_type_name name_s) ~f:(fun id -> (mk_id id loc, typ))
                     | Error _ -> None )
                 | _ ->
                     (* TODO: report useful error messages. *)
@@ -132,7 +138,7 @@ struct
 
   (* Get type info for "lib" from cache, if it exists. *)
   let get_lib_tenv_cache (tenv : t) (lib : L.library) =
-    let lib_name = get_id lib.lname in
+    let lib_name = as_string lib.lname in
     let open GlobalConfig.StdlibTracker in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
@@ -161,7 +167,7 @@ struct
     let entry_names, _typ_names =
       List.partition_map lib.lentries ~f:(fun entry ->
           match entry with
-          | LibVar (lname, _, _) -> `Fst (get_id lname)
+          | LibVar (lname, _, _) -> `Fst (as_string lname)
           | LibTyp (tname, _) -> `Snd (get_id tname))
     in
     let lib_entries =
@@ -174,7 +180,7 @@ struct
 
     (* 2. Write back to cache. *)
     let open GlobalConfig.StdlibTracker in
-    let lib_name = get_id lib.lname in
+    let lib_name = as_string lib.lname in
     let dir_o = find_lib_dir lib_name in
     match dir_o with
     | Some dir ->
