@@ -167,7 +167,7 @@ module EvalMonad = struct
   include Monad.Make3 (CPSMonad)
 
   (* Monadic evaluation results *)
-  let fail (s : scilla_error list) k remaining_gas = k (Error s) remaining_gas
+  let fail s k remaining_gas = k (Error s) remaining_gas
 
   let pure e = return e
 

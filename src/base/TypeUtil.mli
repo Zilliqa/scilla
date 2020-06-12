@@ -71,7 +71,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Add type variable to the environment *)
     val addV : t -> R.rep TUIdentifier.t -> restore list
 
-  (* Add many type variables to the environment. *)
+    (* Add many type variables to the environment. *)
     val addVs : t -> R.rep TUIdentifier.t list -> restore list
 
     (* Remove the latest binding for the argument. *)
@@ -157,27 +157,17 @@ module TypeUtilities : sig
 
   type typeCheckerErrorType = TypeError | GasError
 
-  val mk_type_error0 :
-    string ->
-    Stdint.uint64 ->
-    typeCheckerErrorType * scilla_error list * Stdint.uint64
+  val mk_type_error0 : string -> typeCheckerErrorType * scilla_error list
 
-  val mk_type_error1 :
-    string ->
-    loc ->
-    Stdint.uint64 ->
-    typeCheckerErrorType * scilla_error list * Stdint.uint64
+  val mk_type_error1 : string -> loc -> typeCheckerErrorType * scilla_error list
 
-  val wrap_error_with_errortype_and_gas :
+  val wrap_error_with_errortype :
     typeCheckerErrorType ->
-    Stdint.uint64 ->
     ('a, 'b) result ->
-    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+    ('a, typeCheckerErrorType * 'b) result
 
   val mark_error_as_type_error :
-    Stdint.uint64 ->
-    ('a, 'b) result ->
-    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+    ('a, 'b) result -> ('a, typeCheckerErrorType * 'b) result
 
   val assert_type_equiv :
     TUType.t -> TUType.t -> (unit, scilla_error list) result
@@ -201,15 +191,6 @@ module TypeUtilities : sig
   (* Applying a type function without gas charge (for builtins) *)
   val elab_tfun_with_args_no_gas :
     TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result
-
-  (* Applying a type function *)
-  val elab_tfun_with_args :
-    TUType.t ->
-    TUType.t list ->
-    Stdint.uint64 ->
-    ( TUType.t * Stdint.uint64,
-      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
-    result
 
   val pp_typ_list : TUType.t list -> string
 

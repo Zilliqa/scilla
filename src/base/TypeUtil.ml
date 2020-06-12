@@ -79,7 +79,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Add type variable to the environment *)
     val addV : t -> R.rep TUIdentifier.t -> restore list
 
-  (* Add many type variables to the environment. *)
+    (* Add many type variables to the environment. *)
     val addVs : t -> R.rep TIdentifier.t list -> restore list
 
     (* Remove the latest binding for the argument. *)
@@ -182,7 +182,9 @@ functor
       (* Remove the latest binding for the argument. *)
       let remT env id =
         match Hashtbl.find_opt env.tenv (get_id id) with
-        | Some v -> Hashtbl.remove env.tenv (get_id id); [ AddT (get_id id, v) ]
+        | Some v ->
+            Hashtbl.remove env.tenv (get_id id);
+            [ AddT (get_id id, v) ]
         | None -> []
 
       (* Remove the latest bindings for the arguments. *)
@@ -192,10 +194,10 @@ functor
       (* Restore env based on the provided restore list. *)
       let restore_all env rl =
         List.iter rl ~f:(function
-        | AddT (s, rr) -> Hashtbl.add env.tenv s rr
-        | RemT s -> Hashtbl.remove env.tenv s
-        (* | AddV (s, r) -> Hashtbl.add env.tvars s r *)
-        | RemV s -> Hashtbl.remove env.tvars s)
+          | AddT (s, rr) -> Hashtbl.add env.tenv s rr
+          | RemT s -> Hashtbl.remove env.tenv s
+          (* | AddV (s, r) -> Hashtbl.add env.tvars s r *)
+          | RemV s -> Hashtbl.remove env.tvars s)
 
       let tvars env =
         Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
@@ -283,17 +285,14 @@ module TypeUtilities = struct
 
   type typeCheckerErrorType = TypeError | GasError
 
-  let mk_type_error0 msg remaining_gas =
-    (TypeError, mk_error0 msg, remaining_gas)
+  let mk_type_error0 msg = (TypeError, mk_error0 msg)
 
-  let mk_type_error1 msg loc remaining_gas =
-    (TypeError, mk_error1 msg loc, remaining_gas)
+  let mk_type_error1 msg loc = (TypeError, mk_error1 msg loc)
 
-  let wrap_error_with_errortype_and_gas errorType gas res =
-    match res with Ok r -> Ok r | Error e -> Error (errorType, e, gas)
+  let wrap_error_with_errortype errorType res =
+    match res with Ok r -> Ok r | Error e -> Error (errorType, e)
 
-  let mark_error_as_type_error gas res =
-    wrap_error_with_errortype_and_gas TypeError gas res
+  let mark_error_as_type_error res = wrap_error_with_errortype TypeError res
 
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
@@ -462,89 +461,6 @@ module TypeUtilities = struct
             (pp_typ tf) (pp_typ_list args)
         in
         Error (mk_error0 msg)
-
-  let subst_type_cost tvar tm tp_size =
-    match tm with
-    | PrimType _ | Unit
-    | MapType (_, _)
-    | FunType (_, _)
-    | ADT (_, _)
-    | PolyFun (_, _) ->
-        1
-    | TypeVar n -> if String.(n = tvar) then tp_size else 1
-
-  (* Count the number of AST nodes in a type *)
-  let rec type_size t =
-    match t with
-    | PrimType _ | Unit | TypeVar _ -> 1
-    | PolyFun (_, t) -> 1 + type_size t
-    | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
-    | ADT (_, ts) ->
-        List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-
-  (* tm[tvar := tp]
-     Parallel implementation to the one in Syntax.ml to allow gas accounting.
-  *)
-  let subst_type_in_type_with_gas tvar tp tm gas =
-    let tp_size = type_size tp in
-    let rec recurser t remaining_gas =
-      let gas_cost = Stdint.Uint64.of_int @@ subst_type_cost tvar t tp_size in
-      if Stdint.Uint64.compare remaining_gas gas_cost >= 0 then
-        let remaining_gas' = Stdint.Uint64.sub remaining_gas gas_cost in
-        (*        let _ = printf "recursing over %s\n" (pp_typ t) in *)
-        match t with
-        | PrimType _ | Unit -> pure (t, remaining_gas')
-        (* Make sure the map's type is still primitive! *)
-        | MapType (kt, vt) ->
-            let%bind kts, remaining_gas = recurser kt remaining_gas' in
-            let%bind vts, remaining_gas = recurser vt remaining_gas in
-            pure (MapType (kts, vts), remaining_gas)
-        | FunType (at, rt) ->
-            let%bind ats, remaining_gas = recurser at remaining_gas' in
-            let%bind rts, remaining_gas = recurser rt remaining_gas in
-            pure (FunType (ats, rts), remaining_gas)
-        | TypeVar n ->
-            let res = if String.(tvar = n) then tp else t in
-            pure (res, remaining_gas')
-        | ADT (s, ts) ->
-            let%bind ts'_rev, remaining_gas =
-              foldM ts ~init:([], remaining_gas')
-                ~f:(fun (ts'_rev_acc, remaining_gas) t' ->
-                  let%bind res, remaining_gas = recurser t' remaining_gas in
-                  pure (res :: ts'_rev_acc, remaining_gas))
-            in
-            pure (ADT (s, List.rev ts'_rev), remaining_gas)
-        | PolyFun (arg, t') ->
-            if String.(tvar = arg) then pure (t, remaining_gas')
-            else
-              let%bind res, remaining_gas = recurser t' remaining_gas' in
-              pure (PolyFun (arg, res), remaining_gas)
-      else Error (GasError, EvalMonad.out_of_gas_err, remaining_gas)
-    in
-    recurser tm gas
-
-  let rec elab_tfun_with_args tf args gas =
-    match (tf, args) with
-    | (PolyFun _ as pf), a :: args' ->
-        let afv = free_tvars a in
-        let%bind n, tp =
-          match refresh_tfun pf afv with
-          | PolyFun (a, b) -> pure (a, b)
-          | _ -> Error (TypeError, mk_error0 "This can't happen!", gas)
-        in
-        let%bind tp', remaining_gas = subst_type_in_type_with_gas n a tp gas in
-        elab_tfun_with_args tp' args' remaining_gas
-    | t, [] -> pure (t, gas)
-    | _ ->
-        let msg =
-          sprintf
-            "Cannot elaborate expression of type\n\
-             %s\n\
-             applied, as a type function, to type arguments\n\
-             %s."
-            (pp_typ tf) (pp_typ_list args)
-        in
-        Error (TypeError, mk_error0 msg, gas)
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
