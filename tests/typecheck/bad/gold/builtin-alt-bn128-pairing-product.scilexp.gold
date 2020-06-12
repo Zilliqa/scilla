@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `pair2`:\nType mismatch: Pair (ByStr32) (ByStr32) expected, but Pair (ByStr64) (ByStr64) provided.",
+        "Type mismatch: Pair (ByStr32) (ByStr32) expected, but Pair (ByStr64) (ByStr64) provided.",
       "start_location": {
         "file": "typecheck/bad/builtin-alt-bn128-pairing-product.scilexp",
         "line": 18,

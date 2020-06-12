@@ -313,23 +313,12 @@ module TypeUtilities = struct
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
               not ([%equal: TUType.t] t1 t2)))
 
-  let assert_type_equiv expected given =
+  let assert_type_equiv ?(lc=dummy_loc) expected given =
     if [%equal: TUType.t] expected given then pure ()
     else
-      fail0
-      @@ sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ given)
-
-  (* TODO: make this charge gas *)
-  let assert_type_equiv_with_gas expected given remaining_gas =
-    if [%equal: TUType.t] expected given then pure remaining_gas
-    else
-      Error
-        ( TypeError,
-          mk_error0
-            (sprintf "Type mismatch: %s expected, but %s provided."
-               (pp_typ expected) (pp_typ given)),
-          remaining_gas )
+      fail1
+      (sprintf "Type mismatch: %s expected, but %s provided."
+           (pp_typ expected) (pp_typ given)) lc
 
   let rec is_ground_type t =
     match t with
@@ -387,14 +376,14 @@ module TypeUtilities = struct
 
   let is_storable_type t = is_serializable_storable_helper true t []
 
-  let get_msgevnt_type m =
+  let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
     if List.Assoc.mem m tag_label ~equal:String.( = ) then pure TUType.msg_typ
     else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
       pure TUType.event_typ
     else if List.Assoc.mem m exception_label ~equal:String.( = ) then
       pure TUType.exception_typ
-    else fail0 "Invalid message construct. Not any of send, event or exception."
+    else fail1 "Invalid message construct. Not any of send, event or exception." lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =
@@ -418,25 +407,25 @@ module TypeUtilities = struct
      to a list of argument types.
      Returns the resul type of application or failure
   *)
-  let rec fun_type_applies ft argtypes =
+  let rec fun_type_applies ?(lc=dummy_loc) ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
-        let%bind () = assert_type_equiv argt a in
-        fun_type_applies rest ats
+        let%bind () = assert_type_equiv argt a ~lc in
+        fun_type_applies ~lc rest ats
     | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
     | _ ->
-        fail0
-        @@ sprintf
+        fail1
+        (sprintf
              "The type\n\
               %s\n\
               doesn't apply, as a function, to the arguments of types\n\
               %s."
-             (pp_typ ft) (pp_typ_list argtypes)
+             (pp_typ ft) (pp_typ_list argtypes)) lc
 
-  let proc_type_applies formals actuals =
-    map2M formals actuals ~f:assert_type_equiv ~msg:(fun () ->
-        mk_error0 "Incorrect number of arguments to procedure")
+  let proc_type_applies ~lc formals actuals =
+    map2M formals actuals ~f:(assert_type_equiv ~lc) ~msg:(fun () ->
+        mk_error1 "Incorrect number of arguments to procedure" lc)
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
@@ -470,11 +459,11 @@ module TypeUtilities = struct
     List.fold_left tmap ~init:tp ~f:(fun acc_tp (tv, tp) ->
         subst_type_in_type tv tp acc_tp)
 
-  let validate_param_length cn plen alen =
+  let validate_param_length ~lc cn plen alen =
     if plen <> alen then
-      fail0
-      @@ sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
-           alen
+      fail1
+      (sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
+           alen) lc
     else pure ()
 
   (* Avoid variable clashes *)
@@ -494,7 +483,7 @@ module TypeUtilities = struct
     { adt with tparams = tparams'; tmap = tmap' }
 
   (*  Get elaborated constructor type *)
-  let elab_constr_type cn targs =
+  let elab_constr_type ~lc cn targs =
     let open Datatypes.DataTypeDictionary in
     let%bind adt', _ = lookup_constructor cn in
     let seq a b = if String.(a = b) then 0 else 1 in
@@ -504,7 +493,7 @@ module TypeUtilities = struct
     let adt = refresh_adt adt' taken in
     let plen = List.length adt.tparams in
     let alen = List.length targs in
-    let%bind () = validate_param_length cn plen alen in
+    let%bind () = validate_param_length ~lc cn plen alen in
     let res_typ = ADT (mk_loc_id adt.tname, targs) in
     match List.Assoc.find adt.tmap cn ~equal:String.( = ) with
     | None -> pure res_typ
@@ -517,50 +506,50 @@ module TypeUtilities = struct
         in
         pure ctyp
 
-  let extract_targs cn (adt : Datatypes.adt) atyp =
+  let extract_targs ?(lc=dummy_loc) cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
         if String.(adt.tname = get_id name) then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
-          let%bind () = validate_param_length cn plen alen in
+          let%bind () = validate_param_length ~lc cn plen alen in
           pure targs
         else
-          fail0
-          @@ sprintf
+          fail1
+          (sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               adt.tname (get_id name)
-    | _ -> fail0 @@ sprintf "Not an algebraic data type: %s" (pp_typ atyp)
+               adt.tname (get_id name)) (get_rep name)
+    | _ -> fail1 (sprintf "Not an algebraic data type: %s" (pp_typ atyp)) lc
 
-  let constr_pattern_arg_types atyp cn =
+  let constr_pattern_arg_types ?(lc=dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
     let%bind adt', _ = lookup_constructor cn in
     let taken = free_tvars atyp in
     let adt = refresh_adt adt' taken in
-    let%bind targs = extract_targs cn adt atyp in
+    let%bind targs = extract_targs ~lc cn adt atyp in
     match constr_tmap adt cn with
     | None -> pure []
     | Some tms ->
         let subst = List.zip_exn adt.tparams targs in
         pure @@ List.map ~f:(apply_type_subst subst) tms
 
-  let assert_all_same_type ts =
+  let assert_all_same_type ~lc ts =
     match ts with
-    | [] -> fail0 "Checking an empty type list."
+    | [] -> fail1 "Checking an empty type list." lc
     | t :: ts' -> (
         match List.find ts' ~f:(fun t' -> not ([%equal: TUType.t] t t')) with
         | None -> pure ()
         | Some _ ->
-            fail0
-            @@ sprintf "Not all types of the branches %s are equivalent."
-                 (pp_typ_list ts) )
+            fail1
+            (sprintf "Not all types of the branches %s are equivalent."
+                 (pp_typ_list ts) ) lc)
 
   (****************************************************************)
   (*                     Typing literals                          *)
   (****************************************************************)
 
-  let literal_type l =
+  let literal_type ?(lc=dummy_loc) l =
     let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
@@ -576,7 +565,7 @@ module TypeUtilities = struct
     | ByStr _ -> pure bystr_typ
     | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
     (* Check that messages and events have storable parameters. *)
-    | Msg bs -> get_msgevnt_type bs
+    | Msg bs -> get_msgevnt_type bs lc
     | Map ((kt, vt), _) -> pure (MapType (kt, vt))
     | ADTValue (cname, ts, _) ->
         let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
@@ -585,7 +574,7 @@ module TypeUtilities = struct
     | TAbs _ -> fail0 @@ "Cannot type runtime type function."
 
   (* Verifies a literal to be wellformed and returns it's type. *)
-  let rec is_wellformed_lit l =
+  let rec is_wellformed_lit ?(lc=dummy_loc) l =
     let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
@@ -602,7 +591,7 @@ module TypeUtilities = struct
     | ByStrX bsx -> pure (bystrx_typ (Bystrx.width bsx))
     (* Check that messages and events have storable parameters. *)
     | Msg m ->
-        let%bind msg_typ = get_msgevnt_type m in
+        let%bind msg_typ = get_msgevnt_type m lc in
         let%bind all_storable =
           foldM
             ~f:(fun acc (_, l) ->

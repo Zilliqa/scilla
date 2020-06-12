@@ -340,7 +340,7 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos)))), toLoc $startpos }
+| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
