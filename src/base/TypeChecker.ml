@@ -950,29 +950,26 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
 
   (* In-place updates env0 with entries from this library. *)
   let type_library env0 { lname; lentries = ents } remaining_gas =
-    let open Container.Continue_or_stop in
-    let (typed_entries, errs, _), remaining_gas =
-      List.fold_until
+    let%bind (typed_entries, errs, _), remaining_gas =
+      foldM ents
         ~init:(([], [], []), remaining_gas)
-        ~finish:Fn.id ents
         ~f:(fun ((acc, errs, blist), remaining_gas) lib_entry ->
           match lib_entry with
           | LibTyp (_tname, ctr_defs) -> (
               match type_lib_typ_ctrs env0 ctr_defs with
-              | Ok () -> Continue ((acc, errs, blist), remaining_gas)
-              | Error e -> Continue ((acc, errs @ e, blist), remaining_gas) )
+              | Ok () -> Ok ((acc, errs, blist), remaining_gas)
+              | Error e -> Ok ((acc, errs @ e, blist), remaining_gas) )
           | LibVar (ln, ltopt, le) -> (
               let dep_on_blist = free_vars_dep_check le blist in
               (* If exp depends on a blacklisted exp, then let's ignore it. *)
               if dep_on_blist then
-                Continue ((acc, errs, ln :: blist), remaining_gas)
+                Ok ((acc, errs, ln :: blist), remaining_gas)
               else
                 let res = type_expr le env0 init_gas_kont remaining_gas in
                 match res with
                 | Ok (res', remaining_gas') -> (
                     (* This went good. *)
                     let ((_, (tr, _)) as typed_e) = res' in
-
                     let thunk () =
                       let _ = TEnv.addT env0 ln tr.tp in
                       let typed_ln = add_type_to_ident ln tr in
@@ -984,17 +981,17 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     match ltopt with
                     | Some tannot -> (
                         match assert_type_equiv tannot tr.tp with
-                        | Ok () -> Continue (thunk ())
+                        | Ok () -> Ok (thunk ())
                         | Error e ->
-                            Continue
+                            Ok
                               ((acc, errs @ e, ln :: blist), remaining_gas) )
-                    | None -> Continue (thunk ()) )
+                    | None -> Ok (thunk ()) )
                 | Error ((TypeError, e), remaining_gas') ->
                     (* A new original type failure. Add to blocklist and move on. *)
-                    Continue ((acc, errs @ e, ln :: blist), remaining_gas')
+                    Ok ((acc, errs @ e, ln :: blist), remaining_gas')
                 | Error ((GasError, e), remaining_gas') ->
                     (* Out of gas. Bail out. *)
-                    Stop ((acc, errs @ e, blist), remaining_gas') ))
+                    Error ((GasError,  errs @ e), remaining_gas')))
     in
     (* If there has been no errors at all, we're good to go. *)
     if List.is_empty errs then
