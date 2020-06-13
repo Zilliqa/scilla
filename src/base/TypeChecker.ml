@@ -182,7 +182,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let tp_size = type_size tp in
     let rec recurser t =
       let gas_cost = Stdint.Uint64.of_int @@ subst_type_cost tvar t tp_size in
-      (*        let _ = printf "recursing over %s\n" (pp_typ t) in *)
       let thunk () =
         match t with
         | PrimType _ | Unit -> pure t
