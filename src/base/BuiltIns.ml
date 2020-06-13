@@ -1383,7 +1383,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               (* First: elaborate based on argument types *)
               let%bind type_elab = elab optype argtypes in
               (* Second: check applicability *)
-              let%bind res_type = fun_type_applies type_elab argtypes in
+              let%bind res_type =
+                fun_type_applies type_elab argtypes ~lc:(ER.get_loc rep)
+              in
               pure (type_elab, res_type, exec)
             else fail0 @@ "Name or arity don't match"
       in

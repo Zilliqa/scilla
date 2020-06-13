@@ -2,25 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ProcedureCallBadType:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 5,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition Trans1:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 17,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "error_message": "Incorrect number of arguments to procedure",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
         "line": 21,
@@ -30,20 +12,6 @@
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition Trans2:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 24,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in procedure call Proc1:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
         "line": 28,
@@ -53,20 +21,6 @@
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition Trans3:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 31,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in procedure call Proc1:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
         "line": 35,
@@ -76,30 +30,11 @@
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition Trans4:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_args.scilla",
-        "line": 38,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in procedure call Proc2:\n",
       "start_location": {
         "file": "checker/bad/procedure_bad_args.scilla",
         "line": 42,
         "column": 3
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

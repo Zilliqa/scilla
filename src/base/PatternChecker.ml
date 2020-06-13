@@ -95,7 +95,9 @@ struct
       | Constructor (c_name, sps_cons) -> (
           let arity () = List.length sps_cons in
           let get_t_args () =
-            constr_pattern_arg_types t (PCIdentifier.as_string c_name)
+            constr_pattern_arg_types t
+              (PCIdentifier.as_string c_name)
+              ~lc:(SR.get_loc (PCIdentifier.get_rep c_name))
           in
           let get_dsc_args dsc =
             match dsc with
