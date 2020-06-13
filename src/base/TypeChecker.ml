@@ -246,7 +246,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
    * 3. Calls typer with the updated env.
    * 4. Restores the environment 
    * 5. Returns typer's result. *)
-  let env_wrapper env get_tenv new_tbinds new_vbinds typer =
+  let with_extended_env env get_tenv new_tbinds new_vbinds typer =
     let cur_env = get_tenv env in
     let rl = TEnv.addTs cur_env new_tbinds in
     let rl' = TEnv.addVs cur_env new_vbinds in
@@ -270,7 +270,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     | Fun (arg, t, body) ->
         let%bind () = fromR_TE @@ TEnv.is_wf_type tenv t in
         let%bind ((_, (bt, _)) as b) =
-          env_wrapper tenv Fn.id [ (arg, t) ] [] (type_expr body)
+          with_extended_env tenv Fn.id [ (arg, t) ] [] (type_expr body)
         in
         let typed_arg = add_type_to_ident arg (mk_qual_tp t) in
         pure
@@ -307,7 +307,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let typed_i = add_type_to_ident i ityp in
         let%bind ((_, (rhstyp, _)) as checked_rhs) =
-          env_wrapper tenv Fn.id [ (i, ityp.tp) ] [] (type_expr rhs)
+          with_extended_env tenv Fn.id [ (i, ityp.tp) ] [] (type_expr rhs)
         in
         pure
         @@ ( TypedSyntax.Let (typed_i, topt, checked_lhs, checked_rhs),
@@ -370,7 +370,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (List.hd_exn cl_types, rep) )
     | Fixpoint (f, t, body) ->
         let%bind ((_, (bt, _)) as typed_b) =
-          env_wrapper tenv Fn.id [ (f, t) ] [] (type_expr body)
+          with_extended_env tenv Fn.id [ (f, t) ] [] (type_expr body)
         in
         let%bind () =
           fromR_TE @@ assert_type_equiv t bt.tp ~lc:(ER.get_loc rep)
@@ -388,7 +388,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             (mk_type_error1 (sprintf "Type variable %s is already in use\n" id) (ER.get_loc (get_rep tvar)))
         else
           let%bind ((_, (bt, _)) as typed_b) =
-            env_wrapper tenv Fn.id [] [ tvar ] (type_expr body)
+            with_extended_env tenv Fn.id [] [ tvar ] (type_expr body)
           in
           let typed_tvar = add_type_to_ident tvar bt in
           pure
@@ -472,7 +472,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   and type_check_match_branch tenv styp ptrn e =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in
     let%bind (_ as typed_e) =
-      env_wrapper tenv Fn.id new_typings [] (type_expr e)
+      with_extended_env tenv Fn.id new_typings [] (type_expr e)
     in
     pure @@ (new_p, typed_e)
 
@@ -565,7 +565,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               pure @@ ((x, (rr_typ fr).tp), rr_typ fr)
             in
             let%bind checked_stmts =
-              env_wrapper env get_tenv_pure [ pure' ] []
+              with_extended_env env get_tenv_pure [ pure' ] []
                 (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x ident_type in
@@ -607,7 +607,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Bind (x, e) ->
             let%bind ((_, (ityp, _)) as checked_e) = type_expr e env.pure in
             let%bind checked_stmts =
-              env_wrapper env get_tenv_pure [ (x, ityp.tp) ] []
+              with_extended_env env get_tenv_pure [ (x, ityp.tp) ] []
                 (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x ityp in
@@ -665,7 +665,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
             let%bind checked_stmts =
-              env_wrapper env get_tenv_pure [ (v, v_type') ] []
+              with_extended_env env get_tenv_pure [ (v, v_type') ] []
                 (type_stmts sts get_loc)
             in
             (* Update annotations. *)
@@ -677,7 +677,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | ReadFromBC (x, bf) ->
             let%bind bt = lookup_bc_type bf in
             let%bind checked_stmts =
-              env_wrapper env get_tenv_pure [ (x, bt) ] []
+              with_extended_env env get_tenv_pure [ (x, bt) ] []
                 (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
@@ -830,7 +830,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in
     let%bind new_stmts, _ =
-      env_wrapper env get_tenv_pure new_typings [] (type_stmts sts get_loc)
+      with_extended_env env get_tenv_pure new_typings [] (type_stmts sts get_loc)
     in
     pure @@ (new_p, new_stmts)
 
@@ -858,7 +858,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     in
     let append_params = CU.append_implict_comp_params comp_params in
     let%bind typed_stmts, _ =
-      env_wrapper env0 get_tenv_pure append_params []
+      with_extended_env env0 get_tenv_pure append_params []
         (type_stmts comp_body ER.get_loc)
     in
     let new_proc_signatures =
