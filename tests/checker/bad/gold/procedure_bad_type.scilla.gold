@@ -4,7 +4,11 @@
     {
       "error_message":
         "Type mismatch: Int32 expected, but List (Bool) provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/procedure_bad_type.scilla",
+        "line": 17,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

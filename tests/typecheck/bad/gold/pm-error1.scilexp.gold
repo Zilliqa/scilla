@@ -3,7 +3,11 @@
     {
       "error_message":
         "Not all types of the branches [Int32; Int64] are equivalent.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "typecheck/bad/pm-error1.scilexp",
+        "line": 4,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

@@ -3,22 +3,38 @@
   "errors": [
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 21,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 28,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 35,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message": "Incorrect number of arguments to procedure",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/procedure_bad_args.scilla",
+        "line": 42,
+        "column": 3
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

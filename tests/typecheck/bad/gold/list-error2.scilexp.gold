@@ -3,7 +3,11 @@
     {
       "error_message":
         "Constructor Cons expects 1 type arguments, but got 2.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "typecheck/bad/list-error2.scilexp",
+        "line": 20,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

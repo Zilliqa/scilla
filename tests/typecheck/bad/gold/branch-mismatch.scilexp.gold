@@ -3,7 +3,11 @@
     {
       "error_message":
         "Not all types of the branches ['X; 'Y] are equivalent.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "typecheck/bad/branch-mismatch.scilexp",
+        "line": 8,
+        "column": 2
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],
