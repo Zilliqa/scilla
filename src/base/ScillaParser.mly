@@ -22,10 +22,9 @@
   open Syntax
   open ErrorUtils
 
-  module ParserSyntax = S
-  module ParserIdentifier = ParserSyntax.SIdentifier
+  module ParserIdentifier = S.SIdentifier
   module ParserName = ParserIdentifier.Name
-  open ParserSyntax
+  open S
 
   let to_loc_id s loc = SIdentifier.mk_id (ParserName.parse_simple_name s) loc
 
