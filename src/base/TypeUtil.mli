@@ -71,7 +71,7 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     (* Add type variable to the environment *)
     val addV : t -> R.rep TUIdentifier.t -> restore
 
-  (* Add many type variables to the environment. *)
+    (* Add many type variables to the environment. *)
     val addVs : t -> R.rep TUIdentifier.t list -> restore
 
     (* Remove the latest binding for the argument. *)
@@ -118,9 +118,11 @@ module PlainTypes : QualifiedTypes
 module TypeUtilities : sig
   module MakeTEnv : MakeTEnvFunctor
 
-  val literal_type : TULiteral.t -> (TUType.t, scilla_error list) result
+  val literal_type :
+    ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
-  val is_wellformed_lit : TULiteral.t -> (TUType.t, scilla_error list) result
+  val is_wellformed_lit :
+    ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
   (* Useful generic types *)
   val fun_typ : TUType.t -> TUType.t -> TUType.t
@@ -146,7 +148,7 @@ module TypeUtilities : sig
   val is_non_map_ground_type : TUType.t -> bool
 
   val get_msgevnt_type :
-    (string * 'a) sexp_list -> (TUType.t, scilla_error sexp_list) result
+    (string * 'a) sexp_list -> loc -> (TUType.t, scilla_error sexp_list) result
 
   val map_access_type : TUType.t -> int -> (TUType.t, scilla_error list) result
 
@@ -160,59 +162,41 @@ module TypeUtilities : sig
 
   type typeCheckerErrorType = TypeError | GasError
 
-  val mk_type_error0 :
-    string ->
-    Stdint.uint64 ->
-    typeCheckerErrorType * scilla_error list * Stdint.uint64
+  val mk_type_error0 : string -> typeCheckerErrorType * scilla_error list
 
-  val mk_type_error1 :
-    string ->
-    loc ->
-    Stdint.uint64 ->
-    typeCheckerErrorType * scilla_error list * Stdint.uint64
+  val mk_type_error1 : string -> loc -> typeCheckerErrorType * scilla_error list
 
-  val wrap_error_with_errortype_and_gas :
+  val wrap_error_with_errortype :
     typeCheckerErrorType ->
-    Stdint.uint64 ->
     ('a, 'b) result ->
-    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+    ('a, typeCheckerErrorType * 'b) result
 
   val mark_error_as_type_error :
-    Stdint.uint64 ->
-    ('a, 'b) result ->
-    ('a, typeCheckerErrorType * 'b * Stdint.uint64) result
+    ('a, 'b) result -> ('a, typeCheckerErrorType * 'b) result
 
   val assert_type_equiv :
-    TUType.t -> TUType.t -> (unit, scilla_error list) result
-
-  val assert_type_equiv_with_gas :
+    ?lc:ErrorUtils.loc ->
     TUType.t ->
     TUType.t ->
-    Stdint.uint64 ->
-    ( Stdint.uint64,
-      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
-    result
+    (unit, scilla_error list) result
 
   (* Applying a function type *)
   val fun_type_applies :
-    TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result
+    ?lc:ErrorUtils.loc ->
+    TUType.t ->
+    TUType.t list ->
+    (TUType.t, scilla_error list) result
 
   (* Applying a procedure "type" *)
   val proc_type_applies :
-    TUType.t list -> TUType.t list -> (unit list, scilla_error list) result
+    lc:ErrorUtils.loc ->
+    TUType.t list ->
+    TUType.t list ->
+    (unit list, scilla_error list) result
 
   (* Applying a type function without gas charge (for builtins) *)
   val elab_tfun_with_args_no_gas :
     TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result
-
-  (* Applying a type function *)
-  val elab_tfun_with_args :
-    TUType.t ->
-    TUType.t list ->
-    Stdint.uint64 ->
-    ( TUType.t * Stdint.uint64,
-      typeCheckerErrorType * scilla_error list * Stdint.uint64 )
-    result
 
   val pp_typ_list : TUType.t list -> string
 
@@ -225,18 +209,22 @@ module TypeUtilities : sig
 
   (*  Get elaborated type for a constructor and list of type arguments *)
   val elab_constr_type :
-    string -> TUType.t list -> (TUType.t, scilla_error list) result
+    lc:ErrorUtils.loc -> string -> TUType.t list -> (TUType.t, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
      pattern-matching. *)
   val constr_pattern_arg_types :
-    TUType.t -> string -> (TUType.t list, scilla_error list) result
+    ?lc:ErrorUtils.loc ->
+    TUType.t ->
+    string ->
+    (TUType.t list, scilla_error list) result
 
   val validate_param_length :
-    string -> int -> int -> (unit, scilla_error list) result
+    lc:ErrorUtils.loc -> string -> int -> int -> (unit, scilla_error list) result
 
-  val assert_all_same_type : TUType.t list -> (unit, scilla_error list) result
+  val assert_all_same_type :
+    lc:ErrorUtils.loc -> TUType.t list -> (unit, scilla_error list) result
 end
 
 (****************************************************************)
