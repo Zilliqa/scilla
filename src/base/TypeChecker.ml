@@ -181,9 +181,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let rl = TEnv.addTs cur_env new_tbinds in
     let rl' = TEnv.addVs cur_env new_vbinds in
     let%bind res = typer env in
-    (* Restore in FIFO order. *)
-    let () = TEnv.restore_all cur_env rl' in
-    let () = TEnv.restore_all cur_env rl in
+    let rl'' = TEnv.combine_restores ~older:rl ~newer:rl' in
+    let () = TEnv.apply_restore cur_env rl'' in
     pure res
 
   let rec type_expr (erep : UntypedSyntax.expr_annot) remaining_gas tenv =
@@ -1202,7 +1201,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                                    | LibVar (i, _, _) -> Some i
                                    | LibTyp _ -> None)))))
                   in
-                  let () = TEnv.restore_all tenv0 t_lib_restore in
+                  let () = TEnv.apply_restore tenv0 t_lib_restore in
                   pure
                     (lib_acc @ [ elib' ], emsgs_acc @ dep_emsgs, remaining_gas)
               | Error (TypeError, el, remaining_gas) ->

@@ -63,25 +63,28 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val mk : unit -> t
 
     (* Add to type environment *)
-    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore list
+    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore list
+    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep TUIdentifier.t -> restore list
+    val addV : t -> R.rep TUIdentifier.t -> restore
 
   (* Add many type variables to the environment. *)
-    val addVs : t -> R.rep TUIdentifier.t list -> restore list
+    val addVs : t -> R.rep TUIdentifier.t list -> restore
 
     (* Remove the latest binding for the argument. *)
-    val remT : t -> R.rep TUIdentifier.t -> restore list
+    val remT : t -> R.rep TUIdentifier.t -> restore
 
     (* Remove the latest bindings for the arguments. *)
-    val remTs : t -> R.rep TUIdentifier.t list -> restore list
+    val remTs : t -> R.rep TUIdentifier.t list -> restore
 
-    (* Restore the environment by applying the restore list. *)
-    val restore_all : t -> restore list -> unit
+    (* Restore the environment by applying the restore object. *)
+    val apply_restore : t -> restore -> unit
+
+    (* Combine a new list of restores with an older list. *)
+    val combine_restores : older:restore -> newer:restore -> restore
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> TUType.t -> (unit, scilla_error list) result
