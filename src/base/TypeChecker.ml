@@ -142,7 +142,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let plen = List.length arg_types in
           let alen = List.length ps in
           let%bind () =
-            fromR_TE @@ validate_param_length ~lc:(SR.get_loc (get_rep cn)) (get_id cn) plen alen
+            fromR_TE
+            @@ validate_param_length
+                 ~lc:(SR.get_loc (get_rep cn))
+                 (get_id cn) plen alen
           in
           let tps_pts = List.zip_exn arg_types ps in
           let%bind typed_ps, tps =
@@ -329,7 +332,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   (get_id cname) constr.arity alen)
                (SR.get_loc (get_rep cname)))
         else
-          let%bind ftyp = fromR_TE @@ elab_constr_type ~lc:(SR.get_loc (get_rep cname)) (get_id cname) ts in
+          let%bind ftyp =
+            fromR_TE
+            @@ elab_constr_type
+                 ~lc:(SR.get_loc (get_rep cname))
+                 (get_id cname) ts
+          in
           (* Now type-check as a function application *)
           let%bind typed_actuals, apptyp =
             app_type tenv ftyp actuals ~lc:(SR.get_loc (get_rep cname))
@@ -385,7 +393,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         (* Make it illegal to declare a new type variable inside the scope of another type variable with the same name *)
         if TEnv.existsV tenv id then
           fail
-            (mk_type_error1 (sprintf "Type variable %s is already in use\n" id) (ER.get_loc (get_rep tvar)))
+            (mk_type_error1
+               (sprintf "Type variable %s is already in use\n" id)
+               (ER.get_loc (get_rep tvar)))
         else
           let%bind ((_, (bt, _)) as typed_b) =
             with_extended_env tenv Fn.id [] [ tvar ] (type_expr body)
@@ -830,7 +840,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in
     let%bind new_stmts, _ =
-      with_extended_env env get_tenv_pure new_typings [] (type_stmts sts get_loc)
+      with_extended_env env get_tenv_pure new_typings []
+        (type_stmts sts get_loc)
     in
     pure @@ (new_p, new_stmts)
 

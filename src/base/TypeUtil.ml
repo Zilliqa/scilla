@@ -205,8 +205,7 @@ functor
           | RemV s -> Hashtbl.remove env.tvars s)
 
       (* Combine a new list of restores with an older list. *)
-      let combine_restores ~older ~newer =
-        newer @ older
+      let combine_restores ~older ~newer = newer @ older
 
       let tvars env =
         Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []
@@ -322,12 +321,13 @@ module TypeUtilities = struct
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
               not ([%equal: TUType.t] t1 t2)))
 
-  let assert_type_equiv ?(lc=dummy_loc) expected given =
+  let assert_type_equiv ?(lc = dummy_loc) expected given =
     if [%equal: TUType.t] expected given then pure ()
     else
       fail1
-      (sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ given)) lc
+        (sprintf "Type mismatch: %s expected, but %s provided."
+           (pp_typ expected) (pp_typ given))
+        lc
 
   let rec is_ground_type t =
     match t with
@@ -392,7 +392,8 @@ module TypeUtilities = struct
       pure TUType.event_typ
     else if List.Assoc.mem m exception_label ~equal:String.( = ) then
       pure TUType.exception_typ
-    else fail1 "Invalid message construct. Not any of send, event or exception." lc
+    else
+      fail1 "Invalid message construct. Not any of send, event or exception." lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =
@@ -416,7 +417,7 @@ module TypeUtilities = struct
      to a list of argument types.
      Returns the resul type of application or failure
   *)
-  let rec fun_type_applies ?(lc=dummy_loc) ft argtypes =
+  let rec fun_type_applies ?(lc = dummy_loc) ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
         let%bind () = assert_type_equiv argt a ~lc in
@@ -425,12 +426,13 @@ module TypeUtilities = struct
     | t, [] -> pure t
     | _ ->
         fail1
-        (sprintf
+          (sprintf
              "The type\n\
               %s\n\
               doesn't apply, as a function, to the arguments of types\n\
               %s."
-             (pp_typ ft) (pp_typ_list argtypes)) lc
+             (pp_typ ft) (pp_typ_list argtypes))
+          lc
 
   let proc_type_applies ~lc formals actuals =
     map2M formals actuals ~f:(assert_type_equiv ~lc) ~msg:(fun () ->
@@ -471,8 +473,9 @@ module TypeUtilities = struct
   let validate_param_length ~lc cn plen alen =
     if plen <> alen then
       fail1
-      (sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
-           alen) lc
+        (sprintf "Constructor %s expects %d type arguments, but got %d." cn plen
+           alen)
+        lc
     else pure ()
 
   (* Avoid variable clashes *)
@@ -515,7 +518,7 @@ module TypeUtilities = struct
         in
         pure ctyp
 
-  let extract_targs ?(lc=dummy_loc) cn (adt : Datatypes.adt) atyp =
+  let extract_targs ?(lc = dummy_loc) cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
         if String.(adt.tname = get_id name) then
@@ -525,13 +528,14 @@ module TypeUtilities = struct
           pure targs
         else
           fail1
-          (sprintf
+            (sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               adt.tname (get_id name)) (get_rep name)
+               adt.tname (get_id name))
+            (get_rep name)
     | _ -> fail1 (sprintf "Not an algebraic data type: %s" (pp_typ atyp)) lc
 
-  let constr_pattern_arg_types ?(lc=dummy_loc) atyp cn =
+  let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
     let%bind adt', _ = lookup_constructor cn in
     let taken = free_tvars atyp in
@@ -551,14 +555,15 @@ module TypeUtilities = struct
         | None -> pure ()
         | Some _ ->
             fail1
-            (sprintf "Not all types of the branches %s are equivalent."
-                 (pp_typ_list ts) ) lc)
+              (sprintf "Not all types of the branches %s are equivalent."
+                 (pp_typ_list ts))
+              lc )
 
   (****************************************************************)
   (*                     Typing literals                          *)
   (****************************************************************)
 
-  let literal_type ?(lc=dummy_loc) l =
+  let literal_type ?(lc = dummy_loc) l =
     let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ
@@ -583,7 +588,7 @@ module TypeUtilities = struct
     | TAbs _ -> fail0 @@ "Cannot type runtime type function."
 
   (* Verifies a literal to be wellformed and returns it's type. *)
-  let rec is_wellformed_lit ?(lc=dummy_loc) l =
+  let rec is_wellformed_lit ?(lc = dummy_loc) l =
     let open TULiteral in
     match l with
     | IntLit (Int32L _) -> pure int32_typ

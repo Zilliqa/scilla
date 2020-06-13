@@ -209,7 +209,10 @@ module TypeUtilities : sig
 
   (*  Get elaborated type for a constructor and list of type arguments *)
   val elab_constr_type :
-    lc:ErrorUtils.loc -> string -> TUType.t list -> (TUType.t, scilla_error list) result
+    lc:ErrorUtils.loc ->
+    string ->
+    TUType.t list ->
+    (TUType.t, scilla_error list) result
 
   (* For a given instantiated ADT and a construtor name, get type *
      assignments. This is the main working horse of type-checking
@@ -221,7 +224,11 @@ module TypeUtilities : sig
     (TUType.t list, scilla_error list) result
 
   val validate_param_length :
-    lc:ErrorUtils.loc -> string -> int -> int -> (unit, scilla_error list) result
+    lc:ErrorUtils.loc ->
+    string ->
+    int ->
+    int ->
+    (unit, scilla_error list) result
 
   val assert_all_same_type :
     lc:ErrorUtils.loc -> TUType.t list -> (unit, scilla_error list) result
