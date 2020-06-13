@@ -71,25 +71,28 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val mk : unit -> t
 
     (* Add to type environment *)
-    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore list
+    val addT : t -> R.rep TUIdentifier.t -> TUType.t -> restore
 
     (* Add to many type bindings *)
-    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore list
+    val addTs : t -> (R.rep TUIdentifier.t * TUType.t) list -> restore
 
     (* Add type variable to the environment *)
-    val addV : t -> R.rep TUIdentifier.t -> restore list
+    val addV : t -> R.rep TUIdentifier.t -> restore
 
     (* Add many type variables to the environment. *)
-    val addVs : t -> R.rep TIdentifier.t list -> restore list
+    val addVs : t -> R.rep TIdentifier.t list -> restore
 
     (* Remove the latest binding for the argument. *)
-    val remT : t -> R.rep TIdentifier.t -> restore list
+    val remT : t -> R.rep TIdentifier.t -> restore
 
     (* Remove the latest bindings for the arguments. *)
-    val remTs : t -> R.rep TUIdentifier.t list -> restore list
+    val remTs : t -> R.rep TUIdentifier.t list -> restore
 
-    (* Restore the environment by applying the restore list. *)
-    val restore_all : t -> restore list -> unit
+    (* Restore the environment by applying the restore object. *)
+    val apply_restore : t -> restore -> unit
+
+    (* Combine a new list of restores with an older list. *)
+    val combine_restores : older:restore -> newer:restore -> restore
 
     (* Check type for well-formedness in the type environment *)
     val is_wf_type : t -> TUType.t -> (unit, scilla_error list) result
@@ -152,7 +155,7 @@ functor
         tvars : (string, R.rep) Hashtbl.t;
       }
 
-      type restore =
+      type restore_op =
         (* This relies on Caml.Hashtbl allowing adding
          * bindings on top of existing ones and removing them
          * to restore the older binding. Restoring working in
@@ -161,6 +164,8 @@ functor
         | RemT of string
         (* | AddV of string * R.rep *)
         | RemV of string
+
+      type restore = restore_op list
 
       let addT env id tp =
         let _ =
@@ -192,12 +197,16 @@ functor
         List.fold_left ~init:[] ~f:(fun rl k -> remT env k @ rl) ks
 
       (* Restore env based on the provided restore list. *)
-      let restore_all env rl =
+      let apply_restore env rl =
         List.iter rl ~f:(function
           | AddT (s, rr) -> Hashtbl.add env.tenv s rr
           | RemT s -> Hashtbl.remove env.tenv s
           (* | AddV (s, r) -> Hashtbl.add env.tvars s r *)
           | RemV s -> Hashtbl.remove env.tvars s)
+
+      (* Combine a new list of restores with an older list. *)
+      let combine_restores ~older ~newer =
+        newer @ older
 
       let tvars env =
         Hashtbl.fold (fun key data z -> (key, data) :: z) env.tvars []

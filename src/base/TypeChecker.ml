@@ -252,9 +252,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let rl = TEnv.addTs cur_env new_tbinds in
     let rl' = TEnv.addVs cur_env new_vbinds in
     let%bind res = typer env in
-    (* Restore in FIFO order. *)
-    let () = TEnv.restore_all cur_env rl' in
-    let () = TEnv.restore_all cur_env rl in
+    let rl'' = TEnv.combine_restores ~older:rl ~newer:rl' in
+    let () = TEnv.apply_restore cur_env rl'' in
     pure res
 
   let rec type_expr (erep : UntypedSyntax.expr_annot) tenv =
@@ -1012,29 +1011,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            remaining_gas ) (* Else report all errors together. *)
     else Error ((TypeError, errs), remaining_gas)
 
-  (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-     (* type library, handling cache as necessary. *)
-     let type_library_cache (tenv : TEnv.t) (elib : UntypedSyntax.library)  =
-       (* We are caching TypeEnv = MakeTEnv(PlainTypes)(ER) *)
-       let module STC = TypeCache.StdlibTypeCacher(MakeTEnv)(PlainTypes) (STR) (ER) in
-       let open STC in
-       (* Check if we have the type info in cache. *)
-       match get_lib_tenv_cache tenv elib with
-       | Some tenv' ->
-           (* Use cached entries. *)
-       pure (tenv', "")
-       | None ->
-           (* Couldn't find in cache. Actually type the library. *)
-           let res = type_library tenv elib in
-           (match res with
-       | Error (msg, es) -> Ok((tenv, msg), es)
-       | Ok ((_, tenv'), es) as lib_res ->
-                (* Since we don't have this in cache, cache it now. *)
-                cache_lib_tenv tenv' elib;
-           Ok((lib_res, ""), es)
-           )
-  *)
-
   (* Type a list of libtrees, with tenv0 as the base environment, updating
    * it in-place, to include entries in elibs (but not their deps). *)
   let type_libraries elibs tenv0 remaining_gas =
@@ -1082,8 +1058,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         (* Do the actual typing. *)
         foldM libl ~init:([], err_dups, remaining_gas)
           ~f:(fun (lib_acc, emsgs_acc, remaining_gas) elib ->
-            (* TODO, issue #179: Re-introduce this when library cache can store typed ASTs
-               let%bind (tenv', emsg) = type_library_cache tenv_acc elib in *)
             let%bind dep_libs, dep_emsgs, remaining_gas =
               recurser elib.deps remaining_gas
             in
@@ -1111,7 +1085,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                                    | LibVar (i, _, _) -> Some i
                                    | LibTyp _ -> None)))))
                   in
-                  let () = TEnv.restore_all tenv0 t_lib_restore in
+                  let () = TEnv.apply_restore tenv0 t_lib_restore in
                   pure
                     (lib_acc @ [ elib' ], emsgs_acc @ dep_emsgs, remaining_gas)
               | Error ((TypeError, el), remaining_gas) ->
