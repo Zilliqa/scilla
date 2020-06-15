@@ -28,11 +28,11 @@ open Literal
 module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   (* Module files, expression file and type files use LocalLiteral, because
      name qualifiers are locally defined namespaces. *)
-  module ModuleSyntax = ParserSyntax (Literal)
-  module Parser = ScillaParser.Make (ModuleSyntax)
-  module Lexer = ScillaLexer.MkLexer (ModuleSyntax)
+  module FESyntax = ParserSyntax (Literal)
+  module Parser = ScillaParser.Make (FESyntax)
+  module Lexer = ScillaLexer.MkLexer (FESyntax)
   module MInter = Parser.MenhirInterpreter
-  module FEPType = ModuleSyntax.SType
+  module FEPType = FESyntax.SType
 
   (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
   let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
