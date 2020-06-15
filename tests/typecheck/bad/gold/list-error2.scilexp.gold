@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `l4`:\nConstructor Cons expects 1 type arguments, but got 2.",
+        "Constructor Cons expects 1 type arguments, but got 2.",
       "start_location": {
         "file": "typecheck/bad/list-error2.scilexp",
         "line": 20,

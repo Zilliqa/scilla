@@ -72,7 +72,7 @@ struct
               ~f:(fun (fname, pl) ->
                 let%bind t =
                   match pl with
-                  | MLit l -> literal_type l
+                  | MLit l -> literal_type l ~lc:bloc
                   | MVar v ->
                       let t' = ER.get_type (get_rep v) in
                       pure t'.tp

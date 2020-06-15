@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in built-in application of `isqrt`:\nType error: cannot apply \"isqrt\" built-in to argument(s) of type(s) [Int32].",
+        "Type error: cannot apply \"isqrt\" built-in to argument(s) of type(s) [Int32].",
       "start_location": {
         "file": "typecheck/bad/builtin-isqrt-int32.scilexp",
         "line": 2,
