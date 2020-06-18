@@ -217,7 +217,7 @@ struct
   let cf_init_tag_contract contract token_fields =
     let { cname; cparams; cconstraint; cfields; ccomps } = contract in
     let token_fields_contains x =
-      List.mem token_fields (CFIdentifier.get_id x) ~equal:[%equal : CFName.t]
+      List.mem token_fields (CFIdentifier.as_string x) ~equal:String.(=)
     in
     {
       CFSyntax.cname;
