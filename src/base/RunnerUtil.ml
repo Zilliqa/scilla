@@ -25,20 +25,22 @@ open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
 open Literal
+open Disambiguate
 
 (* Parser for contracts and libraries *)
-module RUModuleFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
-module RUModuleParser = RUModuleFEParser.Parser
-module RUModuleSyntax = RUModuleFEParser.FESyntax
-module RUModuleType = RUModuleSyntax.SType
-module RUModuleIdentifier = RUModuleSyntax.SIdentifier
-module RUModuleName = RUModuleIdentifier.Name
+module RULocalFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+module RULocalParser = RULocalFEParser.Parser
+module RULocalSyntax = RULocalFEParser.FESyntax
+module RULocalType = RULocalSyntax.SType
+module RULocalIdentifier = RULocalSyntax.SIdentifier
+module RULocalName = RULocalIdentifier.Name
 
 (* Parser for jsons *)
-module RUJSONFEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
-module RUJSONParser = RUJSONFEParser.Parser
-module RUJSONSyntax = RUJSONFEParser.FESyntax
-module RUJSONIdentifier = RUJSONSyntax.SIdentifier
+module RUGlobalFEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
+module RUGlobalParser = RUGlobalFEParser.Parser
+module RUGlobalSyntax = RUGlobalFEParser.FESyntax
+module RUGlobalIdentifier = RUGlobalSyntax.SIdentifier
+module RUGlobalName = RUGlobalIdentifier.Name
 
 let get_init_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
@@ -73,7 +75,7 @@ let import_lib name sloc =
         let initf = d ^/ name ^. "json" in
         (libf, get_init_extlibs initf)
   in
-  match RUModuleFEParser.parse_file RUModuleParser.Incremental.lmodule fname with
+  match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
   | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
@@ -82,11 +84,13 @@ let import_lib name sloc =
 (* An auxiliary data structure that is homomorphic to libtree, but for namespaces.
    Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
    to the type itself because we want to eliminate the idea of namespaces right here. *)
+(*
 type 'a nspace_tree = {
-  nspace : 'a RUModuleIdentifier.t option;
+  nspace : 'a RULocalIdentifier.t option;
   dep_ns : 'a nspace_tree list;
 }
-
+*)
+      (*
 (* light-weight namespaces. prefix all entries in lib with their namespace. *)
 let eliminate_namespaces lib_tree ns_tree =
   (* Prefix definitions in lib with namespace (and rewrite their uses).
@@ -98,7 +102,7 @@ let eliminate_namespaces lib_tree ns_tree =
         ~f:(fun (accentries, accenv, accnames) entry ->
             (* check if id is in env and prefix it with a namespace. *)
             let check_and_prefix_id env id =
-              match List.Assoc.find env (get_id id) ~equal:[%equal : RUModuleName.t] with
+              match List.Assoc.find env (get_id id) ~equal:[%equal : RULocalName.t] with
               | Some ns when not @@ String.is_empty ns ->
                   let nname = ns ^ "." ^ get_id id in
                   plog
@@ -268,6 +272,7 @@ let eliminate_namespaces lib_tree ns_tree =
   List.map2_exn lib_tree ns_tree ~f:(fun ltnode nsnode ->
       fst @@ rename_in_libtree ltnode nsnode "")
 
+(*
 (* Import all libraries in "names" (and their dependences). *)
 let import_libs names init_file =
   (* CONTINUE HERE: 
@@ -281,7 +286,7 @@ let import_libs names init_file =
     let mapped_names =
       (* Map (name, namespace) to (address, name, namespace) *)
       List.map names ~f:(fun (n, namespace) ->
-          match List.Assoc.find name_map n ~equal:String.( = ) with
+          match List.Assoc.find names n ~equal:String.( = ) with
           | Some n' ->
               (* Use a known source location for the mapped id. *)
               (mk_id n' (get_rep n), n, namespace)
@@ -315,6 +320,75 @@ let import_libs names init_file =
   in
   let ltree, nstree = importer names name_map [] in
   eliminate_namespaces ltree nstree (* TODO: This should no longer be here, since the disambiguator takes care of it *)
+*)
+*)
+
+let import_libs (names_and_namespaces : loc RULocalIdentifier.t * loc RULocalIdentifier.t option list) init_file =
+  let rec importer names_and_namespaces names_and_addresses stack =
+    (* names : mapping from library name to namespace name
+       name_map : assoc dictionary mapping library names to addresses
+       stack : Stack of imported library names - for circularity detection. *)
+(*    let mapped_names =
+      (* Map (name, namespace) to (address, name, namespace) *)
+      List.map names_and_namespaces ~f:(fun (n, namespace) ->
+          match List.Assoc.find names n ~equal:String.( = ) with
+          | Some n' ->
+              (* Use a known source location for the mapped id. *)
+              (mk_id n' (get_rep n), n, namespace)
+          | None -> (n, n, namespace))
+      in*)
+    let imported_libs_rev =
+      List.fold_left names_and_namespaces ~init:[]
+        ~f:(fun libacc_rev (libname, ns_opt) ->
+            let open RULocalIdentifier in
+            if List.mem stack (get_id libname) ~equal:[%equal : RULocalName.t] then
+              let errmsg =
+                if Option.is_none ns_opt then
+                  sprintf "Cyclic dependence found when importing %s." (as_error_string libname)
+                else
+                  sprintf "Cyclic dependence found when importing %s (mapped to %s)."
+                    (as_error_string libname) (Option.value_map ~default:"" ~f:as_error_string ns_opt)
+              in fatal_error @@ mk_error1 errmsg (get_rep libname)
+            else 
+              let ilib, ilib_import_map = import_lib (as_string libname) (get_rep libname) in
+              let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
+              (* Transform local names to global names *)
+              let dis_lib = disambiguate_lmodule ilib import_ilibs in
+              let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
+              libnode :: libacc_rev)
+    in
+    List.rev imported_libs_rev
+  in
+(*
+    
+    List.fold_left
+      ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
+          if List.mem stack (get_id name) ~equal:String.( = ) then
+            let errmsg =
+              if RUIdentifier.equal mapped_name name then
+                sprintf "Cyclic dependence found when importing %s." (get_id name)
+              else
+                sprintf
+                  "Cyclic dependence found when importing %s (mapped to %s)."
+                  (get_id mapped_name) (get_id name)
+            in
+            fatal_error @@ mk_error1 errmsg (get_rep name)
+          else
+            let ilib, ilib_import_map = import_lib name in
+            (* TODO: Disambiguation call needs to happen here *)
+            let ilibs', nst =
+              importer ilib.elibs ilib_import_map (get_id name :: stack)
+            in
+            let nsnode = { nspace = namespace; dep_ns = nst } in
+            let libnode = { libn = ilib.libs; deps = ilibs' } in
+            (libacc @ [ libnode ], nacc @ [ nsnode ]))
+      ~init:([], []) mapped_names
+  in
+*)
+  let names_and_addresses =
+    match init_file with Some f -> get_init_extlibs f | None -> []
+  in
+  importer names_and_namespaces names_and_addresses []
 
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
@@ -325,6 +399,7 @@ let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
             this script.\n" ^ "Example:\n" ^ exe_name
          ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
+(*
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
   (* Get list of scilla libraries in dir *)
@@ -339,14 +414,15 @@ let import_all_libs ldirs =
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
             let lib_name = chop_extension (basename file) in
-            let lib_name_as_local_name = RUModuleName.parse_simple_name lib_name in
-            Some (RUModuleIdentifier.mk_loc_id lib_name_as_local_name, None (* no import-as *))
+            let lib_name_as_local_name = RULocalName.parse_simple_name lib_name in
+            Some (RULocalIdentifier.mk_loc_id lib_name_as_local_name, None (* no import-as *))
           else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
   let names = List.concat_map ldirs ~f:get_lib_list in
   import_libs names None
-
+*)
+    
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;
