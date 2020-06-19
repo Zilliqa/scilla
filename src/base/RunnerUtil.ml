@@ -83,8 +83,8 @@ let import_lib name sloc =
       plog (sprintf "Successfully imported external library %s\n" name);
       (lmod, initf)
 
-let import_libs names_and_namespaces init_file =
-  let rec importer names_and_namespaces names_and_addresses stack =
+let import_libs names_and_namespaces init_address_map =
+  let rec importer names_and_namespaces address_map stack =
     let imported_libs_rev =
       List.fold_left names_and_namespaces ~init:[]
         ~f:(fun libacc_rev (libname, ns_opt) ->
@@ -101,7 +101,7 @@ let import_libs names_and_namespaces init_file =
               let ilib, ilib_import_map = import_lib (as_string libname) (get_rep libname) in
               let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
               (* Transform local names to global names *)
-              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs with
+              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map with
               | Error s -> fatal_error (s @ (mk_error1 "Failed to disambiguate.\n") (get_rep libname))
               | Ok dis_lib -> 
                   let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
@@ -109,10 +109,7 @@ let import_libs names_and_namespaces init_file =
     in
     List.rev imported_libs_rev
   in
-  let names_and_addresses =
-    match init_file with Some f -> get_init_extlibs f | None -> []
-  in
-  importer names_and_namespaces names_and_addresses []
+  importer names_and_namespaces init_address_map []
 
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error

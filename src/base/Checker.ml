@@ -67,13 +67,24 @@ let check_parsing ctr syn =
   cmod
 
 (* Change local names to global names *)
-let disambiguate_lmod lmod elibs =
+let disambiguate_lmod lmod elibs names_and_addresses =
   let open Dis in
-  let res = disambiguate_lmodule lmod elibs in
+  let res = disambiguate_lmodule lmod elibs names_and_addresses in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Disambiguation]:\n lmodule [%s] is successfully checked.\n"
-      (PreDisIdentifier.as_error_string lmod.libs.lname)
+      (PreDisIdentifier.as_error_string lmod.libs.lname);
+  res
+
+(* Change local names to global names *)
+let disambiguate_cmod cmod elibs names_and_addresses =
+  let open Dis in
+  let res = disambiguate_cmodule cmod elibs names_and_addresses in
+  if Result.is_ok res then
+    plog
+    @@ sprintf "\n[Disambiguation]:\n cmodule [%s] is successfully checked.\n"
+      (PreDisIdentifier.as_error_string cmod.contr.cname);
+  res
 
 (* Check restrictions on inductive datatypes, and on associated recursion principles *)
 let check_recursion cmod elibs =
@@ -224,9 +235,10 @@ let check_lmodule cli =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
-    let elibs = import_libs lmod.elibs cli.init_file in
+    let init_address_map = Option.value_map cli.init_file ~f:get_init_extlibs ~default:[] in
+    let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
-      wrap_error_with_gas initial_gas @@ Dis.disambiguate_lmodule lmod elibs in
+      wrap_error_with_gas initial_gas @@ disambiguate_lmod lmod elibs init_address_map in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion_lmod dis_lmod elibs
     in
@@ -271,9 +283,10 @@ let check_cmodule cli =
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
-    let elibs = import_libs cmod.elibs cli.init_file in
+    let init_address_map = Option.value_map cli.init_file ~f:get_init_extlibs ~default:[] in
+    let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
-      wrap_error_with_gas initial_gas @@ Dis.disambiguate_cmodule cmod elibs in
+      wrap_error_with_gas initial_gas @@ disambiguate_cmod cmod elibs init_address_map in
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
     in

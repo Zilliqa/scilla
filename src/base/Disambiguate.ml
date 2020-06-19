@@ -60,7 +60,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     simp_ctr_dict : str_str_dict;
   }
 
-  let add_key_and_lib_filename_to_dict dict key value =
+  let add_key_and_lib_address_to_dict dict key value =
     List.Assoc.add dict ~equal:String.( = ) key value
   
   let remove_local_id_from_dict dict var =
@@ -559,7 +559,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string tname) msg in
           pure @@
-          add_key_and_lib_filename_to_dict dicts.simp_typ_dict (as_string tname) filename
+          add_key_and_lib_address_to_dict dicts.simp_typ_dict (as_string tname) filename
         in
         let%bind res_ctr_dict =
           let mk_msg cname =
@@ -571,7 +571,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               let msg = mk_msg ctr_name in
               let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string ctr_name) msg in
               pure @@
-              add_key_and_lib_filename_to_dict dicts.simp_ctr_dict (as_string ctr_name) filename)
+              add_key_and_lib_address_to_dict dicts.simp_ctr_dict (as_string ctr_name) filename)
         in
         let res_dicts =
           {
@@ -670,7 +670,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                  Disambiguate modules                      *)
   (**************************************************************)
 
-  let build_import_dicts imports extlibs =
+  let build_import_dicts imports extlibs init_map =
     let find_lib libname (extlibs : PostDisSyntax.libtree list) =
       let lib_name_str = as_string libname in
       match
@@ -682,9 +682,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | Some extlib -> pure extlib.libn
     in
     (* Find the address of an external library *)
-    let find_lib_filename (lib : PostDisSyntax.library) =
-      (* Find file name = address of external library *)
-      strip_filename_extension (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname
+    let find_lib_address (lib : PostDisSyntax.library) =
+      (* Use the address specified in init_map, if it exists. 
+         If it does not, use the filename containing the library name identifier. *)
+      List.Assoc.find init_map (PostDisIdentifier.as_string lib.lname) ~equal:String.(=)
+      |> Option.value ~default:(strip_filename_extension (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname)
     in
     (* Build dictionaries *)
     foldM imports ~init:([], [], [], [])
@@ -695,7 +697,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               (libname, ns_opt)
               ->
         let%bind lib = find_lib libname extlibs in
-        let lib_filename = find_lib_filename lib in
+        let lib_address = find_lib_address lib in
         match ns_opt with
         | Some ns ->
             (* Namespace defined - only add to namespace dictionary *)
@@ -705,7 +707,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             let%bind () = check_duplicate_dict_entry ns_dict_acc (as_string ns) msg in
             let ns_dict =
-              add_key_and_lib_filename_to_dict ns_dict_acc (as_string ns) lib_filename
+              add_key_and_lib_address_to_dict ns_dict_acc (as_string ns) lib_address
             in
             pure
               (ns_dict, simp_var_dict_acc, simp_typ_dict_acc, simp_ctr_dict_acc)
@@ -734,10 +736,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                       let%bind () =
                         check_duplicate_dict_entry simp_var_dict_acc (as_string x) msg
                       in
-                      (* Add x -> lib_filename to var dictionary *)
+                      (* Add x -> lib_address to var dictionary *)
                       let simp_var_dict =
-                        add_key_and_lib_filename_to_dict simp_var_dict_acc'
-                          (as_string x) lib_filename
+                        add_key_and_lib_address_to_dict simp_var_dict_acc'
+                          (as_string x) lib_address
                       in
                       pure
                         (simp_var_dict, simp_typ_dict_acc', simp_ctr_dict_acc')
@@ -751,10 +753,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                       let%bind () =
                         check_duplicate_dict_entry simp_typ_dict_acc' (as_string tname) msg
                       in
-                      (* Add tname -> lib_filename to type dictionary *)
+                      (* Add tname -> lib_address to type dictionary *)
                       let simp_typ_dict =
-                        add_key_and_lib_filename_to_dict simp_typ_dict_acc'
-                          (as_string tname) lib_filename
+                        add_key_and_lib_address_to_dict simp_typ_dict_acc'
+                          (as_string tname) lib_address
                       in
                       (* Deal with constructors *)
                       let%bind simp_ctr_dict =
@@ -770,10 +772,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                               check_duplicate_dict_entry dict_acc (as_string ctr_def.cname)
                                 msg
                             in
-                            (* Add ctr_def.cname -> lib_filename to ctr dictionary *)
+                            (* Add ctr_def.cname -> lib_address to ctr dictionary *)
                             let simp_ctr_dict =
-                              add_key_and_lib_filename_to_dict dict_acc
-                                (as_string ctr_def.cname) lib_filename
+                              add_key_and_lib_address_to_dict dict_acc
+                                (as_string ctr_def.cname) lib_address
                             in
                             pure simp_ctr_dict)
                       in
@@ -783,7 +785,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             (* All library definiens added *)
             pure (ns_dict_acc, simp_var_dict, simp_typ_dict, simp_ctr_dict))
 
-  let disambiguate_cmodule cmod (extlibs : PostDisSyntax.libtree list) =
+  let disambiguate_cmodule cmod (extlibs : PostDisSyntax.libtree list) init_map =
     let { smver; libs; elibs; contr } = cmod in
     let%bind dis_elibs =
       mapM elibs ~f:(fun (lib, ns) ->
@@ -798,7 +800,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
        If such a name clash exists, then the recursion checker will catch them
        when checking the offending library. *)
     let%bind ns_dict, imp_simp_var_dict, imp_simp_typ_dict, imp_simp_ctr_dict =
-      build_import_dicts elibs extlibs
+      build_import_dicts elibs extlibs init_map
     in
     let imp_dicts =
       {
@@ -847,7 +849,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
          PostDisSyntax.contr = dis_contr;
        }
 
-  let disambiguate_lmodule lmod (extlibs : PostDisSyntax.libtree list) =
+  let disambiguate_lmodule lmod (extlibs : PostDisSyntax.libtree list) init_map =
     let { smver; libs; elibs } = lmod in
     let%bind dis_elibs =
       mapM elibs ~f:(fun (lib, ns) ->
@@ -862,7 +864,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
        If such a name clash exists, then the recursion checker will catch them
        when checking the offending library. *)
     let%bind ns_dict, imp_simp_var_dict, imp_simp_typ_dict, imp_simp_ctr_dict =
-      build_import_dicts elibs extlibs
+      build_import_dicts elibs extlibs init_map
     in
     let imp_dicts =
       {
