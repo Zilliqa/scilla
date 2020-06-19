@@ -286,11 +286,10 @@ module ContractState = struct
     let json = state_to_json states in
     if pp then pretty_to_string json else to_string json
 
-  (* Given an init.json, return extlib fields *)
-  let get_init_extlibs filename =
-    let allf = get_json_data filename in
+  (* Given the json data from an init file, return extlib fields *)
+  let get_init_extlibs init_data =
     let extlibs =
-      List.filter allf ~f:(fun (name, _) ->
+      List.filter init_data ~f:(fun (name, _) ->
           String.(name = JSONName.as_string ContractUtil.extlibs_label))
     in
     match extlibs with
@@ -301,7 +300,7 @@ module ContractState = struct
             raise
               (mk_invalid_json
                  ( "Invalid " ^ JSONName.as_error_string ContractUtil.extlibs_label
-                   ^ " entry in init json" ^ filename ))
+                   ^ " entry in init json"))
         | Ok lit' ->
             (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
             List.map lit' ~f:(fun sp ->
@@ -317,13 +316,34 @@ module ContractState = struct
                     raise
                       (mk_invalid_json
                          ( "Invalid " ^ JSONName.as_error_string ContractUtil.extlibs_label
-                           ^ " entry in init json" ^ filename ))) )
+                           ^ " entry in init json"))) )
     | _ ->
         raise
           (mk_invalid_json
              ( "Multiple " ^ JSONName.as_error_string ContractUtil.extlibs_label
-               ^ " entries in init json " ^ filename ))
+               ^ " entries in init json"))
 
+  (* Accessor for _this_address and _extlibs entries in init.json. 
+     Combined into one function to avoid reading init.json from disk multiple times. *)
+  let get_init_this_address_and_extlibs filename =
+    let init_data = get_json_data filename in
+    let extlibs = get_init_extlibs init_data in
+    let this_address =
+      match List.filter init_data ~f:(fun (name, _) ->
+          String.(name = JSONName.as_string ContractUtil.this_address_label)) with
+      | [ ( _, adr) ] -> adr
+      | [] -> raise (mk_invalid_json
+                       ( "No " ^ JSONName.as_string ContractUtil.this_address_label
+                         ^ " specified in init json"))
+      | _ -> raise (mk_invalid_json
+                       ( "Multiple " ^ JSONName.as_string ContractUtil.this_address_label
+                         ^ " entries specified in init json")) in
+    match get_address_literal this_address with
+    | Some adr -> (adr, extlibs)
+    | None -> raise (mk_invalid_json
+                       ( "Illegal type for field " ^ JSONName.as_string ContractUtil.this_address_label
+                         ^ " specified in init json"))
+  
   (* Convert a single JSON serialized literal back to its Scilla value. *)
   let jstring_to_literal jstring tp =
     let thunk () = Yojson.Basic.from_string jstring in
