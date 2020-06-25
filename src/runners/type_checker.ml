@@ -53,7 +53,7 @@ let check_parsing filename =
       pure e
 
 (* Type check the expression with external libraries *)
-let check_typing e elibs gas =
+let check_typing e elibs gas_limit =
   let open TC in
   let open TC.TypeEnv in
   let rec_lib =
@@ -63,15 +63,21 @@ let check_typing e elibs gas =
     }
   in
   let tenv0 = TEnv.mk () in
-  let%bind _typed_rec_libs, remaining_gas = type_library tenv0 rec_lib gas in
+  let%bind typed_rlibs, remaining_gas = type_library tenv0 rec_lib gas_limit in
   (* Step 1: Type check external libraries *)
-  let%bind _, remaining_gas = type_libraries elibs tenv0 remaining_gas in
-  let%bind typed_e, remaining_gas =
+  let%bind typed_elibs, remaining_gas =
+    type_libraries elibs tenv0 remaining_gas
+  in
+  let%bind typed_expr, remaining_gas =
     type_expr e tenv0 init_gas_kont remaining_gas
   in
-  pure @@ (typed_e, remaining_gas)
+  pure ((typed_rlibs, typed_elibs, typed_expr), remaining_gas)
 
-let check_patterns e = PM_Checker.pm_check_expr e
+let check_patterns rlibs elibs e =
+  let%bind pm_checked_rlibs = PM_Checker.pm_check_library rlibs in
+  let%bind pm_checked_elibs = mapM elibs ~f:PM_Checker.pm_check_libtree in
+  let%bind pm_checked_e = PM_Checker.pm_check_expr e in
+  pure (pm_checked_rlibs, pm_checked_elibs, pm_checked_e)
 
 let analyze_gas e = GUA_Checker.gua_expr_wrapper e
 
@@ -93,8 +99,10 @@ let run () =
       (* Import all libs. *)
       let std_lib = import_all_libs lib_dirs in
       match check_typing e std_lib gas_limit with
-      | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
-          match check_patterns typed_erep with
+      | Ok
+          ( (typed_rlibs, typed_elibs, ((_, (e_typ, _)) as typed_erep)),
+            _remaining_gas ) -> (
+          match check_patterns typed_rlibs typed_elibs typed_erep with
           | Ok _ -> (
               let tj =
                 [ ("type", `String (FrontEndParser.FEPType.pp_typ e_typ.tp)) ]
