@@ -25,7 +25,7 @@ open Literal
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 7, 0)
+let scilla_version = (0, 8, 0)
 
 let address_length = 20
 
