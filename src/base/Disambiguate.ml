@@ -73,6 +73,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
 
   let strip_filename_extension = Filename.chop_extension
   
+  let get_unqualified_name = function
+    | GlobalName.SimpleGlobal n, _
+    | GlobalName.QualifiedGlobal (_, n), _ -> n
+
   (**************************************************************)
   (*                   Disambiguate names                       *)
   (**************************************************************)
@@ -83,10 +87,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | SimpleLocal n -> (
         match List.Assoc.find simpname_dict n ~equal:String.( = ) with
         | Some adr ->
-            (* Imported simple name *)
+            (* Library definition (locally defined or imported) of simple name *)
             pure (GlobalName.QualifiedGlobal (adr, n), n)
         | None ->
-            (* Locally defined or builtin name *)
+            (* Predefined name or local variable defined in impure code *)
             pure (GlobalName.SimpleGlobal n, n) )
     | QualifiedLocal (ns, n) -> (
         match List.Assoc.find ns_dict ns ~equal:String.( = ) with
@@ -94,14 +98,23 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         | None ->
             fail0 @@ sprintf "Name qualifier %s is not a legal namespace" ns )
 
-  let local_id_as_global_name ?(this_address = None) id =
+  let name_def_as_qualified_global this_address id =
     let open LocalName in
     let%bind dis_name =
-      match get_id id, this_address with
-      | SimpleLocal n, None -> pure (GlobalName.SimpleGlobal n, n)
-      | SimpleLocal n, Some adr -> pure (GlobalName.QualifiedGlobal (adr, n), n)
-      | QualifiedLocal (ns, n), _ ->
-          fail0 @@ sprintf "Illegal variable name: %s.%s" ns n
+      match get_id id with
+      | SimpleLocal n -> pure (GlobalName.QualifiedGlobal (this_address, n), n)
+      | QualifiedLocal _ ->
+          fail0 @@ sprintf "Illegal variable, type or constructor name %s" (as_error_string (get_id id))
+    in
+    pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
+  
+  let name_def_as_simple_global id =
+    let open LocalName in
+    let%bind dis_name =
+      match get_id id with
+      | SimpleLocal n -> pure (GlobalName.SimpleGlobal n, n)
+      | QualifiedLocal (ns, n) ->
+          fail0 @@ sprintf "Illegal variable name: %s" (as_error_string (get_id id))
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
 
@@ -164,7 +177,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | ByStr w ->
           let as_hex = Bystr.hex_encoding w in
           pure @@ ResLit.ByStr (ResLit.Bystr.parse_hex as_hex)
-      (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | ADTValue (s, ts, ls) ->
           let%bind dis_s =
             disambiguate_name dicts.ns_dict dicts.simp_ctr_dict s
@@ -175,6 +187,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           let%bind dis_ls = mapM ls ~f:recurser in
           pure @@ PostDisSyntax.SLiteral.ADTValue (dis_s, dis_ts, dis_ls)
+      (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | Msg msg_entries ->
           let%bind res_msg_entries =
             foldrM msg_entries ~init:[] ~f:(fun acc (label, l) ->
@@ -221,8 +234,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       match p with
       | Wildcard -> pure (PostDisSyntax.Wildcard, [])
       | Binder x ->
-          let%bind dis_x = local_id_as_global_name x in
-          (* x is in scope as a local in rhs, so remove from var dictionary *)
+          let%bind dis_x = name_def_as_simple_global x in
           pure (PostDisSyntax.Binder dis_x, [ x ])
       | Constructor (ctr, ps) ->
           let%bind dis_ctr =
@@ -256,7 +268,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_id = disambiguate_identifier_helper simp_var_dict id in
             pure @@ PostDisSyntax.Var dis_id
         | Let (id, t, lhs, rhs) ->
-            let%bind dis_id = local_id_as_global_name id in
+            let%bind dis_id = name_def_as_simple_global id in
             let%bind dis_t = option_mapM t ~f:disambiguate_type_helper in
             let%bind dis_lhs = recurser simp_var_dict lhs in
             (* id is in scope as a local in rhs, so remove from var dictionary *)
@@ -283,7 +295,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ PostDisSyntax.Message dis_mentries
         | Fun (id, t, body) ->
-            let%bind dis_id = local_id_as_global_name id in
+            let%bind dis_id = name_def_as_simple_global id in
             let%bind dis_t = disambiguate_type_helper t in
             (* id is in scope as a local in body, so remove from var dictionary *)
             let body_simp_var_dict =
@@ -329,7 +341,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ PostDisSyntax.Builtin (b, dis_args)
         | TFun (tvar, body) ->
-            let%bind dis_tvar = local_id_as_global_name tvar in
+            let%bind dis_tvar = name_def_as_simple_global tvar in
             (* tvar is in scope as a type, but won't affect disambiguation,
                so don't worry about removing it from the environment *)
             let%bind dis_body = recurser simp_var_dict body in
@@ -339,7 +351,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_targs = mapM targs ~f:disambiguate_type_helper in
             pure @@ PostDisSyntax.TApp (dis_f, dis_targs)
         | Fixpoint (f, t, body) ->
-            let%bind dis_f = local_id_as_global_name f in
+            let%bind dis_f = name_def_as_simple_global f in
             let%bind dis_t = disambiguate_type_helper t in
             (* f is in scope as a local in body, so remove from var dictionary *)
             let body_simp_var_dict =
@@ -365,22 +377,23 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       let%bind dis_s, new_simp_var_dict =
         match s with
         | Load (x, f) ->
-            let%bind dis_x = local_id_as_global_name x in
+            let%bind dis_x = name_def_as_simple_global x in
             (* f must be a locally defined field *)
-            let%bind dis_f = local_id_as_global_name f in
+            let%bind dis_f = name_def_as_simple_global f in
             (* x is now in scope as a local, so remove from var dictionary *)
             let new_simp_var_dict =
               remove_local_id_from_dict simp_var_dict_acc (as_string x)
             in
             pure @@ (PostDisSyntax.Load (dis_x, dis_f), new_simp_var_dict)
         | Store (f, x) ->
-            let%bind dis_f = local_id_as_global_name f in
+            (* f must be a locally defined field *)
+            let%bind dis_f = name_def_as_simple_global f in
             let%bind dis_x =
               disambiguate_identifier_helper simp_var_dict_acc x
             in
             pure @@ (PostDisSyntax.Store (dis_f, dis_x), simp_var_dict_acc)
         | Bind (x, e') ->
-            let%bind dis_x = local_id_as_global_name x in
+            let%bind dis_x = name_def_as_simple_global x in
             let%bind dis_e' =
               disambiguate_exp
                 { dicts with simp_var_dict = simp_var_dict_acc }
@@ -392,7 +405,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.Bind (dis_x, dis_e'), new_simp_var_dict)
         | MapUpdate (m, ks, vopt) ->
-            let%bind dis_m = local_id_as_global_name m in
+            (* m must be a locally defined field *)
+            let%bind dis_m = name_def_as_simple_global m in
             let%bind dis_ks =
               mapM ks ~f:(disambiguate_identifier_helper simp_var_dict_acc)
             in
@@ -404,8 +418,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             @@ ( PostDisSyntax.MapUpdate (dis_m, dis_ks, dis_vopt),
                  simp_var_dict_acc )
         | MapGet (x, m, ks, fetch) ->
-            let%bind dis_x = local_id_as_global_name x in
-            let%bind dis_m = local_id_as_global_name m in
+            let%bind dis_x = name_def_as_simple_global x in
+            (* m must be a locally defined field *)
+            let%bind dis_m = name_def_as_simple_global m in
             let%bind dis_ks =
               mapM ks ~f:(disambiguate_identifier_helper simp_var_dict_acc)
             in
@@ -440,15 +455,20 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.MatchStmt (dis_x, dis_pss), simp_var_dict_acc)
         | ReadFromBC (x, f) ->
-            let%bind dis_x = local_id_as_global_name x in
-            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f), simp_var_dict_acc)
+            let%bind dis_x = name_def_as_simple_global x in
+            (* x is now in scope as a local, so remove from var dictionary *)
+            let new_simp_var_dict =
+              remove_local_id_from_dict simp_var_dict_acc (as_string x)
+            in
+            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f), new_simp_var_dict)
         | AcceptPayment ->
             pure @@ (PostDisSyntax.AcceptPayment, simp_var_dict_acc)
         | Iterate (l, proc) ->
             let%bind dis_l =
               disambiguate_identifier_helper simp_var_dict_acc l
             in
-            let%bind dis_proc = local_id_as_global_name proc in
+            (* Only locally defined procedures are allowed *)
+            let%bind dis_proc = name_def_as_simple_global proc in
             pure @@ (PostDisSyntax.Iterate (dis_l, dis_proc), simp_var_dict_acc)
         | SendMsgs msgs ->
             let%bind dis_msgs =
@@ -461,7 +481,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.CreateEvnt dis_e, simp_var_dict_acc)
         | CallProc (proc, args) ->
-            let%bind dis_proc = local_id_as_global_name proc in
+            (* Only locally defined procedures are allowed *)
+            let%bind dis_proc = name_def_as_simple_global proc in
             let%bind dis_args =
               mapM args ~f:(disambiguate_identifier_helper simp_var_dict_acc)
             in
@@ -487,10 +508,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
 
   let disambiguate_component (dicts : name_dicts) comp =
     let { comp_type; comp_name; comp_params; comp_body } = comp in
-    let%bind dis_comp_name = local_id_as_global_name comp_name in
+    let%bind dis_comp_name = name_def_as_simple_global comp_name in
     let%bind dis_comp_params =
       mapM comp_params ~f:(fun (x, t) ->
-          let%bind dis_x = local_id_as_global_name x in
+          (* Parameters are locally defined simple names *)
+          let%bind dis_x = name_def_as_simple_global x in
           let%bind dis_t =
             disambiguate_type dicts.ns_dict dicts.simp_typ_dict t
           in
@@ -518,27 +540,28 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   let disambiguate_lib_entry (dicts : name_dicts) libentry this_address =
     match libentry with
     | LibVar (x, topt, e) ->
-        let%bind dis_x = local_id_as_global_name x in
+        let%bind dis_x = name_def_as_qualified_global this_address x in
         let%bind dis_topt =
           option_mapM topt
             ~f:(disambiguate_type dicts.ns_dict dicts.simp_typ_dict)
         in
         let%bind dis_e = disambiguate_exp dicts e in
-        (* x is now in scope as a local, so remove from var dictionary *)
+        (* x is now in scope as a local variable, so update simple 
+           var dictionary to point to this_address *)
         let res_dicts =
           {
             dicts with
             simp_var_dict =
-              remove_local_id_from_dict dicts.simp_var_dict (as_string x);
+              add_key_and_lib_address_to_dict dicts.simp_var_dict (as_string x) this_address
           }
         in
         pure @@ (PostDisSyntax.LibVar (dis_x, dis_topt, dis_e), res_dicts)
     | LibTyp (tname, ctrs) ->
-        let%bind dis_tname = local_id_as_global_name ~this_address:(Some this_address) tname in
+        let%bind dis_tname = name_def_as_qualified_global this_address tname in
         let%bind dis_ctrs =
           mapM ctrs ~f:(fun ctr ->
               let { cname; c_arg_types } = ctr in
-              let%bind dis_cname = local_id_as_global_name ~this_address:(Some this_address) cname in
+              let%bind dis_cname = name_def_as_qualified_global this_address cname in
               let%bind dis_c_arg_types =
                 mapM c_arg_types
                   ~f:(disambiguate_type dicts.ns_dict dicts.simp_typ_dict)
@@ -555,7 +578,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         let%bind res_typ_dict =
           let msg =
             sprintf "Type name %s clashes with previously defined or imported type"
-              (as_string tname)
+              (as_error_string tname)
           in
           let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string tname) msg in
           pure @@
@@ -564,7 +587,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         let%bind res_ctr_dict =
           let mk_msg cname =
             sprintf "Constructor name %s clashes with previously defined or imported constructor"
-              (as_string cname)
+              (as_error_string cname)
           in
           foldM ctrs ~init:dicts.simp_ctr_dict ~f:(fun dict (ctr : ctr_def) ->
               let ctr_name = ctr.cname in
@@ -584,7 +607,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
 
   let disambiguate_library (dicts : name_dicts) lib this_address =
     let { lname; lentries } = lib in
-    let%bind dis_lname = local_id_as_global_name lname in
+    let%bind dis_lname = name_def_as_simple_global lname in
     let%bind dis_lentries_rev, _ =
       foldM lentries ~init:([], dicts)
         ~f:(fun (dis_lentries_acc_rev, dicts_acc) lentry ->
@@ -593,7 +616,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           pure (dis_lentry :: dis_lentries_acc_rev, new_dicts))
     in
-    (* Toplevel names defined in the library may in scope somewhere else,
+    (* Toplevel names defined in the library may be in scope somewhere else,
        so must be collected and returned *)
     let lib_simp_vars_def, lib_simp_typs_def, lib_simp_ctrs_def =
       List.fold_left lentries ~init:([], [], [])
@@ -622,10 +645,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
 
   let disambiguate_contract (dicts : name_dicts) c =
     let { cname; cparams; cconstraint; cfields; ccomps } = c in
-    let%bind dis_cname = local_id_as_global_name cname in
+    let%bind dis_cname = name_def_as_simple_global cname in
     let%bind dis_cparams =
       mapM cparams ~f:(fun (x, t) ->
-          let%bind dis_x = local_id_as_global_name x in
+          let%bind dis_x = name_def_as_simple_global x in
           let%bind dis_t =
             disambiguate_type dicts.ns_dict dicts.simp_typ_dict t
           in
@@ -647,7 +670,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let%bind dis_cconstraint = disambiguate_exp body_dicts cconstraint in
     let%bind dis_cfields =
       mapM cfields ~f:(fun (fname, t, init) ->
-          let%bind dis_fname = local_id_as_global_name fname in
+          (* Field names are represented as simple names, since they are only 
+             exposed via the remote read construct, which carries its own address reference. *)
+          let%bind dis_fname = name_def_as_simple_global fname in
           let%bind dis_t =
             disambiguate_type dicts.ns_dict dicts.simp_typ_dict t
           in
@@ -725,59 +750,60 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         ->
                   match lentry with
                   | LibVar (x, _, _) ->
-                      (* simple var name *)
+                      (* x is a qualified name, so extract the simple name *)
+                      let unqualified_x = get_unqualified_name (get_id x) in
                       (* Check for duplicate names - disambiguation won't work otherwise.
                          Only check against previous imports -
                          duplicate names within the same library does not affect disambiguation *)
                       let msg =
                         sprintf "Variable %s imported from multiple sources"
-                          (as_string x)
+                          (as_error_string x)
                       in
                       let%bind () =
-                        check_duplicate_dict_entry simp_var_dict_acc (as_string x) msg
+                        check_duplicate_dict_entry simp_var_dict_acc unqualified_x msg
                       in
-                      (* Add x -> lib_address to var dictionary *)
+                      (* Add unqualified_x -> lib_address to var dictionary *)
                       let simp_var_dict =
                         add_key_and_lib_address_to_dict simp_var_dict_acc'
-                          (as_string x) lib_address
+                          unqualified_x lib_address
                       in
                       pure
                         (simp_var_dict, simp_typ_dict_acc', simp_ctr_dict_acc')
-                  | LibTyp (tname, ctr_defs) ->...
-                      (* simple type and constructor names *)
-                      (* TODO (CRITICAL): tname and ctrs are global qualified names. We need to extract the simple name. It might be simpler to keep the names in the definition as simple names, and only use qualified names when names are used.
-                      I think the best solution is to use SimpleGlobal for language-defined types and constructors only, and have user-defined types and constructors be QualifiedGlobals. This will probably mean that user-defined types and constructors shadow the language-defined ones, but that should be ok in terms of backward compatibility. *)
+                  | LibTyp (tname, ctr_defs) ->
+                      (* tname is qualified, so extract the simple name. *)
+                      let unqualified_t = get_unqualified_name (get_id tname) in
                       (* Check for duplicate names - disambiguation won't work otherwise. *)
                       let msg =
                         sprintf "Type %s imported from multiple sources"
-                          (as_string tname)
+                          (as_error_string tname)
                       in
                       let%bind () =
-                        check_duplicate_dict_entry simp_typ_dict_acc' (as_string tname) msg
+                        check_duplicate_dict_entry simp_typ_dict_acc' unqualified_t msg
                       in
                       (* Add tname -> lib_address to type dictionary *)
                       let simp_typ_dict =
                         add_key_and_lib_address_to_dict simp_typ_dict_acc'
-                          (as_string tname) lib_address
+                          unqualified_t lib_address
                       in
                       (* Deal with constructors *)
                       let%bind simp_ctr_dict =
                         foldM ctr_defs ~init:simp_ctr_dict_acc'
                           ~f:(fun dict_acc (ctr_def : ctr_def) ->
-                            (* Check for duplicate names - disambiguation won't work otherwise. *)
-                            let msg =
-                              sprintf
-                                "Constructor %s imported from multiple sources"
-                                (as_string ctr_def.cname)
-                            in
-                            let%bind () =
-                              check_duplicate_dict_entry dict_acc (as_string ctr_def.cname)
-                                msg
-                            in
-                            (* Add ctr_def.cname -> lib_address to ctr dictionary *)
-                            let simp_ctr_dict =
-                              add_key_and_lib_address_to_dict dict_acc
-                                (as_string ctr_def.cname) lib_address
+                              (* ctr_def.cname is qualified, so extract the simple name. *)
+                              let unqualified_ctr = get_unqualified_name (get_id ctr_def.cname) in
+                              (* Check for duplicate names - disambiguation won't work otherwise. *)
+                              let msg =
+                                sprintf
+                                  "Constructor %s imported from multiple sources"
+                                  (as_error_string ctr_def.cname)
+                              in
+                              let%bind () =
+                                check_duplicate_dict_entry dict_acc unqualified_ctr msg
+                              in
+                              (* Add ctr_def.cname -> lib_address to ctr dictionary *)
+                              let simp_ctr_dict =
+                                add_key_and_lib_address_to_dict dict_acc
+                                unqualified_ctr lib_address
                             in
                             pure simp_ctr_dict)
                       in
@@ -791,8 +817,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let { smver; libs; elibs; contr } = cmod in
     let%bind dis_elibs =
       mapM elibs ~f:(fun (lib, ns) ->
-          let%bind dis_lib = local_id_as_global_name lib in
-          let%bind dis_ns = option_mapM ns ~f:local_id_as_global_name in
+          let%bind dis_lib = name_def_as_simple_global lib in
+          let%bind dis_ns = option_mapM ns ~f:name_def_as_simple_global in
           pure (dis_lib, dis_ns))
     in
     (* Ignore recursion principles, because their global names are their simple names.
@@ -855,8 +881,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let { smver; libs; elibs } = lmod in
     let%bind dis_elibs =
       mapM elibs ~f:(fun (lib, ns) ->
-          let%bind dis_lib = local_id_as_global_name lib in
-          let%bind dis_ns = option_mapM ns ~f:local_id_as_global_name in
+          let%bind dis_lib = name_def_as_simple_global lib in
+          let%bind dis_ns = option_mapM ns ~f:name_def_as_simple_global in
           pure (dis_lib, dis_ns))
     in
     (* Ignore recursion principles, because their global names are their simple names.

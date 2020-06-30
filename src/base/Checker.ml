@@ -67,9 +67,9 @@ let check_parsing ctr syn =
   cmod
 
 (* Change local names to global names *)
-let disambiguate_lmod lmod elibs names_and_addresses =
+let disambiguate_lmod lmod elibs names_and_addresses this_address =
   let open Dis in
-  let res = disambiguate_lmodule lmod elibs names_and_addresses in
+  let res = disambiguate_lmodule lmod elibs names_and_addresses this_address in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Disambiguation]:\n lmodule [%s] is successfully checked.\n"
@@ -77,9 +77,9 @@ let disambiguate_lmod lmod elibs names_and_addresses =
   res
 
 (* Change local names to global names *)
-let disambiguate_cmod cmod elibs names_and_addresses =
+let disambiguate_cmod cmod elibs names_and_addresses this_address =
   let open Dis in
-  let res = disambiguate_cmodule cmod elibs names_and_addresses in
+  let res = disambiguate_cmodule cmod elibs names_and_addresses this_address in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Disambiguation]:\n cmodule [%s] is successfully checked.\n"
@@ -235,10 +235,13 @@ let check_lmodule cli =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
-    let init_address_map = Option.value_map cli.init_file ~f:get_init_extlibs ~default:[] in
+    let this_address, init_address_map =
+      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+        ~default:(FilePath.chop_extension cli.input_file, []) in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
-      wrap_error_with_gas initial_gas @@ disambiguate_lmod lmod elibs init_address_map in
+      wrap_error_with_gas initial_gas
+      @@ disambiguate_lmod lmod elibs init_address_map this_address in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion_lmod dis_lmod elibs
     in
@@ -283,10 +286,13 @@ let check_cmodule cli =
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
-    let init_address_map = Option.value_map cli.init_file ~f:get_init_extlibs ~default:[] in
+    let this_address, init_address_map =
+      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+        ~default:(FilePath.chop_extension cli.input_file, []) in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
-      wrap_error_with_gas initial_gas @@ disambiguate_cmod cmod elibs init_address_map in
+      wrap_error_with_gas initial_gas
+      @@ disambiguate_cmod cmod elibs init_address_map this_address in
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
     in

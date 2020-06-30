@@ -44,13 +44,14 @@ module RUGlobalSyntax = RUGlobalFEParser.FESyntax
 module RUGlobalIdentifier = RUGlobalSyntax.SIdentifier
 module RUGlobalName = RUGlobalIdentifier.Name
 
-let get_init_extlibs filename =
+let get_init_this_address_and_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
     plog (sprintf "Invalid init json %s file" filename);
-    [] )
+    ("", []) )
   else
     try
-      let name_addr_pairs = JSON.ContractState.get_init_extlibs filename in
+      let this_address, name_addr_pairs =
+        JSON.ContractState.get_init_this_address_and_extlibs filename in
       if
         List.contains_dup
           ~compare:(fun a b -> String.compare (fst a) (fst b))
@@ -60,7 +61,7 @@ let get_init_extlibs filename =
         @@ mk_error0
           (sprintf "Duplicate extlib map entries in init JSON file %s."
              filename)
-      else name_addr_pairs
+      else (this_address, name_addr_pairs)
     with Invalid_json s ->
       fatal_error
         (s @ mk_error0 (sprintf "Unable to parse JSON file %s. " filename))
@@ -69,19 +70,20 @@ let get_init_extlibs filename =
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib name sloc =
   let errmsg = sprintf "Failed to import library %s. " name in
-  let fname, initf =
+  let fname, this_address, initf =
     match StdlibTracker.find_lib_dir name with
     | None -> fatal_error @@ mk_error1 (errmsg ^ "Not found.\n") sloc
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
-        (libf, get_init_extlibs initf)
+        let this_address, extlibs = get_init_this_address_and_extlibs initf in
+        (libf, this_address, extlibs)
   in
   match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
   | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
-      (lmod, initf)
+      (lmod, this_address, initf)
 
 let import_libs names_and_namespaces init_address_map =
   let rec importer names_and_namespaces address_map stack =
@@ -98,10 +100,10 @@ let import_libs names_and_namespaces init_address_map =
                     (as_error_string libname) (Option.value_map ~default:"" ~f:as_error_string ns_opt)
               in fatal_error @@ mk_error1 errmsg (get_rep libname)
             else 
-              let ilib, ilib_import_map = import_lib (as_string libname) (get_rep libname) in
+              let ilib, this_address, ilib_import_map = import_lib (as_string libname) (get_rep libname) in
               let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
               (* Transform local names to global names *)
-              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map with
+              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map this_address with
               | Error s -> fatal_error (s @ (mk_error1 "Failed to disambiguate.\n") (get_rep libname))
               | Ok dis_lib -> 
                   let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
