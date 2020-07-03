@@ -29,16 +29,16 @@ module ER = ParserRep
 module SR = ParserRep
 module SSTypeUtil = TypeUtilities
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module SSLiteral = FlattenedLiteral
+module SSLiteral = GlobalLiteral
 module SSType = SSLiteral.LType
 module SSIdentifier = SSType.TIdentifier
+module SSName = SSIdentifier.Name
 module EvalSyntax = ScillaSyntax (SR) (ER) (SSLiteral)
 open SSIdentifier
 open EvalSyntax
 
 type ss_field = {
-  fname : string;
+  fname : SSName.t;
   ftyp : SSType.t;
   fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
@@ -66,17 +66,17 @@ module MakeStateService () = struct
     | SS (sm, fields) -> pure (sm, fields)
 
   let field_type fields fname =
-    match List.find fields ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match List.find fields ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
           (sprintf "StateService: Unable to determine the type of field %s."
-             (get_id fname))
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let fetch_local ~fname ~keys fields =
     let s = fields in
-    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match List.find s ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
     | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
@@ -92,7 +92,7 @@ module MakeStateService () = struct
                   (sprintf
                      "StateService: Failed indexing into map %s. Internal \
                       error."
-                     (get_id fname))
+                     (as_error_string fname))
                   (ER.get_loc (get_rep fname))
               else
                 let res = Caml.Hashtbl.find_opt mlit' k in
@@ -109,23 +109,22 @@ module MakeStateService () = struct
               | _ ->
                   fail1
                     (sprintf
-                       "StateService: Cannot index into map %s. Too many index \
-                        keys."
-                       (get_id fname))
+                       "StateService: Cannot index into map %s. Too many index \ keys."
+                       (as_error_string fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
                 (sprintf
                    "StateService: Internal error in retriving from map %s."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
     | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ (Some l, G_Load l)
     | _ ->
         fail1
-          (sprintf "StateService: field \"%s\" not found.\n" (get_id fname))
+          (sprintf "StateService: field \"%s\" not found.\n" (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let fetch ~fname ~keys =
@@ -141,14 +140,14 @@ module MakeStateService () = struct
           | None ->
               fail1
                 (sprintf "StateService: Field %s not found on IPC server."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
           | Some res' -> pure @@ (res, G_Load res') )
     | Local -> fetch_local ~fname ~keys fields
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
-    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match List.find s ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
     | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
@@ -180,7 +179,7 @@ module MakeStateService () = struct
                             (sprintf
                                "StateService: Cannot index into map %s due to \
                                 non-map type"
-                               (get_id fname))
+                               (as_error_string fname))
                             (ER.get_loc (get_rep fname))
                     in
                     Caml.Hashtbl.replace mlit' k (Map ((kt'', vt''), mlit''));
@@ -195,13 +194,13 @@ module MakeStateService () = struct
                     (sprintf
                        "StateService: Cannot index into map %s. Too many index \
                         keys."
-                       (get_id fname))
+                       (as_error_string fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
                 (sprintf "StateService: Internal error in updating map %s."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
@@ -209,7 +208,7 @@ module MakeStateService () = struct
         match vopt with
         | Some fval' ->
             let fields' =
-              List.filter fields ~f:(fun f -> String.(f.fname <> get_id fname))
+              List.filter fields ~f:(fun f -> not ([%equal : SSName.t] f.fname (get_id fname)))
             in
             pure
               ( { fname = f; ftyp = t; fval = Some fval' } :: fields',
@@ -217,11 +216,11 @@ module MakeStateService () = struct
         | None ->
             fail1
               (sprintf "StateService: Cannot remove non-map value %s from state"
-                 (get_id fname))
+                 (as_error_string fname))
               (ER.get_loc (get_rep fname)) )
     | _ ->
         fail1
-          (sprintf "StateService: Field \"%s\" not found.\n" (get_id fname))
+          (sprintf "StateService: Field \"%s\" not found.\n" (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let update ~fname ~keys ~value =
@@ -275,7 +274,7 @@ module MakeStateService () = struct
             | None ->
                 fail0
                   (sprintf "StateService: Field %s's value is not known"
-                     f.fname)
+                     (SSName.as_error_string f.fname))
             | Some l -> pure (f.fname, l))
     | SS (IPC _, fl) ->
         let%bind sl =
@@ -287,7 +286,7 @@ module MakeStateService () = struct
                   fail0
                     (sprintf
                        "StateService: Field %s's value not found on server"
-                       f.fname))
+                       (SSName.as_error_string f.fname)))
         in
         pure sl
 end

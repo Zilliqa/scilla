@@ -33,8 +33,7 @@ module IDL = Idl.Make (M)
 
 module IPCClient = IPCIdl (IDL.GenClient ())
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module IPCCLiteral = FlattenedLiteral
+module IPCCLiteral = GlobalLiteral
 module IPCCType = IPCCLiteral.LType
 module IPCCIdentifier = IPCCType.TIdentifier
 
@@ -154,7 +153,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = IPCCIdentifier.get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -180,7 +179,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = IPCCIdentifier.get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -202,7 +201,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = IPCCIdentifier.get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;
@@ -222,7 +221,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = IPCCIdentifier.get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;

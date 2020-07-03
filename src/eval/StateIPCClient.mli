@@ -20,8 +20,7 @@ open Scilla_base
 open ErrorUtils
 open Literal
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module IPCCLiteral = FlattenedLiteral
+module IPCCLiteral = GlobalLiteral
 module IPCCType = IPCCLiteral.LType
 module IPCCIdentifier = IPCCType.TIdentifier
 

@@ -35,10 +35,10 @@ open Gas
 module SR = ParserRep
 module ER = ParserRep
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module EvalLiteral = FlattenedLiteral
+module EvalLiteral = GlobalLiteral
 module EvalType = EvalLiteral.LType
 module EvalIdentifier = EvalType.TIdentifier
+module EvalName = EvalIdentifier.Name
 module EvalSyntax = ScillaSyntax (SR) (ER) (EvalLiteral)
 module EvalTypeUtilities = TypeUtilities
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER)
@@ -67,20 +67,20 @@ let stmt_gas_wrap scon sloc =
 (* Update-only execution environment for expressions *)
 (*****************************************************)
 module Env = struct
-  type ident = string
+  type ident = EvalName.t
 
   (* Environment *)
-  type t = (string * EvalLiteral.t) list [@@deriving sexp]
+  type t = (EvalName.t * EvalLiteral.t) list [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp_value = pp_literal
 
-  and pp ?(f = fun (_ : string * EvalLiteral.t) -> true) e =
+  and pp ?(f = fun (_ : EvalName.t * EvalLiteral.t) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f in
     let ps =
       List.map e_filtered ~f:(fun (k, v) ->
-          " [" ^ k ^ " -> " ^ pp_value v ^ "]")
+          " [" ^ (EvalName.as_string k) ^ " -> " ^ pp_value v ^ "]")
     in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
@@ -88,7 +88,7 @@ module Env = struct
   let empty = []
 
   (* Core's List.Assoc.add function removes duplicate key-value entries to keep lists small *)
-  let bind e k v = List.Assoc.add e k v ~equal:String.( = )
+  let bind e k v = List.Assoc.add e k v ~equal:[%equal : EvalName.t]
 
   let bind_all e kvs =
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
@@ -98,11 +98,11 @@ module Env = struct
 
   let lookup e k =
     let i = get_id k in
-    match List.Assoc.find e i ~equal:String.( = ) with
+    match List.Assoc.find e i ~equal:[%equal : EvalName.t] with
     | Some v -> pure v
     | None ->
         fail1
-          (sprintf "Identifier \"%s\" is not bound in environment:\n" i)
+          (sprintf "Identifier \"%s\" is not bound in environment:\n" (EvalName.as_error_string i))
           (get_rep k)
 end
 
@@ -132,7 +132,7 @@ module Configuration = struct
     (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * EvalType.t) list;
+    fields : (EvalName.t * EvalType.t) list;
     (* Contract balance *)
     balance : uint128;
     (* Was incoming money accepted? *)
@@ -189,7 +189,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if String.(i = balance_label) then
+    if [%equal : EvalName.t] i balance_label then
       (* Balance is a special case *)
       let l = EvalLiteral.UintLit (Uint128L st.balance) in
       pure (l, G_Load l)
@@ -199,7 +199,7 @@ module Configuration = struct
       | Some v, g -> pure (v, g)
       | _ ->
           fail1
-            (Printf.sprintf "Error loading field %s" i)
+            (Printf.sprintf "Error loading field %s" (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
@@ -213,7 +213,7 @@ module Configuration = struct
     let open BuiltIns.UsefulLiterals in
     if fetchval then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
-      match List.Assoc.find st.fields (get_id m) ~equal:String.( = ) with
+      match List.Assoc.find st.fields (get_id m) ~equal:[%equal : EvalName.t]  with
       | Some mt -> (
           let%bind vt =
             fromR @@ EvalTypeUtilities.map_access_type mt (List.length klist)
@@ -233,11 +233,11 @@ module Configuration = struct
                 (sprintf
                    "Inconsistency in fetching map value form StateService for \
                     field %s"
-                   (get_id m))
+                   (as_error_string m))
                 (ER.get_loc (get_rep m)) )
       | None ->
           fail1
-            (sprintf "Unable to fetch from map field %s" (get_id m))
+            (sprintf "Unable to fetch from map field %s" (as_error_string m))
             (ER.get_loc (get_rep m))
     else
       let%bind is_member, g =
@@ -250,12 +250,12 @@ module Configuration = struct
           pure (is_member_lit, g')
       | _ ->
           fail1
-            (sprintf "Unable to check exists for map field %s" (get_id m))
+            (sprintf "Unable to check exists for map field %s" (as_error_string m))
             (ER.get_loc (get_rep m))
 
   let bind st k v =
     let e = st.env in
-    { st with env = List.Assoc.add e k v ~equal:String.( = ) }
+    { st with env = List.Assoc.add e k v ~equal:[%equal : EvalName.t] }
 
   let bind_all st ks vs =
     let e = st.env in
@@ -267,7 +267,7 @@ module Configuration = struct
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
-              not (List.mem ks (fst z) ~equal:String.( = )))
+              not (List.mem ks (fst z) ~equal:[%equal : EvalName.t] ))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -295,10 +295,10 @@ module Configuration = struct
   let lookup_procedure st proc_name =
     let rec finder procs =
       match procs with
-      | p :: p_rest when String.(get_id p.comp_name = proc_name) ->
+      | p :: p_rest when EvalIdentifier.equal p.comp_name proc_name ->
           pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
-      | [] -> fail0 @@ sprintf "Procedure %s not found." proc_name
+      | [] -> fail0 @@ sprintf "Procedure %s not found." (as_error_string proc_name)
     in
     finder st.procedures
 
@@ -407,7 +407,7 @@ module ContractState = struct
     (* Immutable parameters *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * EvalType.t) list;
+    fields : (EvalName.t * EvalType.t) list;
     (* Contract balance *)
     balance : uint128;
   }

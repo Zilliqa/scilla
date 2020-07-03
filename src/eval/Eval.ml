@@ -56,7 +56,7 @@ let pp_result r exclude_names =
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
       let filter_prelude (k, _) =
-        not @@ List.mem enames k ~equal:String.( = )
+        not @@ List.mem enames k ~equal:[%equal : EvalName.t]
       in
       sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
 
@@ -144,7 +144,7 @@ let rec exp_eval erep env =
       if constr.arity <> alen then
         fail1
           (sprintf "Constructor %s expects %d arguments, but got %d."
-             (get_id cname) constr.arity alen)
+             (as_error_string cname) constr.arity alen)
           (SR.get_loc (get_rep cname))
       else
         (* Resolve the actuals *)
@@ -752,6 +752,7 @@ let handle_message contr cstate bstate m =
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
   let actual_env =
+    (* TO HERE: tenv comes from the incoming message and uses strings as keys. env is the one used by the evaluator, and uses EvalName.t as keys. This needs to be sorted out *)
     List.fold_left tenv ~init:env ~f:(fun e (n, l) -> Env.bind e n l)
   in
   let open Configuration in

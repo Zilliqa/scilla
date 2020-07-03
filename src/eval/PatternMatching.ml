@@ -41,13 +41,13 @@ let rec match_with_pattern v p =
       if ctr.arity <> List.length ps then
         fail0
         @@ sprintf "Constructor %s requires %d parameters, but %d are provided."
-             ctr.cname ctr.arity (List.length ps)
+             (EvalName.as_error_string ctr.cname) ctr.arity (List.length ps)
       else
         (* Pattern is well-formed, processing the value *)
         (* In this branch ctr.arity = List.length ps *)
         match v with
         | ADTValue (cn', _, ls')
-          when String.(cn' = ctr.cname) && List.length ls' = ctr.arity ->
+          when [%equal : EvalName.t] cn' ctr.cname && List.length ls' = ctr.arity ->
             (* The value structure matches the pattern *)
             (* In this branch ctr.arity = List.length ps = List.length ls', so we can use zip_exn *)
             let%bind res_list =
