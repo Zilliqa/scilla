@@ -360,7 +360,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
     (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
     (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_nat, [tvar "'A"], to_nat_coster, 1);
+    (Builtin_to_nat, [uint32_typ], to_nat_coster, 1);
   ]
 
   [@@@ocamlformat "enable"]

@@ -621,12 +621,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let to_nat_arity = 1
 
-    let to_nat_type = tfun_typ "'A" @@ fun_typ (tvar "'A") nat_typ
-
-    let to_nat_elab sc ts =
-      match ts with
-      | [ t ] when is_uint_type t -> elab_tfun_with_args_no_gas sc [ t ]
-      | _ -> fail0 "Failed to elaborate"
+    let to_nat_type = fun_typ uint32_typ nat_typ
 
     let to_nat ls _ =
       match ls with
@@ -1371,7 +1366,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_to_uint32 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32]
       | Builtin_to_uint64 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64]
       | Builtin_to_uint128 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128]
-      | Builtin_to_nat -> [Uint.to_nat_arity, Uint.to_nat_type, Uint.to_nat_elab, Uint.to_nat]
+      | Builtin_to_nat -> [Uint.to_nat_arity, Uint.to_nat_type, elab_id, Uint.to_nat]
 
     [@@@ocamlformat "enable"]
 
