@@ -129,7 +129,7 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
         )
         CPSMonad.t)
     (* A type abstraction *)
@@ -138,7 +138,7 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
         )
         CPSMonad.t)
   [@@deriving sexp]
@@ -338,7 +338,7 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
         )
         CPSMonad.t)
     (* A type abstraction *)
@@ -347,7 +347,7 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
+          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
         )
         CPSMonad.t)
   [@@deriving sexp]

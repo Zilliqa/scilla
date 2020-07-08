@@ -19,8 +19,11 @@
 open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
+open ParserUtil
+open Literal
 open Syntax
 open FrontEndParser
+open Disambiguate
 open ErrorUtils
 open Eval
 open DebugMessage
@@ -31,6 +34,10 @@ open RunnerUtil
 open RunnerCLI
 open GlobalConfig
 
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
+    
+  
 (****************************************************)
 (*          Checking initialized libraries          *)
 (****************************************************)
@@ -47,7 +54,9 @@ let check_libs clibs elibs name gas_limit =
             %s\n\n\
             Libraries for [%s] are on. All seems fine so far!\n\n"
            (* (Env.pp res) *)
-           (String.concat ~sep:", " (List.rev_map res ~f:fst))
+           (String.concat ~sep:", "
+              (List.rev_map res
+                 ~f:(fun x -> EvalUtil.EvalName.as_string (fst x))))
            name);
       gas_remaining
   | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
@@ -78,28 +87,35 @@ let check_after_step res gas_limit =
         ^ sprintf "Emitted events:\n%s\n\n" (pp_literal_list events) );
       ((cstate, outs, events, accepted_b), remaining_gas)
 
+let map_json_input_strings_to_names map =
+  List.map map ~f:(fun (x, l) ->
+      match String.split x ~on:'.' with
+      | [simple_name] -> (RunnerName.parse_simple_name simple_name, l)
+      | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
+
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
   let open JSON.ContractState in
-  let states = get_json_data filename in
+  let states_str = get_json_data filename in
+  let states = map_json_input_strings_to_names states_str in
   let bal_lit =
-    match List.Assoc.find states balance_label ~equal:String.( = ) with
+    match List.Assoc.find states balance_label ~equal:[%equal : RunnerName.t] with
     | Some v -> v
-    | None -> raise @@ mk_invalid_json (balance_label ^ " field missing")
+    | None -> raise @@ mk_invalid_json (sprintf "%s field missing" (RunnerName.as_string balance_label))
   in
   let bal_int =
     match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (mk_invalid_json (balance_label ^ " invalid"))
+    | _ -> raise (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:String.( = )
+    List.Assoc.remove states balance_label ~equal:[%equal : RunnerName.t]
   in
   (no_bal_states, bal_int)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
+  let bal_lit = (RunnerName.as_string balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
@@ -120,20 +136,21 @@ let output_event_json elist =
 
 let validate_get_init_json init_file gas_remaining source_ver =
   (* Retrieve initial parameters *)
-  let initargs =
+  let initargs_str =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
       fatal_error_gas
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
+  let initargs = map_json_input_strings_to_names initargs_str in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
   let rgas =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
   let init_json_scilla_version =
-    List.Assoc.find initargs ~equal:String.equal
+    List.Assoc.find initargs ~equal:[%equal : RunnerName.t]
       ContractUtil.scilla_version_label
   in
   let () =
@@ -147,7 +164,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
   initargs
 
 let deploy_library args gas_remaining =
-  match parse_lmodule args.input with
+  match FEParser.parse_lmodule args.input with
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
@@ -159,9 +176,17 @@ let deploy_library args gas_remaining =
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let elibs = import_libs lmod.elibs (Some args.input_init) in
+      let this_address, init_address_map = get_init_this_address_and_extlibs args.input_init in          let elibs = import_libs lmod.elibs init_address_map in
+      let dis_lmod = match Dis.disambiguate_lmodule lmod elibs init_address_map this_address with
+        | Error e ->
+            plog (sprintf "%s\n" "Failed to disambiguate library file.");
+            fatal_error_gas e gas_remaining
+        | Ok res ->
+            plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
+            res
+      in
       (* Contract library. *)
-      let clibs = Some lmod.libs in
+      let clibs = Some dis_lmod.libs in
 
       (* Checking initialized libraries! *)
       let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
@@ -208,7 +233,7 @@ let run_with_args args =
 
   if is_library then deploy_library args gas_remaining
   else
-    match parse_cmodule args.input with
+    match FEParser.parse_cmodule args.input with
     | Error e ->
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
@@ -222,9 +247,18 @@ let run_with_args args =
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
-        let elibs = import_libs cmod.elibs (Some args.input_init) in
+        let this_address, init_address_map = get_init_this_address_and_extlibs args.input_init in
+        let elibs = import_libs cmod.elibs init_address_map in
+        let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
+          | Error e ->
+              plog (sprintf "%s\n" "Failed to disambiguate contract file.");
+              fatal_error_gas e gas_remaining
+          | Ok res ->
+              plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
+              res
+        in
         (* Contract library. *)
-        let clibs = cmod.libs in
+        let clibs = dis_cmod.libs in
 
         (* Checking initialized libraries! *)
         let gas_remaining = check_libs clibs elibs args.input gas_remaining in
@@ -251,7 +285,7 @@ let run_with_args args =
           if is_deployment then (
             (* Initializing the contract's state, just for checking things. *)
             let init_res =
-              init_module cmod initargs [] Uint128.zero bstate elibs
+              init_module dis_cmod initargs [] Uint128.zero bstate elibs
             in
             (* Prints stats after the initialization and returns the initial state *)
             (* Will throw an exception if unsuccessful. *)
@@ -313,7 +347,7 @@ let run_with_args args =
               if is_ipc then
                 let cur_bal = args.balance in
                 let init_res =
-                  init_module cmod initargs [] cur_bal bstate elibs
+                  init_module dis_cmod initargs [] cur_bal bstate elibs
                 in
                 let cstate, gas_remaining', _ =
                   check_extract_cstate args.input init_res gas_remaining
@@ -344,7 +378,7 @@ let run_with_args args =
 
                 (* Initializing the contract's state *)
                 let init_res =
-                  init_module cmod initargs curargs cur_bal bstate elibs
+                  init_module dis_cmod initargs curargs cur_bal bstate elibs
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
