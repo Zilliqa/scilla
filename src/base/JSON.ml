@@ -274,7 +274,8 @@ module ContractState = struct
 
   (* Get a json object from given states *)
   let state_to_json states =
-    let jsonl = slist_to_json states in
+    let states_str = List.map states ~f:(fun (x, v) -> (JSONName.as_string x, v)) in
+    let jsonl = slist_to_json states_str in
     `List jsonl
 
   (** 

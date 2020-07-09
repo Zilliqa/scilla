@@ -20,12 +20,16 @@ open Core_kernel
 open! Int.Replace_polymorphic_compare
 open Scilla_base
 open Scilla_eval
+open Literal
 open FrontEndParser
 open RunnerUtil
 open ErrorUtils
 open GlobalConfig
 open PrettyPrinters
 
+(* Imports and user-defined types are not allowed, so just use global names *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
+    
 let default_gas_limit = Stdint.Uint64.of_int 2000
 
 let run () =
@@ -38,7 +42,7 @@ let run () =
     if Stdint.Uint64.(compare cli.gas_limit zero = 0) then default_gas_limit
     else cli.gas_limit
   in
-  match parse_expr_from_file filename with
+  match FEParser.parse_expr_from_file filename with
   | Ok e -> (
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in

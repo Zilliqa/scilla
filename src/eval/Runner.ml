@@ -36,7 +36,8 @@ open GlobalConfig
 
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
-    
+module RunnerSyntax = Dis.PostDisSyntax
+module RunnerName = RunnerSyntax.SIdentifier.Name                        
   
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -115,7 +116,7 @@ let input_state_json filename =
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (RunnerName.as_string balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
+  let bal_lit = (balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
@@ -302,7 +303,7 @@ let run_with_args args =
               (* We push all fields except _balance. *)
               let fields =
                 List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                    if String.(s = balance_label) then None
+                    if [%equal : RunnerName.t] s balance_label then None
                     else Some { fname = s; ftyp = t; fval = None })
               in
               let sm = IPC args.ipc_address in
@@ -356,7 +357,7 @@ let run_with_args args =
                 let fields =
                   List.filter_map cstate.fields ~f:(fun (s, t) ->
                       let open StateService in
-                      if String.(s = balance_label) then None
+                      if [%equal : RunnerName.t] s balance_label then None
                       else Some { fname = s; ftyp = t; fval = None })
                 in
                 let () =
@@ -391,7 +392,7 @@ let run_with_args args =
                   List.map field_vals ~f:(fun (s, l) ->
                       let open StateService in
                       let t =
-                        List.Assoc.find_exn cstate.fields s ~equal:String.( = )
+                        List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
                       in
                       { fname = s; ftyp = t; fval = Some l })
                 in
@@ -400,7 +401,7 @@ let run_with_args args =
             in
 
             (* Contract code *)
-            let ctr = cmod.contr in
+            let ctr = dis_cmod.contr in
 
             plog
               (sprintf "Executing message:\n%s\n"
@@ -435,7 +436,7 @@ let run_with_args args =
           [
             ("scilla_major_version", `String (Int.to_string cmod.smver));
             ("gas_remaining", `String (Uint64.to_string gas));
-            (ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
+            (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
             ("messages", output_msg_json);
             ("states", output_state_json);
             ("events", output_events_json);

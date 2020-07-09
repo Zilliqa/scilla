@@ -122,6 +122,28 @@ let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
             this script.\n" ^ "Example:\n" ^ exe_name
          ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
+(* Parse all libraries that can be found in ldirs. *)
+let import_all_libs ldirs =
+  (* Get list of scilla libraries in dir *)
+  let get_lib_list dir =
+    (* We don't throw an error if dir is invalid,
+     * to be consistent with the behaviour of StdlibTracker.find_lib_dir.
+     *)
+    if not (Caml.Sys.file_exists dir) then []
+    else
+      let files = Array.to_list (Sys.readdir dir) in
+      List.filter_map files ~f:(fun file ->
+          let open FilePath in
+          if check_extension file StdlibTracker.file_extn_library then
+            let lib_name = chop_extension (basename file) in
+            Some (RULocalIdentifier.mk_loc_id
+                    (RULocalName.parse_simple_name lib_name), None (* no import-as *))
+          else None)
+  in
+  (* Make a list of all libraries and parse them through import_lib above. *)
+  let names = List.concat_map ldirs ~f:get_lib_list in
+  import_libs names []
+
 type runner_cli = {
   input_file : string;
   stdlib_dirs : string list;

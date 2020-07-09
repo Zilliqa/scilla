@@ -585,10 +585,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
   pure (cstate, field_values)
 
 (* Combine initialized state with infro from current state *)
-let create_cur_state_fields initcstate curcstate_str =
-  (* Transform json string keys to EvalNames. *)
-  let%bind curcstate = mapM curcstate_str
-      ~f:(fun (x, v) -> pure (EvalName.parse_simple_name x, v)) in
+let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
   let%bind () =
