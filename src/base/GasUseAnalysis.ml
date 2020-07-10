@@ -1277,7 +1277,7 @@ struct
               GUAEnv.filterS genv_lib ~f:(fun name ->
                   List.exists
                     (function
-                      | LibTyp _ -> false | LibVar (i, _, _) -> String.(as_string i = name))
+                      | LibTyp _ -> false | LibVar (i, _, _) -> as_string i = name)
                     lib.libn.lentries
                   || GUAEnv.existsS genv_folds name)
             in

@@ -25,10 +25,15 @@ open! Int.Replace_polymorphic_compare
 open Yojson
 open Scilla_base
 open Scilla_eval
+open Literal
 module IPCTestType = StateIPCTestClient.Type
+module IPCTestName = IPCTestType.TIdentifier.Name
+
+(* Use GlobalLiteral for compatibility with TypeUtil *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
 
 let parse_typ_wrapper t =
-  match FrontEndParser.parse_type t with
+  match FEParser.parse_type t with
   | Error _ ->
       assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
   | Ok s -> s
@@ -183,6 +188,7 @@ let sort_mapkeys goldj outj =
 (* Start a mock server (if set) at ~sock_addr and initialize server
  * (external or mock server) state with ~state_json_path. *)
 let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
+  let open ContractUtil in
   let state = json_file_to_state state_json_path in
 
   (* Setup a mock server within the testsuite? *)
@@ -190,17 +196,17 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
 
   let fields =
     List.filter_map state ~f:(fun (s, t, _) ->
-        if String.(s = ContractUtil.balance_label) then None else Some (s, t))
+        if String.(s = CUName.as_string balance_label) then None else Some (s, t))
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (fname, _, value) ->
-      if String.(fname <> ContractUtil.balance_label) then
+      if String.(fname <> CUName.as_string balance_label) then
         StateIPCTestClient.update ~fname ~value);
   (* Find the balance from state and return it. *)
   match
     List.find state ~f:(fun (fname, _, _) ->
-        String.(fname = ContractUtil.balance_label))
+        String.(fname = CUName.as_string balance_label))
   with
   | Some (_, _, balpb) -> (
       match balpb with
@@ -208,11 +214,11 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
           json_from_string (Bytes.to_string bal) |> json_to_string
       | _ ->
           assert_failure
-            ( "Incorrect type of " ^ ContractUtil.balance_label
+            ( "Incorrect type of " ^ CUName.as_error_string balance_label
             ^ " in state.json" ) )
   | None ->
       assert_failure
-        ("Unable to find " ^ ContractUtil.balance_label ^ " in state.json")
+        ("Unable to find " ^ CUName.as_error_string balance_label ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish ~sock_addr =
@@ -229,7 +235,7 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
   let svars' =
     List.fold_right goldjs ~init:svars ~f:(fun goldv acc ->
         let golds = json_member "vname" goldv |> json_to_string in
-        if String.(golds = ContractUtil.balance_label) then acc
+        if String.(golds = ContractUtil.CUName.as_string ContractUtil.balance_label) then acc
         else
           let s', rest =
             List.partition_tf acc ~f:(fun (s, _, _) -> String.(s = golds))

@@ -31,7 +31,6 @@ module RPSyntax = ParserSyntax (RPLiteral)
 module RPType = RPSyntax.SType
 module RPIdentifier = RPSyntax.SIdentifier
 module RPName = RPIdentifier.Name
-open RPIdentifier
 open RPType
 open RPSyntax
 

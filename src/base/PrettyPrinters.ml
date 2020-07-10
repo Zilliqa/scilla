@@ -248,7 +248,7 @@ let rec pp_literal_simplified l =
         ^ "]"
       in
       "(Map " ^ PPType.pp_typ kt ^ " " ^ PPType.pp_typ vt ^ " " ^ items ^ ")"
-  | ADTValue (cn, _, al)
+  | ADTValue (cn, _, _)
     when Datatypes.is_cons_ctr_name cn ->
       (* Print non-empty lists in a readable way. *)
       let list_buffer = Buffer.create 1024 in
@@ -266,7 +266,7 @@ let rec pp_literal_simplified l =
       in
       plist l;
       "(List " ^ Buffer.contents list_buffer ^ ")"
-  | ADTValue (cn, _, al)
+  | ADTValue (cn, _, _)
     when Datatypes.is_zero_ctr_name cn || Datatypes.is_succ_ctr_name cn ->
       let rec counter nat acc =
         match nat with

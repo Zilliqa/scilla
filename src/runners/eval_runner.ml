@@ -21,7 +21,6 @@ open! Int.Replace_polymorphic_compare
 open Scilla_base
 open Scilla_eval
 open Literal
-open FrontEndParser
 open RunnerUtil
 open ErrorUtils
 open GlobalConfig

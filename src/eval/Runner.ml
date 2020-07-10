@@ -22,8 +22,6 @@ open Scilla_base
 open ParserUtil
 open Literal
 open Syntax
-open FrontEndParser
-open Disambiguate
 open ErrorUtils
 open Eval
 open DebugMessage

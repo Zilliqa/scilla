@@ -113,7 +113,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let%bind dis_name =
       match get_id id with
       | SimpleLocal n -> pure (GlobalName.SimpleGlobal n, n)
-      | QualifiedLocal (ns, n) ->
+      | QualifiedLocal (_, _) ->
           fail0 @@ sprintf "Illegal variable name: %s" (as_error_string (get_id id))
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
@@ -592,9 +592,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           foldM ctrs ~init:dicts.simp_ctr_dict ~f:(fun dict (ctr : ctr_def) ->
               let ctr_name = ctr.cname in
               let msg = mk_msg ctr_name in
-              let%bind () = check_duplicate_dict_entry dicts.simp_typ_dict (as_string ctr_name) msg in
+              let%bind () = check_duplicate_dict_entry dict (as_string ctr_name) msg in
               pure @@
-              add_key_and_lib_address_to_dict dicts.simp_ctr_dict (as_string ctr_name) this_address)
+              add_key_and_lib_address_to_dict dict (as_string ctr_name) this_address)
         in
         let res_dicts =
           {
