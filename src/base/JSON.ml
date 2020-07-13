@@ -135,7 +135,7 @@ and read_adt_json name j tlist_verify =
     match j with
     | `List vli ->
         (* We make an exception for Lists, allowing them to be stored flatly. *)
-        if is_list_adt_name dt.tname then
+        if not (is_list_adt_name dt.tname) then
           raise
             (Invalid_json
                (mk_error0 "ADT value is a JSON array, but type is not List"))
