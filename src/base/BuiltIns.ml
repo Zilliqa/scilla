@@ -790,12 +790,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         when (* We want both types to be ByStr with equal width. *)
              is_bystrx_type bstyp1 && [%equal: BIType.t] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
+      | [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
+          elab_tfun_with_args_no_gas sc [ PrimType Bystr_typ ]
       | _ -> fail0 "Failed to elaborate"
 
     let eq ls _ =
       match ls with
       | [ ByStrX bs1; ByStrX bs2 ] ->
           pure @@ build_bool_lit (Bystrx.equal bs1 bs2)
+      | [ ByStr bs1; ByStr bs2 ] -> pure @@ build_bool_lit (Bystr.equal bs1 bs2)
       | _ -> builtin_fail "Crypto.eq" ls
 
     let hash_type =

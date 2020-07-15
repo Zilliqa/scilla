@@ -189,6 +189,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "builtin-bech32-2.scilexp";
       "builtin-alt-bn128.scilexp";
       "builtin-isqrt.scilexp";
+      "builtin-eq-bystr.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
       "addr.scilexp";

@@ -1,0 +1,10 @@
+let a = 0x0f0f in
+let b = 0xbfbf in
+let c = 0x0f0f in
+let aa = builtin to_bystr a in
+let bb = builtin to_bystr b in
+let cc = builtin to_bystr c in
+let r1 = builtin eq aa bb in
+let r11 = negb r1 in
+let r2 = builtin eq aa cc in
+andb r11 r2

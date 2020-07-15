@@ -1,0 +1,10 @@
+(True),
+{ [r2 -> (True)],
+  [r11 -> (True)],
+  [r1 -> (False)],
+  [cc -> (ByStr 0x0f0f)],
+  [bb -> (ByStr 0xbfbf)],
+  [aa -> (ByStr 0x0f0f)],
+  [c -> (ByStr2 0x0f0f)],
+  [b -> (ByStr2 0xbfbf)],
+  [a -> (ByStr2 0x0f0f)] }
