@@ -1,13 +1,12 @@
 {
-  "gas_remaining": "6678",
+  "gas_remaining": "8000",
   "errors": [
     {
-      "error_message":
-        "Entry sort_uint32 in library TestLib1 conflicts with entry in library TestLib1",
+      "error_message": "Variable sort_uint32 imported from multiple sources",
       "start_location": {
-        "file": "checker/bad/lib/TestLib1.scillib",
-        "line": 7,
-        "column": 5
+        "file": "checker/bad/libdup1.scilla",
+        "line": 3,
+        "column": 17
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

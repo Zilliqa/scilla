@@ -79,15 +79,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let new_nm_dict = List.Assoc.remove old_nm_dict var ~equal:String.(=) in
     List.Assoc.add dict None new_nm_dict ~equal:[%equal : String.t option]
 
-  let check_duplicate_dict_entry nm_dict name_key msg =
+  let check_duplicate_dict_entry nm_dict name_key msg error_loc =
     match List.Assoc.find nm_dict name_key ~equal:String.(=) with
     | None -> pure () (* Name has not already been defined *)
-    | Some _ -> fail0 msg (* Name has already been defined *)
+    | Some _ -> fail1 msg error_loc (* Name has already been defined *)
   
-  let check_duplicate_ns_dict_entry (dict : nsopt_name_adr_dict) ns_key name_key msg =
+  let check_duplicate_ns_dict_entry (dict : nsopt_name_adr_dict) ns_key name_key msg error_loc =
     match List.Assoc.find dict ns_key ~equal:[%equal : String.t option] with
     | None -> pure () (* No names defined in namespace *)
-    | Some nm_dict -> check_duplicate_dict_entry nm_dict name_key msg
+    | Some nm_dict -> check_duplicate_dict_entry nm_dict name_key msg error_loc
 
   let strip_filename_extension = Filename.chop_extension
   
@@ -99,7 +99,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                   Disambiguate names                       *)
   (**************************************************************)
 
-  let disambiguate_name (dict : nsopt_name_adr_dict) nm =
+  let disambiguate_name (dict : nsopt_name_adr_dict) nm error_loc =
     let open LocalName in
     match nm with
     | SimpleLocal n -> (
@@ -123,11 +123,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | QualifiedLocal (ns, n) ->
         (* Check the specified namespace *)
         match List.Assoc.find dict (Some ns) ~equal:[%equal : String.t option] with
-        | None -> fail0 @@ sprintf "Name qualifier %s is not a legal namespace" ns
+        | None -> fail1 (sprintf "Unknown namespace %s" ns) error_loc
         | Some nm_dict ->
             (* Check the names in the namespace *)
             match List.Assoc.find nm_dict n ~equal:String.( = ) with
-            | None -> fail0 @@ sprintf "Name %s is not defined in the namespace %s" n ns
+            | None -> fail1 (sprintf "Name %s is not defined in the namespace %s" n ns) error_loc
             | Some adr ->
                 (* Name defined at adr. *)
                 pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)
@@ -157,8 +157,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
 
-  let disambiguate_identifier (ns_dict : nsopt_name_adr_dict) id =
-    let%bind dis_name = disambiguate_name ns_dict (get_id id) in
+  let disambiguate_identifier (ns_dict : nsopt_name_adr_dict) id error_loc =
+    let%bind dis_name = disambiguate_name ns_dict (get_id id) error_loc in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
 
   (**************************************************************)
@@ -180,7 +180,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ PostDisType.FunType (dis_arg_t, dis_res_t)
       | ADT (t_name, targs) ->
           let%bind dis_t_name =
-            disambiguate_identifier typ_dict t_name
+            disambiguate_identifier typ_dict t_name (get_rep t_name)
           in
           let%bind dis_targs = mapM targs ~f:recurse in
           pure @@ PostDisType.ADT (dis_t_name, dis_targs)
@@ -198,7 +198,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                Disambiguate expressions                    *)
   (**************************************************************)
 
-  let disambiguate_literal (dicts : name_dicts) l =
+  let disambiguate_literal (dicts : name_dicts) l error_loc =
     let module ResLit = PostDisSyntax.SLiteral in
     let rec recurser l =
       match l with
@@ -220,7 +220,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ ResLit.ByStr (ResLit.Bystr.parse_hex as_hex)
       | ADTValue (s, ts, ls) ->
           let%bind dis_s =
-            disambiguate_name dicts.ctr_dict s
+            disambiguate_name dicts.ctr_dict s error_loc
           in
           let%bind dis_ts =
             mapM ts ~f:(fun t ->
@@ -279,7 +279,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure (PostDisSyntax.Binder dis_x, [ x ])
       | Constructor (ctr, ps) ->
           let%bind dis_ctr =
-            disambiguate_identifier ctr_dict ctr
+            disambiguate_identifier ctr_dict ctr (SR.get_loc (get_rep ctr))
           in
           let%bind dis_ps, bounds =
             foldrM ps ~init:([], []) ~f:(fun (p_acc, bounds_acc) p' ->
@@ -291,22 +291,22 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     recurser p
 
   let disambiguate_exp (dicts : name_dicts) erep =
-    let disambiguate_identifier_helper simp_var_dict id =
-      disambiguate_identifier simp_var_dict id
+    let disambiguate_identifier_helper simp_var_dict loc id =
+      disambiguate_identifier simp_var_dict id loc
     in
     let disambiguate_type_helper t =
       disambiguate_type dicts.typ_dict t
     in
-    let disambiguate_literal_helper l = disambiguate_literal dicts l in
+    let disambiguate_literal_helper loc l = disambiguate_literal dicts l loc in
     let rec recurser simp_var_dict erep =
       let e, rep = erep in
       let%bind new_e =
         match e with
         | Literal l ->
-            let%bind dis_l = disambiguate_literal dicts l in
+            let%bind dis_l = disambiguate_literal dicts l (ER.get_loc rep) in
             pure @@ PostDisSyntax.Literal dis_l
         | Var id ->
-            let%bind dis_id = disambiguate_identifier_helper simp_var_dict id in
+            let%bind dis_id = disambiguate_identifier_helper simp_var_dict (ER.get_loc rep) id in
             pure @@ PostDisSyntax.Var dis_id
         | Let (id, t, lhs, rhs) ->
             let%bind dis_id = name_def_as_simple_global id in
@@ -321,11 +321,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         | Message mentries ->
             let disambiguate_payload = function
               | MLit l ->
-                  let%bind dis_l = disambiguate_literal_helper l in
+                  let%bind dis_l = disambiguate_literal_helper (ER.get_loc rep) l in
                   pure @@ PostDisSyntax.MLit dis_l
               | MVar id ->
                   let%bind dis_id =
-                    disambiguate_identifier_helper simp_var_dict id
+                    disambiguate_identifier_helper simp_var_dict (ER.get_loc rep) id
                   in
                   pure @@ PostDisSyntax.MVar dis_id
             in
@@ -345,22 +345,22 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fun (dis_id, dis_t, dis_body)
         | App (f, args) ->
-            let%bind dis_f = disambiguate_identifier_helper simp_var_dict f in
+            let%bind dis_f = disambiguate_identifier_helper simp_var_dict (ER.get_loc rep) f in
             let%bind dis_args =
-              mapM args ~f:(disambiguate_identifier_helper simp_var_dict)
+              mapM args ~f:(disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.App (dis_f, dis_args)
         | Constr (c, ts, args) ->
             let%bind dis_c =
-              disambiguate_identifier_helper dicts.ctr_dict c
+              disambiguate_identifier_helper dicts.ctr_dict (ER.get_loc rep) c
             in
             let%bind dis_ts_args = mapM ts ~f:disambiguate_type_helper in
             let%bind dis_args =
-              mapM args ~f:(disambiguate_identifier_helper simp_var_dict)
+              mapM args ~f:(disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.Constr (dis_c, dis_ts_args, dis_args)
         | MatchExpr (x, pes) ->
-            let%bind dis_x = disambiguate_identifier_helper simp_var_dict x in
+            let%bind dis_x = disambiguate_identifier_helper simp_var_dict (ER.get_loc rep) x in
             let%bind dis_pes =
               mapM pes ~f:(fun (p, erep') ->
                   let%bind dis_p, bounds =
@@ -378,7 +378,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             pure @@ PostDisSyntax.MatchExpr (dis_x, dis_pes)
         | Builtin (b, args) ->
             let%bind dis_args =
-              mapM args ~f:(disambiguate_identifier_helper simp_var_dict)
+              mapM args ~f:(disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.Builtin (b, dis_args)
         | TFun (tvar, body) ->
@@ -388,7 +388,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_body = recurser simp_var_dict body in
             pure @@ PostDisSyntax.TFun (dis_tvar, dis_body)
         | TApp (f, targs) ->
-            let%bind dis_f = disambiguate_identifier_helper simp_var_dict f in
+            let%bind dis_f = disambiguate_identifier_helper simp_var_dict (ER.get_loc rep) f in
             let%bind dis_targs = mapM targs ~f:disambiguate_type_helper in
             pure @@ PostDisSyntax.TApp (dis_f, dis_targs)
         | Fixpoint (f, t, body) ->
@@ -410,8 +410,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (**************************************************************)
 
   let rec disambiguate_stmts (dicts : name_dicts) stmts =
-    let disambiguate_identifier_helper simp_var_dict id =
-      disambiguate_identifier simp_var_dict id
+    let disambiguate_identifier_helper simp_var_dict loc id =
+      disambiguate_identifier simp_var_dict id loc
     in
     let folder (var_dict_acc, dis_stmts_acc_rev) srep =
       let s, rep = srep in
@@ -430,7 +430,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             (* f must be a locally defined field *)
             let%bind dis_f = name_def_as_simple_global f in
             let%bind dis_x =
-              disambiguate_identifier_helper var_dict_acc x
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) x
             in
             pure @@ (PostDisSyntax.Store (dis_f, dis_x), var_dict_acc)
         | Bind (x, e') ->
@@ -449,11 +449,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             (* m must be a locally defined field *)
             let%bind dis_m = name_def_as_simple_global m in
             let%bind dis_ks =
-              mapM ks ~f:(disambiguate_identifier_helper var_dict_acc)
+              mapM ks ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             let%bind dis_vopt =
               option_mapM vopt
-                ~f:(disambiguate_identifier_helper var_dict_acc)
+                ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             pure
             @@ ( PostDisSyntax.MapUpdate (dis_m, dis_ks, dis_vopt),
@@ -463,7 +463,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             (* m must be a locally defined field *)
             let%bind dis_m = name_def_as_simple_global m in
             let%bind dis_ks =
-              mapM ks ~f:(disambiguate_identifier_helper var_dict_acc)
+              mapM ks ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             (* x is now in scope as a local, so remove from var dictionary *)
             let new_var_dict =
@@ -474,7 +474,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                  new_var_dict )
         | MatchStmt (x, pss) ->
             let%bind dis_x =
-              disambiguate_identifier_helper var_dict_acc x
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) x
             in
             let%bind dis_pss =
               mapM pss ~f:(fun (p, ss) ->
@@ -506,33 +506,33 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             pure @@ (PostDisSyntax.AcceptPayment, var_dict_acc)
         | Iterate (l, proc) ->
             let%bind dis_l =
-              disambiguate_identifier_helper var_dict_acc l
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) l
             in
             (* Only locally defined procedures are allowed *)
             let%bind dis_proc = name_def_as_simple_global proc in
             pure @@ (PostDisSyntax.Iterate (dis_l, dis_proc), var_dict_acc)
         | SendMsgs msgs ->
             let%bind dis_msgs =
-              disambiguate_identifier_helper var_dict_acc msgs
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) msgs
             in
             pure @@ (PostDisSyntax.SendMsgs dis_msgs, var_dict_acc)
         | CreateEvnt e ->
             let%bind dis_e =
-              disambiguate_identifier_helper var_dict_acc e
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) e
             in
             pure @@ (PostDisSyntax.CreateEvnt dis_e, var_dict_acc)
         | CallProc (proc, args) ->
             (* Only locally defined procedures are allowed *)
             let%bind dis_proc = name_def_as_simple_global proc in
             let%bind dis_args =
-              mapM args ~f:(disambiguate_identifier_helper var_dict_acc)
+              mapM args ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             pure
             @@ (PostDisSyntax.CallProc (dis_proc, dis_args), var_dict_acc)
         | Throw xopt ->
             let%bind dis_xopt =
               option_mapM xopt
-                ~f:(disambiguate_identifier_helper var_dict_acc)
+                ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             pure @@ (PostDisSyntax.Throw dis_xopt, var_dict_acc)
       in
@@ -623,7 +623,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             sprintf "Type name %s clashes with previously defined or imported type"
               (as_error_string tname)
           in
-          let%bind () = check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname) msg in
+          let%bind () = check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname) msg (ER.get_loc (get_rep tname)) in
           pure @@
           add_key_and_lib_address_to_dict dicts.typ_dict None (as_string tname) this_address
         in
@@ -635,7 +635,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           foldM ctrs ~init:dicts.ctr_dict ~f:(fun ctr_dict_acc (ctr : ctr_def) ->
               let ctr_name = ctr.cname in
               let msg = mk_msg ctr_name in
-              let%bind () = check_duplicate_ns_dict_entry ctr_dict_acc None (as_string ctr_name) msg in
+              let%bind () = check_duplicate_ns_dict_entry ctr_dict_acc None (as_string ctr_name) msg (ER.get_loc (get_rep ctr.cname)) in
               pure @@
               add_key_and_lib_address_to_dict ctr_dict_acc None (as_string ctr_name) this_address)
         in
@@ -756,7 +756,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       List.Assoc.find init_extlibs_map (PostDisIdentifier.as_string lib.lname) ~equal:String.(=)
       |> Option.value ~default:(strip_filename_extension (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname)
     in
-    let build_dict_for_lib lib_address (init_var_dict, init_typ_dict, init_ctr_dict) lib =
+    let build_dict_for_lib lib_address (init_var_dict, init_typ_dict, init_ctr_dict) lib error_loc =
       let open PostDisSyntax in
       let open PostDisIdentifier in
       foldM lib.lentries ~init:(init_var_dict, init_typ_dict, init_ctr_dict)
@@ -772,7 +772,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   sprintf "Variable %s imported from multiple sources"
                     (as_error_string x)
                 in
-                let%bind () = check_duplicate_dict_entry init_var_dict unqualified_x msg in
+                let%bind () = check_duplicate_dict_entry init_var_dict unqualified_x msg error_loc in
                 (* Add unqualified_x -> lib_address to var dictionary *)
                 let new_var_dict =
                   add_key_address_to_dict var_dict_acc unqualified_x lib_address in
@@ -785,7 +785,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   sprintf "Type %s imported from multiple sources"
                     (as_error_string tname)
                 in
-                let%bind () = check_duplicate_dict_entry typ_dict_acc unqualified_t msg
+                let%bind () = check_duplicate_dict_entry typ_dict_acc unqualified_t msg error_loc
                 in
                 (* Add tname -> lib_address to type dictionary *)
                 let new_typ_dict =
@@ -804,7 +804,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                             (as_error_string ctr_def.cname)
                         in
                         let%bind () =
-                          check_duplicate_dict_entry dict_acc unqualified_ctr msg
+                          check_duplicate_dict_entry dict_acc unqualified_ctr msg error_loc
                         in
                         (* Add ctr_def.cname -> lib_address to ctr dictionary *)
                         let new_ctr_dict =
@@ -839,7 +839,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         ~default:[])
                    in
                    let%bind new_var_nm_dict, new_typ_nm_dict, new_ctr_nm_dict =
-                     build_dict_for_lib lib_address old_dicts lib
+                     build_dict_for_lib lib_address old_dicts lib (SR.get_loc (get_rep libname))
                    in
                    pure
                      (List.Assoc.add var_dict_acc (Some (as_string ns)) new_var_nm_dict ~equal:[%equal : String.t option],
@@ -858,7 +858,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         ~default:[])
                    in
                    let%bind new_var_nm_dict, new_typ_nm_dict, new_ctr_nm_dict =
-                     build_dict_for_lib lib_address old_dicts lib
+                     build_dict_for_lib lib_address old_dicts lib (SR.get_loc (get_rep libname))
                    in
                    pure
                      (List.Assoc.add var_dict_acc None new_var_nm_dict ~equal:[%equal : String.t option],
