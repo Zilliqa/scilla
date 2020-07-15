@@ -60,11 +60,14 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     ctr_dict : nsopt_name_adr_dict;
   }
 
+  let add_key_address_to_dict dict name_key value =
+    List.Assoc.add dict name_key value ~equal:String.(=)
+  
   let add_key_and_lib_address_to_dict (dict : nsopt_name_adr_dict) ns_key name_key value =
     let old_nm_dict =
       Option.value (List.Assoc.find dict ns_key ~equal:[%equal : String.t option])
         ~default:[] in
-    let new_nm_dict = List.Assoc.add old_nm_dict name_key value ~equal:String.(=) in
+    let new_nm_dict = add_key_address_to_dict old_nm_dict name_key value in
     List.Assoc.add dict ns_key new_nm_dict ~equal:[%equal : String.t option]
   
   let remove_local_id_from_dict (dict : nsopt_name_adr_dict) var =
@@ -76,13 +79,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let new_nm_dict = List.Assoc.remove old_nm_dict var ~equal:String.(=) in
     List.Assoc.add dict None new_nm_dict ~equal:[%equal : String.t option]
 
-  let check_duplicate_dict_entry (dict : nsopt_name_adr_dict) ns_key name_key msg =
+  let check_duplicate_dict_entry nm_dict name_key msg =
+    match List.Assoc.find nm_dict name_key ~equal:String.(=) with
+    | None -> pure () (* Name has not already been defined *)
+    | Some _ -> fail0 msg (* Name has already been defined *)
+  
+  let check_duplicate_ns_dict_entry (dict : nsopt_name_adr_dict) ns_key name_key msg =
     match List.Assoc.find dict ns_key ~equal:[%equal : String.t option] with
     | None -> pure () (* No names defined in namespace *)
-    | Some nm_dict ->
-        match List.Assoc.find nm_dict name_key ~equal:String.(=) with
-        | None -> pure () (* Name has not already been defined *)
-        | Some _ -> fail0 msg (* Name has already been defined *)
+    | Some nm_dict -> check_duplicate_dict_entry nm_dict name_key msg
 
   let strip_filename_extension = Filename.chop_extension
   
@@ -160,7 +165,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                   Disambiguate types                       *)
   (**************************************************************)
 
-  let rec disambiguate_type typ_dict t =
+  let disambiguate_type typ_dict t =
     let module PostDisType = PostDisSyntax.SType in
     let rec recurse t =
       match t with
@@ -618,7 +623,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             sprintf "Type name %s clashes with previously defined or imported type"
               (as_error_string tname)
           in
-          let%bind () = check_duplicate_dict_entry dicts.typ_dict None (as_string tname) msg in
+          let%bind () = check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname) msg in
           pure @@
           add_key_and_lib_address_to_dict dicts.typ_dict None (as_string tname) this_address
         in
@@ -630,7 +635,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           foldM ctrs ~init:dicts.ctr_dict ~f:(fun ctr_dict_acc (ctr : ctr_def) ->
               let ctr_name = ctr.cname in
               let msg = mk_msg ctr_name in
-              let%bind () = check_duplicate_dict_entry ctr_dict_acc None (as_string ctr_name) msg in
+              let%bind () = check_duplicate_ns_dict_entry ctr_dict_acc None (as_string ctr_name) msg in
               pure @@
               add_key_and_lib_address_to_dict ctr_dict_acc None (as_string ctr_name) this_address)
         in
@@ -681,7 +686,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (*                 Disambiguate contracts                     *)
   (**************************************************************)
 
-  (* CONTINUE HERE *)
   let disambiguate_contract (dicts : name_dicts) c =
     let { cname; cparams; cconstraint; cfields; ccomps } = c in
     let%bind dis_cname = name_def_as_simple_global cname in
@@ -700,7 +704,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     let body_dicts =
       {
-        ns_dict = dicts.ns_dict;
         var_dict = body_var_dict;
         typ_dict = dicts.typ_dict;
         ctr_dict = dicts.ctr_dict;
@@ -710,7 +713,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     let%bind dis_cfields =
       mapM cfields ~f:(fun (fname, t, init) ->
           (* Field names are represented as simple names, since they are only 
-             exposed via the remote read construct, which carries its own address reference. *)
+             exposed to other contracts via the remote read construct, which 
+             carries its own address reference. *)
           let%bind dis_fname = name_def_as_simple_global fname in
           let%bind dis_t =
             disambiguate_type dicts.typ_dict t
@@ -718,8 +722,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_init = disambiguate_exp body_dicts init in
           pure (dis_fname, dis_t, dis_init))
     in
-    (* Ignore fields - they can never be confused with locals, and must be
-       locally defined. *)
+    (* Do not remove fields from var dictionary, since they can never be 
+       confused with locals. *)
     let%bind dis_ccomps = mapM ccomps ~f:(disambiguate_component body_dicts) in
     pure
     @@ {
@@ -752,105 +756,116 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       List.Assoc.find init_extlibs_map (PostDisIdentifier.as_string lib.lname) ~equal:String.(=)
       |> Option.value ~default:(strip_filename_extension (SR.get_loc (PostDisIdentifier.get_rep lib.lname)).fname)
     in
-    (* Build dictionaries *)
-    foldM imports ~init:([], [], [], [])
-      ~f:(fun ( ns_dict_acc,
-                var_dict_acc,
-                typ_dict_acc,
-                ctr_dict_acc )
-              (libname, ns_opt)
-              ->
-        let%bind lib = find_lib libname extlibs in
-        let lib_address = find_lib_address lib in
-        match ns_opt with
-        | Some ns ->
-            (* Namespace defined - only add to namespace dictionary *)
-            (* Check for duplicate names - disambiguation won't work otherwise *)
-            let msg =
-              sprintf "Duplicate namespace %s in imports" (as_string ns)
-            in
-            let%bind () = check_duplicate_dict_entry ns_dict_acc (as_string ns) msg in
-            let ns_dict =
-              add_key_and_lib_address_to_dict ns_dict_acc (as_string ns) lib_address
-            in
-            pure
-              (ns_dict, var_dict_acc, typ_dict_acc, ctr_dict_acc)
-        | None ->
-            (* No namespace defined - add all simple names *)
-            let open PostDisSyntax in
-            let open PostDisIdentifier in
-            let%bind var_dict, typ_dict, ctr_dict =
-              foldM lib.lentries
-                ~init:(var_dict_acc, typ_dict_acc, ctr_dict_acc)
-                ~f:(fun ( var_dict_acc',
-                          typ_dict_acc',
-                          ctr_dict_acc' )
-                        lentry
-                        ->
-                  match lentry with
-                  | LibVar (x, _, _) ->
-                      (* x is a qualified name, so extract the simple name *)
-                      let unqualified_x = get_unqualified_name (get_id x) in
-                      (* Check for duplicate names - disambiguation won't work otherwise.
-                         Only check against previous imports -
-                         duplicate names within the same library does not affect disambiguation *)
-                      let msg =
-                        sprintf "Variable %s imported from multiple sources"
-                          (as_error_string x)
-                      in
-                      let%bind () =
-                        check_duplicate_dict_entry var_dict_acc unqualified_x msg
-                      in
-                      (* Add unqualified_x -> lib_address to var dictionary *)
-                      let var_dict =
-                        add_key_and_lib_address_to_dict var_dict_acc'
-                          unqualified_x lib_address
-                      in
-                      pure
-                        (var_dict, typ_dict_acc', ctr_dict_acc')
-                  | LibTyp (tname, ctr_defs) ->
-                      (* tname is qualified, so extract the simple name. *)
-                      let unqualified_t = get_unqualified_name (get_id tname) in
-                      (* Check for duplicate names - disambiguation won't work otherwise. *)
-                      let msg =
-                        sprintf "Type %s imported from multiple sources"
-                          (as_error_string tname)
-                      in
-                      let%bind () =
-                        check_duplicate_dict_entry typ_dict_acc' unqualified_t msg
-                      in
-                      (* Add tname -> lib_address to type dictionary *)
-                      let typ_dict =
-                        add_key_and_lib_address_to_dict typ_dict_acc'
-                          unqualified_t lib_address
-                      in
-                      (* Deal with constructors *)
-                      let%bind ctr_dict =
-                        foldM ctr_defs ~init:ctr_dict_acc'
-                          ~f:(fun dict_acc (ctr_def : ctr_def) ->
-                              (* ctr_def.cname is qualified, so extract the simple name. *)
-                              let unqualified_ctr = get_unqualified_name (get_id ctr_def.cname) in
-                              (* Check for duplicate names - disambiguation won't work otherwise. *)
-                              let msg =
-                                sprintf
-                                  "Constructor %s imported from multiple sources"
-                                  (as_error_string ctr_def.cname)
-                              in
-                              let%bind () =
-                                check_duplicate_dict_entry dict_acc unqualified_ctr msg
-                              in
-                              (* Add ctr_def.cname -> lib_address to ctr dictionary *)
-                              let ctr_dict =
-                                add_key_and_lib_address_to_dict dict_acc
-                                unqualified_ctr lib_address
-                            in
-                            pure ctr_dict)
-                      in
-                      (* Type and constructor dictionaries updated *)
-                      pure (var_dict_acc', typ_dict, ctr_dict))
-            in
-            (* All library definiens added *)
-            pure (ns_dict_acc, var_dict, typ_dict, ctr_dict))
+    let build_dict_for_lib lib_address (init_var_dict, init_typ_dict, init_ctr_dict) lib =
+      let open PostDisSyntax in
+      let open PostDisIdentifier in
+      foldM lib.lentries ~init:(init_var_dict, init_typ_dict, init_ctr_dict)
+        ~f:(fun (var_dict_acc, typ_dict_acc, ctr_dict_acc) lentry ->
+            match lentry with
+            | LibVar (x, _, _) ->
+                (* x is a qualified name, so extract the simple name *)
+                let unqualified_x = get_unqualified_name (get_id x) in
+                (* Check for duplicate names - disambiguation won't work otherwise.
+                   Only check against previous imports -
+                   duplicate names within the same library does not affect disambiguation *)
+                let msg =
+                  sprintf "Variable %s imported from multiple sources"
+                    (as_error_string x)
+                in
+                let%bind () = check_duplicate_dict_entry init_var_dict unqualified_x msg in
+                (* Add unqualified_x -> lib_address to var dictionary *)
+                let new_var_dict =
+                  add_key_address_to_dict var_dict_acc unqualified_x lib_address in
+                pure (new_var_dict, typ_dict_acc, ctr_dict_acc)
+            | LibTyp (tname, ctr_defs) ->
+                (* tname is qualified, so extract the simple name. *)
+                let unqualified_t = get_unqualified_name (get_id tname) in
+                (* Check for duplicate names - disambiguation won't work otherwise. *)
+                let msg =
+                  sprintf "Type %s imported from multiple sources"
+                    (as_error_string tname)
+                in
+                let%bind () = check_duplicate_dict_entry typ_dict_acc unqualified_t msg
+                in
+                (* Add tname -> lib_address to type dictionary *)
+                let new_typ_dict =
+                  add_key_address_to_dict typ_dict_acc unqualified_t lib_address
+                in
+                (* Deal with constructors *)
+                let%bind new_ctr_dict =
+                  foldM ctr_defs ~init:ctr_dict_acc
+                    ~f:(fun dict_acc (ctr_def : ctr_def) ->
+                        (* ctr_def.cname is qualified, so extract the simple name. *)
+                        let unqualified_ctr = get_unqualified_name (get_id ctr_def.cname) in
+                        (* Check for duplicate names - disambiguation won't work otherwise. *)
+                        let msg =
+                          sprintf
+                            "Constructor %s imported from multiple sources"
+                            (as_error_string ctr_def.cname)
+                        in
+                        let%bind () =
+                          check_duplicate_dict_entry dict_acc unqualified_ctr msg
+                        in
+                        (* Add ctr_def.cname -> lib_address to ctr dictionary *)
+                        let new_ctr_dict =
+                          add_key_address_to_dict dict_acc unqualified_ctr lib_address
+                        in
+                        pure new_ctr_dict)
+                in
+                (* Type and constructor dictionaries updated *)
+                pure (var_dict_acc, new_typ_dict, new_ctr_dict))
+    in
+    let%bind res_var_dict, res_typ_dict, res_ctr_dict =
+      (* Build dictionaries *)
+      foldM imports ~init:([], [], [])
+        ~f:(fun ( var_dict_acc,
+                  typ_dict_acc,
+                  ctr_dict_acc )
+             (libname, ns_opt)
+             ->
+               let%bind lib = find_lib libname extlibs in
+               let lib_address = find_lib_address lib in
+               match ns_opt with
+               | Some ns ->
+                   let old_dicts =
+                     (Option.value (List.Assoc.find var_dict_acc (Some (as_string ns))
+                                      ~equal:[%equal : String.t option])
+                        ~default:[],
+                      Option.value (List.Assoc.find typ_dict_acc (Some (as_string ns))
+                                      ~equal:[%equal : String.t option])
+                        ~default:[],
+                      Option.value (List.Assoc.find ctr_dict_acc (Some (as_string ns))
+                                      ~equal:[%equal : String.t option])
+                        ~default:[])
+                   in
+                   let%bind new_var_nm_dict, new_typ_nm_dict, new_ctr_nm_dict =
+                     build_dict_for_lib lib_address old_dicts lib
+                   in
+                   pure
+                     (List.Assoc.add var_dict_acc (Some (as_string ns)) new_var_nm_dict ~equal:[%equal : String.t option],
+                      List.Assoc.add typ_dict_acc (Some (as_string ns)) new_typ_nm_dict ~equal:[%equal : String.t option],
+                      List.Assoc.add ctr_dict_acc (Some (as_string ns)) new_ctr_nm_dict ~equal:[%equal : String.t option])
+               | None ->
+                   let old_dicts =
+                     (Option.value (List.Assoc.find var_dict_acc None
+                                      ~equal:[%equal : String.t option])
+                        ~default:[],
+                      Option.value (List.Assoc.find typ_dict_acc None
+                                      ~equal:[%equal : String.t option])
+                        ~default:[],
+                      Option.value (List.Assoc.find ctr_dict_acc None
+                                      ~equal:[%equal : String.t option])
+                        ~default:[])
+                   in
+                   let%bind new_var_nm_dict, new_typ_nm_dict, new_ctr_nm_dict =
+                     build_dict_for_lib lib_address old_dicts lib
+                   in
+                   pure
+                     (List.Assoc.add var_dict_acc None new_var_nm_dict ~equal:[%equal : String.t option],
+                      List.Assoc.add typ_dict_acc None new_typ_nm_dict ~equal:[%equal : String.t option],
+                      List.Assoc.add ctr_dict_acc None new_ctr_nm_dict ~equal:[%equal : String.t option]))
+    in
+    pure (res_var_dict, res_typ_dict, res_ctr_dict)
 
   let disambiguate_cmodule cmod (extlibs : PostDisSyntax.libtree list) init_extlibs_map this_address =
     let { smver; libs; elibs; contr } = cmod in
@@ -866,12 +881,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     (* Ignore name clashes with built-in datatypes and constructors.
        If such a name clash exists, then the recursion checker will catch them
        when checking the offending library. *)
-    let%bind ns_dict, imp_var_dict, imp_typ_dict, imp_ctr_dict =
+    let%bind imp_var_dict, imp_typ_dict, imp_ctr_dict =
       build_import_dicts elibs extlibs init_extlibs_map
     in
     let imp_dicts =
       {
-        ns_dict;
         var_dict = imp_var_dict;
         typ_dict = imp_typ_dict;
         ctr_dict = imp_ctr_dict;
@@ -901,7 +915,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     let contract_dicts =
       {
-        ns_dict;
         var_dict = contract_var_dict;
         typ_dict = contract_typ_dict;
         ctr_dict = contract_ctr_dict;
@@ -930,12 +943,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     (* Ignore name clashes with built-in datatypes and constructors.
        If such a name clash exists, then the recursion checker will catch them
        when checking the offending library. *)
-    let%bind ns_dict, imp_var_dict, imp_typ_dict, imp_ctr_dict =
+    let%bind imp_var_dict, imp_typ_dict, imp_ctr_dict =
       build_import_dicts elibs extlibs init_extlibs_map
     in
     let imp_dicts =
       {
-        ns_dict;
         var_dict = imp_var_dict;
         typ_dict = imp_typ_dict;
         ctr_dict = imp_ctr_dict;
