@@ -195,6 +195,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let%bind types = mapM args ~f:literal_type in
     let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
     match (op, types, args) with
+    | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ ByStr a1; _ ] ->
+        pure (Bystr.width a1 * base)
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
