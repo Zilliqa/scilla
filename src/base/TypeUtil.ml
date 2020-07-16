@@ -102,14 +102,14 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val resolveT :
       ?lopt:R.rep option ->
       t ->
-      string ->
+      TUName.t ->
       (resolve_result, scilla_error list) result
 
     (* Is bound in environment? *)
-    val existsT : t -> string -> bool
+    val existsT : t -> TUName.t -> bool
 
     (* Is bound in tvars? *)
-    val existsV : t -> string -> bool
+    val existsV : t -> TUName.t -> bool
 
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
@@ -255,17 +255,17 @@ functor
         "{" ^ cs ^ " }"
 
       let resolveT ?(lopt = None) env id =
-        match Hashtbl.find_opt env.tenv id with
+        match Hashtbl.find_opt env.tenv (TUName.as_string id) with
         | Some r -> pure r
         | None ->
             let sloc =
               match lopt with Some l -> R.get_loc l | None -> dummy_loc
             in
-            fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" id) sloc
+            fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" (TUName.as_error_string id)) sloc
 
-      let existsT env id = Hashtbl.mem env.tenv id
+      let existsT env id = Hashtbl.mem env.tenv (TUName.as_string id)
 
-      let existsV env id = Hashtbl.mem env.tvars id
+      let existsV env id = Hashtbl.mem env.tvars (TUName.as_string id)
 
       let mk () =
         let t1 = Hashtbl.create 50 in

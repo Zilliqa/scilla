@@ -266,7 +266,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
     | Var i ->
         let%bind r =
-          fromR_TE @@ TEnv.resolveT tenv (as_string i) ~lopt:(Some (get_rep i))
+          fromR_TE @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i))
         in
         let typ = rr_typ r in
         pure @@ (TypedSyntax.Var (add_type_to_ident i typ), (typ, rep))
@@ -281,7 +281,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              (mk_qual_tp (FunType (t, bt.tp)), rep) )
     | App (f, actuals) ->
         let%bind fres =
-          fromR_TE @@ TEnv.resolveT tenv (as_string f) ~lopt:(Some (get_rep f))
+          fromR_TE @@ TEnv.resolveT tenv (get_id f) ~lopt:(Some (get_rep f))
         in
         let%bind typed_actuals, apptyp =
           app_type tenv (rr_typ fres).tp actuals ~lc:(ER.get_loc (get_rep f))
@@ -352,7 +352,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (ER.get_loc rep))
         else
           let%bind sctyp =
-            fromR_TE @@ TEnv.resolveT tenv (as_string x) ~lopt:(Some (get_rep x))
+            fromR_TE @@ TEnv.resolveT tenv (get_id x) ~lopt:(Some (get_rep x))
           in
           let sct = (rr_typ sctyp).tp in
           let%bind typed_clauses_rev =
@@ -391,7 +391,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let id = get_id tvar in
         (* XXX this is a workaround for alpha-renaming *)
         (* Make it illegal to declare a new type variable inside the scope of another type variable with the same name *)
-        if TEnv.existsV tenv (TCName.as_string id) then
+        if TEnv.existsV tenv id then
           fail
             (mk_type_error1
                (sprintf "Type variable %s is already in use\n" (TCName.as_error_string id))
@@ -409,7 +409,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           mapM arg_types ~f:(fun t -> fromR_TE @@ TEnv.is_wf_type tenv t)
         in
         let%bind tfres =
-          fromR_TE @@ TEnv.resolveT tenv (as_string tf) ~lopt:(Some (get_rep tf))
+          fromR_TE @@ TEnv.resolveT tenv (get_id tf) ~lopt:(Some (get_rep tf))
         in
         let tf_rr = rr_typ tfres in
         let tftyp = tf_rr.tp in
@@ -446,7 +446,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           | MVar i ->
               let%bind r =
                 fromR_TE
-                @@ TEnv.resolveT tenv (as_string i) ~lopt:(Some (get_rep i))
+                @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i))
               in
               let t = rr_typ r in
               let rtp = t.tp in
@@ -489,7 +489,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   and type_actuals tenv actuals =
     let%bind tresults =
       mapM actuals ~f:(fun arg ->
-          fromR_TE @@ TEnv.resolveT tenv (as_string arg) ~lopt:(Some (get_rep arg)))
+          fromR_TE @@ TEnv.resolveT tenv (get_id arg) ~lopt:(Some (get_rep arg)))
     in
     let tqargs = List.map tresults ~f:rr_typ in
     let targs = List.map tqargs ~f:(fun rr -> rr.tp) in
@@ -524,14 +524,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
   let type_map_access env m' keys' =
     let%bind t' =
-      fromR_TE @@ TEnv.resolveT env.fields (as_string m') ~lopt:(Some (get_rep m'))
+      fromR_TE @@ TEnv.resolveT env.fields (get_id m') ~lopt:(Some (get_rep m'))
     in
     let rec helper t keys =
       match (t, keys) with
       | MapType (kt, vt), k :: rest ->
           let%bind k_t =
             fromR_TE
-            @@ TEnv.resolveT env.pure (as_string k) ~lopt:(Some (get_rep k))
+            @@ TEnv.resolveT env.pure (get_id k) ~lopt:(Some (get_rep k))
           in
           let%bind () =
             fromR_TE
@@ -570,7 +570,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind pure', ident_type =
               let%bind fr =
                 fromR_TE
-                @@ TEnv.resolveT env.fields (as_string f) ~lopt:(Some (get_rep f))
+                @@ TEnv.resolveT env.fields (get_id f) ~lopt:(Some (get_rep f))
               in
               pure @@ ((x, (rr_typ fr).tp), rr_typ fr)
             in
@@ -595,12 +595,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let%bind checked_stmts, f_type, r_type =
                 let%bind fr =
                   fromR_TE
-                  @@ TEnv.resolveT env.fields (as_string f)
+                  @@ TEnv.resolveT env.fields (get_id f)
                        ~lopt:(Some (get_rep f))
                 in
                 let%bind r =
                   fromR_TE
-                  @@ TEnv.resolveT env.pure (as_string r) ~lopt:(Some (get_rep r))
+                  @@ TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r))
                 in
                 let%bind () =
                   fromR_TE @@ assert_type_equiv (rr_typ fr).tp (rr_typ r).tp
@@ -636,7 +636,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     (* This is adding/replacing the value for a key. *)
                     let%bind v_resolv =
                       fromR_TE
-                      @@ TEnv.resolveT env.pure (as_string v)
+                      @@ TEnv.resolveT env.pure (get_id v)
                            ~lopt:(Some (get_rep v))
                     in
                     let typed_v = rr_typ v_resolv in
@@ -704,7 +704,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind sctyp =
                 fromR_TE
-                @@ TEnv.resolveT env.pure (as_string x) ~lopt:(Some (get_rep x))
+                @@ TEnv.resolveT env.pure (get_id x) ~lopt:(Some (get_rep x))
               in
               let sctype = rr_typ sctyp in
               let sct = sctype.tp in
@@ -731,7 +731,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | SendMsgs i ->
             let%bind r =
               fromR_TE
-              @@ TEnv.resolveT env.pure (as_string i) ~lopt:(Some (get_rep i))
+              @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
             in
             let i_type = rr_typ r in
             let expected = list_typ msg_typ in
@@ -750,7 +750,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             (* Same as SendMsgs except that this takes a single message instead of a list. *)
             let%bind r =
               fromR_TE
-              @@ TEnv.resolveT env.pure (as_string i) ~lopt:(Some (get_rep i))
+              @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
             in
             let i_type = rr_typ r in
             let%bind () =
@@ -788,7 +788,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Iterate (l, p) -> (
             let%bind lt =
               fromR_TE
-              @@ TEnv.resolveT env.pure (as_string l) ~lopt:(Some (get_rep l))
+              @@ TEnv.resolveT env.pure (get_id l) ~lopt:(Some (get_rep l))
             in
             let l_type = rr_typ lt in
             match lookup_proc env p with
@@ -818,7 +818,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 (* Same as CreateEvent. *)
                 let%bind r =
                   fromR_TE
-                  @@ TEnv.resolveT env.pure (as_string i) ~lopt:(Some (get_rep i))
+                  @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
                 in
                 let i_type = rr_typ r in
                 let%bind () =
@@ -1026,47 +1026,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   let type_libraries elibs tenv0 remaining_gas =
     let%bind typed_elibs, emsgs, remaining_gas =
       let rec recurser libl remaining_gas =
-        (* Do a preliminary check to ensure no name conflicts b/w
-         * libraries in elibs at just the root levels. *)
-        let err_dups =
-          (* check if any entry in "lib" is in "rest". *)
-          let check_dup lib rest (err_acc : scilla_error list) =
-            List.fold lib.lentries ~init:err_acc ~f:(fun err_acc entry ->
-                (* Check if entry is in rest. *)
-                let ename =
-                  match entry with LibTyp (i, _) | LibVar (i, _, _) -> i
-                in
-                List.fold rest ~init:err_acc ~f:(fun err_acc lib' ->
-                    List.fold lib'.lentries ~init:err_acc
-                      ~f:(fun err_acc entry' ->
-                        let ename' =
-                          match entry' with
-                          | LibTyp (i, _) | LibVar (i, _, _) -> i
-                        in
-                        if TCIdentifier.equal ename ename' then
-                          err_acc
-                          @ mk_error1
-                              (sprintf
-                                 "Entry %s in library %s conflicts with entry \
-                                  in library %s"
-                                 (as_error_string ename) (as_error_string lib'.lname)
-                                 (as_error_string lib.lname))
-                              (ER.get_loc (get_rep ename'))
-                        else err_acc)))
-          in
-          let rec checker libs err_acc =
-            match libs with
-            | [] | [ _ ] -> err_acc
-            | lib :: rest ->
-                let err_acc' = check_dup lib rest err_acc in
-                checker rest err_acc'
-          in
-          let libl' = List.map libl ~f:(fun l -> l.libn) in
-          checker libl' []
-        in
-
-        (* Do the actual typing. *)
-        foldM libl ~init:([], err_dups, remaining_gas)
+        foldM libl ~init:([], [], remaining_gas)
           ~f:(fun (lib_acc, emsgs_acc, remaining_gas) elib ->
             let%bind dep_libs, dep_emsgs, remaining_gas =
               recurser elib.deps remaining_gas

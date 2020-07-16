@@ -1,21 +1,21 @@
 {
-  "gas_remaining": "8000",
   "errors": [
-    {
-      "error_message": "Type error(s) in contract BadLib:\n",
-      "start_location": {
-        "file": "checker/bad/bad_adt_lib_2.scilla",
-        "line": 9,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
     {
       "error_message": "Multiple declarations of type constructor Item1",
       "start_location": {
         "file": "checker/bad/lib/BadADTLib2.scillib",
-        "line": 9,
+        "line": 10,
         "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Failed to disambiguate imported library BadADTLib2.\n",
+      "start_location": {
+        "file": "checker/bad/bad_adt_lib_2.scilla",
+        "line": 3,
+        "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

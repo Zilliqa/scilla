@@ -76,7 +76,9 @@ let import_lib name sloc =
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
-        let this_address, extlibs = get_init_this_address_and_extlibs initf in
+        let init_this_address, extlibs = get_init_this_address_and_extlibs initf in
+        (* If this_address is unspecified in the init file, then use the base filename without extension as the address *)
+        let this_address = if String.is_empty init_this_address then name else init_this_address in
         (libf, this_address, extlibs)
   in
   match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
@@ -104,7 +106,7 @@ let import_libs names_and_namespaces init_address_map =
               let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
               (* Transform local names to global names *)
               match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map this_address with
-              | Error s -> fatal_error (s @ (mk_error1 "Failed to disambiguate.\n") (get_rep libname))
+              | Error s -> fatal_error (s @ (mk_error1 (sprintf "Failed to disambiguate imported library %s.\n" (as_string libname)) (get_rep libname)))
               | Ok dis_lib -> 
                   let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
                   libnode :: libacc_rev)

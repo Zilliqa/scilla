@@ -89,7 +89,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | None -> pure () (* No names defined in namespace *)
     | Some nm_dict -> check_duplicate_dict_entry nm_dict name_key msg error_loc
 
-  let strip_filename_extension = Filename.chop_extension
+  let strip_filename_extension x = Filename.chop_extension (Filename.basename x)
   
   let get_unqualified_name = function
     | GlobalName.SimpleGlobal n, _
@@ -620,7 +620,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
            Then map simple names to the address of the current module. *)
         let%bind res_typ_dict =
           let msg =
-            sprintf "Type name %s clashes with previously defined or imported type"
+            sprintf "Multiple declarations of type %s"
               (as_error_string tname)
           in
           let%bind () = check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname) msg (ER.get_loc (get_rep tname)) in
@@ -629,7 +629,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         in
         let%bind res_ctr_dict =
           let mk_msg cname =
-            sprintf "Constructor name %s clashes with previously defined or imported constructor"
+            sprintf "Multiple declarations of type constructor %s"
               (as_error_string cname)
           in
           foldM ctrs ~init:dicts.ctr_dict ~f:(fun ctr_dict_acc (ctr : ctr_def) ->
@@ -659,28 +659,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           pure (dis_lentry :: dis_lentries_acc_rev, new_dicts))
     in
-    (* Toplevel names defined in the library may be in scope somewhere else,
-       so must be collected and returned *)
-    let lib_vars_def, lib_typs_def, lib_ctrs_def =
-      List.fold_left lentries ~init:([], [], [])
-        ~f:(fun (vars_acc, typs_acc, ctrs_acc) lentry ->
-          match lentry with
-          | LibVar (x, _, _) -> (as_string x :: vars_acc, typs_acc, ctrs_acc)
-          | LibTyp (tname, ctrs) ->
-              let new_ctrs =
-                List.fold_left ctrs ~init:ctrs_acc ~f:(fun ctrs_acc' ctr ->
-                    as_string ctr.cname :: ctrs_acc')
-              in
-              (vars_acc, as_string tname :: typs_acc, new_ctrs))
-    in
     pure
-    @@ ( {
-           PostDisSyntax.lname = dis_lname;
-           PostDisSyntax.lentries = List.rev dis_lentries_rev;
-         },
-         lib_vars_def,
-         lib_typs_def,
-         lib_ctrs_def )
+    @@ {
+      PostDisSyntax.lname = dis_lname;
+      PostDisSyntax.lentries = List.rev dis_lentries_rev;
+    }
 
   (**************************************************************)
   (*                 Disambiguate contracts                     *)
@@ -800,7 +783,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                         (* Check for duplicate names - disambiguation won't work otherwise. *)
                         let msg =
                           sprintf
-                            "Constructor %s imported from multiple sources"
+                            "Type constructor %s imported from multiple sources"
                             (as_error_string ctr_def.cname)
                         in
                         let%bind () =
@@ -891,16 +874,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         ctr_dict = imp_ctr_dict;
       }
     in
-    let%bind dis_libs, lib_vars, lib_typs, lib_ctrs =
-      match libs with
-      | None -> pure (None, [], [], [])
-      | Some lib ->
-          let%bind dis_lib, lib_var, lib_typs, lib_ctrs =
-            disambiguate_library imp_dicts lib this_address
-          in
-          pure (Some dis_lib, lib_var, lib_typs, lib_ctrs)
+    let%bind dis_libs = disambiguate_library imp_dicts lib this_address
     in
-    (* Remove contract's own library definitions *)
+
+    (* CONTINUE HERE: We need a call to build_dict_for_lib *)
+    
+    (* Add contract's own library definitions to dictionaries *)
     let contract_var_dict =
       List.fold_left lib_vars ~init:imp_var_dict
         ~f:remove_local_id_from_dict

@@ -93,14 +93,14 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val resolveT :
       ?lopt:R.rep option ->
       t ->
-      string ->
+      TUName.t ->
       (resolve_result, scilla_error list) result
 
     (* Is bound in environment? *)
-    val existsT : t -> string -> bool
+    val existsT : t -> TUName.t -> bool
 
     (* Is bound in tvars? *)
-    val existsV : t -> string -> bool
+    val existsV : t -> TUName.t -> bool
 
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
