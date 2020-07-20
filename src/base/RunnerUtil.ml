@@ -101,8 +101,14 @@ let import_libs names_and_namespaces init_address_map =
                   sprintf "Cyclic dependence found when importing %s (mapped to %s)."
                     (as_error_string libname) (Option.value_map ~default:"" ~f:as_error_string ns_opt)
               in fatal_error @@ mk_error1 errmsg (get_rep libname)
-            else 
-              let ilib, this_address, ilib_import_map = import_lib (as_string libname) (get_rep libname) in
+            else
+              jfkdla;jfkdl;asjfkl
+              let ilib_address =
+                Option.value (List.Assoc.find address_map (as_string libname) ~equal:String.(=))
+                  ~default:(as_string libname)
+              in
+              (* Continue here: import_lib expects the filename rather than the library name. This means that we already have this_address (= ilib_address), and the disambiguator may not need the entire address map. In any case, import_lib needs to be changed to not return this_address. *)
+              let ilib, this_address, ilib_import_map = import_lib (ilib_address) (get_rep libname) in
               let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
               (* Transform local names to global names *)
               match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map this_address with

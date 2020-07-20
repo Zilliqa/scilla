@@ -1,6 +1,6 @@
 scilla_version 0
 
-library BadADTLib3c
+library BadADTLib3a
 
 type TestType2 =
 | Item1 of Int32

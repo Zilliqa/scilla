@@ -180,7 +180,7 @@ module MkType (I : ScillaIdentifier) = struct
     | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
     | ADT (name, targs) ->
         let elems =
-          TIdentifier.as_string name
+          TIdentifier.as_error_string name
           :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
         in
         String.concat ~sep:" " elems

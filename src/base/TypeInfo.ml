@@ -59,7 +59,8 @@ struct
 
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =
-    let name = as_string i in
+    (* Use error string in order to not change the IDE interface *)
+    let name = as_error_string i in
     let sloc = ER.get_loc (get_rep i) in
     (* Once Issue #134 is solved, this calculation can be avoided. *)
     let eloc = { sloc with cnum = sloc.cnum + String.length name } in
