@@ -246,9 +246,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let map_coster op args base =
     match args with
     | Map (_, m) :: _ -> (
-        (* get and contains do not make a copy of the Map, hence constant. *)
+        (* size, get and contains do not make a copy of the Map, hence constant. *)
         match op with
-        | Builtin_get | Builtin_contains -> pure base
+        | Builtin_size | Builtin_get | Builtin_contains -> pure base
         | _ -> pure (base + (base * Caml.Hashtbl.length m)) )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
