@@ -10,6 +10,11 @@
     ],
     "ADT constructors": [
       {
+        "Square": [
+          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
+        ]
+      },
+      {
         "SquareContents": [
           { "constructor": "Occupied", "tags": [ "_", "_", "NotMoney" ] }
         ]
@@ -17,11 +22,6 @@
       {
         "Action": [
           { "constructor": "Move", "tags": [ "_", "_", "NoInfo", "_" ] }
-        ]
-      },
-      {
-        "Square": [
-          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
         ]
       }
     ]
@@ -132,14 +132,9 @@
         ]
       },
       {
-        "tname": "Error",
+        "tname": "Square",
         "tparams": [],
-        "tmap": [
-          { "cname": "GameOver", "argtypes": [] },
-          { "cname": "PlayingOutOfTurn", "argtypes": [] },
-          { "cname": "IllegalAction", "argtypes": [] },
-          { "cname": "InternalError", "argtypes": [] }
-        ]
+        "tmap": [ { "cname": "Square", "argtypes": [ "Uint32", "Uint32" ] } ]
       },
       {
         "tname": "SquareContents",
@@ -150,26 +145,6 @@
             "argtypes": [ "Piece", "PromotionStatus", "ByStr20" ]
           },
           { "cname": "Free", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Option",
-        "tparams": [ "'A" ],
-        "tmap": [
-          { "cname": "Some", "argtypes": [ "'A" ] },
-          { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Action",
-        "tparams": [],
-        "tmap": [
-          {
-            "cname": "Move",
-            "argtypes": [ "Square", "Direction", "Uint32", "Bool" ]
-          },
-          { "cname": "Place", "argtypes": [ "Piece", "Square" ] },
-          { "cname": "Resign", "argtypes": [] }
         ]
       },
       {
@@ -184,22 +159,6 @@
           { "cname": "NorthWest", "argtypes": [] },
           { "cname": "North", "argtypes": [] },
           { "cname": "NorthEast", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Bool",
-        "tparams": [],
-        "tmap": [
-          { "cname": "True", "argtypes": [] },
-          { "cname": "False", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Nat",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Zero", "argtypes": [] },
-          { "cname": "Succ", "argtypes": [ "Nat" ] }
         ]
       },
       {
@@ -224,9 +183,50 @@
         ]
       },
       {
-        "tname": "Square",
+        "tname": "Bool",
         "tparams": [],
-        "tmap": [ { "cname": "Square", "argtypes": [ "Uint32", "Uint32" ] } ]
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "Action",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "Move",
+            "argtypes": [ "Square", "Direction", "Uint32", "Bool" ]
+          },
+          { "cname": "Place", "argtypes": [ "Piece", "Square" ] },
+          { "cname": "Resign", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "GameOver", "argtypes": [] },
+          { "cname": "PlayingOutOfTurn", "argtypes": [] },
+          { "cname": "IllegalAction", "argtypes": [] },
+          { "cname": "InternalError", "argtypes": [] }
+        ]
       }
     ]
   },

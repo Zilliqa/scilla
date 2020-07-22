@@ -329,22 +329,23 @@ module ContractState = struct
   let get_init_this_address_and_extlibs filename =
     let init_data = get_json_data filename in
     let extlibs = get_init_extlibs init_data in
-    let this_address =
+    let this_address_init_opt =
       match List.filter init_data ~f:(fun (name, _) ->
           String.(name = JSONName.as_string ContractUtil.this_address_label)) with
-      | [ ( _, adr) ] -> adr
-      | [] -> raise (mk_invalid_json
-                       ( "No " ^ JSONName.as_string ContractUtil.this_address_label
-                         ^ " specified in init json"))
+      | [ ( _, adr) ] -> Some adr
+      | [] -> None (* We allow init files without a _this_address entry in scilla-checker *)
       | _ -> raise (mk_invalid_json
                        ( "Multiple " ^ JSONName.as_string ContractUtil.this_address_label
                          ^ " entries specified in init json")) in
-    match get_address_literal this_address with
-    | Some adr -> (adr, extlibs)
-    | None -> raise (mk_invalid_json
-                       ( "Illegal type for field " ^ JSONName.as_string ContractUtil.this_address_label
-                         ^ " specified in init json"))
-  
+    match this_address_init_opt with
+    | None -> (None, extlibs)
+    | Some adr ->
+        match get_address_literal adr with
+        | Some adr -> (Some adr, extlibs)
+        | None -> raise (mk_invalid_json
+                           ( "Illegal type for field " ^ JSONName.as_string ContractUtil.this_address_label
+                             ^ " specified in init json"))
+                    
   (* Convert a single JSON serialized literal back to its Scilla value. *)
   let jstring_to_literal jstring tp =
     let thunk () = Yojson.Basic.from_string jstring in
@@ -508,7 +509,8 @@ module ContractInfo = struct
     let adts_to_json (alist : adt list) =
       let jlist =
         List.map alist ~f:(fun a ->
-            let tname = `String (JSONName.as_string a.tname) in
+            (* Using as_error_string to output localised names *)
+            let tname = `String (JSONName.as_error_string a.tname) in
             let tparams = `List (List.map a.tparams ~f:(fun t -> `String t)) in
             let tmap =
               `List
@@ -519,7 +521,8 @@ module ContractInfo = struct
                            `List (List.map ts ~f:(fun t -> `String (pp_typ t)))
                        | None -> `List []
                      in
-                     `Assoc [ ("cname", `String (JSONName.as_string ctr.cname)); ("argtypes", tsj) ]))
+                     (* Using as_error_string to output localised names *)
+                     `Assoc [ ("cname", `String (JSONName.as_error_string ctr.cname)); ("argtypes", tsj) ]))
             in
             `Assoc [ ("tname", tname); ("tparams", tparams); ("tmap", tmap) ])
       in

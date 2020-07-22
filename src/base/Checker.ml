@@ -206,10 +206,11 @@ let check_cashflow typed_cmod token_fields =
   in
   let ctr_tags_to_string =
     let open Datatypes in
+    (* Using as_error_string to ensure that localised names are output *)
     List.map ctr_tags ~f:(fun (adt, ctrs) ->
-        ( DTName.as_string adt,
+        ( DTName.as_error_string adt,
           List.map ctrs ~f:(fun (i, ts) ->
-              ( DTName.as_string i,
+              ( DTName.as_error_string i,
                 List.map ts ~f:(fun t_opt ->
                     Option.value_map t_opt ~default:"_"
                       ~f:CF.ECFR.money_tag_to_string) )) ))
@@ -235,9 +236,10 @@ let check_lmodule cli =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
-    let this_address, init_address_map =
+    let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
-        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file), []) in
+        ~default:(None, []) in
+    let this_address = Option.value this_address_opt ~default:(FilePath.chop_extension (FilePath.basename cli.input_file)) in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
       wrap_error_with_gas initial_gas
@@ -286,9 +288,10 @@ let check_cmodule cli =
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
-    let this_address, init_address_map =
+    let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
-        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file), []) in
+        ~default:(None, []) in
+    let this_address = Option.value this_address_opt ~default:(FilePath.chop_extension (FilePath.basename cli.input_file)) in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
       wrap_error_with_gas initial_gas

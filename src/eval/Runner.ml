@@ -175,24 +175,34 @@ let deploy_library args gas_remaining =
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let this_address, init_address_map = get_init_this_address_and_extlibs args.input_init in          let elibs = import_libs lmod.elibs init_address_map in
-      let dis_lmod = match Dis.disambiguate_lmodule lmod elibs init_address_map this_address with
-        | Error e ->
-            plog (sprintf "%s\n" "Failed to disambiguate library file.");
-            fatal_error_gas e gas_remaining
-        | Ok res ->
-            plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
-            res
-      in
-      (* Contract library. *)
-      let clibs = Some dis_lmod.libs in
-
-      (* Checking initialized libraries! *)
-      let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
-      let _ =
-        validate_get_init_json args.input_init gas_remaining' lmod.smver
-      in
-      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
+      let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
+      match this_address_opt with
+      | None -> 
+          let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
+          plog msg;
+          fatal_error_gas 
+            (mk_error0
+               (sprintf "Ran out of gas when parsing contract/init files.\n"))
+            gas_remaining
+      | Some this_address ->
+          let elibs = import_libs lmod.elibs init_address_map in
+          let dis_lmod = match Dis.disambiguate_lmodule lmod elibs init_address_map this_address with
+          | Error e ->
+              plog (sprintf "%s\n" "Failed to disambiguate library file.");
+              fatal_error_gas e gas_remaining
+          | Ok res ->
+              plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
+              res
+        in
+        (* Contract library. *)
+        let clibs = Some dis_lmod.libs in
+        
+        (* Checking initialized libraries! *)
+        let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
+        let _ =
+          validate_get_init_json args.input_init gas_remaining' lmod.smver
+        in
+        `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
 
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
@@ -246,199 +256,208 @@ let run_with_args args =
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
-        let this_address, init_address_map = get_init_this_address_and_extlibs args.input_init in
-        let elibs = import_libs cmod.elibs init_address_map in
-        let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
-          | Error e ->
-              plog (sprintf "%s\n" "Failed to disambiguate contract file.");
-              fatal_error_gas e gas_remaining
-          | Ok res ->
-              plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
-              res
-        in
-        (* Contract library. *)
-        let clibs = dis_cmod.libs in
-
-        (* Checking initialized libraries! *)
-        let gas_remaining = check_libs clibs elibs args.input gas_remaining in
-        let initargs =
-          validate_get_init_json args.input_init gas_remaining cmod.smver
-        in
-
-        (* Retrieve block chain state  *)
-        let bstate =
-          try JSON.BlockChainState.get_json_data args.input_blockchain
-          with Invalid_json s ->
-            fatal_error_gas
-              ( s
-              @ mk_error0
-                  (sprintf "Failed to parse json %s:\n" args.input_blockchain)
-              )
+        let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
+        match this_address_opt with
+        | None -> 
+            let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
+            plog msg;
+            fatal_error_gas 
+              (mk_error0
+                 (sprintf "Ran out of gas when parsing contract/init files.\n"))
               gas_remaining
-        in
-        let ( ( output_msg_json,
-                output_state_json,
-                output_events_json,
-                accepted_b ),
-              gas ) =
-          if is_deployment then (
-            (* Initializing the contract's state, just for checking things. *)
-            let init_res =
-              init_module dis_cmod initargs [] Uint128.zero bstate elibs
+        | Some this_address ->
+            let elibs = import_libs cmod.elibs init_address_map in
+            let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
+              | Error e ->
+                  plog (sprintf "%s\n" "Failed to disambiguate contract file.");
+                  fatal_error_gas e gas_remaining
+              | Ok res ->
+                  plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
+                  res
             in
-            (* Prints stats after the initialization and returns the initial state *)
-            (* Will throw an exception if unsuccessful. *)
-            let cstate', remaining_gas', field_vals =
-              check_extract_cstate args.input init_res gas_remaining
+            (* Contract library. *)
+            let clibs = dis_cmod.libs in
+            
+            (* Checking initialized libraries! *)
+            let gas_remaining = check_libs clibs elibs args.input gas_remaining in
+            let initargs =
+              validate_get_init_json args.input_init gas_remaining cmod.smver
             in
 
-            (* If the data store is not local, we must update the store with the initial field values.
-             * Refer to the details comments at [Initialization of StateService]. *)
-            ( if is_ipc then
-              let open StateService in
-              let open MonadUtil in
-              let open Result.Let_syntax in
-              (* We push all fields except _balance. *)
-              let fields =
-                List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                    if [%equal : RunnerName.t] s balance_label then None
-                    else Some { fname = s; ftyp = t; fval = None })
-              in
-              let sm = IPC args.ipc_address in
-              let () = initialize ~sm ~fields in
-              match
-                (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
-                let%bind () =
-                  Result.ignore_m
-                  @@ mapM field_vals ~f:(fun (s, v) ->
-                         update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
-                           ~value:v)
-                in
-                finalize ()
-              with
-              | Error s -> fatal_error_gas s remaining_gas'
-              | Ok _ -> () );
-
-            (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
-            let field_vals' = if is_ipc then [] else field_vals in
-
-            plog (sprintf "\nContract initialized successfully\n");
-            ( ( `Null,
-                output_state_json cstate'.balance field_vals',
-                `List [],
-                false ),
-              remaining_gas' ) )
-          else
-            (* Not initialization, execute transition specified in the message *)
-            let mmsg =
-              try JSON.Message.get_json_data args.input_message
+            (* Retrieve block chain state  *)
+            let bstate =
+              try JSON.BlockChainState.get_json_data args.input_blockchain
               with Invalid_json s ->
                 fatal_error_gas
                   ( s
-                  @ mk_error0
-                      (sprintf "Failed to parse json %s:\n" args.input_message)
+                    @ mk_error0
+                      (sprintf "Failed to parse json %s:\n" args.input_blockchain)
                   )
                   gas_remaining
             in
-            let m = JSON.JSONLiteral.Msg mmsg in
-
-            let cstate, gas_remaining' =
-              if is_ipc then
-                let cur_bal = args.balance in
+            let ( ( output_msg_json,
+                    output_state_json,
+                    output_events_json,
+                    accepted_b ),
+                  gas ) =
+              if is_deployment then (
+                (* Initializing the contract's state, just for checking things. *)
                 let init_res =
-                  init_module dis_cmod initargs [] cur_bal bstate elibs
-                in
-                let cstate, gas_remaining', _ =
-                  check_extract_cstate args.input init_res gas_remaining
-                in
-                (* Initialize the state server. *)
-                let fields =
-                  List.filter_map cstate.fields ~f:(fun (s, t) ->
-                      let open StateService in
-                      if [%equal : RunnerName.t] s balance_label then None
-                      else Some { fname = s; ftyp = t; fval = None })
-                in
-                let () =
-                  StateService.initialize ~sm:(IPC args.ipc_address) ~fields
-                in
-                (cstate, gas_remaining')
-              else
-                (* Retrieve state variables *)
-                let curargs, cur_bal =
-                  try input_state_json args.input_state
-                  with Invalid_json s ->
-                    fatal_error_gas
-                      ( s
-                      @ mk_error0
-                          (sprintf "Failed to parse json %s:\n"
-                             args.input_state) )
-                      gas_remaining
-                in
-
-                (* Initializing the contract's state *)
-                let init_res =
-                  init_module dis_cmod initargs curargs cur_bal bstate elibs
+                  init_module dis_cmod initargs [] Uint128.zero bstate elibs
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
-                let cstate, gas_remaining', field_vals =
+                let cstate', remaining_gas', field_vals =
                   check_extract_cstate args.input init_res gas_remaining
                 in
 
-                (* Initialize the state server. *)
-                let fields =
-                  List.map field_vals ~f:(fun (s, l) ->
-                      let open StateService in
-                      let t =
-                        List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
+                (* If the data store is not local, we must update the store with the initial field values.
+                 * Refer to the details comments at [Initialization of StateService]. *)
+                ( if is_ipc then
+                    let open StateService in
+                    let open MonadUtil in
+                    let open Result.Let_syntax in
+                    (* We push all fields except _balance. *)
+                    let fields =
+                      List.filter_map cstate'.fields ~f:(fun (s, t) ->
+                          if [%equal : RunnerName.t] s balance_label then None
+                          else Some { fname = s; ftyp = t; fval = None })
+                    in
+                    let sm = IPC args.ipc_address in
+                    let () = initialize ~sm ~fields in
+                    match
+                      (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
+                      let%bind () =
+                        Result.ignore_m
+                        @@ mapM field_vals ~f:(fun (s, v) ->
+                            update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
+                              ~value:v)
                       in
-                      { fname = s; ftyp = t; fval = Some l })
-                in
-                let () = StateService.initialize ~sm:Local ~fields in
-                (cstate, gas_remaining')
-            in
+                      finalize ()
+                    with
+                    | Error s -> fatal_error_gas s remaining_gas'
+                    | Ok _ -> () );
 
-            (* Contract code *)
-            let ctr = dis_cmod.contr in
+                (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
+                let field_vals' = if is_ipc then [] else field_vals in
 
-            plog
-              (sprintf "Executing message:\n%s\n"
-                 (JSON.Message.message_to_jstring mmsg));
-            plog
-              (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
-            let step_result = handle_message ctr cstate bstate m in
-            let (cstate', mlist, elist, accepted_b), gas =
-              check_after_step step_result gas_remaining'
-            in
-
-            (* If we're using a local state (JSON file) then need to fetch and dump it. *)
-            let field_vals =
-              if is_ipc then []
+                plog (sprintf "\nContract initialized successfully\n");
+                ( ( `Null,
+                    output_state_json cstate'.balance field_vals',
+                    `List [],
+                    false ),
+                  remaining_gas' ) )
               else
-                match
-                  (StateService.get_full_state (), StateService.finalize ())
-                with
-                | Ok fv, Ok () -> fv
-                | _ ->
+                (* Not initialization, execute transition specified in the message *)
+                let mmsg =
+                  try JSON.Message.get_json_data args.input_message
+                  with Invalid_json s ->
                     fatal_error_gas
-                      (mk_error0 "Error finalizing state from StateService")
-                      gas
-            in
+                      ( s
+                        @ mk_error0
+                          (sprintf "Failed to parse json %s:\n" args.input_message)
+                      )
+                      gas_remaining
+                in
+                let m = JSON.JSONLiteral.Msg mmsg in
 
-            let osj = output_state_json cstate'.balance field_vals in
-            let omj = output_message_json gas mlist in
-            let oej = `List (output_event_json elist) in
-            ((omj, osj, oej, accepted_b), gas)
-        in
-        `Assoc
-          [
-            ("scilla_major_version", `String (Int.to_string cmod.smver));
-            ("gas_remaining", `String (Uint64.to_string gas));
-            (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
-            ("messages", output_msg_json);
-            ("states", output_state_json);
-            ("events", output_events_json);
-          ]
+                let cstate, gas_remaining' =
+                  if is_ipc then
+                    let cur_bal = args.balance in
+                    let init_res =
+                      init_module dis_cmod initargs [] cur_bal bstate elibs
+                    in
+                    let cstate, gas_remaining', _ =
+                      check_extract_cstate args.input init_res gas_remaining
+                    in
+                    (* Initialize the state server. *)
+                    let fields =
+                      List.filter_map cstate.fields ~f:(fun (s, t) ->
+                          let open StateService in
+                          if [%equal : RunnerName.t] s balance_label then None
+                          else Some { fname = s; ftyp = t; fval = None })
+                    in
+                    let () =
+                      StateService.initialize ~sm:(IPC args.ipc_address) ~fields
+                    in
+                    (cstate, gas_remaining')
+                  else
+                    (* Retrieve state variables *)
+                    let curargs, cur_bal =
+                      try input_state_json args.input_state
+                      with Invalid_json s ->
+                        fatal_error_gas
+                          ( s
+                            @ mk_error0
+                              (sprintf "Failed to parse json %s:\n"
+                                 args.input_state) )
+                          gas_remaining
+                    in
+
+                    (* Initializing the contract's state *)
+                    let init_res =
+                      init_module dis_cmod initargs curargs cur_bal bstate elibs
+                    in
+                    (* Prints stats after the initialization and returns the initial state *)
+                    (* Will throw an exception if unsuccessful. *)
+                    let cstate, gas_remaining', field_vals =
+                      check_extract_cstate args.input init_res gas_remaining
+                    in
+
+                    (* Initialize the state server. *)
+                    let fields =
+                      List.map field_vals ~f:(fun (s, l) ->
+                          let open StateService in
+                          let t =
+                            List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
+                          in
+                          { fname = s; ftyp = t; fval = Some l })
+                    in
+                    let () = StateService.initialize ~sm:Local ~fields in
+                    (cstate, gas_remaining')
+                in
+
+                (* Contract code *)
+                let ctr = dis_cmod.contr in
+
+                plog
+                  (sprintf "Executing message:\n%s\n"
+                     (JSON.Message.message_to_jstring mmsg));
+                plog
+                  (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+                let step_result = handle_message ctr cstate bstate m in
+                let (cstate', mlist, elist, accepted_b), gas =
+                  check_after_step step_result gas_remaining'
+                in
+
+                (* If we're using a local state (JSON file) then need to fetch and dump it. *)
+                let field_vals =
+                  if is_ipc then []
+                  else
+                    match
+                      (StateService.get_full_state (), StateService.finalize ())
+                    with
+                    | Ok fv, Ok () -> fv
+                    | _ ->
+                        fatal_error_gas
+                          (mk_error0 "Error finalizing state from StateService")
+                          gas
+                in
+
+                let osj = output_state_json cstate'.balance field_vals in
+                let omj = output_message_json gas mlist in
+                let oej = `List (output_event_json elist) in
+                ((omj, osj, oej, accepted_b), gas)
+            in
+            `Assoc
+              [
+                ("scilla_major_version", `String (Int.to_string cmod.smver));
+                ("gas_remaining", `String (Uint64.to_string gas));
+                (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
+                ("messages", output_msg_json);
+                ("states", output_state_json);
+                ("events", output_events_json);
+              ]
 
 let run args_list ~exe_name =
   GlobalConfig.reset ();
