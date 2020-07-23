@@ -361,3 +361,14 @@ let list_nth : forall 'A. Uint32 -> List 'A -> Option 'A =
     match search with
     | Pair _ discovery => discovery
     end
+
+(* Is "a" a subset of "b", as compared by f *)                                                                                                                                                                     
+let list_is_subset : forall 'A. ('A -> 'A -> Bool) -> List 'A -> List 'A -> Bool =                                                                                                                                 
+  tfun 'A =>                                                                                                                                                                                                       
+  fun (f : 'A -> 'A -> Bool) =>                                                                                                                                                                                    
+  fun (a : List 'A) =>                                                                                                                                                                                             
+  fun (b : List 'A) =>                                                                                                                                                                                             
+    let list_mem_A = @list_mem 'A in                                                                                                                                                                               
+    let in_b = fun (a : 'A) => list_mem_A f a b in                                                                                                                                                                 
+    let forall_A = @list_forall 'A in                                                                                                                                                                              
+    forall_A in_b a
