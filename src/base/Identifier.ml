@@ -84,8 +84,12 @@ module GlobalName = struct
   [@@deriving sexp, equal, compare]
 
   (* The type t contains a t_name as described above, and a user-readable string for error reporting. *)
-  type t = t_name * string (* error string *) [@@deriving sexp, equal, compare]
+  type t = t_name * string (* error string *) [@@deriving sexp, compare]
 
+  (* Do not use derived equality, because the error string of imported names 
+     will be different from the error string where the name is used *)
+  let equal ((an, _) : t) ((bn, _) : t) : sexp_bool = [%equal : t_name] an bn
+  
   let as_string = function
     | SimpleGlobal n, _ -> n
     | QualifiedGlobal (ns, n), _ -> flatten_name ns n

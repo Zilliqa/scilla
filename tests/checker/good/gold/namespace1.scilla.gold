@@ -19,38 +19,6 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "Bar.TestType2",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Bar.Constructor3", "argtypes": [ "Bar.TestType" ] },
-          { "cname": "Bar.Constructor4", "argtypes": [ "Uint32" ] }
-        ]
-      },
-      {
-        "tname": "Option",
-        "tparams": [ "'A" ],
-        "tmap": [
-          { "cname": "Some", "argtypes": [ "'A" ] },
-          { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Bool",
-        "tparams": [],
-        "tmap": [
-          { "cname": "True", "argtypes": [] },
-          { "cname": "False", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Nat",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Zero", "argtypes": [] },
-          { "cname": "Succ", "argtypes": [ "Nat" ] }
-        ]
-      },
-      {
         "tname": "List",
         "tparams": [ "'A" ],
         "tmap": [
@@ -64,11 +32,43 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
+        "tname": "Bar.TestType2",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Bar.Constructor3", "argtypes": [ "Bar.TestType" ] },
+          { "cname": "Bar.Constructor4", "argtypes": [ "Uint32" ] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
         "tname": "Bar.TestType",
         "tparams": [],
         "tmap": [
           { "cname": "Bar.Constructor1", "argtypes": [] },
           { "cname": "Bar.Constructor2", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
         ]
       }
     ]

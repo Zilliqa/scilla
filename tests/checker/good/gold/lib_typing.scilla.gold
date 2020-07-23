@@ -10,17 +10,12 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "List",
+        "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
-          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
-          { "cname": "Nil", "argtypes": [] }
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
         ]
-      },
-      {
-        "tname": "Pair",
-        "tparams": [ "'A", "'B" ],
-        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
         "tname": "Bool",
@@ -39,12 +34,17 @@
         ]
       },
       {
-        "tname": "Option",
+        "tname": "List",
         "tparams": [ "'A" ],
         "tmap": [
-          { "cname": "Some", "argtypes": [ "'A" ] },
-          { "cname": "None", "argtypes": [] }
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
         ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       }
     ]
   },

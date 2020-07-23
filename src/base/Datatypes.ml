@@ -126,10 +126,11 @@ module DataTypeDictionary = struct
       tmap = [ (dtname_of_string "Pair", [ TypeVar "'A"; TypeVar "'B" ]) ];
     }
 
-  (* adt.tname -> adt *)
+  (* Hashtable keys must be strings. Otherwise the wrong equality function will be used *)
+  (* (as_string adt.tname) -> (adt.tname * adt) *)
   let adt_name_dict = Caml.Hashtbl.create 5
 
-  (* tconstr -> (adt * constructor) *)
+  (* (as_string tconstr) -> (tconstr * adt * constructor) *)
   let adt_cons_dict = Caml.Hashtbl.create 10
 
   (* Re-initialize environment dictionaries *)
@@ -137,47 +138,48 @@ module DataTypeDictionary = struct
     Caml.Hashtbl.(
       reset adt_name_dict;
       reset adt_cons_dict;
-      add adt_name_dict t_bool.tname t_bool;
-      add adt_name_dict t_nat.tname t_nat;
-      add adt_name_dict t_option.tname t_option;
-      add adt_name_dict t_list.tname t_list;
-      add adt_name_dict t_product.tname t_product;
+      add adt_name_dict (DTName.as_string t_bool.tname) (t_bool.tname, t_bool);
+      add adt_name_dict (DTName.as_string t_nat.tname) (t_nat.tname, t_nat);
+      add adt_name_dict (DTName.as_string t_option.tname) (t_option.tname, t_option);
+      add adt_name_dict (DTName.as_string t_list.tname) (t_list.tname, t_list);
+      add adt_name_dict (DTName.as_string t_product.tname) (t_product.tname, t_product);
       iter
-        (fun _ a ->
-          Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
+        (fun _ (_, a) ->
+          Caml.List.iter (fun c -> add adt_cons_dict (DTName.as_string c.cname) (c.cname, a, c)) a.tconstr)
         adt_name_dict)
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
-    match Hashtbl.find_opt adt_name_dict new_adt.tname with
+    match Hashtbl.find_opt adt_name_dict (DTName.as_string new_adt.tname) with
     | Some _ ->
         fail1
           (sprintf "Multiple declarations of type %s" (DTName.as_error_string new_adt.tname))
           error_loc
     | None ->
-        let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
+        let _ = Hashtbl.add adt_name_dict (DTName.as_string new_adt.tname) (new_adt.tname, new_adt) in
         foldM new_adt.tconstr ~init:() ~f:(fun () ctr ->
-            match Hashtbl.find_opt adt_cons_dict ctr.cname with
+            match Hashtbl.find_opt adt_cons_dict (DTName.as_string ctr.cname) with
             | Some _ ->
                 fail1
                   (sprintf "Multiple declarations of type constructor %s"
                      (DTName.as_error_string ctr.cname))
                   error_loc
-            | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
+            | None ->
+                pure @@ Hashtbl.add adt_cons_dict (DTName.as_string ctr.cname) (ctr.cname, new_adt, ctr))
 
   (*  Get ADT by name *)
   let lookup_name ?(sloc = ErrorUtils.dummy_loc) name =
     let open Caml in
-    match Hashtbl.find_opt adt_name_dict name with
+    match Hashtbl.find_opt adt_name_dict (DTName.as_string name) with
     | None -> fail1 (sprintf "ADT %s not found" (DTName.as_error_string name)) sloc
-    | Some a -> pure a
+    | Some (_, a) -> pure a
 
   (*  Get ADT by the constructor *)
   let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) cn =
     let open Caml in
-    match Hashtbl.find_opt adt_cons_dict cn with
+    match Hashtbl.find_opt adt_cons_dict (DTName.as_string cn) with
     | None -> fail1 (sprintf "No data type with constructor %s found" (DTName.as_error_string cn)) sloc
-    | Some dt -> pure dt
+    | Some (_, adt, ctr) -> pure (adt, ctr)
 
   (* Get typing map for a constructor *)
   let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:[%equal: DTName.t]
@@ -194,11 +196,11 @@ module DataTypeDictionary = struct
 
   (* Get all known ADTs *)
   let get_all_adts () =
-    Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
+    Caml.Hashtbl.fold (fun _ (_, a) acc -> a :: acc) adt_name_dict []
 
   (* Get all known ADT constructors *)
   let get_all_ctrs () =
-    Caml.Hashtbl.fold (fun _ c acc -> c :: acc) adt_cons_dict []
+    Caml.Hashtbl.fold (fun _ (_, adt, c) acc -> (adt, c) :: acc) adt_cons_dict []
 end
 
 (* Helper functions for matching against names *)
