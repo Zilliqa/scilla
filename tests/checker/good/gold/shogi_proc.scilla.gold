@@ -197,7 +197,9 @@
       {
         "tname": "ShogiLib.Square",
         "tparams": [],
-        "tmap": [ { "cname": "ShogiLib.Square", "argtypes": [ "Uint32", "Uint32" ] } ]
+        "tmap": [
+          { "cname": "ShogiLib.Square", "argtypes": [ "Uint32", "Uint32" ] }
+        ]
       },
       {
         "tname": "Bool",
@@ -261,4 +263,3 @@
   ],
   "gas_remaining": "7327"
 }
-
