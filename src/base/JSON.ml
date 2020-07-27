@@ -509,8 +509,7 @@ module ContractInfo = struct
     let adts_to_json (alist : adt list) =
       let jlist =
         List.map alist ~f:(fun a ->
-            (* Using as_error_string to output localised names *)
-            let tname = `String (JSONName.as_error_string a.tname) in
+            let tname = `String (JSONName.as_string a.tname) in
             let tparams = `List (List.map a.tparams ~f:(fun t -> `String t)) in
             let tmap =
               `List
@@ -522,7 +521,7 @@ module ContractInfo = struct
                        | None -> `List []
                      in
                      (* Using as_error_string to output localised names *)
-                     `Assoc [ ("cname", `String (JSONName.as_error_string ctr.cname)); ("argtypes", tsj) ]))
+                     `Assoc [ ("cname", `String (JSONName.as_string ctr.cname)); ("argtypes", tsj) ]))
             in
             `Assoc [ ("tname", tname); ("tparams", tparams); ("tmap", tmap) ])
       in
