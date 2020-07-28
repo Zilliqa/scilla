@@ -10,18 +10,27 @@
     ],
     "ADT constructors": [
       {
-        "SquareContents": [
-          { "constructor": "Occupied", "tags": [ "_", "_", "NotMoney" ] }
+        "ShogiLib.SquareContents": [
+          {
+            "constructor": "ShogiLib.Occupied",
+            "tags": [ "_", "_", "NotMoney" ]
+          }
         ]
       },
       {
-        "Action": [
-          { "constructor": "Move", "tags": [ "_", "_", "NoInfo", "_" ] }
+        "ShogiLib.Action": [
+          {
+            "constructor": "ShogiLib.Move",
+            "tags": [ "_", "_", "NoInfo", "_" ]
+          }
         ]
       },
       {
-        "Square": [
-          { "constructor": "Square", "tags": [ "NotMoney", "NotMoney" ] }
+        "ShogiLib.Square": [
+          {
+            "constructor": "ShogiLib.Square",
+            "tags": [ "NotMoney", "NotMoney" ]
+          }
         ]
       }
     ]
@@ -36,7 +45,7 @@
     "fields": [
       {
         "vname": "board",
-        "type": "Map (Uint32) (Map (Uint32) (SquareContents))",
+        "type": "Map (Uint32) (Map (Uint32) (ShogiLib.SquareContents))",
         "depth": 2
       },
       {
@@ -53,14 +62,14 @@
         "params": [
           { "vname": "row", "type": "Uint32" },
           { "vname": "column", "type": "Uint32" },
-          { "vname": "direction", "type": "Direction" },
+          { "vname": "direction", "type": "ShogiLib.Direction" },
           { "vname": "distance", "type": "Uint32" },
           { "vname": "promote", "type": "Bool" }
         ]
       },
       {
         "vname": "PlayerAction",
-        "params": [ { "vname": "action", "type": "Action" } ]
+        "params": [ { "vname": "action", "type": "ShogiLib.Action" } ]
       }
     ],
     "procedures": [
@@ -77,17 +86,17 @@
       {
         "vname": "PlacePiece",
         "params": [
-          { "vname": "piece", "type": "Piece" },
-          { "vname": "square", "type": "Square" }
+          { "vname": "piece", "type": "ShogiLib.Piece" },
+          { "vname": "square", "type": "ShogiLib.Square" }
         ]
       },
       {
         "vname": "PerformMoveAndPromote",
         "params": [
           { "vname": "current_player", "type": "ByStr20" },
-          { "vname": "piece", "type": "Piece" },
+          { "vname": "piece", "type": "ShogiLib.Piece" },
           { "vname": "promote", "type": "Bool" },
-          { "vname": "promotion_status", "type": "PromotionStatus" },
+          { "vname": "promotion_status", "type": "ShogiLib.PromotionStatus" },
           { "vname": "row", "type": "Uint32" },
           { "vname": "column", "type": "Uint32" },
           { "vname": "target_row", "type": "Uint32" },
@@ -99,8 +108,8 @@
         "vname": "MovePiece",
         "params": [
           { "vname": "current_player", "type": "ByStr20" },
-          { "vname": "square", "type": "Square" },
-          { "vname": "direction", "type": "Direction" },
+          { "vname": "square", "type": "ShogiLib.Square" },
+          { "vname": "direction", "type": "ShogiLib.Direction" },
           { "vname": "distance", "type": "Uint32" },
           { "vname": "promote", "type": "Bool" }
         ]
@@ -151,7 +160,9 @@
         "tmap": [
           {
             "cname": "ShogiLib.Occupied",
-            "argtypes": [ "Piece", "PromotionStatus", "ByStr20" ]
+            "argtypes": [
+              "ShogiLib.Piece", "ShogiLib.PromotionStatus", "ByStr20"
+            ]
           },
           { "cname": "ShogiLib.Free", "argtypes": [] }
         ]
@@ -162,9 +173,14 @@
         "tmap": [
           {
             "cname": "ShogiLib.Move",
-            "argtypes": [ "Square", "Direction", "Uint32", "Bool" ]
+            "argtypes": [
+              "ShogiLib.Square", "ShogiLib.Direction", "Uint32", "Bool"
+            ]
           },
-          { "cname": "ShogiLib.Place", "argtypes": [ "Piece", "Square" ] },
+          {
+            "cname": "ShogiLib.Place",
+            "argtypes": [ "ShogiLib.Piece", "ShogiLib.Square" ]
+          },
           { "cname": "ShogiLib.Resign", "argtypes": [] }
         ]
       },

@@ -241,7 +241,7 @@ functor
               else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
-                @@ sprintf "Unbound type variable %s in type %s" a (pp_typ t)
+                @@ sprintf "Unbound type variable %s in type %s" a (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
         in
         is_wf_typ' t []
@@ -327,7 +327,7 @@ module TypeUtilities = struct
     else
       fail1
         (sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ given))
+           (pp_typ_error expected) (pp_typ_error given))
         lc
 
   let rec is_ground_type t =
@@ -410,8 +410,8 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let pp_typ_list ts =
-    let tss = List.map ~f:(fun t -> pp_typ t) ts in
+  let pp_typ_list_error ts =
+    let tss = List.map ~f:(fun t -> pp_typ_error t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)
 
   (*
@@ -433,7 +433,7 @@ module TypeUtilities = struct
               %s\n\
               doesn't apply, as a function, to the arguments of types\n\
               %s."
-             (pp_typ ft) (pp_typ_list argtypes))
+             (pp_typ_error ft) (pp_typ_list_error argtypes))
           lc
 
   let proc_type_applies ~lc formals actuals =
@@ -460,7 +460,7 @@ module TypeUtilities = struct
              %s\n\
              applied, as a type function, to type arguments\n\
              %s."
-            (pp_typ tf) (pp_typ_list args)
+            (pp_typ_error tf) (pp_typ_list_error args)
         in
         Error (mk_error0 msg)
 
@@ -537,7 +537,7 @@ module TypeUtilities = struct
                 value of type %s is given."
                (TUName.as_error_string adt.tname) (as_string name))
             (get_rep name)
-    | _ -> fail1 (sprintf "Not an algebraic data type: %s" (pp_typ atyp)) lc
+    | _ -> fail1 (sprintf "Not an algebraic data type: %s" (pp_typ_error atyp)) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
@@ -560,7 +560,7 @@ module TypeUtilities = struct
         | Some _ ->
             fail1
               (sprintf "Not all types of the branches %s are equivalent."
-                 (pp_typ_list ts))
+                 (pp_typ_list_error ts))
               lc )
 
   (****************************************************************)
@@ -639,7 +639,7 @@ module TypeUtilities = struct
             fail0 @@ sprintf "Malformed literal %s" (pp_literal l)
             (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ kt)
+        else fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ_error kt)
     | ADTValue (cname, ts, args) ->
         let%bind adt, constr = DataTypeDictionary.lookup_constructor cname in
         let tparams = adt.tparams in

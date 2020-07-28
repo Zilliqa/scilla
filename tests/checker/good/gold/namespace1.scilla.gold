@@ -3,8 +3,8 @@
     "State variables": [],
     "ADT constructors": [
       {
-        "Bar.TestType2": [
-          { "constructor": "Bar.Constructor4", "tags": [ "NoInfo" ] }
+        "TestLib1.TestType2": [
+          { "constructor": "TestLib1.Constructor4", "tags": [ "NoInfo" ] }
         ]
       }
     ]
@@ -19,24 +19,30 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "List",
-        "tparams": [ "'A" ],
+        "tname": "TestLib1.TestType2",
+        "tparams": [],
         "tmap": [
-          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
-          { "cname": "Nil", "argtypes": [] }
+          {
+            "cname": "TestLib1.Constructor3",
+            "argtypes": [ "TestLib1.TestType" ]
+          },
+          { "cname": "TestLib1.Constructor4", "argtypes": [ "Uint32" ] }
         ]
       },
       {
-        "tname": "Pair",
-        "tparams": [ "'A", "'B" ],
-        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
       },
       {
-        "tname": "Bar.TestType2",
+        "tname": "TestLib1.TestType",
         "tparams": [],
         "tmap": [
-          { "cname": "Bar.Constructor3", "argtypes": [ "Bar.TestType" ] },
-          { "cname": "Bar.Constructor4", "argtypes": [ "Uint32" ] }
+          { "cname": "TestLib1.Constructor1", "argtypes": [] },
+          { "cname": "TestLib1.Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -48,14 +54,6 @@
         ]
       },
       {
-        "tname": "Bar.TestType",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Bar.Constructor1", "argtypes": [] },
-          { "cname": "Bar.Constructor2", "argtypes": [] }
-        ]
-      },
-      {
         "tname": "Nat",
         "tparams": [],
         "tmap": [
@@ -64,12 +62,17 @@
         ]
       },
       {
-        "tname": "Option",
+        "tname": "List",
         "tparams": [ "'A" ],
         "tmap": [
-          { "cname": "Some", "argtypes": [ "'A" ] },
-          { "cname": "None", "argtypes": [] }
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
         ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       }
     ]
   },

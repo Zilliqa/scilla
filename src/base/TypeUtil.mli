@@ -198,7 +198,7 @@ module TypeUtilities : sig
   val elab_tfun_with_args_no_gas :
     TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result
 
-  val pp_typ_list : TUType.t list -> string
+  val pp_typ_list_error : TUType.t list -> string
 
   (****************************************************************)
   (*                        Working with ADTs                     *)

@@ -170,8 +170,8 @@ and read_adt_json name j tlist_verify =
     | ADTValue (_, tlist2, _) ->
         if type_equiv_list tlist1 tlist2 then ()
         else
-          let expected = pp_typ_list tlist1 in
-          let observed = pp_typ_list tlist2 in
+          let expected = pp_typ_list_error tlist1 in
+          let observed = pp_typ_list_error tlist2 in
           raise
             (mk_invalid_json
                ( "Type mismatch in parsing ADT " ^ JSONName.as_error_string name
@@ -520,7 +520,6 @@ module ContractInfo = struct
                            `List (List.map ts ~f:(fun t -> `String (pp_typ t)))
                        | None -> `List []
                      in
-                     (* Using as_error_string to output localised names *)
                      `Assoc [ ("cname", `String (JSONName.as_string ctr.cname)); ("argtypes", tsj) ]))
             in
             `Assoc [ ("tname", tname); ("tparams", tparams); ("tmap", tmap) ])

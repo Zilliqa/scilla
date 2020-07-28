@@ -236,7 +236,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              %s\n\
              applied, as a type function, to type arguments\n\
              %s."
-            (pp_typ tf) (pp_typ_list args)
+            (pp_typ_error tf) (pp_typ_list_error args)
         in
         fail @@ mk_type_error1 msg lc
 
@@ -434,7 +434,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      (sprintf
                         "Type mismatch for Message field %s. Expected %s but \
                          got %s"
-                        fld (pp_typ fld_t) (pp_typ seen_type))
+                        fld (pp_typ_error fld_t) (pp_typ_error seen_type))
                      (ER.get_loc rep))
             | _ -> pure ()
           in
@@ -457,7 +457,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 fail
                   (mk_type_error1
                      (sprintf "Cannot serialize values of type %s."
-                        (pp_typ rtp))
+                        (pp_typ_error rtp))
                      (ER.get_loc (get_rep i)))
         in
         let%bind typed_bs_rev =
@@ -862,7 +862,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           else
             fail
               (mk_type_error1
-                 (sprintf "Type %s cannot be used as %s parameter" (pp_typ t)
+                 (sprintf "Type %s cannot be used as %s parameter" (pp_typ_error t)
                     component_type_string)
                  (ER.get_loc (get_rep param))))
         comp_params
@@ -910,7 +910,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             fail
               (mk_type_error1
                  (sprintf "Values of the type \"%s\" cannot be stored."
-                    (pp_typ ft))
+                    (pp_typ_error ft))
                  (ER.get_loc (get_rep fn))))
     in
     pure @@ (List.rev typed_flds, fields_env)

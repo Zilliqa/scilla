@@ -90,6 +90,8 @@ module type ScillaType = sig
 
   val pp_typ : t -> string
 
+  val pp_typ_error : t -> string
+
   (****************************************************************)
   (*                     Type substitutions                       *)
   (****************************************************************)
@@ -175,24 +177,30 @@ module MkType (I : ScillaIdentifier) = struct
     | Unit
   [@@deriving sexp]
 
-  let rec pp_typ = function
-    | PrimType t -> PrimType.pp_prim_typ t
-    | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
-    | ADT (name, targs) ->
-        let elems =
-          TIdentifier.as_error_string name
-          :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
-        in
-        String.concat ~sep:" " elems
-    | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
-    | TypeVar tv -> tv
-    | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
-    | Unit -> sprintf "()"
+  let pp_typ_helper is_error t =
+    let rec recurser = function
+      | PrimType t -> PrimType.pp_prim_typ t
+      | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (recurser kt) (recurser vt)
+      | ADT (name, targs) ->
+          let elems =
+            (if is_error then TIdentifier.as_error_string name else TIdentifier.as_string name)
+            :: List.map targs ~f:(fun t -> sprintf "(%s)" (recurser t))
+          in
+          String.concat ~sep:" " elems
+      | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (recurser vt)
+      | TypeVar tv -> tv
+      | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
+      | Unit -> sprintf "()"
+    and with_paren t =
+      match t with
+      | FunType _ | PolyFun _ -> sprintf "(%s)" (recurser t)
+      | _ -> recurser t
+    in
+    recurser t
+  
+  let pp_typ = pp_typ_helper false
 
-  and with_paren t =
-    match t with
-    | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
-    | _ -> pp_typ t
+  let pp_typ_error = pp_typ_helper true
 
   (****************************************************************)
   (*                     Type substitutions                       *)

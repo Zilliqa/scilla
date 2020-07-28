@@ -1395,7 +1395,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               (sprintf
                  "Type error: cannot apply \"%s\" built-in to argument(s) of \
                   type(s) %s."
-                 (pp_builtin op) (pp_typ_list argtypes))
+                 (pp_builtin op) (pp_typ_list_error argtypes))
               (ER.get_loc rep))
       in
       pure (type_elab, res_type, exec)

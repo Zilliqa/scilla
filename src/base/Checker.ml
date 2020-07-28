@@ -208,9 +208,9 @@ let check_cashflow typed_cmod token_fields =
     let open Datatypes in
     (* Using as_error_string to ensure that localised names are output *)
     List.map ctr_tags ~f:(fun (adt, ctrs) ->
-        ( DTName.as_error_string adt,
+        ( DTName.as_string adt,
           List.map ctrs ~f:(fun (i, ts) ->
-              ( DTName.as_error_string i,
+              ( DTName.as_string i,
                 List.map ts ~f:(fun t_opt ->
                     Option.value_map t_opt ~default:"_"
                       ~f:CF.ECFR.money_tag_to_string) )) ))
