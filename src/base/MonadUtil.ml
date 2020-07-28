@@ -153,6 +153,18 @@ let fold_mapM ~f ~init l =
   in
   pure (acc, List.rev l'_rev)
 
+let partition_mapM ~f l =
+  let%bind fst_rev, snd_rev =
+    (* We don't use foldrM and avoid List.rev because we want
+     * any errors to be flagged in-order. *)
+    foldM ~init:([], []) l ~f:(fun (fst, snd) i ->
+        let%bind fi = f i in
+        match fi with
+        | `Fst i' -> pure (i' :: fst, snd)
+        | `Snd i' -> pure (fst, i' :: snd))
+  in
+  pure (List.rev fst_rev, List.rev snd_rev)
+
 (* Monadic wrapper around any container's fold (Set, Map etc). *)
 (* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
 let wrapM_folder ~folder ~f ~init l =
