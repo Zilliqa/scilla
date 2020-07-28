@@ -3,8 +3,8 @@
     "State variables": [],
     "ADT constructors": [
       {
-        "TestType2": [
-          { "constructor": "Constructor4", "tags": [ "NoInfo" ] }
+        "TestLib1.TestType2": [
+          { "constructor": "TestLib1.Constructor4", "tags": [ "NoInfo" ] }
         ]
       }
     ]
@@ -19,6 +19,17 @@
     "events": [],
     "ADTs": [
       {
+        "tname": "TestLib1.TestType2",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "TestLib1.Constructor3",
+            "argtypes": [ "TestLib1.TestType" ]
+          },
+          { "cname": "TestLib1.Constructor4", "argtypes": [ "Uint32" ] }
+        ]
+      },
+      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
@@ -27,11 +38,11 @@
         ]
       },
       {
-        "tname": "TestType",
+        "tname": "TestLib1.TestType",
         "tparams": [],
         "tmap": [
-          { "cname": "Constructor1", "argtypes": [] },
-          { "cname": "Constructor2", "argtypes": [] }
+          { "cname": "TestLib1.Constructor1", "argtypes": [] },
+          { "cname": "TestLib1.Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -62,14 +73,6 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
-      },
-      {
-        "tname": "TestType2",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Constructor3", "argtypes": [ "TestType" ] },
-          { "cname": "Constructor4", "argtypes": [ "Uint32" ] }
-        ]
       }
     ]
   },

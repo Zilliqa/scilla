@@ -3,8 +3,8 @@
     "State variables": [ { "field": "limap", "tag": "(Map NoInfo)" } ],
     "ADT constructors": [
       {
-        "LIAdt": [
-          { "constructor": "LIC", "tags": [ "NotMoney", "NoInfo" ] }
+        "listiter.LIAdt": [
+          { "constructor": "listiter.LIC", "tags": [ "NotMoney", "NoInfo" ] }
         ]
       }
     ]
@@ -19,17 +19,24 @@
     "transitions": [
       {
         "vname": "updateEntries",
-        "params": [ { "vname": "entries", "type": "List (LIAdt)" } ]
+        "params": [ { "vname": "entries", "type": "List (listiter.LIAdt)" } ]
       }
     ],
     "procedures": [
       {
         "vname": "updateEntry",
-        "params": [ { "vname": "entry", "type": "LIAdt" } ]
+        "params": [ { "vname": "entry", "type": "listiter.LIAdt" } ]
       }
     ],
     "events": [],
     "ADTs": [
+      {
+        "tname": "listiter.LIAdt",
+        "tparams": [],
+        "tmap": [
+          { "cname": "listiter.LIC", "argtypes": [ "ByStr20", "Int32" ] }
+        ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -66,11 +73,6 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
-      },
-      {
-        "tname": "LIAdt",
-        "tparams": [],
-        "tmap": [ { "cname": "LIC", "argtypes": [ "ByStr20", "Int32" ] } ]
       }
     ]
   },

@@ -13,8 +13,8 @@
     ],
     "ADT constructors": [
       {
-        "Transaction": [
-          { "constructor": "Trans", "tags": [ "NotMoney", "Money" ] }
+        "wallet.Transaction": [
+          { "constructor": "wallet.Trans", "tags": [ "NotMoney", "Money" ] }
         ]
       }
     ]
@@ -38,7 +38,7 @@
       },
       {
         "vname": "transactions",
-        "type": "Map (Uint32) (Transaction)",
+        "type": "Map (Uint32) (wallet.Transaction)",
         "depth": 1
       },
       {
@@ -108,22 +108,29 @@
     ],
     "ADTs": [
       {
-        "tname": "Error",
+        "tname": "wallet.Error",
         "tparams": [],
         "tmap": [
-          { "cname": "NonOwnerCannotSign", "argtypes": [] },
-          { "cname": "UnknownTransactionId", "argtypes": [] },
-          { "cname": "InsufficientFunds", "argtypes": [] },
-          { "cname": "NoSignatureListFound", "argtypes": [] },
-          { "cname": "AlreadySigned", "argtypes": [] },
-          { "cname": "NotAlreadySigned", "argtypes": [] },
-          { "cname": "InvalidContract", "argtypes": [] },
-          { "cname": "InvalidAmount", "argtypes": [] },
-          { "cname": "NotEnoughSignatures", "argtypes": [] },
-          { "cname": "SenderIsNotRecipient", "argtypes": [] },
-          { "cname": "CandidateAlreadyAdded", "argtypes": [] },
-          { "cname": "UnknownCandidate", "argtypes": [] },
-          { "cname": "CandidateAlreadyOwner", "argtypes": [] }
+          { "cname": "wallet.NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "wallet.UnknownTransactionId", "argtypes": [] },
+          { "cname": "wallet.InsufficientFunds", "argtypes": [] },
+          { "cname": "wallet.NoSignatureListFound", "argtypes": [] },
+          { "cname": "wallet.AlreadySigned", "argtypes": [] },
+          { "cname": "wallet.NotAlreadySigned", "argtypes": [] },
+          { "cname": "wallet.InvalidContract", "argtypes": [] },
+          { "cname": "wallet.InvalidAmount", "argtypes": [] },
+          { "cname": "wallet.NotEnoughSignatures", "argtypes": [] },
+          { "cname": "wallet.SenderIsNotRecipient", "argtypes": [] },
+          { "cname": "wallet.CandidateAlreadyAdded", "argtypes": [] },
+          { "cname": "wallet.UnknownCandidate", "argtypes": [] },
+          { "cname": "wallet.CandidateAlreadyOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "wallet.Transaction",
+        "tparams": [],
+        "tmap": [
+          { "cname": "wallet.Trans", "argtypes": [ "ByStr20", "Uint128" ] }
         ]
       },
       {
@@ -132,13 +139,6 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "Transaction",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }
         ]
       },
       {

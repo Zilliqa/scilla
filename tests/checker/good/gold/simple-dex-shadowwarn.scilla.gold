@@ -8,9 +8,9 @@
     ],
     "ADT constructors": [
       {
-        "Order": [
+        "simple-dex-shadowwarn.Order": [
           {
-            "constructor": "Order",
+            "constructor": "simple-dex-shadowwarn.Order",
             "tags": [ "NotMoney", "NoInfo", "NotMoney", "NoInfo" ]
           }
         ]
@@ -22,7 +22,11 @@
     "vname": "SimpleDex",
     "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "depth": 1 },
+      {
+        "vname": "orderbook",
+        "type": "Map (ByStr32) (simple-dex-shadowwarn.Order)",
+        "depth": 1
+      },
       {
         "vname": "orderInfo",
         "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
@@ -90,21 +94,21 @@
     ],
     "ADTs": [
       {
-        "tname": "Order",
-        "tparams": [],
-        "tmap": [
-          {
-            "cname": "Order",
-            "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
-          }
-        ]
-      },
-      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "simple-dex-shadowwarn.Order",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "simple-dex-shadowwarn.Order",
+            "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
+          }
         ]
       },
       {
