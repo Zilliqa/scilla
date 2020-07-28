@@ -181,8 +181,7 @@ let deploy_library args gas_remaining =
           let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
           plog msg;
           fatal_error_gas 
-            (mk_error0
-               (sprintf "Ran out of gas when parsing contract/init files.\n"))
+            (mk_error0 msg)
             gas_remaining
       | Some this_address ->
           let elibs = import_libs lmod.elibs init_address_map in
