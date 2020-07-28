@@ -35,10 +35,12 @@ open TypeInfo
 open ErrorUtils
 module PSRep = ParserRep
 module PERep = ParserRep
-(* Imports and user-defined types are not allowed, so just use global names *)
-module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
+(* Stdlib are implicitly imported, so we need to use local names in the parser *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Parser = FEParser.Parser
 module Syn = FEParser.FESyntax
+module Dis = Disambiguate.ScillaDisambiguation (PSRep) (PERep)
+module GlobalSyntax = Dis.PostDisSyntax
 module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
@@ -56,14 +58,38 @@ let check_parsing filename =
            filename;
       pure e
 
+let disambiguate e (std_lib : GlobalSyntax.libtree list) =
+  let open Dis in
+  let open GlobalSyntax in
+  let%bind imp_var_dict, imp_typ_dict, imp_ctr_dict =
+    foldM std_lib ~init:([], [], [])
+      ~f:(fun acc_dicts lt ->
+          let { libn ; _ } : libtree = lt in
+          let lib_address = SIdentifier.as_string libn.lname in
+          amend_ns_dict libn lib_address None acc_dicts (SIdentifier.get_rep libn.lname))
+  in
+  let imp_dicts =
+    {
+      var_dict = imp_var_dict;
+      typ_dict = imp_typ_dict;
+      ctr_dict = imp_ctr_dict;
+    }
+  in
+  match disambiguate_exp imp_dicts e with
+  | Error _ -> fail0 (sprintf "Failed to disambiguate\n")
+  | Ok e ->
+      plog
+      @@ sprintf "\n[Disambiguation]:\nExpression successfully disambiguated.\n";
+      pure e
+
 (* Type check the expression with external libraries *)
 let check_typing e elibs gas =
   let open TC in
   let open TC.TypeEnv in
   let rec_lib =
     {
-      Syn.lname = TCIdentifier.mk_loc_id (TCName.parse_simple_name "rec_lib");
-      Syn.lentries = recursion_principles;
+      GlobalSyntax.lname = TCIdentifier.mk_loc_id (TCName.parse_simple_name "rec_lib");
+      GlobalSyntax.lentries = recursion_principles;
     }
   in
   let tenv0 = TEnv.mk () in
@@ -96,29 +122,32 @@ let run () =
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libs. *)
       let std_lib = import_all_libs lib_dirs in
-      match check_typing e std_lib gas_limit with
-      | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
-          match check_patterns typed_erep with
-          | Ok _ -> (
-              let tj =
-                [ ("type", `String (FEParser.FEPType.pp_typ e_typ.tp)) ]
-              in
-              let output_j =
-                `Assoc
-                  ( if cli.p_type_info then
-                    ( "type_info",
-                      JSON.TypeInfo.type_info_to_json
-                        (TI.type_info_expr typed_erep) )
-                    :: tj
-                  else tj )
-              in
-              pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
-              if cli.gua_flag then
-                match analyze_gas typed_erep with
-                | Ok _ -> ()
-                | Error el -> fatal_error el )
-          | Error el -> fatal_error el )
-      | Error ((_, el), _remaining_gas) -> fatal_error el )
+      match disambiguate e std_lib with
+      | Ok dis_e -> (
+          match check_typing dis_e std_lib gas_limit with
+          | Ok (((_, (e_typ, _)) as typed_erep), _remaining_gas) -> (
+              match check_patterns typed_erep with
+              | Ok _ -> (
+                  let tj =
+                    [ ("type", `String (GlobalSyntax.SType.pp_typ e_typ.tp)) ]
+                  in
+                  let output_j =
+                    `Assoc
+                      ( if cli.p_type_info then
+                          ( "type_info",
+                            JSON.TypeInfo.type_info_to_json
+                              (TI.type_info_expr typed_erep) )
+                          :: tj
+                        else tj )
+                  in
+                  pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
+                  if cli.gua_flag then
+                    match analyze_gas typed_erep with
+                    | Ok _ -> ()
+                    | Error el -> fatal_error el )
+              | Error el -> fatal_error el )
+          | Error ((_, el), _remaining_gas) -> fatal_error el )
+      | Error e -> fatal_error e)
   | Error e -> fatal_error e
 
 let () = try run () with FatalError msg -> exit_with_error msg
