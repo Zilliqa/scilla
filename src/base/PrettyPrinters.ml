@@ -280,7 +280,7 @@ let rec pp_literal_simplified l =
       "(Nat " ^ Option.value res ~default:"(Malformed Nat)" ^ ")"
   | ADTValue (cn, _, al) ->
       (* Generic printing for other ADTs. *)
-      "(" ^ (PPName.as_error_string cn)
+      "(" ^ (PPName.as_string cn)
       ^ List.fold_left al ~init:"" ~f:(fun a l' ->
           a ^ " " ^ pp_literal_simplified l')
       ^ ")"

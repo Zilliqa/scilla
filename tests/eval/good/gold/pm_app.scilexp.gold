@@ -1,3 +1,4 @@
 (False),
 { [y -> (False)],
-  [x -> (True)] }
+  [x -> (True)],
+  [andb -> <closure>] }

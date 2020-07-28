@@ -25,11 +25,37 @@ open RunnerUtil
 open ErrorUtils
 open GlobalConfig
 open PrettyPrinters
+open Result.Let_syntax
+open ParserUtil
+open MonadUtil
 
-(* Imports and user-defined types are not allowed, so just use global names *)
-module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
-    
+(* Stdlib are implicitly imported, so we need to use local names in the parser *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
+module GlobalSyntax = Dis.PostDisSyntax
+
 let default_gas_limit = Stdint.Uint64.of_int 2000
+
+let disambiguate e (std_lib : GlobalSyntax.libtree list) =
+  let open Dis in
+  let open GlobalSyntax in
+  let%bind imp_var_dict, imp_typ_dict, imp_ctr_dict =
+    foldM std_lib ~init:([], [], [])
+      ~f:(fun acc_dicts lt ->
+          let { libn ; _ } : libtree = lt in
+          let lib_address = SIdentifier.as_string libn.lname in
+          amend_ns_dict libn lib_address None acc_dicts (SIdentifier.get_rep libn.lname))
+  in
+  let imp_dicts =
+    {
+      var_dict = imp_var_dict;
+      typ_dict = imp_typ_dict;
+      ctr_dict = imp_ctr_dict;
+    }
+  in
+  match disambiguate_exp imp_dicts e with
+  | Error _ -> fail0 (sprintf "Failed to disambiguate\n")
+  | Ok e -> pure e
 
 let run () =
   GlobalConfig.reset ();
@@ -48,18 +74,21 @@ let run () =
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
       let elibs = import_all_libs lib_dirs in
-      (* Since this is not a contract, we have no in-contract lib defined. *)
-      let envres = Eval.init_libraries None elibs in
-      let env, gas_remaining =
-        match envres Eval.init_gas_kont gas_limit with
-        | Ok (env', gas_remaining) -> (env', gas_remaining)
-        | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
-      in
-      let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
-      let res = Eval.(exp_eval_wrapper e env init_gas_kont gas_remaining) in
-      match res with
-      | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
-      | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
+      match disambiguate e elibs with
+      | Ok dis_e -> (
+          (* Since this is not a contract, we have no in-contract lib defined. *)
+          let envres = Eval.init_libraries None elibs in
+          let env, gas_remaining =
+            match envres Eval.init_gas_kont gas_limit with
+            | Ok (env', gas_remaining) -> (env', gas_remaining)
+            | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
+          in
+          let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
+          let res = Eval.(exp_eval_wrapper dis_e env init_gas_kont gas_remaining) in
+          match res with
+          | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
+          | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
+      | Error e -> fatal_error e )
   | Error e -> fatal_error e
 
 let () = try run () with FatalError msg -> exit_with_error msg
