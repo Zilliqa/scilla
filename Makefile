@@ -99,7 +99,7 @@ gold: dev
 test_extipcserver: dev
 	dune exec -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
-	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # Run tests in server-mode
 test_server: dev
@@ -107,7 +107,7 @@ test_server: dev
 	./_build/default/src/runners/scilla_server.exe &
 	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
   -server true \
-	-only-test "all_tests:0:contract_tests:0:these_tests_must_SUCCEED"
+	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # === TESTS (end) =============================================================
 
