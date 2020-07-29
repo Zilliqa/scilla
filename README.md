@@ -190,9 +190,9 @@ $PROJECT_DIR/bin
 ### Running the testsuite
 
 The testsuite is based on the `OUnit2` framework and is driven by the
-main module in `tests/Testsuite.ml`. Currently there are two types of
-tests run in the testsuite. `contracts` tests run a full transition on
-a contract with all input data provided. `eval` tests only test
+main module in `tests/Testsuite.ml`. There are several types of
+tests run in the testsuite. For instance, `contracts` tests run a full transition on
+a contract with all input data provided, and `eval` tests only test
 expression evaluation. To add more tests of either of these kinds,
 look for the corresponding `.ml` files in their tests/directory and add
 accordingly.
@@ -212,7 +212,7 @@ the `tests/` directory containing the tests.
 Relative paths may not work.
 Parameters to `testsuite` executable can be passed like so:
 ```shell
-dune exec tests/testsuite.exe -- <space-separate-parameters>
+dune exec tests/testsuite.exe -- <space-separated-parameters>
 ```
 
 To obtain a list of tests available:
@@ -221,16 +221,34 @@ To obtain a list of tests available:
 dune exec tests/testsuite.exe -- -list-test
 ```
 
+#### Running an individual test
 To run an individual test(s), for example
-`all_tests:1:exptests:14:let.scilla`
-(one of the tests from the list obtained via `dune exec -- tests/testsuite -list-test`):
+`tests:4:checker:0:good:1:exptests:5:one-accept.scilla`,
+(it's one of the tests from the list obtained via `dune exec -- tests/testsuite.exe -list-test`,
+this needs to be run from the project's root):
 
 ```shell
-dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true
+dune exec tests/testsuite.exe -- -only-test tests:4:checker:0:good:1:exptests:5:one-accept.scilla -print-cli true
 ```
 
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
+
+#### Running a group of tests
+If you'd like to run a group of tests, for instance, the typechecking tests
+which are assigned the name `checker`, execute the following from the project's
+root:
+
+```shell
+dune exec -- tests/testsuite.exe -only-test tests:4:checker
+```
+
+If you need to update the so-called `gold`-files which keep the expected output
+for the `checker` tests, run the following command:
+
+```shell
+dune exec -- tests/testsuite.exe -only-test tests:4:checker -update-gold true
+```
 
 ### Formatting and linting the codebase
 Our CI checks that the source code is formatted properly. Use

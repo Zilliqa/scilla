@@ -226,23 +226,32 @@ let check_lmodule cli =
       @@ wrap_error_with_gas remaining_gas
       @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
     in
-    pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
+    let type_info =
+      if cli.p_type_info then TI.type_info_lmod typed_lmod else []
+    in
+    pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas)
   in
   match r with
   | Error (s, g) -> fatal_error_gas s g
-  | Ok (_, g) ->
-      if not (GlobalConfig.use_json_errors ()) then
-        scilla_warning_to_sstring (get_warnings ())
-        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
-      else
+  | Ok (_, type_info, g) ->
+      let json_output =
+        if cli.p_type_info then
+          [ ("type_info", JSON.TypeInfo.type_info_to_json type_info) ]
+        else []
+      in
+      if GlobalConfig.use_json_errors () || not (List.is_empty json_output) then
         let warnings_and_gas_output =
           [
             ("warnings", scilla_warning_to_json (get_warnings ()));
             ("gas_remaining", `String (Stdint.Uint64.to_string g));
           ]
+          @ json_output
         in
         let j = `Assoc warnings_and_gas_output in
-        sprintf "%s\n" (Yojson.pretty_to_string j)
+        sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+      else
+        scilla_warning_to_sstring (get_warnings ())
+        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
 
 (* Check a contract module. *)
 let check_cmodule cli =
