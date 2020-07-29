@@ -273,11 +273,24 @@ let run_with_args args =
               in
               let sm = IPC args.ipc_address in
               let () = initialize ~sm ~fields in
+              let field_vals' =
+                if args.reinit then
+                  (* Retrieve state variables *)
+                  try fst @@ input_state_json args.input_state
+                  with Invalid_json s ->
+                    fatal_error_gas
+                      ( s
+                      @ mk_error0
+                          (sprintf "Failed to parse json %s:\n"
+                             args.input_state) )
+                      gas_remaining
+                else field_vals
+              in
               match
                 (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                 let%bind () =
                   Result.ignore_m
-                  @@ mapM field_vals ~f:(fun (s, v) ->
+                  @@ mapM field_vals' ~f:(fun (s, v) ->
                          update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
                            ~value:v)
                 in
