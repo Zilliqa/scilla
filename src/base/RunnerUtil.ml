@@ -91,15 +91,15 @@ let import_libs names_and_namespaces init_address_map =
   let rec importer names_and_namespaces address_map stack =
     let imported_libs_rev =
       List.fold_left names_and_namespaces ~init:[]
-        ~f:(fun libacc_rev (libname, ns_opt) ->
+        ~f:(fun libacc_rev (libname, _) ->
             let open RULocalIdentifier in
             if List.mem stack (get_id libname) ~equal:[%equal : RULocalName.t] then
               let errmsg =
-                if Option.is_none ns_opt then
-                  sprintf "Cyclic dependence found when importing %s." (as_error_string libname)
-                else
-                  sprintf "Cyclic dependence found when importing %s (mapped to %s)."
-                    (as_error_string libname) (Option.value_map ~default:"" ~f:as_error_string ns_opt)
+                match List.Assoc.find init_address_map (as_string libname) ~equal:String.(=) with
+                | Some filename -> 
+                    sprintf "Cyclic dependence found when importing %s (mapped to %s)."
+                      (as_error_string libname) filename
+                | None -> sprintf "Cyclic dependence found when importing %s." (as_error_string libname)
               in fatal_error @@ mk_error1 errmsg (get_rep libname)
             else
               let ilib_address =

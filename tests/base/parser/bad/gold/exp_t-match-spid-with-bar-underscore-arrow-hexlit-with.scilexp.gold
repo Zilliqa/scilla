@@ -1,8 +1,7 @@
 {
   "errors": [
     {
-      "error_message":
-        "After a pattern matching clause the parser expects another pattern matching clause or the end ('end').\n",
+      "error_message": "Syntax error, state number 181",
       "start_location": {
         "file":
           "base/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-hexlit-with.scilexp",
