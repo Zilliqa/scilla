@@ -31,9 +31,9 @@ open RunnerUtil
 open RunnerCLI
 open GlobalConfig
 
-(* gas consumed /= gas_scale_down_factor. *)
 let gas_scale_down_factor = 8
 
+(* Scale down the gas consumed by "gas_scale_down_factor" *)
 let gas_consumption_scaling ~initial_limit ~gas_remaining =
   let gas_consumed = Uint64.sub initial_limit gas_remaining in
   let gas_consumed' =
