@@ -31,6 +31,16 @@ open RunnerUtil
 open RunnerCLI
 open GlobalConfig
 
+(* gas consumed /= gas_scale_down_factor. *)
+let gas_scale_down_factor = 8
+
+let gas_consumption_scaling ~initial_limit ~gas_remaining =
+  let gas_consumed = Uint64.sub initial_limit gas_remaining in
+  let gas_consumed' =
+    Uint64.div gas_consumed (Uint64.of_int gas_scale_down_factor)
+  in
+  Uint64.sub initial_limit (Uint64.add gas_consumed' Uint64.one)
+
 (****************************************************)
 (*          Checking initialized libraries          *)
 (****************************************************)
@@ -395,7 +405,12 @@ let run_with_args args =
             let osj = output_state_json cstate'.balance field_vals in
             let omj = output_message_json gas mlist in
             let oej = `List (output_event_json elist) in
-            ((omj, osj, oej, accepted_b), gas)
+            (* Scale down the gas consumed. *)
+            let gas_remaining'' =
+              gas_consumption_scaling ~initial_limit:args.gas_limit
+                ~gas_remaining:gas
+            in
+            ((omj, osj, oej, accepted_b), gas_remaining'')
         in
         `Assoc
           [
