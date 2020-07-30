@@ -52,14 +52,14 @@ let check_libs clibs elibs name gas_limit =
            (String.concat ~sep:", " (List.rev_map res ~f:fst))
            name);
       gas_remaining
-  | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
+  | Error (err, gas_remaining) -> fatal_error_gas_scale gas_scale_factor err gas_remaining
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) -> fatal_error_gas err remaining_gas
+  | Error (err, remaining_gas) -> fatal_error_gas_scale gas_scale_factor err remaining_gas
   | Ok ((_, cstate, field_vals), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
       (cstate, remaining_gas, field_vals)
@@ -70,7 +70,7 @@ let check_extract_cstate name res gas_limit =
 
 let check_after_step res gas_limit =
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) -> fatal_error_gas err remaining_gas
+  | Error (err, remaining_gas) -> fatal_error_gas_scale gas_scale_factor err remaining_gas
   | Ok ((cstate, outs, events, accepted_b), remaining_gas) ->
       plog
         ( sprintf "Success! Here's what we got:\n"
@@ -110,7 +110,7 @@ let output_message_json gas_remaining mlist =
     (List.map mlist ~f:(function
       | Msg m -> JSON.Message.message_to_json m
       | _ ->
-          fatal_error_gas
+          fatal_error_gas_scale gas_scale_factor
             (mk_error0 "Attempt to send non-message construct.")
             gas_remaining))
 
@@ -125,7 +125,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
   let initargs =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
-      fatal_error_gas
+      fatal_error_gas_scale gas_scale_factor
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
@@ -143,8 +143,8 @@ let validate_get_init_json init_file gas_remaining source_ver =
     | Some (UintLit (Uint32L v)) ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
-        if v' <> mver || mver <> source_ver then fatal_error_gas emsg rgas
-    | _ -> fatal_error_gas emsg rgas
+        if v' <> mver || mver <> source_ver then fatal_error_gas_scale gas_scale_factor emsg rgas
+    | _ -> fatal_error_gas_scale gas_scale_factor emsg rgas
   in
   initargs
 
@@ -153,7 +153,7 @@ let deploy_library args gas_remaining =
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
-      fatal_error_gas e gas_remaining
+      fatal_error_gas_scale gas_scale_factor e gas_remaining
   | Ok lmod ->
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
@@ -188,7 +188,7 @@ let run_with_args args =
       in
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
-        fatal_error_gas
+        fatal_error_gas_scale gas_scale_factor
           (mk_error0
              (sprintf "Ran out of gas when parsing contract/init files.\n"))
           Uint64.zero
@@ -197,13 +197,13 @@ let run_with_args args =
       let cost = Uint64.of_int (Unix.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
       if is_library then
-        fatal_error_gas
+        fatal_error_gas_scale gas_scale_factor
           (mk_error0
              (sprintf
                 "Cannot run a library contract. They can only be deployed\n"))
           Uint64.zero
       else if Uint64.compare initial_gas_limit cost < 0 then
-        fatal_error_gas
+        fatal_error_gas_scale gas_scale_factor
           (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
@@ -215,7 +215,7 @@ let run_with_args args =
     | Error e ->
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
-        fatal_error_gas e gas_remaining
+        fatal_error_gas_scale gas_scale_factor e gas_remaining
     | Ok cmod ->
         plog
           (sprintf
@@ -239,7 +239,7 @@ let run_with_args args =
         let bstate =
           try JSON.BlockChainState.get_json_data args.input_blockchain
           with Invalid_json s ->
-            fatal_error_gas
+            fatal_error_gas_scale gas_scale_factor
               ( s
               @ mk_error0
                   (sprintf "Failed to parse json %s:\n" args.input_blockchain)
@@ -286,7 +286,7 @@ let run_with_args args =
                 in
                 finalize ()
               with
-              | Error s -> fatal_error_gas s remaining_gas'
+              | Error s -> fatal_error_gas_scale gas_scale_factor s remaining_gas'
               | Ok _ -> () );
 
             (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
@@ -303,7 +303,7 @@ let run_with_args args =
             let mmsg =
               try JSON.Message.get_json_data args.input_message
               with Invalid_json s ->
-                fatal_error_gas
+                fatal_error_gas_scale gas_scale_factor
                   ( s
                   @ mk_error0
                       (sprintf "Failed to parse json %s:\n" args.input_message)
@@ -337,7 +337,7 @@ let run_with_args args =
                 let curargs, cur_bal =
                   try input_state_json args.input_state
                   with Invalid_json s ->
-                    fatal_error_gas
+                    fatal_error_gas_scale gas_scale_factor
                       ( s
                       @ mk_error0
                           (sprintf "Failed to parse json %s:\n"
@@ -390,7 +390,7 @@ let run_with_args args =
                 with
                 | Ok fv, Ok () -> fv
                 | _ ->
-                    fatal_error_gas
+                    fatal_error_gas_scale gas_scale_factor
                       (mk_error0 "Error finalizing state from StateService")
                       gas
             in
