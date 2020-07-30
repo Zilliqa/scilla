@@ -30,8 +30,7 @@ open Stdint
 open RunnerUtil
 open RunnerCLI
 open GlobalConfig
-
-let gas_scale_factor = Uint64.of_int 8
+open Gas
 
 (****************************************************)
 (*          Checking initialized libraries          *)

@@ -28,6 +28,8 @@ open Scilla_crypto.Schnorr
 open PrettyPrinters
 open Datatypes.SnarkTypes
 
+let gas_scale_factor = Stdint.Uint64.of_int 8
+
 (* Arbitrarily picked, the largest prime less than 100. *)
 let version_mismatch_penalty = 97
 
