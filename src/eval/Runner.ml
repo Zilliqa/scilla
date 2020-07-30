@@ -170,7 +170,8 @@ let deploy_library args gas_remaining =
       let _ =
         validate_get_init_json args.input_init gas_remaining' lmod.smver
       in
-      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
+      let gas_remaining'' = Uint64.div gas_remaining' gas_scale_factor in
+      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ]
 
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
