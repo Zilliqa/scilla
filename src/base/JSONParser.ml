@@ -195,7 +195,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if Datatypes.is_list_adt_name (JSONIdentifier.get_id name) then
+                    if not (Datatypes.is_list_adt_name (JSONIdentifier.get_id name)) then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")
