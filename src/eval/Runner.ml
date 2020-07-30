@@ -31,15 +31,7 @@ open RunnerUtil
 open RunnerCLI
 open GlobalConfig
 
-let gas_scale_down_factor = 8
-
-(* Scale down the gas consumed by "gas_scale_down_factor" *)
-let gas_consumption_scaling ~initial_limit ~gas_remaining =
-  let gas_consumed = Uint64.sub initial_limit gas_remaining in
-  let gas_consumed' =
-    Uint64.div gas_consumed (Uint64.of_int gas_scale_down_factor)
-  in
-  Uint64.sub initial_limit (Uint64.add gas_consumed' Uint64.one)
+let gas_scale_factor = Uint64.of_int 8
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -187,6 +179,7 @@ let run_with_args args =
     FilePath.check_extension args.input
       GlobalConfig.StdlibTracker.file_extn_library
   in
+  let initial_gas_limit = Uint64.mul args.gas_limit gas_scale_factor in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
@@ -194,12 +187,12 @@ let run_with_args args =
         Unix.((stat args.input).st_size + (stat args.input_init).st_size)
       in
       let cost = Uint64.of_int cost' in
-      if Uint64.compare args.gas_limit cost < 0 then
+      if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas
           (mk_error0
              (sprintf "Ran out of gas when parsing contract/init files.\n"))
           Uint64.zero
-      else Uint64.sub args.gas_limit cost
+      else Uint64.sub initial_gas_limit cost
     else
       let cost = Uint64.of_int (Unix.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
@@ -209,11 +202,11 @@ let run_with_args args =
              (sprintf
                 "Cannot run a library contract. They can only be deployed\n"))
           Uint64.zero
-      else if Uint64.compare args.gas_limit cost < 0 then
+      else if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas
           (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
           Uint64.zero
-      else Uint64.sub args.gas_limit cost
+      else Uint64.sub initial_gas_limit cost
   in
 
   if is_library then deploy_library args gas_remaining
@@ -405,12 +398,8 @@ let run_with_args args =
             let osj = output_state_json cstate'.balance field_vals in
             let omj = output_message_json gas mlist in
             let oej = `List (output_event_json elist) in
-            (* Scale down the gas consumed. *)
-            let gas_remaining'' =
-              gas_consumption_scaling ~initial_limit:args.gas_limit
-                ~gas_remaining:gas
-            in
-            ((omj, osj, oej, accepted_b), gas_remaining'')
+            let gas' = Uint64.div gas gas_scale_factor in
+            ((omj, osj, oej, accepted_b), gas')
         in
         `Assoc
           [
