@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Sexplib.Std
 open ErrorUtils
 open Literal
@@ -25,7 +24,7 @@ open Literal
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 7, 0)
+let scilla_version = (0, 8, 0)
 
 let address_length = 20
 

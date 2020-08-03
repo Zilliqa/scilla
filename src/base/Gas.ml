@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
@@ -197,6 +196,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let%bind types = mapM args ~f:literal_type in
     let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
     match (op, types, args) with
+    | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ ByStr a1; _ ] ->
+        pure (Bystr.width a1 * base)
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
@@ -246,9 +247,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let map_coster op args base =
     match args with
     | Map (_, m) :: _ -> (
-        (* get and contains do not make a copy of the Map, hence constant. *)
+        (* size, get and contains do not make a copy of the Map, hence constant. *)
         match op with
-        | Builtin_get | Builtin_contains -> pure base
+        | Builtin_size | Builtin_get | Builtin_contains -> pure base
         | _ -> pure (base + (base * Caml.Hashtbl.length m)) )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
@@ -362,7 +363,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
     (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
     (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_nat, [tvar "'A"], to_nat_coster, 1);
+    (Builtin_to_nat, [uint32_typ], to_nat_coster, 1);
   ]
 
   [@@@ocamlformat "enable"]

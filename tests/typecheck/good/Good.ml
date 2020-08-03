@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
 open Scilla_base
 open Literal
@@ -194,6 +193,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "builtin-bech32-2.scilexp";
       "builtin-alt-bn128.scilexp";
       "builtin-isqrt.scilexp";
+      "builtin-eq-bystr.scilexp";
       "fun.scilexp";
       "fun1.scilexp";
       "addr.scilexp";
@@ -215,7 +215,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "map_value_type_pair.scilexp";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 0
+  let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
 let tests env =

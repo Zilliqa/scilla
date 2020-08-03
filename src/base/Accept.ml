@@ -26,7 +26,6 @@
    so again we only generate warnings not errors. *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Literal
 open TypeUtil
 open ErrorUtils

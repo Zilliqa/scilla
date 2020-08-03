@@ -19,7 +19,6 @@
 (* A fast JSON parser for states that performs no validations. *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Yojson
 open ErrorUtils
 open TypeUtil

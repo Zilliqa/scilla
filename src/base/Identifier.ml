@@ -88,7 +88,7 @@ module GlobalName = struct
 
   (* Do not use derived equality, because the error string of imported names 
      will be different from the error string where the name is used *)
-  let equal ((an, _) : t) ((bn, _) : t) : sexp_bool = [%equal : t_name] an bn
+  let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal : t_name] an bn
   
   let as_string = function
     | SimpleGlobal n, _ -> n

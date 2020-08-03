@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 
 (* Add tests in alphabetical order *)
 
@@ -136,7 +135,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type_t-tid-arrow-with.scilla";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 module LibTests = Scilla_test.Util.DiffBasedTests (struct
@@ -181,7 +180,7 @@ module LibTests = Scilla_test.Util.DiffBasedTests (struct
       "lmodule-with.scillib";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 module ExpTests = Scilla_test.Util.DiffBasedTests (struct
@@ -264,5 +263,5 @@ module ExpTests = Scilla_test.Util.DiffBasedTests (struct
       "exp_t-with.scilexp";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)

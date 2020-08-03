@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
 
 (* PART A: Test literal type checks. The only way to have malformed
@@ -191,7 +190,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type-renaming-should-be-allowed.scilexp";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 let tests env = "bad" >::: [ lit_typ_tests; Tests.tests env ]

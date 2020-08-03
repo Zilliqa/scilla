@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
 
 let explist =
@@ -48,6 +47,7 @@ let explist =
     "builtin-bech32-1.scilexp";
     "builtin-bech32-2.scilexp";
     "builtin-isqrt.scilexp";
+    "builtin-eq-bystr.scilexp";
     "cons.scilexp";
     "fib.scilexp";
     "func_pair.scilexp";
@@ -157,7 +157,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let tests = explist
 
-  let exit_code : Unix.process_status = WEXITED 0
+  let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
 let tests env = "good" >::: [ Tests.tests env ]

@@ -15,8 +15,6 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Idl
 open IPCUtil
 
