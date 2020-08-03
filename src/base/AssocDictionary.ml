@@ -21,7 +21,6 @@
 (**********************************************************)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 
 (* Simple association list implementation of a dictionary. *)
 type key = string

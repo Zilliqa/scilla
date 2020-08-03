@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Scilla_base
 open Syntax
 open FrontEndParser
@@ -187,7 +186,7 @@ let run_with_args args =
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
       let cost' =
-        Unix.((stat args.input).st_size + (stat args.input_init).st_size)
+        UnixLabels.((stat args.input).st_size + (stat args.input_init).st_size)
       in
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
@@ -197,7 +196,7 @@ let run_with_args args =
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
     else
-      let cost = Uint64.of_int (Unix.stat args.input_message).st_size in
+      let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
       if is_library then
         fatal_error_gas_scale Gas.scale_factor

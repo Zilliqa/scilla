@@ -21,7 +21,6 @@
 
 open OUnit2
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Yojson
 open Scilla_base
 open Scilla_eval

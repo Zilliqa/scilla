@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ParserUtil
 open Syntax
 open ErrorUtils
