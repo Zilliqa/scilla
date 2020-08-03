@@ -34,7 +34,7 @@ let send socket msg =
   Jsonrpc.response_of_string str
 
 let rpc ~sock_path call =
-  let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0) in
+  let socket = U.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ()) in
   U.connect socket ~addr:(U.ADDR_UNIX sock_path);
   let msg = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   Util.protect_reraise

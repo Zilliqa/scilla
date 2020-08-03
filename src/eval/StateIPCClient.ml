@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 open Core
-open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open Scilla_base
 open MonadUtil
@@ -56,7 +55,7 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
   in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
   let ic, oc =

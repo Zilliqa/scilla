@@ -48,7 +48,7 @@ let canonicalize_term (t : 'a term) : 'a term =
       | (cur_v, cur_p) :: rem ->
           (* Split the remaining into those equal to cur and not equal to cur. *)
           let cureq, curneq =
-            List.partition_tf rem ~f:(fun (v, _) -> v = cur_v)
+            List.partition_tf rem ~f:(fun (v, _) -> Poly.(v = cur_v))
           in
           (* Add the powers of cur_v and those in cureq. *)
           let p =
@@ -71,7 +71,7 @@ let eq_term ?(coef = true) (t1' : 'a term) (t2' : 'a term) =
   && List.length vplist1 = List.length vplist2
   && List.for_all vplist1 ~f:(fun (cur_v, cur_p) ->
          List.exists vplist2 ~f:(fun (cur_v', cur_p') ->
-             cur_v = cur_v' && cur_p = cur_p'))
+             Poly.(cur_v = cur_v') && cur_p = cur_p'))
 
 let mul_term (t1 : 'a term) (t2 : 'a term) : 'a term =
   let (c1, vplist1), (c2, vplist2) = (t1, t2) in
@@ -223,10 +223,10 @@ let sprint_pn (pn : 'a polynomial) ~(f : 'a -> string) =
           else if p = 1 then acc ^ "(" ^ f v ^ ")"
           else acc ^ "(" ^ f v ^ " ^ " ^ Int.to_string p ^ ")")
   in
-  if pn = [] then "0"
+  if List.is_empty pn then "0"
   else
     List.fold_left pn ~init:"" ~f:(fun acc t ->
-        (if acc = "" then "" else acc ^ " + ") ^ sprint_term t)
+        (if String.is_empty acc then "" else acc ^ " + ") ^ sprint_term t)
 
 (*********** Utilities to build polynomials easily **************)
 
