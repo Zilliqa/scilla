@@ -25,9 +25,13 @@ external _force_link_ : unit -> unit = "alt_bn128_G1_add_Z"
 
 type scalar = string (* TODO: Replace this with something like ByStr32 *)
 
-type g1point = { g1x : scalar; g1y : scalar }
+let equal_scalar = String.equal
 
-type g2point = { g2x : string; g2y : string }
+let equal_string = String.equal
+
+type g1point = { g1x : scalar; g1y : scalar } [@@deriving equal]
+
+type g2point = { g2x : string; g2y : string } [@@deriving equal]
 
 (* TODO: Replace with (ByStr64,ByStr64) *)
 
@@ -203,11 +207,3 @@ let alt_bn128_pairing_product pairs =
     (* Dummy use to avoid GC of memory. *)
     let _ = (pS, pD, presS, presD) in
     pres
-
-let eq_scalar = ( = )
-
-(* Replace with proper operator once we have a string type. *)
-
-let eq_g1 p1 p2 = p1.g1x = p2.g1x && p1.g1y = p2.g1y
-
-let eq_g2 p1 p2 = p1.g2x = p2.g2x && p1.g2y = p2.g2y

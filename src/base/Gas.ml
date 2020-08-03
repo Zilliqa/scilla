@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil

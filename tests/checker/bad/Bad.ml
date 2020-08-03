@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
@@ -98,7 +97,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "listiter-bad.scilla";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 module LibTests = Scilla_test.Util.DiffBasedTests (struct
@@ -141,7 +140,7 @@ module LibTests = Scilla_test.Util.DiffBasedTests (struct
       "bad_lib_pm_import.scilla";
     ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
 
 (* The test here require the `-init` argument. This is required for
@@ -167,5 +166,5 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
 
   let tests = [ "extlib_dup_entry.scilla"; "bad_init.scilla" ]
 
-  let exit_code : Unix.process_status = WEXITED 1
+  let exit_code : UnixLabels.process_status = WEXITED 1
 end)
