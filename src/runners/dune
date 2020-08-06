@@ -1,9 +1,9 @@
 (executables
- (names scilla_runner eval_runner type_checker scilla_checker scilla_server)
+ (names scilla_runner eval_runner type_checker scilla_checker scilla_server disambiguate_state_json)
  (public_names scilla-runner eval-runner type-checker scilla-checker
-   scilla-server)
+   scilla-server disambiguate_state_json)
  (package scilla)
- (modules scilla_runner eval_runner type_checker scilla_checker scilla_server)
+ (modules scilla_runner eval_runner type_checker scilla_checker scilla_server disambiguate_state_json)
  (libraries core angstrom yojson cryptokit fileutils scilla_base scilla_eval
    scilla_server_lib scilla_crypto)
  (modes byte native)
