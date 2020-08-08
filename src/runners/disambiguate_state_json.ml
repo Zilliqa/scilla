@@ -26,12 +26,16 @@ open GlobalConfig
 open Literal
 open Yojson
 open ParserUtil
-module ParserLiteral = LocalLiteral
-module FEParser = FrontEndParser.ScillaFrontEndParser (ParserLiteral)
-module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (ParserLiteral)
+
+module InputLiteral = LocalLiteral
+module InputType = InputLiteral.LType
+module InputIdentifier = InputType.TIdentifier
+module InputFEParser = FrontEndParser.ScillaFrontEndParser (InputLiteral)
 
 module OutputLiteral = GlobalLiteral
-module OutputName = OutputLiteral.LType.TIdentifier.Name
+module OutputType = OutputLiteral.LType
+module OutputIdentifier = OutputType.TIdentifier
+module OutputName = OutputIdentifier.Name
 
 (* ************************************************************************ * 
  * This executable parses a contract and reads its associated state using   *
@@ -43,104 +47,134 @@ module OutputName = OutputLiteral.LType.TIdentifier.Name
  * and remote state reads.                                                  *
  * ************************************************************************ *)
 
-(* Copied from scilla_runner.ml *)
+(* Copied/reimplemented from Disambiguate.ml *)
+
+(* Assumptions:
+   - DataTypeDictionary only contains predefined names
+   - The module has already passed scilla-checker
+
+   It follows from this that types and constructors in state and init jsons 
+   fall into two distinct categories:
+   - Names that exist in DataTypeDictionary: These disambiguate to simple names
+   - Names that do not exist in DataTypeDictionary: These disambiguate to 
+     _this_address.name *)
+
+let disambiguate_type this_address t =
+  let open InputType in
+  let rec recurse t =
+    match t with
+    | PrimType pt -> OutputType.PrimType pt
+    | MapType (kt, vt) ->
+        let dis_kt = recurse kt in
+        let dis_vt = recurse vt in
+        OutputType.MapType (dis_kt, dis_vt)
+    | FunType (arg_t, res_t) ->
+        let dis_arg_t = recurse arg_t in
+        let dis_res_t = recurse res_t in
+        OutputType.FunType (dis_arg_t, dis_res_t)
+    | ADT (t_name, targs) -> (
+        match TIdentifier.get_id t_name with
+        | QualifiedLocal _ ->
+            raise (
+              mk_invalid_json (
+                sprintf "Found qualified type name %s in file"
+                  (TIdentifier.as_error_string t_name)))
+        | SimpleLocal nm ->
+            let dis_nm = 
+              (* Try nm as a simple global name *)
+              let tmp_nm = OutputName.parse_simple_name nm in
+              match Datatypes.DataTypeDictionary.lookup_name tmp_nm with
+              | Ok _ -> (* Name exists => Name is predefined *)
+                  tmp_nm
+              | Error _ -> (* Name does not exist => Name is user-defined *)
+                  OutputName.parse_qualified_name this_address nm
+            in
+            let dis_t_name = OutputIdentifier.mk_id dis_nm (InputIdentifier.get_rep t_name) in
+            let dis_targs = List.map targs ~f:recurse in
+            OutputType.ADT (dis_t_name, dis_targs))
+    | TypeVar tvar -> OutputType.TypeVar tvar
+    | PolyFun (tvar, t) ->
+      let dis_t = recurse t in
+      OutputType.PolyFun (tvar, dis_t)
+    | Unit -> OutputType.Unit
+  in
+  recurse t
+
+(* Copied from RunnerCLI.ml *)
 
 type args = {
   input_init : string;
   input_state : string;
-  output : string;
-  input : string;
-  libdirs : string list;
+  output_init : string;
+  output_state : string;
 }
-
-(* Copied from RunnerCLI.ml *)
 
 let f_input_init = ref ""
 
 let f_input_state = ref ""
 
-let f_output = ref ""
+let f_output_init = ref ""
 
-let f_input = ref ""
-
-let d_libs = ref []
+let f_output_state = ref ""
 
 let reset () =
   f_input_init := "";
   f_input_state := "";
-  f_output := "";
-  f_input := "";
-  d_libs := []
+  f_output_init := "";
+  f_output_state := ""
 
 let validate_main usage =
   let open Core_kernel in
-  (* not mandatory file name input, but if provided, should be valid *)
-  let invalid_optional_fname fname =
-    not (String.is_empty fname || Sys.file_exists fname)
-  in
   let msg = "" in
   let msg =
-    (* init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then "Invalid initialization file\n"
+    (* input_init.json is mandatory *)
+    if not @@ Sys.file_exists !f_input_init then "Invalid input init file\n"
     else msg
   in
   let msg =
-    (* input_state.json is not mandatory, but if provided, should be valid *)
-    if invalid_optional_fname !f_input_state then
-      msg ^ "Invalid input contract state: " ^ !f_input_state ^ "\n"
+    (* input_state.json is mandatory *)
+    if not @@ Sys.file_exists !f_input_state then "Invalid input state file\n"
     else msg
   in
   let msg =
-    (* input file is mandatory *)
-    if not @@ Sys.file_exists !f_input then
-      msg ^ "Invalid input contract file\n"
+    (* output_init.json is mandatory *)
+    if not @@ Sys.file_exists !f_output_init then "Invalid output init file\n"
     else msg
   in
-  (* Note: output file is optional, if it's missing we will output to stdout *)
-  if not @@ String.is_empty msg then
+  let msg =
+    (* output_state.json is mandatory *)
+    if not @@ Sys.file_exists !f_output_state then "Invalid output state file\n"
+    else msg
+  in
     PrettyPrinters.fatal_error_noformat (usage ^ Printf.sprintf "%s\n" msg)
 
 let parse ~exe_name =
   reset ();
   let speclist =
     [
-      ( "-init",
+      ( "-iinit",
         Arg.String (fun x -> f_input_init := x),
-        "Path to initialization json" );
+        "Path to input init json" );
       ( "-istate",
         Arg.String (fun x -> f_input_state := x),
-        "Path to state input json" );
-      ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
-      ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
-      ( "-libdir",
-        Arg.String
-          (fun x ->
-            let xl =
-              if String.is_empty x then [] else Str.split (Str.regexp "[;:]") x
-            in
-            d_libs := !d_libs @ xl),
-        "Path(s) to directory containing libraries separated by ':' (';' on \
-         windows)" );
+        "Path to input state json" );
+      ("-oinit", Arg.String (fun x -> f_output_init := x), "Path to output init json");
+      ("-ostate", Arg.String (fun x -> f_output_init := x), "Path to output state json");
     ]
   in
   let mandatory_usage =
-    "Usage:\n" ^ exe_name ^ " -init init.json -istate input_state.json"
-    ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib" ^ "\n"
+    "Usage:\n" ^ exe_name ^ " -iinit input_init.json -istate input_state.json"
+    ^ "-oinit output_init.json -ostate output_state.scilla" ^ "\n"
   in
-  let optional_usage =
-    String.concat ~sep:"\n  "
-    @@ List.map speclist ~f:(fun (flag, _, desc) -> flag ^ " " ^ desc)
-  in
-  let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
+  let usage = mandatory_usage ^ "\n  " in
   let ignore_anon _ = () in
   let () = Arg.parse speclist ignore_anon mandatory_usage in
   let () = validate_main usage in
   {
     input_init = !f_input_init;
     input_state = !f_input_state;
-    output = !f_output;
-    input = !f_input;
-    libdirs = !d_libs;
+    output_init = !f_output_init;
+    output_state = !f_output_state;
   }
 
 (* Copied from JSON.ml *)
@@ -152,11 +186,276 @@ let member_exn = JSONParser.member_exn
 
 let to_string_exn = JSONParser.to_string_exn
 
-let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
-
 let from_file f =
   let thunk () = Basic.from_file f in
   json_exn_wrapper thunk ~filename:f
+
+let parse_typ_exn t =
+  match InputFEParser.parse_type t with
+  | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
+  | Ok s -> s
+
+let to_list_exn j =
+  let thunk () = Basic.Util.to_list j in
+  json_exn_wrapper thunk
+
+let jobj_to_statevar json =
+  let n = member_exn "vname" json |> to_string_exn in
+  let tstring = member_exn "type" json |> to_string_exn in
+  let t = parse_typ_exn tstring in
+  let v = member_exn "value" json in
+  if GlobalConfig.validate_json () then (n, json_to_lit t v)
+  else (n, JSONParser.parse_json t v)
+
+module ContractState = struct
+  (** Returns a list of (vname:string,value:literal) items
+      Invalid inputs in the json are ignored **)
+  let get_json_data filename =
+    let json = from_file filename in
+    (* input json is a list of key/value pairs *)
+    let jlist = json |> to_list_exn in
+    List.map jlist ~f:jobj_to_statevar
+
+  (* Accessor for _this_address and _extlibs entries in init.json. 
+     Combined into one function to avoid reading init.json from disk multiple times. *)
+  let get_init_this_address_and_extlibs filename =
+    let init_data = get_json_data filename in
+    let extlibs = get_init_extlibs init_data in
+    let this_address_init_opt =
+      match List.filter init_data ~f:(fun (name, _) ->
+          String.(name = JSONName.as_string ContractUtil.this_address_label)) with
+      | [ ( _, adr) ] -> Some adr
+      | [] -> None (* We allow init files without a _this_address entry in scilla-checker *)
+      | _ -> raise (mk_invalid_json
+                       ( "Multiple " ^ JSONName.as_string ContractUtil.this_address_label
+                         ^ " entries specified in init json")) in
+    match this_address_init_opt with
+    | None -> (None, extlibs)
+    | Some adr ->
+        match get_address_literal adr with
+        | Some adr -> (Some adr, extlibs)
+        | None -> raise (mk_invalid_json
+                           ( "Illegal type for field " ^ JSONName.as_string ContractUtil.this_address_label
+                             ^ " specified in init json"))
+end
+
+end
+
+
+
+(* Copied from Runner.ml *)
+
+let run_with_args args =
+  (* No gas is charged *)
+  let gas_remaining = Stdint.Uint64.max_int in
+  let this_address_opt, _ = get_init_this_address_and_extlibs args.input_init in
+
+
+  match this_address_opt with
+  | None -> 
+      let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
+            plog msg;
+            fatal_error_gas 
+              (mk_error0
+                 (sprintf "Ran out of gas when parsing contract/init files.\n"))
+              gas_remaining
+        | Some this_address ->
+            let elibs = import_libs cmod.elibs init_address_map in
+            let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
+              | Error e ->
+                  plog (sprintf "%s\n" "Failed to disambiguate contract file.");
+                  fatal_error_gas e gas_remaining
+              | Ok res ->
+                  plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
+                  res
+            in
+            (* Contract library. *)
+            let clibs = dis_cmod.libs in
+            
+            (* Checking initialized libraries! *)
+            let gas_remaining = check_libs clibs elibs args.input gas_remaining in
+            let initargs =
+              validate_get_init_json args.input_init gas_remaining cmod.smver
+            in
+
+            (* Retrieve block chain state  *)
+            let bstate =
+              try JSON.BlockChainState.get_json_data args.input_blockchain
+              with Invalid_json s ->
+                fatal_error_gas
+                  ( s
+                    @ mk_error0
+                      (sprintf "Failed to parse json %s:\n" args.input_blockchain)
+                  )
+                  gas_remaining
+            in
+            let ( ( output_msg_json,
+                    output_state_json,
+                    output_events_json,
+                    accepted_b ),
+                  gas ) =
+                (* Not initialization, execute transition specified in the message *)
+                let mmsg =
+                  try JSON.Message.get_json_data args.input_message
+                  with Invalid_json s ->
+                    fatal_error_gas
+                      ( s
+                        @ mk_error0
+                          (sprintf "Failed to parse json %s:\n" args.input_message)
+                      )
+                      gas_remaining
+                in
+                let m = JSON.JSONLiteral.Msg mmsg in
+
+                let cstate, gas_remaining' =
+                    (* Retrieve state variables *)
+                    let curargs, cur_bal =
+                      try input_state_json args.input_state
+                      with Invalid_json s ->
+                        fatal_error_gas
+                          ( s
+                            @ mk_error0
+                              (sprintf "Failed to parse json %s:\n"
+                                 args.input_state) )
+                          gas_remaining
+                    in
+
+                    (* Initializing the contract's state *)
+                    let init_res =
+                      init_module dis_cmod initargs curargs cur_bal bstate elibs
+                    in
+                    (* Prints stats after the initialization and returns the initial state *)
+                    (* Will throw an exception if unsuccessful. *)
+                    let cstate, gas_remaining', field_vals =
+                      check_extract_cstate args.input init_res gas_remaining
+                    in
+
+                    (* Initialize the state server. *)
+                    let fields =
+                      List.map field_vals ~f:(fun (s, l) ->
+                          let open StateService in
+                          let t =
+                            List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
+                          in
+                          { fname = s; ftyp = t; fval = Some l })
+                    in
+                    let () = StateService.initialize ~sm:Local ~fields in
+                    (cstate, gas_remaining')
+                in
+
+                (* Contract code *)
+                let ctr = dis_cmod.contr in
+
+                plog
+                  (sprintf "Executing message:\n%s\n"
+                     (JSON.Message.message_to_jstring mmsg));
+                plog
+                  (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+                let step_result = handle_message ctr cstate bstate m in
+                let (cstate', mlist, elist, accepted_b), gas =
+                  check_after_step step_result gas_remaining'
+                in
+
+                (* If we're using a local state (JSON file) then need to fetch and dump it. *)
+                let field_vals =
+                    match
+                      (StateService.get_full_state (), StateService.finalize ())
+                    with
+                    | Ok fv, Ok () -> fv
+                    | _ ->
+                        fatal_error_gas
+                          (mk_error0 "Error finalizing state from StateService")
+                          gas
+                in
+
+                let osj = output_state_json cstate'.balance field_vals in
+                let omj = output_message_json gas mlist in
+                let oej = `List (output_event_json elist) in
+                ((omj, osj, oej, accepted_b), gas)
+            in
+            `Assoc
+              [
+                ("scilla_major_version", `String (Int.to_string cmod.smver));
+                ("gas_remaining", `String (Uint64.to_string gas));
+                (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
+                ("messages", output_msg_json);
+                ("states", output_state_json);
+                ("events", output_events_json);
+              ]
+
+let run ~exe_name =
+  GlobalConfig.reset ();
+  ErrorUtils.reset_warnings ();
+  Datatypes.DataTypeDictionary.reinit ();
+  let args = parse ~exe_name in
+  let result = run_with_args args in
+  (result, args)
+
+(* Copied from scilla_runner *)
+
+let output_to_string output =
+  Yojson.Basic.to_string output
+
+let () =
+  try
+    let output, args = run ~exe_name:(Sys.get_argv ()).(0) in
+    let str = output_to_string output in
+    if String.is_empty args.output_init ||
+       String.is_empty args.output_state
+    then DebugMessage.pout str
+    else
+      Out_channel.with_file args.output_init ~f:(fun ch ->
+          Out_channel.output_string ch str);
+    Out_channel.with_file args.output_state ~f:(fun ch ->
+        Out_channel.output_string ch str);
+  with FatalError msg -> exit_with_error msg
+
+
+
+(* TODO: 
+   - Parse and disambiguate external libraries (needed for our own testcases)
+   - Parse and disambiguate contract (needed for our own testcases)
+   - Parse and disambiguate types and literals in init.json
+   - Parse and disambiguate literals in state.json
+   - Output disambiguated init.json and state.json *)
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(* Copied from JSON.ml *)
+
+let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let parse_as_name n =
   let open ParserLiteral.LType.TIdentifier.Name in
@@ -169,10 +468,6 @@ let parse_typ_exn t =
   match JSONFrontEndParser.parse_type t with
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
   | Ok s -> s
-
-let to_list_exn j =
-  let thunk () = Basic.Util.to_list j in
-  json_exn_wrapper thunk
 
 let build_prim_lit_exn t v =
   let open ParserLiteral in
@@ -325,45 +620,6 @@ and json_to_lit t v =
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
 
-let jobj_to_statevar json =
-  let n = member_exn "vname" json |> to_string_exn in
-  let tstring = member_exn "type" json |> to_string_exn in
-  let t = parse_typ_exn tstring in
-  let v = member_exn "value" json in
-  if GlobalConfig.validate_json () then (n, json_to_lit t v)
-  else (n, JSONParser.parse_json t v)
-
-module ContractState = struct
-  (** Returns a list of (vname:string,value:literal) items
-      Invalid inputs in the json are ignored **)
-  let get_json_data filename =
-    let json = from_file filename in
-    (* input json is a list of key/value pairs *)
-    let jlist = json |> to_list_exn in
-    List.map jlist ~f:jobj_to_statevar
-
-  (* Accessor for _this_address and _extlibs entries in init.json. 
-     Combined into one function to avoid reading init.json from disk multiple times. *)
-  let get_init_this_address_and_extlibs filename =
-    let init_data = get_json_data filename in
-    let extlibs = get_init_extlibs init_data in
-    let this_address_init_opt =
-      match List.filter init_data ~f:(fun (name, _) ->
-          String.(name = JSONName.as_string ContractUtil.this_address_label)) with
-      | [ ( _, adr) ] -> Some adr
-      | [] -> None (* We allow init files without a _this_address entry in scilla-checker *)
-      | _ -> raise (mk_invalid_json
-                       ( "Multiple " ^ JSONName.as_string ContractUtil.this_address_label
-                         ^ " entries specified in init json")) in
-    match this_address_init_opt with
-    | None -> (None, extlibs)
-    | Some adr ->
-        match get_address_literal adr with
-        | Some adr -> (Some adr, extlibs)
-        | None -> raise (mk_invalid_json
-                           ( "Illegal type for field " ^ JSONName.as_string ContractUtil.this_address_label
-                             ^ " specified in init json"))
-end
 
 (* Copied from RunnerUtil.ml *)
 
@@ -448,283 +704,3 @@ let validate_get_init_json init_file =
     | _ -> fatal_error_gas emsg rgas
   in
   initargs
-
-let run_with_args args =
-  let is_deployment = String.is_empty args.input_message in
-  let is_ipc = not @@ String.is_empty args.ipc_address in
-  let is_library =
-    FilePath.check_extension args.input
-      GlobalConfig.StdlibTracker.file_extn_library
-  in
-  let gas_remaining =
-    (* Subtract gas based on (contract+init) size / message size. *)
-    if is_deployment then
-      let cost' =
-        UnixLabels.((stat args.input).st_size + (stat args.input_init).st_size)
-      in
-      let cost = Uint64.of_int cost' in
-      if Uint64.compare args.gas_limit cost < 0 then
-        fatal_error_gas
-          (mk_error0
-             (sprintf "Ran out of gas when parsing contract/init files.\n"))
-          Uint64.zero
-      else Uint64.sub args.gas_limit cost
-    else
-      let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
-      (* libraries can only be deployed, not "run". *)
-      if is_library then
-        fatal_error_gas
-          (mk_error0
-             (sprintf
-                "Cannot run a library contract. They can only be deployed\n"))
-          Uint64.zero
-      else if Uint64.compare args.gas_limit cost < 0 then
-        fatal_error_gas
-          (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
-          Uint64.zero
-      else Uint64.sub args.gas_limit cost
-  in
-
-  if is_library then deploy_library args gas_remaining
-  else
-    match FEParser.parse_cmodule args.input with
-    | Error e ->
-        (* Error is printed by the parser. *)
-        plog (sprintf "%s\n" "Failed to parse input file.");
-        fatal_error_gas e gas_remaining
-    | Ok cmod ->
-        plog
-          (sprintf
-             "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
-             args.input);
-
-        (* Parse external libraries. *)
-        let lib_dirs = FilePath.dirname args.input :: args.libdirs in
-        StdlibTracker.add_stdlib_dirs lib_dirs;
-        let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
-        match this_address_opt with
-        | None -> 
-            let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
-            plog msg;
-            fatal_error_gas 
-              (mk_error0
-                 (sprintf "Ran out of gas when parsing contract/init files.\n"))
-              gas_remaining
-        | Some this_address ->
-            let elibs = import_libs cmod.elibs init_address_map in
-            let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
-              | Error e ->
-                  plog (sprintf "%s\n" "Failed to disambiguate contract file.");
-                  fatal_error_gas e gas_remaining
-              | Ok res ->
-                  plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
-                  res
-            in
-            (* Contract library. *)
-            let clibs = dis_cmod.libs in
-            
-            (* Checking initialized libraries! *)
-            let gas_remaining = check_libs clibs elibs args.input gas_remaining in
-            let initargs =
-              validate_get_init_json args.input_init gas_remaining cmod.smver
-            in
-
-            (* Retrieve block chain state  *)
-            let bstate =
-              try JSON.BlockChainState.get_json_data args.input_blockchain
-              with Invalid_json s ->
-                fatal_error_gas
-                  ( s
-                    @ mk_error0
-                      (sprintf "Failed to parse json %s:\n" args.input_blockchain)
-                  )
-                  gas_remaining
-            in
-            let ( ( output_msg_json,
-                    output_state_json,
-                    output_events_json,
-                    accepted_b ),
-                  gas ) =
-              if is_deployment then (
-                (* Initializing the contract's state, just for checking things. *)
-                let init_res =
-                  init_module dis_cmod initargs [] Uint128.zero bstate elibs
-                in
-                (* Prints stats after the initialization and returns the initial state *)
-                (* Will throw an exception if unsuccessful. *)
-                let cstate', remaining_gas', field_vals =
-                  check_extract_cstate args.input init_res gas_remaining
-                in
-
-                (* If the data store is not local, we must update the store with the initial field values.
-                 * Refer to the details comments at [Initialization of StateService]. *)
-                ( if is_ipc then
-                    let open StateService in
-                    let open MonadUtil in
-                    let open Result.Let_syntax in
-                    (* We push all fields except _balance. *)
-                    let fields =
-                      List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                          if [%equal : RunnerName.t] s balance_label then None
-                          else Some { fname = s; ftyp = t; fval = None })
-                    in
-                    let sm = IPC args.ipc_address in
-                    let () = initialize ~sm ~fields in
-                    match
-                      (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
-                      let%bind () =
-                        Result.ignore_m
-                        @@ mapM field_vals ~f:(fun (s, v) ->
-                            update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
-                              ~value:v)
-                      in
-                      finalize ()
-                    with
-                    | Error s -> fatal_error_gas s remaining_gas'
-                    | Ok _ -> () );
-
-                (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
-                let field_vals' = if is_ipc then [] else field_vals in
-
-                plog (sprintf "\nContract initialized successfully\n");
-                ( ( `Null,
-                    output_state_json cstate'.balance field_vals',
-                    `List [],
-                    false ),
-                  remaining_gas' ) )
-              else
-                (* Not initialization, execute transition specified in the message *)
-                let mmsg =
-                  try JSON.Message.get_json_data args.input_message
-                  with Invalid_json s ->
-                    fatal_error_gas
-                      ( s
-                        @ mk_error0
-                          (sprintf "Failed to parse json %s:\n" args.input_message)
-                      )
-                      gas_remaining
-                in
-                let m = JSON.JSONLiteral.Msg mmsg in
-
-                let cstate, gas_remaining' =
-                  if is_ipc then
-                    let cur_bal = args.balance in
-                    let init_res =
-                      init_module dis_cmod initargs [] cur_bal bstate elibs
-                    in
-                    let cstate, gas_remaining', _ =
-                      check_extract_cstate args.input init_res gas_remaining
-                    in
-                    (* Initialize the state server. *)
-                    let fields =
-                      List.filter_map cstate.fields ~f:(fun (s, t) ->
-                          let open StateService in
-                          if [%equal : RunnerName.t] s balance_label then None
-                          else Some { fname = s; ftyp = t; fval = None })
-                    in
-                    let () =
-                      StateService.initialize ~sm:(IPC args.ipc_address) ~fields
-                    in
-                    (cstate, gas_remaining')
-                  else
-                    (* Retrieve state variables *)
-                    let curargs, cur_bal =
-                      try input_state_json args.input_state
-                      with Invalid_json s ->
-                        fatal_error_gas
-                          ( s
-                            @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state) )
-                          gas_remaining
-                    in
-
-                    (* Initializing the contract's state *)
-                    let init_res =
-                      init_module dis_cmod initargs curargs cur_bal bstate elibs
-                    in
-                    (* Prints stats after the initialization and returns the initial state *)
-                    (* Will throw an exception if unsuccessful. *)
-                    let cstate, gas_remaining', field_vals =
-                      check_extract_cstate args.input init_res gas_remaining
-                    in
-
-                    (* Initialize the state server. *)
-                    let fields =
-                      List.map field_vals ~f:(fun (s, l) ->
-                          let open StateService in
-                          let t =
-                            List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
-                          in
-                          { fname = s; ftyp = t; fval = Some l })
-                    in
-                    let () = StateService.initialize ~sm:Local ~fields in
-                    (cstate, gas_remaining')
-                in
-
-                (* Contract code *)
-                let ctr = dis_cmod.contr in
-
-                plog
-                  (sprintf "Executing message:\n%s\n"
-                     (JSON.Message.message_to_jstring mmsg));
-                plog
-                  (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
-                let step_result = handle_message ctr cstate bstate m in
-                let (cstate', mlist, elist, accepted_b), gas =
-                  check_after_step step_result gas_remaining'
-                in
-
-                (* If we're using a local state (JSON file) then need to fetch and dump it. *)
-                let field_vals =
-                  if is_ipc then []
-                  else
-                    match
-                      (StateService.get_full_state (), StateService.finalize ())
-                    with
-                    | Ok fv, Ok () -> fv
-                    | _ ->
-                        fatal_error_gas
-                          (mk_error0 "Error finalizing state from StateService")
-                          gas
-                in
-
-                let osj = output_state_json cstate'.balance field_vals in
-                let omj = output_message_json gas mlist in
-                let oej = `List (output_event_json elist) in
-                ((omj, osj, oej, accepted_b), gas)
-            in
-            `Assoc
-              [
-                ("scilla_major_version", `String (Int.to_string cmod.smver));
-                ("gas_remaining", `String (Uint64.to_string gas));
-                (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
-                ("messages", output_msg_json);
-                ("states", output_state_json);
-                ("events", output_events_json);
-              ]
-
-(* TODO: 
-   - Parse and disambiguate external libraries (needed for our own testcases)
-   - Parse and disambiguate contract (needed for our own testcases)
-   - Parse and disambiguate types and literals in init.json
-   - Parse and disambiguate literals in state.json
-   - Output disambiguated init.json and state.json *)
-            
-
-
-let () =
-  GlobalConfig.reset ();
-  ErrorUtils.reset_warnings ();
-  Datatypes.DataTypeDictionary.reinit ();
-  try
-    let args = parse ~exe_name:(Sys.get_argv ()).(0) in
-    let output = run_with_args args in
-    let str = Yojson.Basic.to_string output in
-    if String.is_empty args.output then DebugMessage.pout str
-    else
-      Out_channel.with_file args.output ~f:(fun ch ->
-          Out_channel.output_string ch str)
-  with FatalError msg -> exit_with_error msg
-
-
