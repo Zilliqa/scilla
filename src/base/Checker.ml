@@ -229,7 +229,13 @@ let check_lmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_lmod typed_lmod else []
     in
-    let remaining_gas' = Uint64.div remaining_gas Gas.scale_factor in
+    let remaining_gas' =
+      let remain = Uint64.div remaining_gas Gas.scale_factor in
+      (* Ensure that at least one unit of gas is consumed. *)
+      if Uint64.compare remain cli.gas_limit = 0 then
+        Uint64.sub remain Uint64.one
+      else remain
+    in
     pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas')
   in
   match r with
@@ -298,7 +304,13 @@ let check_cmodule cli =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
-    let remaining_gas' = Uint64.div remaining_gas Gas.scale_factor in
+    let remaining_gas' =
+      let remain = Uint64.div remaining_gas Gas.scale_factor in
+      (* Ensure that at least one unit of gas is consumed. *)
+      if Uint64.compare remain cli.gas_limit = 0 then
+        Uint64.sub remain Uint64.one
+      else remain
+    in
     pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
   in
   match r with
