@@ -29,6 +29,15 @@ open Datatypes.SnarkTypes
 
 let scale_factor = Stdint.Uint64.of_int 8
 
+(* Scale down the remaining gas to original metrics *)
+let finalize_remaining_gas initial_gas_limit remaining_gas =
+  let open Stdint in
+  let remain = Uint64.div remaining_gas scale_factor in
+  (* Ensure that at least one unit of gas is consumed. *)
+  if Uint64.compare remain initial_gas_limit = 0 then
+    Uint64.sub remain Uint64.one
+  else remain
+
 (* Arbitrarily picked, the largest prime less than 100. *)
 let version_mismatch_penalty = 97
 

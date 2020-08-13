@@ -172,11 +172,7 @@ let deploy_library args gas_remaining =
         validate_get_init_json args.input_init gas_remaining' lmod.smver
       in
       let gas_remaining'' =
-        let remain = Uint64.div gas_remaining' Gas.scale_factor in
-        (* Ensure that at least one unit of gas is consumed. *)
-        if Uint64.compare remain args.gas_limit = 0 then
-          Uint64.sub remain Uint64.one
-        else remain
+        Gas.finalize_remaining_gas args.gas_limit gas_remaining'
       in
       `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ]
 
@@ -407,13 +403,7 @@ let run_with_args args =
             let osj = output_state_json cstate'.balance field_vals in
             let omj = output_message_json gas mlist in
             let oej = `List (output_event_json elist) in
-            let gas' =
-              let remain = Uint64.div gas Gas.scale_factor in
-              (* Ensure that at least one unit of gas is consumed. *)
-              if Uint64.compare remain args.gas_limit = 0 then
-                Uint64.sub remain Uint64.one
-              else remain
-            in
+            let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
             ((omj, osj, oej, accepted_b), gas')
         in
         `Assoc

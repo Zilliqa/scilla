@@ -230,11 +230,7 @@ let check_lmodule cli =
       if cli.p_type_info then TI.type_info_lmod typed_lmod else []
     in
     let remaining_gas' =
-      let remain = Uint64.div remaining_gas Gas.scale_factor in
-      (* Ensure that at least one unit of gas is consumed. *)
-      if Uint64.compare remain cli.gas_limit = 0 then
-        Uint64.sub remain Uint64.one
-      else remain
+      Gas.finalize_remaining_gas cli.gas_limit remaining_gas
     in
     pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas')
   in
