@@ -143,6 +143,10 @@ opamdep:
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install --yes $(OPAM_DEV_DEPS)
 
+.PHONY : dev-env
+dev-deps:
+	opam install --yes $(OPAM_DEV_DEPS)
+
 .PHONY : opamdep-ci
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
