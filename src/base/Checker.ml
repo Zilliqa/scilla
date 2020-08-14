@@ -33,6 +33,7 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
+open Stdint
 module Parser = ScillaParser.Make (ParserSyntax)
 module PSRep = ParserRep
 module PERep = ParserRep
@@ -202,7 +203,7 @@ let wrap_error_with_gas gas res =
 
 let check_lmodule cli =
   let r =
-    let initial_gas = cli.gas_limit in
+    let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
     let%bind (lmod : ParserSyntax.lmodule) =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.lmodule
@@ -228,10 +229,13 @@ let check_lmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_lmod typed_lmod else []
     in
-    pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas)
+    let remaining_gas' =
+      Gas.finalize_remaining_gas cli.gas_limit remaining_gas
+    in
+    pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas')
   in
   match r with
-  | Error (s, g) -> fatal_error_gas s g
+  | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
   | Ok (_, type_info, g) ->
       let json_output =
         if cli.p_type_info then
@@ -255,7 +259,7 @@ let check_lmodule cli =
 (* Check a contract module. *)
 let check_cmodule cli =
   let r =
-    let initial_gas = cli.gas_limit in
+    let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
     let%bind (cmod : ParserSyntax.cmodule) =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
@@ -296,10 +300,13 @@ let check_cmodule cli =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
-    pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
+    let remaining_gas' =
+      Gas.finalize_remaining_gas cli.gas_limit remaining_gas
+    in
+    pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
   in
   match r with
-  | Error (s, g) -> fatal_error_gas s g
+  | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
       check_version cmod.smver;
       let output =
