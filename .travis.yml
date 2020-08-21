@@ -8,7 +8,7 @@ matrix:
       env: OCAML_VERSION=4.11.0
     - os: linux
       dist: xenial
-      env: OCAML_VERSION=4.10.0
+      env: OCAML_VERSION=4.10.1
     - os: linux
       dist: xenial
       env: OCAML_VERSION=4.09.1
