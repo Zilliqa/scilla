@@ -30,6 +30,7 @@ open ParserUtil
 module InputLiteral = LocalLiteral
 module InputType = InputLiteral.LType
 module InputIdentifier = InputType.TIdentifier
+module InputName = InputIdentifier.Name
 module InputFEParser = FrontEndParser.ScillaFrontEndParser (InputLiteral)
 
 module OutputLiteral = GlobalLiteral
@@ -190,6 +191,12 @@ let from_file f =
   let thunk () = Basic.from_file f in
   json_exn_wrapper thunk ~filename:f
 
+let parse_as_name n =
+  match String.split_on_chars ~on:['.'] n with
+  | [ t1 ; t2 ] -> InputName.parse_qualified_name t1 t2
+  | [ t1 ] -> InputName.parse_simple_name t1
+  | _ -> raise (mk_invalid_json (sprintf "Invalid name in json: %s\n" n))
+
 let parse_typ_exn t =
   match InputFEParser.parse_type t with
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
@@ -198,6 +205,117 @@ let parse_typ_exn t =
 let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
+
+let build_prim_lit_exn t v =
+  let open InputLiteral in
+  let open InputType in
+  let exn () =
+    mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
+  in
+  match t with
+  | PrimType pt -> (
+      match build_prim_literal pt v with
+      | Some v' -> v'
+      | None -> raise (exn ()) )
+  | _ -> raise (exn ())
+
+and read_adt_json name j tlist_verify =
+  let open Datatypes in
+  let open InputLiteral in
+  let dt =
+    match DataTypeDictionary.lookup_name name with
+    | Error emsg -> raise (Invalid_json emsg)
+    | Ok r -> r
+  in
+  let res =
+    match j with
+    | `List vli ->
+        (* We make an exception for Lists, allowing them to be stored flatly. *)
+        if not (is_list_adt_name dt.tname) then
+          raise
+            (Invalid_json
+               (mk_error0 "ADT value is a JSON array, but type is not List"))
+        else
+          let etyp = List.nth_exn tlist_verify 0 in
+          List.fold_right vli
+            ~f:(fun vl acc -> build_cons_lit (json_to_lit etyp vl) etyp acc)
+            ~init:(build_nil_lit etyp)
+    | `Assoc _ ->
+        let constr_str = member_exn "constructor" j |> to_string_exn in
+        let constr = parse_as_name constr_str in
+        let dt' =
+          match DataTypeDictionary.lookup_constructor constr with
+          | Error emsg -> raise (Invalid_json emsg)
+          | Ok (r, _) -> r
+        in
+        if not @@ [%equal: Datatypes.adt] dt dt' then
+          raise
+            (mk_invalid_json
+               ("ADT type " ^ (JSONName.as_error_string dt.tname)
+                ^ " does not match constructor " ^ (JSONName.as_error_string constr)));
+        let argtypes = member_exn "argtypes" j |> to_list_exn in
+        let arguments = member_exn "arguments" j |> to_list_exn in
+        let tlist = json_to_adttyps argtypes in
+        json_to_adtargs constr tlist arguments
+    | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT "
+                                   ^ (JSONName.as_error_string name)))
+  in
+  (* match tlist1 with adt's tlist. *)
+  let verify_exn name tlist1 adt =
+    match adt with
+    | ADTValue (_, tlist2, _) ->
+        if type_equiv_list tlist1 tlist2 then ()
+        else
+          let expected = pp_typ_list_error tlist1 in
+          let observed = pp_typ_list_error tlist2 in
+          raise
+            (mk_invalid_json
+               ( "Type mismatch in parsing ADT " ^ JSONName.as_error_string name
+                 ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed ))
+    | _ -> raise (mk_invalid_json ("Type mismatch in parsing ADT "
+                                   ^ JSONName.as_error_string name))
+  in
+  (* verify built ADT *)
+  verify_exn name tlist_verify res;
+  (* return built ADT *)
+  res
+
+(* Map is a `List of `Assoc jsons, with
+ * the first `Assoc specifying the map's from/to types.*)
+and read_map_json kt vt j =
+  let open InputLiteral in
+  match j with
+  | `List vli ->
+      let m = Caml.Hashtbl.create (List.length vli) in
+      let _ = mapvalues_from_json m kt vt vli in
+      Map ((kt, vt), m)
+  | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
+  | _ -> raise (mk_invalid_json "JSON parsing: error parsing Map")
+
+and mapvalues_from_json m kt vt l =
+  List.iter l ~f:(fun first ->
+      let kjson = member_exn "key" first in
+      let keylit =
+        match kt with
+        | PrimType _ -> build_prim_lit_exn kt (to_string_exn kjson)
+        | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
+      in
+      let vjson = member_exn "val" first in
+      let vallit = json_to_lit vt vjson in
+      Caml.Hashtbl.replace m keylit vallit)
+
+and json_to_lit t v =
+  let open InputType in
+  match t with
+  | MapType (kt, vt) ->
+      let vl = read_map_json kt vt v in
+      vl
+  | ADT (name, tlist) ->
+      let vl = read_adt_json (get_id name) v tlist in
+      vl
+  | _ ->
+      let tv = build_prim_lit_exn t (to_string_exn v) in
+      tv
 
 let jobj_to_statevar json =
   let n = member_exn "vname" json |> to_string_exn in
@@ -517,108 +635,6 @@ let rec json_to_adtargs cname tlist ajs =
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
   ADTValue (cname, tlist, llist)
 
-and read_adt_json name j tlist_verify =
-  let open Datatypes in
-  let open ParserLiteral in
-  let open LType.TIdentifier in
-  let dt =
-    match DataTypeDictionary.lookup_name name with
-    | Error emsg -> raise (Invalid_json emsg)
-    | Ok r -> r
-  in
-  let res =
-    match j with
-    | `List vli ->
-        (* We make an exception for Lists, allowing them to be stored flatly. *)
-        if not (is_list_adt_name dt.tname) then
-          raise
-            (Invalid_json
-               (mk_error0 "ADT value is a JSON array, but type is not List"))
-        else
-          let etyp = List.nth_exn tlist_verify 0 in
-          List.fold_right vli
-            ~f:(fun vl acc -> build_cons_lit (json_to_lit etyp vl) etyp acc)
-            ~init:(build_nil_lit etyp)
-    | `Assoc _ ->
-        let constr_str = member_exn "constructor" j |> to_string_exn in
-        let constr = parse_as_name constr_str in
-        let dt' =
-          match DataTypeDictionary.lookup_constructor constr with
-          | Error emsg -> raise (Invalid_json emsg)
-          | Ok (r, _) -> r
-        in
-        if not @@ [%equal: Datatypes.adt] dt dt' then
-          raise
-            (mk_invalid_json
-               ("ADT type " ^ (as_error_string dt.tname)
-                ^ " does not match constructor " ^ (as_error_string constr)));
-        let argtypes = member_exn "argtypes" j |> to_list_exn in
-        let arguments = member_exn "arguments" j |> to_list_exn in
-        let tlist = json_to_adttyps argtypes in
-        json_to_adtargs constr tlist arguments
-    | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT "
-                                   ^ (Name.as_error_string name)))
-  in
-  (* match tlist1 with adt's tlist. *)
-  let verify_exn name tlist1 adt =
-    let open ParserLiteral.LType.TIdentifier in
-    let open TypeUtil.TypeUtilities in
-    match adt with
-    | ADTValue (_, tlist2, _) ->
-        if type_equiv_list tlist1 tlist2 then ()
-        else
-          let expected = pp_typ_list_error tlist1 in
-          let observed = pp_typ_list_error tlist2 in
-          raise
-            (mk_invalid_json
-               ( "Type mismatch in parsing ADT " ^ Name.as_error_string name
-                 ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed ))
-    | _ -> raise (mk_invalid_json ("Type mismatch in parsing ADT "
-                                   ^ Name.as_error_string name))
-  in
-  (* verify built ADT *)
-  verify_exn name tlist_verify res;
-  (* return built ADT *)
-  res
-
-(* Map is a `List of `Assoc jsons, with
- * the first `Assoc specifying the map's from/to types.*)
-and read_map_json kt vt j =
-  let open ParserLiteral in
-  let open ParserLiteral.LType in
-  match j with
-  | `List vli ->
-      let m = Caml.Hashtbl.create (List.length vli) in
-      let _ = mapvalues_from_json m kt vt vli in
-      Map ((kt, vt), m)
-  | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
-  | _ -> raise (mk_invalid_json "JSON parsing: error parsing Map")
-
-and mapvalues_from_json m kt vt l =
-  let open ParserLiteral.LType in
-  List.iter l ~f:(fun first ->
-      let kjson = member_exn "key" first in
-      let keylit =
-        match kt with
-        | PrimType _ -> build_prim_lit_exn kt (to_string_exn kjson)
-        | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
-      in
-      let vjson = member_exn "val" first in
-      let vallit = json_to_lit vt vjson in
-      Caml.Hashtbl.replace m keylit vallit)
-
-and json_to_lit t v =
-  let open ParserLiteral.LType in
-  match t with
-  | MapType (kt, vt) ->
-      let vl = read_map_json kt vt v in
-      vl
-  | ADT (name, tlist) ->
-      let vl = read_adt_json (get_id name) v tlist in
-      vl
-  | _ ->
-      let tv = build_prim_lit_exn t (to_string_exn v) in
-      tv
 
 
 (* Copied from RunnerUtil.ml *)
