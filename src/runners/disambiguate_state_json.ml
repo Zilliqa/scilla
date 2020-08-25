@@ -31,6 +31,7 @@ open ParserUtil
 module InputLiteral = LocalLiteral
 module InputType = InputLiteral.LType
 module InputIdentifier = InputType.TIdentifier
+module InputName = InputIdentifier.Name
 module InputFEParser = FrontEndParser.ScillaFrontEndParser (InputLiteral)
 
 module OutputLiteral = GlobalLiteral
