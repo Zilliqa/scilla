@@ -117,6 +117,14 @@ let liftPair2 x m =
   let%bind z = m in
   pure (x, z)
 
+let fstM m =
+  let%map (x, _y) = m in
+  x
+
+let sndM m =
+  let%map (_x, y) = m in
+  y
+
 (* Return the first error applying f to elements of ls.
  * Returns () if all elements satisfy f. *)
 let rec forallM ~f ls =
@@ -252,6 +260,14 @@ module EvalMonad = struct
   let liftPair2 x m =
     let%bind z = m in
     pure (x, z)
+
+  let fstM m =
+    let%map (x, _y) = m in
+    x
+
+  let sndM m =
+    let%map (_x, y) = m in
+    y
 
   (* Return the first error applying f to elements of ls.
    * Returns () if all elements satisfy f. *)
