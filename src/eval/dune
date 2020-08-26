@@ -1,5 +1,6 @@
 (library
  (name scilla_eval)
+ (public_name scilla.eval)
  (wrapped true)
  (modes byte native)
  (libraries core angstrom stdint yojson cryptokit scilla_base rpclib unix
