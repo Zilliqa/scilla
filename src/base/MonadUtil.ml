@@ -94,8 +94,7 @@ let rec foldrM ~f ~init ls =
 let rec mapM ~f ls =
   match ls with
   | x :: ls' ->
-      let%map z = f x
-      and     zs = mapM ~f ls' in
+      let%map z = f x and zs = mapM ~f ls' in
       z :: zs
   | [] -> pure []
 
@@ -103,8 +102,7 @@ let rec mapM ~f ls =
 let rec map2M ~f ls ms ~msg =
   match (ls, ms) with
   | x :: ls', y :: ms' ->
-      let%map z = f x y
-      and     zs = map2M ~f ls' ms' ~msg in
+      let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
       z :: zs
   | [], [] -> pure []
   | _ -> fail @@ msg ()
@@ -118,11 +116,11 @@ let liftPair2 x m =
   (x, z)
 
 let fstM m =
-  let%map (x, _y) = m in
+  let%map x, _y = m in
   x
 
 let sndM m =
-  let%map (_x, y) = m in
+  let%map _x, y = m in
   y
 
 (* Return the first error applying f to elements of ls.
@@ -166,9 +164,7 @@ let partition_mapM ~f l =
      * any errors to be flagged in-order. *)
     foldM ~init:([], []) l ~f:(fun (fst, snd) i ->
         let%map fi = f i in
-        match fi with
-        | `Fst i' -> (i' :: fst, snd)
-        | `Snd i' -> (fst, i' :: snd))
+        match fi with `Fst i' -> (i' :: fst, snd) | `Snd i' -> (fst, i' :: snd))
   in
   (List.rev fst_rev, List.rev snd_rev)
 
@@ -238,8 +234,7 @@ module EvalMonad = struct
   let rec mapM ~f ls =
     match ls with
     | x :: ls' ->
-        let%map z = f x
-        and     zs = mapM ~f ls' in
+        let%map z = f x and zs = mapM ~f ls' in
         z :: zs
     | [] -> pure []
 
@@ -247,8 +242,7 @@ module EvalMonad = struct
   let rec map2M ~f ls ms ~msg =
     match (ls, ms) with
     | x :: ls', y :: ms' ->
-        let%map z = f x y
-        and     zs = map2M ~f ls' ms' ~msg in
+        let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
         z :: zs
     | [], [] -> pure []
     | _ -> fail @@ msg ()
@@ -262,11 +256,11 @@ module EvalMonad = struct
     (x, z)
 
   let fstM m =
-    let%map (x, _y) = m in
+    let%map x, _y = m in
     x
 
   let sndM m =
-    let%map (_x, y) = m in
+    let%map _x, y = m in
     y
 
   (* Return the first error applying f to elements of ls.

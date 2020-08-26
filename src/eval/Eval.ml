@@ -744,8 +744,7 @@ let handle_message contr cstate bstate m =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
-  let actual_env = Env.bind_all env tenv
-  in
+  let actual_env = Env.bind_all env tenv in
   let open Configuration in
   (* Create configuration *)
   let conf =
