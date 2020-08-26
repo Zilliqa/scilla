@@ -118,8 +118,7 @@ let rec exp_eval erep env =
       (* Apply to an argument *)
       let runner arg =
         let env1 = Env.bind env (get_id formal) arg in
-        let%bind v, _ = exp_eval_wrapper body env1 in
-        pure v
+        fstM @@ exp_eval_wrapper body env1
       in
       pure (Clo runner, env)
   | App (f, actuals) ->
@@ -185,8 +184,7 @@ let rec exp_eval erep env =
   | TFun (tv, body) ->
       let typer arg_type =
         let body_subst = subst_type_in_expr tv arg_type body in
-        let%bind v, _ = exp_eval_wrapper body_subst env in
-        pure v
+        fstM @@ exp_eval_wrapper body_subst env
       in
       pure (TAbs typer, env)
   | TApp (tf, arg_types) ->
@@ -444,11 +442,9 @@ let eval_constraint cconstraint env =
 
 let init_lib_entries env libs =
   let init_lib_entry env id e =
-    let%bind v, _ = exp_eval_wrapper_no_cps e env in
-    let env' = Env.bind env (get_id id) v in
-    pure env'
+    let%map v, _ = exp_eval_wrapper_no_cps e env in
+    Env.bind env (get_id id) v
   in
-
   List.fold_left libs ~init:env ~f:(fun eres lentry ->
       match lentry with
       | LibTyp (tname, ctr_defs) ->
@@ -565,9 +561,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
       cparams
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
-  let env =
-    List.fold_left ~init:libenv args ~f:(fun e (p, v) -> Env.bind e p v)
-  in
+  let env = Env.bind_all libenv args in
   (* Evaluate constraint, and abort if false *)
   let%bind () = eval_constraint cconstraint' env in
   let%bind field_values = init_fields env cfields in
@@ -750,8 +744,7 @@ let handle_message contr cstate bstate m =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
-  let actual_env =
-    List.fold_left tenv ~init:env ~f:(fun e (n, l) -> Env.bind e n l)
+  let actual_env = Env.bind_all env tenv
   in
   let open Configuration in
   (* Create configuration *)
