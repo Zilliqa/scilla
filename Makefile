@@ -1,6 +1,8 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
 OCAML_VERSION_RECOMMENDED=4.08.1
+# In case of upgrading ocamlformat version:
+# package.json also needs updating
 OCAMLFORMAT_VERSION=0.15.0
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
@@ -118,7 +120,7 @@ clean:
 	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X)
 # but keeping a local opam switch and other dependencies built.
-	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/**
+	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/** --exclude=\!_esy/**
 
 # Clean up libff installation
 cleanall: clean
