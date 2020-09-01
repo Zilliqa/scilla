@@ -94,28 +94,34 @@ let rec foldrM ~f ~init ls =
 let rec mapM ~f ls =
   match ls with
   | x :: ls' ->
-      let%bind z = f x in
-      let%bind zs = mapM ~f ls' in
-      pure (z :: zs)
+      let%map z = f x and zs = mapM ~f ls' in
+      z :: zs
   | [] -> pure []
 
 (* Monadic map2 *)
 let rec map2M ~f ls ms ~msg =
   match (ls, ms) with
   | x :: ls', y :: ms' ->
-      let%bind z = f x y in
-      let%bind zs = map2M ~f ls' ms' ~msg in
-      pure (z :: zs)
+      let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
+      z :: zs
   | [], [] -> pure []
   | _ -> fail @@ msg ()
 
 let liftPair1 m x =
-  let%bind z = m in
-  pure (z, x)
+  let%map z = m in
+  (z, x)
 
 let liftPair2 x m =
-  let%bind z = m in
-  pure (x, z)
+  let%map z = m in
+  (x, z)
+
+let fstM m =
+  let%map x, _y = m in
+  x
+
+let sndM m =
+  let%map _x, y = m in
+  y
 
 (* Return the first error applying f to elements of ls.
  * Returns () if all elements satisfy f. *)
@@ -138,31 +144,29 @@ let option_mapM ~f opt_val =
   match opt_val with
   | None -> pure None
   | Some v ->
-      let%bind z = f v in
-      pure @@ Some z
+      let%map z = f v in
+      Some z
 
 (* Monadic version of List.fold_map *)
 let fold_mapM ~f ~init l =
-  let%bind acc, l'_rev =
+  let%map acc, l'_rev =
     foldM ~init:(init, [])
       ~f:(fun (accacc, lrevacc) lel ->
-        let%bind accacc', lel' = f accacc lel in
-        pure (accacc', lel' :: lrevacc))
+        let%map accacc', lel' = f accacc lel in
+        (accacc', lel' :: lrevacc))
       l
   in
-  pure (acc, List.rev l'_rev)
+  (acc, List.rev l'_rev)
 
 let partition_mapM ~f l =
-  let%bind fst_rev, snd_rev =
+  let%map fst_rev, snd_rev =
     (* We don't use foldrM and avoid List.rev because we want
      * any errors to be flagged in-order. *)
     foldM ~init:([], []) l ~f:(fun (fst, snd) i ->
-        let%bind fi = f i in
-        match fi with
-        | `Fst i' -> pure (i' :: fst, snd)
-        | `Snd i' -> pure (fst, i' :: snd))
+        let%map fi = f i in
+        match fi with `Fst i' -> (i' :: fst, snd) | `Snd i' -> (fst, i' :: snd))
   in
-  pure (List.rev fst_rev, List.rev snd_rev)
+  (List.rev fst_rev, List.rev snd_rev)
 
 (* Monadic wrapper around any container's fold (Set, Map etc). *)
 (* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
@@ -230,28 +234,34 @@ module EvalMonad = struct
   let rec mapM ~f ls =
     match ls with
     | x :: ls' ->
-        let%bind z = f x in
-        let%bind zs = mapM ~f ls' in
-        pure (z :: zs)
+        let%map z = f x and zs = mapM ~f ls' in
+        z :: zs
     | [] -> pure []
 
   (* Monadic map2 *)
   let rec map2M ~f ls ms ~msg =
     match (ls, ms) with
     | x :: ls', y :: ms' ->
-        let%bind z = f x y in
-        let%bind zs = map2M ~f ls' ms' ~msg in
-        pure (z :: zs)
+        let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
+        z :: zs
     | [], [] -> pure []
     | _ -> fail @@ msg ()
 
   let liftPair1 m x =
-    let%bind z = m in
-    pure (z, x)
+    let%map z = m in
+    (z, x)
 
   let liftPair2 x m =
-    let%bind z = m in
-    pure (x, z)
+    let%map z = m in
+    (x, z)
+
+  let fstM m =
+    let%map x, _y = m in
+    x
+
+  let sndM m =
+    let%map _x, y = m in
+    y
 
   (* Return the first error applying f to elements of ls.
    * Returns () if all elements satisfy f. *)

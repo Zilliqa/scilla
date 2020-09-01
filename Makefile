@@ -1,7 +1,7 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
 OCAML_VERSION_RECOMMENDED=4.08.1
-OCAMLFORMAT_VERSION=0.14.3
+OCAMLFORMAT_VERSION=0.15.0
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
@@ -141,6 +141,10 @@ opamdep:
 	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install --yes $(OPAM_DEV_DEPS)
+
+.PHONY : dev-env
+dev-deps:
 	opam install --yes $(OPAM_DEV_DEPS)
 
 .PHONY : opamdep-ci
