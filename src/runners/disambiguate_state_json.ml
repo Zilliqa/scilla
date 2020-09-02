@@ -623,16 +623,6 @@ let parse ~exe_name =
 
 (* Copied/reimplemented from Disambiguate.ml *)
 
-(* Assumptions:
-   - DataTypeDictionary only contains predefined names
-   - The module has already passed scilla-checker
-
-   It follows from this that types and constructors in state and init jsons 
-   fall into two distinct categories:
-   - Names that exist in DataTypeDictionary: These disambiguate to simple names
-   - Names that do not exist in DataTypeDictionary: These disambiguate to 
-     _this_address.name *)
-
 (* Qualify a local simple name with this_address *)
 let disambiguate_name name this_address =
   let open Identifier.LocalName in
@@ -643,6 +633,22 @@ let disambiguate_name name this_address =
       plog msg;
       fatal_error (mk_error0 msg)
 
+let disambiguate_adt_or_ctr_name name this_address =
+  match InputIdentifier.get_id name with
+  | QualifiedLocal _ ->
+      raise (
+        mk_invalid_json (
+          sprintf "Found qualified type name %s in file"
+            (InputIdentifier.as_error_string name)))
+  | SimpleLocal nm ->
+      (* Try nm as a simple global name *)
+      let tmp_nm = OutputName.parse_simple_name nm in
+      match Datatypes.DataTypeDictionary.lookup_name tmp_nm with
+      | Ok _ -> (* Name exists => Name is predefined *)
+          tmp_nm
+      | Error _ -> (* Name does not exist => Name is user-defined *)
+          OutputName.parse_qualified_name this_address nm
+              
 let disambiguate_type t this_address =
   let open InputType in
   let rec recurse t =
@@ -657,25 +663,10 @@ let disambiguate_type t this_address =
         let dis_res_t = recurse res_t in
         OutputType.FunType (dis_arg_t, dis_res_t)
     | ADT (t_name, targs) -> (
-        match TIdentifier.get_id t_name with
-        | QualifiedLocal _ ->
-            raise (
-              mk_invalid_json (
-                sprintf "Found qualified type name %s in file"
-                  (TIdentifier.as_error_string t_name)))
-        | SimpleLocal nm ->
-            let dis_nm = 
-              (* Try nm as a simple global name *)
-              let tmp_nm = OutputName.parse_simple_name nm in
-              match Datatypes.DataTypeDictionary.lookup_name tmp_nm with
-              | Ok _ -> (* Name exists => Name is predefined *)
-                  tmp_nm
-              | Error _ -> (* Name does not exist => Name is user-defined *)
-                  OutputName.parse_qualified_name this_address nm
-            in
-            let dis_t_name = OutputIdentifier.mk_id dis_nm (InputIdentifier.get_rep t_name) in
-            let dis_targs = List.map targs ~f:recurse in
-            OutputType.ADT (dis_t_name, dis_targs))
+        let dis_nm = disambiguate_adt_or_ctr_name t_name this_address in
+        let dis_t_name = OutputIdentifier.mk_id dis_nm (InputIdentifier.get_rep t_name) in
+        let dis_targs = List.map targs ~f:recurse in
+        OutputType.ADT (dis_t_name, dis_targs))
     | TypeVar tvar -> OutputType.TypeVar tvar
     | PolyFun (tvar, t) ->
       let dis_t = recurse t in
@@ -683,6 +674,282 @@ let disambiguate_type t this_address =
     | Unit -> OutputType.Unit
   in
   recurse t
+
+(* JSONParser.ml *)
+
+let json_exn_wrapper ?filename thunk =
+  try thunk () with
+  | Yojson.Json_error s
+  | Yojson.Basic.Util.Undefined (s, _)
+  | Yojson.Basic.Util.Type_error (s, _) ->
+      raise (mk_invalid_json s)
+  | _ -> (
+      match filename with
+      | Some f ->
+          raise
+            (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
+      | None ->
+          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
+      )
+
+let member_exn m j =
+  let thunk () = Basic.Util.member m j in
+  let v = json_exn_wrapper thunk in
+  match v with
+  | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
+  | j -> j
+
+let to_string_exn j =
+  let thunk () = Basic.Util.to_string j in
+  json_exn_wrapper thunk
+
+let constr_pattern_arg_types_exn dt cname =
+  match TypeUtil.TypeUtilities.constr_pattern_arg_types dt cname with
+  | Error emsg -> raise (Invalid_json emsg)
+  | Ok s -> s
+
+let lookup_adt_name_exn name =
+  match Datatypes.DataTypeDictionary.lookup_name (OutputIdentifier.get_id name) with
+  | Error emsg -> raise (Invalid_json emsg)
+  | Ok s -> s
+
+type adt_parser_entry =
+  | Incomplete (* Parser not completely constructed. *)
+  | Parser of (Basic.t -> OutputLiteral.t)
+
+let adt_parsers =
+  let open Caml in
+  let ht : (string, adt_parser_entry) Hashtbl.t = Hashtbl.create 10 in
+  ht
+
+let add_adt_parser adt_name parser =
+  let open Caml in
+  let _ = Hashtbl.replace adt_parsers adt_name parser in
+  ()
+
+let lookup_adt_parser_opt adt_name =
+  let open Caml in
+  Hashtbl.find_opt adt_parsers adt_name
+
+let lookup_adt_parser adt_name =
+  let open Caml in
+  match Hashtbl.find_opt adt_parsers adt_name with
+  | None -> raise (mk_invalid_json (sprintf "ADT %s not found" adt_name))
+  | Some p -> p
+
+(* Generate a parser. Parse directly into OutputLiteral *)
+let gen_parser (t' : OutputType.t) (this_address : string) : Basic.t -> OutputLiteral.t =
+  let open Basic in
+  let open OutputType in
+  let open OutputLiteral in
+  let rec recurser t =
+    match t with
+    | PrimType pt -> (
+        match pt with
+        | String_typ -> fun j -> StringLit (to_string_exn j)
+        | Bnum_typ -> fun j -> BNum (to_string_exn j)
+        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
+        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
+        | Int_typ Bits32 ->
+            fun j -> IntLit (Int32L (Int32.of_string (to_string_exn j)))
+        | Int_typ Bits64 ->
+            fun j -> IntLit (Int64L (Int64.of_string (to_string_exn j)))
+        | Int_typ Bits128 ->
+            fun j ->
+              IntLit (Int128L (Stdint.Int128.of_string (to_string_exn j)))
+        | Int_typ Bits256 ->
+            fun j ->
+              IntLit (Int256L (Integer256.Int256.of_string (to_string_exn j)))
+        | Uint_typ Bits32 ->
+            fun j ->
+              UintLit (Uint32L (Stdint.Uint32.of_string (to_string_exn j)))
+        | Uint_typ Bits64 ->
+            fun j ->
+              UintLit (Uint64L (Stdint.Uint64.of_string (to_string_exn j)))
+        | Uint_typ Bits128 ->
+            fun j ->
+              UintLit (Uint128L (Stdint.Uint128.of_string (to_string_exn j)))
+        | Uint_typ Bits256 ->
+            fun j ->
+              UintLit
+                (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
+        | _ -> raise (mk_invalid_json "Invalid primitive type") )
+    | MapType (kt, vt) -> (
+        let kp = recurser kt in
+        let vp = recurser vt in
+        fun j ->
+          match j with
+          | `List jlist ->
+              let m = Caml.Hashtbl.create (List.length jlist) in
+              List.iter jlist ~f:(fun first ->
+                  let kjson = member_exn "key" first in
+                  let keylit = kp kjson in
+                  let vjson = member_exn "val" first in
+                  let vallit = vp vjson in
+                  Caml.Hashtbl.replace m keylit vallit);
+              Map ((kt, vt), m)
+          | _ -> raise (mk_invalid_json "Invalid map in JSON") )
+    | ADT (name, tlist) ->
+        (* Add a dummy entry for "t" in our table, to prevent recursive calls. *)
+        let _ = add_adt_parser (pp_typ t) Incomplete in
+
+        let a = lookup_adt_name_exn name in
+        (* Build a parser for each constructor of this ADT. *)
+        let cn_parsers =
+          List.fold a.tconstr ~init:(AssocDictionary.make_dict ())
+            ~f:(fun maps cn ->
+              let tmap = constr_pattern_arg_types_exn t cn.cname in
+              let arg_parsers =
+                List.map tmap ~f:(fun t ->
+                    match lookup_adt_parser_opt (pp_typ t) with
+                    | Some _ ->
+                        (* Lazy lookup, to avoid using dummy parsers set above. *)
+                        fun () -> lookup_adt_parser (pp_typ t)
+                    | None ->
+                        let p = recurser t in
+                        fun () -> Parser p)
+              in
+              let parser j =
+                match j with
+                | `Assoc _ ->
+                    (* TODO: Incoming constructor names are local names *)
+                    let cname = ... in
+                    let arguments = member_exn "arguments" j |> Util.to_list in
+                    if List.length tmap <> List.length arguments then
+                      raise (mk_invalid_json "Invalid arguments to ADT in JSON")
+                    else
+                      let arg_lits =
+                        List.map2_exn arg_parsers arguments ~f:(fun p a ->
+                            (* Apply thunk, and then apply to argument *)
+                            match p () with
+                            | Incomplete ->
+                                raise
+                                  (mk_invalid_json
+                                     "Attempt to call an incomplete JSON parser")
+                            | Parser p' -> p' a)
+                      in
+                      ADTValue (cn.cname, tlist, arg_lits)
+                | `List vli ->
+                    (* We make an exception for Lists, allowing them to be stored flatly. *)
+                    if not (Datatypes.is_list_adt_name name) then
+                      raise
+                        (mk_invalid_json
+                           "ADT value is a JSON array, but type is not List")
+                    else
+                      let eparser = List.nth_exn arg_parsers 0 in
+                      let eparser' =
+                        match eparser () with
+                        | Incomplete ->
+                            raise
+                              (mk_invalid_json
+                                 "Attempt to call an incomplete JSON parser")
+                        | Parser p' -> p'
+                      in
+                      let etyp = List.nth_exn tmap 0 in
+                      List.fold_right vli
+                        ~f:(fun vl acc ->
+                            (* Apply eparser thunk, and then apply to argument *)
+                            build_cons_lit (eparser' vl) etyp acc)
+                        ~init:(build_nil_lit etyp)
+                | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
+              in
+              AssocDictionary.insert (OutputName.as_string cn.cname) parser maps)
+        in
+        let adt_parser cn_parsers j =
+          (* TODO: Incoming constructor names are local names *)
+          let cname = ... in
+          let cn =
+            match j with
+            | `Assoc _ -> member_exn "constructor" j |> to_string_exn
+            | `List _ ->
+                "Cons" (* for efficiency, Lists can be stored flatly. *)
+            | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")
+          in
+          match AssocDictionary.lookup cn cn_parsers with
+          | Some parser -> parser j
+          | None ->
+              raise
+                (mk_invalid_json ("Unknown constructor " ^ cn ^ " in ADT JSON"))
+        in
+        (* Create parser *)
+        let p = adt_parser cn_parsers in
+        (* Add parser to hashtable *)
+        let _ = add_adt_parser (pp_typ t) (Parser p) in
+        (* Return parser *)
+        p
+    | _ -> raise (mk_invalid_json "Invalid type")
+  in
+  recurser t'
+
+let parse_json t j = (gen_parser t) j
+
+(* JSON.ml *)
+
+let json_exn_wrapper = JSONParser.json_exn_wrapper
+
+let from_file f =
+  let thunk () = Basic.from_file f in
+  json_exn_wrapper thunk ~filename:f
+
+let parse_typ_exn t =
+  match InputFEParser.parse_type t with
+  | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
+  | Ok s -> s
+
+let to_list_exn j =
+  let thunk () = Basic.Util.to_list j in
+  json_exn_wrapper thunk
+
+let jobj_to_statevar json =
+  let n = member_exn "vname" json |> to_string_exn in
+  let tstring = member_exn "type" json |> to_string_exn in
+  let t = parse_typ_exn tstring in
+  let v = member_exn "value" json in
+  (n, JSONParser.parse_json t v)
+
+(* Inserted from Runner.ml.
+   Changed to translate to global names, since field names do not need qualifiers *)
+let map_json_input_strings_to_names map =
+  List.map map ~f:(fun (x, l) ->
+      match String.split x ~on:'.' with
+      | [simple_name] -> (OutputName.parse_simple_name simple_name, l)
+      | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
+
+let get_address_literal l =
+  let open OutputLiteral in
+  match l with
+  | ByStrX bs when Bystrx.width bs = address_length ->
+      Some (Bystrx.hex_encoding bs)
+  | _ -> None
+
+module ContractState = struct
+
+  (** Returns a list of (vname:string,value:literal) items
+      Invalid inputs in the json are ignored **)
+  let get_json_data filename =
+    let json = from_file filename in
+    (* input json is a list of key/value pairs *)
+    let jlist = json |> to_list_exn in
+    List.map jlist ~f:jobj_to_statevar
+
+  (* Accessor for _this_address and _extlibs entries in init.json. 
+     Combined with validate_get_init_json to avoid reading init.json from disk multiple times. *)
+  let get_init_this_address_and_extlibs_and_initargs filename =
+    let init_data = get_json_data filename in
+    let initargs = map_json_input_strings_to_names init_data in
+    match List.filter init_data ~f:(fun (name, _) ->
+        String.(name = OutputName.as_string ContractUtil.this_address_label)) with
+    | [ ( _, adr) ] -> (
+        match get_address_literal adr with
+        | Some v -> (v, initargs)
+        | None -> raise (mk_invalid_json
+                           ( "Illegal " ^ OutputName.as_string ContractUtil.this_address_label
+                             ^ " entry specified in init json")))
+    | _ -> raise (mk_invalid_json
+                    ( "Multiple " ^ OutputName.as_string ContractUtil.this_address_label
+                      ^ " entries specified in init json"))
+ 
+end
 
 (* Eval.ml *)
 
@@ -736,82 +1003,70 @@ let run_with_args args =
            "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
            args.input);
       
-      let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
-      match this_address_opt with
-      | None -> 
-          let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
-          plog msg;
-          fatal_error (mk_error0 msg)
-      | Some this_address ->
-          (* Contract library. *)
-          let clib_entries =
-            match cmod.libs with
-            | Some { lname ; lentries } -> lentries
-            | None -> []
+      let this_address, initargs = ContractState.get_init_this_address_and_extlibs_and_initargs args.input_init in
+      (* Contract library. *)
+      let clib_entries = Option.value_map cmod.libs ~default:[] ~f:(fun { lname ; lentries } -> lentries) in
+      (* Initialise datatype dictionary with user-defined types *)
+      let () = init_lib_entries clib_entries this_address in
+
+      let output_init_json, output_state_json =
+        let cstate =
+          (* Retrieve state variables *)
+          let curargs, cur_bal =
+            try input_state_json args.input_state
+            with Invalid_json s ->
+              fatal_error
+                ( s
+                  @ mk_error0
+                    (sprintf "Failed to parse json %s:\n"
+                       args.input_state) )
           in
-          (* Initialise datatype dictionary with user-defined types *)
-          let () = init_lib_entries clib_entries this_address in
 
-          let initargs =
-            validate_get_init_json args.input_init cmod.smver
+          (* Initializing the contract's state *)
+          let init_res =
+            init_module dis_cmod initargs curargs cur_bal bstate elibs
+          in
+          (* Prints stats after the initialization and returns the initial state *)
+          (* Will throw an exception if unsuccessful. *)
+          let cstate, field_vals =
+            check_extract_cstate args.input init_res gas_remaining
           in
 
-          let output_init_json, output_state_json =
-            let cstate =
-              (* Retrieve state variables *)
-              let curargs, cur_bal =
-                try input_state_json args.input_state
-                with Invalid_json s ->
-                  fatal_error
-                    ( s
-                      @ mk_error0
-                        (sprintf "Failed to parse json %s:\n"
-                           args.input_state) )
-              in
-
-              (* Initializing the contract's state *)
-              let init_res =
-                init_module dis_cmod initargs curargs cur_bal bstate elibs
-              in
-              (* Prints stats after the initialization and returns the initial state *)
-              (* Will throw an exception if unsuccessful. *)
-              let cstate, field_vals =
-                check_extract_cstate args.input init_res gas_remaining
-              in
-
-              (* Initialize the state server. *)
-              let fields =
-                List.map field_vals ~f:(fun (s, l) ->
-                    let open StateService in
-                    let t =
-                      List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
-                    in
-                    { fname = s; ftyp = t; fval = Some l })
-              in
-              let () = StateService.initialize ~sm:Local ~fields in
-              cstate
-            in
-
-            (* If we're using a local state (JSON file) then need to fetch and dump it. *)
-            let field_vals =
-              match
-                (StateService.get_full_state (), StateService.finalize ())
-              with
-              | Ok fv, Ok () -> fv
-              | _ ->
-                  fatal_error
-                    (mk_error0 "Error finalizing state from StateService")
-            in
-
-            let oij = output_init_jason ... in
-            let osj = output_state_json cstate'.balance field_vals in
-            (oij, osj)
+          (* Initialize the state server. *)
+          let fields =
+            List.map field_vals ~f:(fun (s, l) ->
+                let open StateService in
+                let t =
+                  List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
+                in
+                { fname = s; ftyp = t; fval = Some l })
           in
-          `Assoc
-            [
-              ("scilla_major_version", `String (Int.to_string cmod.smver));
-              ("states", output_state_json);
-            ]
+          let () = StateService.initialize ~sm:Local ~fields in
+          cstate
+        in
+
+        (* If we're using a local state (JSON file) then need to fetch and dump it. *)
+        let field_vals =
+          match
+            (StateService.get_full_state (), StateService.finalize ()) ...
+          with
+          | Ok fv, Ok () -> fv
+          | _ ->
+              fatal_error
+                (mk_error0 "Error finalizing state from StateService")
+        in
+
+        let oij = output_init_jason ... in
+        let osj = output_state_json cstate'.balance field_vals ... in
+        (oij, osj)
+      in
+      (...,
+      `Assoc
+         [
+           ("scilla_major_version", `String (Int.to_string cmod.smver));
+           ("states", output_state_json);
+         ]
+      )
 
 let run ~exe_name =
   ErrorUtils.reset_warnings ();
