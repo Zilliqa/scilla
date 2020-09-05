@@ -18,15 +18,11 @@
 
 open Core
 open Scilla_base
-open Scilla_eval
 open ErrorUtils
 open DebugMessage
 open PrettyPrinters
-open GlobalConfig
-open Syntax
 open Literal
 open Yojson
-open ParserUtil
 
 module InputFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module InputSyntax = InputFEParser.FESyntax
@@ -41,10 +37,10 @@ module OutputIdentifier = OutputType.TIdentifier
 module OutputName = OutputIdentifier.Name
 
 (* ************************************************************************ * 
- * This executable parses a contract and reads its associated state using   *
- * local names, and outputs its state using global names. The state itself  *
- * does not change, only the type and constructor names that appear in the  *
- * state.                                                                   *
+ * This executable parses a contract and reads its associated init and      *
+ * state JSONs using local names, and outputs its init and state JSONs      *
+ * using global names. The state itself does not change, only the type and  * 
+ * constructor names that appear in the state.                              *
  *                                                                          *
  * This transformation is necessary in order to enable external libraries   *
  * and remote state reads.                                                  *
@@ -153,7 +149,7 @@ let disambiguate_name name this_address =
   let open Identifier.LocalName in
   match name with
   | SimpleLocal nm -> Identifier.GlobalName.parse_qualified_name this_address nm
-  | QualifiedLocal (ns, nm) -> 
+  | QualifiedLocal _ -> 
       let msg = sprintf "Unexpected qualified local name %s\n" (as_error_string name) in
       plog msg;
       fatal_error (mk_error0 msg)
@@ -410,23 +406,28 @@ let extract_this_address_from_init_json_data jlist =
   | None ->
       raise (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
 
- (** Returns a list of (vname:string,value:literal) items
-      Invalid inputs in the json are ignored **)
-let get_init_json_data filename =
+let get_json_data filename =
   let json = JSON.from_file filename in
   (* input json is a list of key/value pairs *)
-  let jlist = json |> JSON.to_list_exn in
-  (* Extract this_address entry, since this is needed for disambiguation inside jobj_to_statevar *)
-  let this_address = extract_this_address_from_init_json_data jlist in
-  (this_address, List.map jlist ~f:(jobj_to_statevar this_address))
+  json |> JSON.to_list_exn
 
-  
-(* Accessor for _this_address and _extlibs entries in init.json. 
-     Combined with validate_get_init_json to avoid reading init.json from disk multiple times. *)
-let get_init_this_address_and_extlibs_and_initargs filename =
-  let this_address, init_data = get_init_json_data filename in
-  let initargs = map_json_input_strings_to_names init_data in
-  (this_address, initargs)
+let parse_json_as_literal jlist this_address =
+  List.map jlist ~f:(jobj_to_statevar this_address)
+
+(** Returns a list of (vname:string,value:literal) items
+      Invalid inputs in the json are ignored **)
+let get_json_data_list filename this_address =
+  let jlist = get_json_data filename in
+  parse_json_as_literal jlist this_address
+
+let parse_json filename this_address =
+  let init_data = get_json_data_list filename this_address in
+  map_json_input_strings_to_names init_data
+
+let get_this_address_from_init_file filename =
+  let jlist = get_json_data filename in
+  (* Extract this_address entry, since this is needed for disambiguation inside jobj_to_statevar *)
+  extract_this_address_from_init_json_data jlist
 
 (* Eval.ml *)
 
@@ -479,71 +480,26 @@ let run_with_args args =
         (sprintf
            "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
            args.input);
-      
-      let this_address, initargs = get_init_this_address_and_extlibs_and_initargs args.input_init in
-      (* Contract library. *)
-      let clib_entries = Option.value_map cmod.libs ~default:[] ~f:(fun { lname ; lentries } -> lentries) in
-      (* Initialise datatype dictionary with user-defined types *)
-      let () = init_lib_entries clib_entries this_address in
-
-      let output_init_json, output_state_json =
-        let cstate =
-          (* Retrieve state variables *)
-          let curargs, cur_bal =
-            try input_state_json args.input_state
-            with Invalid_json s ->
-              fatal_error
-                ( s
-                  @ mk_error0
-                    (sprintf "Failed to parse json %s:\n"
-                       args.input_state) )
-          in
-
-          (* Initializing the contract's state *)
-          let init_res =
-            init_module dis_cmod initargs curargs cur_bal bstate elibs
-          in
-          (* Prints stats after the initialization and returns the initial state *)
-          (* Will throw an exception if unsuccessful. *)
-          let cstate, field_vals =
-            check_extract_cstate args.input init_res gas_remaining
-          in
-
-          (* Initialize the state server. *)
-          let fields =
-            List.map field_vals ~f:(fun (s, l) ->
-                let open StateService in
-                let t =
-                  List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
-                in
-                { fname = s; ftyp = t; fval = Some l })
-          in
-          let () = StateService.initialize ~sm:Local ~fields in
-          cstate
-        in
-
-        (* If we're using a local state (JSON file) then need to fetch and dump it. *)
-        let field_vals =
-          match
-            (StateService.get_full_state (), StateService.finalize ()) ...
-          with
-          | Ok fv, Ok () -> fv
-          | _ ->
-              fatal_error
-                (mk_error0 "Error finalizing state from StateService")
-        in
-
-        let oij = output_init_jason ... in
-        let osj = output_state_json cstate'.balance field_vals ... in
-        (oij, osj)
+      let init, state = 
+        try 
+          let this_address = get_this_address_from_init_file args.input_init in
+          (* Contract library. *)
+          let clib_entries = Option.value_map cmod.libs ~default:[] ~f:(fun { lentries ; _ } -> lentries) in
+          (* Initialise datatype dictionary with user-defined types *)
+          let () = init_lib_entries clib_entries this_address in
+          
+          (* parse_json reads, parses and disambiguates the json file *)
+          let init = parse_json args.input_init this_address in
+          let state = parse_json args.input_state this_address in
+          (init, state)
+        with Invalid_json s ->
+          fatal_error
+            ( s @ mk_error0 "Failed to parse json\n" )
       in
-      (...,
-      `Assoc
-         [
-           ("scilla_major_version", `String (Int.to_string cmod.smver));
-           ("states", output_state_json);
-         ]
-      )
+      (* state_to_json maps name * literal to a vname * type * value json, which is
+         the format for both init and state jsons *)
+      (JSON.ContractState.state_to_json init,
+       JSON.ContractState.state_to_json state)
 
 let run ~exe_name =
   ErrorUtils.reset_warnings ();
