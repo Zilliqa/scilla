@@ -169,7 +169,8 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
             expr_folder (ER.get_loc @@ CUIdentifier.get_rep b') e1 acc
           in
           expr_folder loc e2 acc'
-      | Fun (_, _, (e', _)) | TFun (_, (e', _)) -> expr_folder loc e' acc
+      | Fun (_, _, (e', _)) | TFun (_, (e', _)) | GasExpr (_, (e', _)) ->
+          expr_folder loc e' acc
       | MatchExpr (p, pl) ->
           foldM
             ~f:(fun acc (_, (e', _)) ->

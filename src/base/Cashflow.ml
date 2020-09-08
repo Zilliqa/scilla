@@ -120,6 +120,10 @@ struct
     | MLit l -> CFSyntax.MLit l
     | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
 
+  let cf_init_tag_gas_charge = function
+    | StaticCost i -> CFSyntax.StaticCost i
+    | SizeOf v -> CFSyntax.SizeOf (add_noinfo_to_ident v)
+
   let rec cf_init_tag_expr erep =
     let e, rep = erep in
     let res_e =
@@ -128,6 +132,8 @@ struct
       | Var i -> CFSyntax.Var (add_noinfo_to_ident i)
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
+      | GasExpr (g, body) ->
+          CFSyntax.GasExpr (cf_init_tag_gas_charge g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -199,6 +205,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
+      | GasStmt g -> CFSyntax.GasStmt (cf_init_tag_gas_charge g)
     in
     (res_s, rep)
 
@@ -1513,6 +1520,32 @@ struct
             new_local_env,
             ctr_tag_map,
             changes )
+      | GasExpr (g, e) ->
+          let g', new_local_env, new_param_env, g_changes =
+            match g with
+            | StaticCost _ -> g, local_env, param_env, false
+            | SizeOf v ->
+                let new_v_tag = lookup_var_tag2 v local_env param_env in
+                let new_v = update_id_tag v new_v_tag in
+                let new_local_env, new_param_env =
+                  update_var_tag2 v new_v_tag local_env param_env
+                in
+                (SizeOf new_v, new_local_env, new_param_env, 
+                not @@ [%equal: ECFR.money_tag] new_v_tag (get_id_tag v))
+          in
+          let ( ((_, (new_e_tag, _)) as new_e),
+                e_param_env,
+                e_local_env,
+                e_ctr_tag_map,
+                e_changes ) =
+            cf_tag_expr e expected_tag new_param_env new_local_env ctr_tag_map
+          in
+          ( GasExpr (g', new_e),
+            new_e_tag,
+            e_param_env,
+            e_local_env,
+            e_ctr_tag_map,
+            e_changes || g_changes )
     in
     let e_tag = lub new_e_tag in
     ( (new_e, (e_tag, rep)),
@@ -1766,6 +1799,20 @@ struct
             not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
+      | GasStmt g ->
+          let g', new_local_env, new_param_env, g_changes =
+            match g with
+            | StaticCost _ -> g, local_env, param_env, false
+            | SizeOf v ->
+                let new_v_tag = lookup_var_tag2 v local_env param_env in
+                let new_v = update_id_tag v new_v_tag in
+                let new_local_env, new_param_env =
+                  update_var_tag2 v new_v_tag local_env param_env
+                in
+                (SizeOf new_v, new_local_env, new_param_env, 
+                not @@ [%equal: ECFR.money_tag] new_v_tag (get_id_tag v))
+          in
+          (GasStmt g', new_param_env, field_env, new_local_env, ctr_tag_map, g_changes)
       | SendMsgs m ->
           let m_tag =
             lub_tags NotMoney (lookup_var_tag2 m local_env param_env)

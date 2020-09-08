@@ -157,6 +157,10 @@ struct
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))
 
+  let lift_gas_charge = function
+    | StaticCost i -> CheckedPatternSyntax.StaticCost i
+    | SizeOf v -> CheckedPatternSyntax.SizeOf v
+
   let rec pm_check_expr erep =
     let e, rep = erep in
     match e with
@@ -198,6 +202,9 @@ struct
         wrap_pmcheck_err erep
         @@ let%bind checked_body = pm_check_expr body in
            pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
+    | GasExpr (g, e) ->
+        let%bind e' = pm_check_expr e in
+        pure (CheckedPatternSyntax.GasExpr (lift_gas_charge g, e'), rep)
 
   let rec pm_check_stmts stmts =
     match stmts with
@@ -237,6 +244,8 @@ struct
           | CallProc (p, args) ->
               pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
+          | GasStmt g ->
+              pure (CheckedPatternSyntax.GasStmt (lift_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
         pure @@ (checked_s :: checked_stmts)

@@ -116,7 +116,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | MatchExpr (_, clauses) -> pure @@ List.length clauses
     | Fixpoint _ ->
         pure 1 (* more cost accounted during recursive evaluation. *)
-    | Builtin _ -> pure 0
+    | Builtin _ | GasExpr _ -> pure 0
 
   (* this is a dynamic cost. *)
 

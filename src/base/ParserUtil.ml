@@ -67,6 +67,11 @@ module type Syn = sig
     | Binder of ParserRep.rep SIdentifier.t
     | Constructor of ParserRep.rep SIdentifier.t * pattern list
 
+  type gas_charge =
+    | StaticCost of int
+    (* The identifier must resolve to a literal during Eval. *)
+    | SizeOf of ParserRep.rep SIdentifier.t
+
   type expr_annot = expr * ParserRep.rep
 
   and expr =
@@ -88,6 +93,7 @@ module type Syn = sig
     | TApp of ParserRep.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ParserRep.rep SIdentifier.t * SType.t * expr_annot
+    | GasExpr of gas_charge * expr_annot
 
   (*******************************************************)
   (*                   Statements                        *)
@@ -122,6 +128,7 @@ module type Syn = sig
     | CreateEvnt of ParserRep.rep SIdentifier.t
     | CallProc of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t list
     | Throw of ParserRep.rep SIdentifier.t option
+    | GasStmt of gas_charge
 
   (*******************************************************)
   (*                    Contracts                        *)

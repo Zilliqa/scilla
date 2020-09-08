@@ -156,6 +156,16 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     in
     go sctyp [] pattern
 
+  let type_gas_cost tenv g =
+    match g with
+    | StaticCost i -> pure @@ TypedSyntax.StaticCost i
+    | SizeOf v ->
+        let%bind vt =
+          fromR_TE @@ TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
+        in
+        let vt' = rr_typ vt in
+        pure @@ TypedSyntax.SizeOf (add_type_to_ident v vt')
+
   (* tm[tvar := tp]
      Parallel implementation to the one in Syntax.ml to allow gas accounting.
   *)
@@ -469,6 +479,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         pure
         @@ ( TypedSyntax.Message (List.rev typed_bs_rev),
              (mk_qual_tp @@ msg_typ, rep) )
+    | GasExpr (g, e) ->
+        let%bind g' = type_gas_cost tenv g in
+        let%bind ((_, et) as e') = type_expr e tenv in
+        pure (TypedSyntax.GasExpr (g', e'), et)
 
   and app_type tenv ftyp actuals ~lc =
     (* Type-check function application *)
@@ -834,7 +848,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ add_stmt_to_stmts_env_gas
                      (TypedSyntax.Throw None, rep)
-                     checked_stmts ) )
+                     checked_stmts )
+        | GasStmt g ->
+            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind g' = type_gas_cost env.pure g in
+            pure
+            @@ add_stmt_to_stmts_env_gas
+                 (TypedSyntax.GasStmt g', rep)
+                 checked_stmts )
 
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in

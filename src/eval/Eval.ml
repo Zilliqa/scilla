@@ -78,6 +78,15 @@ let sanitize_literal l =
   if is_serializable_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
+let eval_gas_charge env = function
+  | StaticCost i -> pure i
+  | SizeOf v ->
+    let%bind v' = Env.lookup env v in
+    let%bind v' = sanitize_literal v' in
+    let%bind i = fromR @@ EvalGas.literal_cost v' in
+    pure i
+
+
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
@@ -195,6 +204,7 @@ let rec exp_eval erep env =
             try_apply_as_type_closure v arg_type)
       in
       pure (fully_applied, env)
+  | GasExpr _ -> fail0 "Not yet implemented"
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
@@ -379,7 +389,9 @@ let rec stmt_eval conf stmts =
                   endl = dummy_loc;
                 })
           in
-          fail (err @ elist) )
+          fail (err @ elist) 
+      | GasStmt _ -> fail0 "Not yet implemented"
+      )
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)

@@ -1090,6 +1090,8 @@ struct
             ~init:empty_pn plist
         in
         pure ([], SPol splist, cc)
+    | GasExpr _ ->
+      fail0 "GasUseAnalysis: AST has explicit charges, not supported."
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =

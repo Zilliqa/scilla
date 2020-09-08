@@ -196,6 +196,12 @@ let eliminate_namespaces lib_tree ns_tree =
                 in
                 let exp' = rename_in_expr e env' in
                 (Fixpoint (i, t, exp'), eloc)
+            | GasExpr (g, e) ->
+              let g' = (match g with
+              | StaticCost _ -> g
+              | SizeOf v -> SizeOf (check_and_prefix_id env v)
+              ) in
+              (GasExpr (g', rename_in_expr e env), eloc)
           in
           match entry with
           | LibTyp (i, ctrs) ->

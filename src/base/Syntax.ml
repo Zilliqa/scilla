@@ -242,6 +242,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | Constructor of SR.rep SIdentifier.t * pattern list
   [@@deriving sexp]
 
+  type gas_charge =
+    | StaticCost of int
+    (* The identifier must resolve to a literal during Eval. *)
+    | SizeOf of ER.rep SIdentifier.t
+  [@@deriving sexp]
+
   type expr_annot = expr * ER.rep
 
   and expr =
@@ -258,6 +264,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
+    | GasExpr of gas_charge * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -303,6 +310,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | CreateEvnt of ER.rep SIdentifier.t
     | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
     | Throw of ER.rep SIdentifier.t option
+    | GasStmt of gas_charge
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -439,6 +447,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         let t' = subst_type_in_type' tvar tp t in
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
+    | GasExpr (g, e) ->
+      (GasExpr (g, subst_type_in_expr tvar tp e), rep)
 
   (* get variables that get bound in pattern. *)
   let get_pattern_bounds p =
@@ -488,6 +498,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
               (* bind variables in pattern and recurse for expression. *)
               let bound_vars' = get_pattern_bounds p @ bound_vars in
               recurser e bound_vars' acc)
+      | GasExpr (_, sube) -> recurser sube bound_vars acc
     in
     let fvs = recurser erep [] [] in
     SIdentifier.dedup_id_list fvs
@@ -534,6 +545,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             (as_error_string tf)
       | TFun (tf, _) ->
           sprintf "Type error in type function `%s`:\n" (as_error_string tf)
+      | GasExpr _ -> "Type error in charging gas :-O, this can't occur.\n"
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
             (as_error_string f) ),
@@ -580,6 +592,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
+      | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->
           let is =
             match i with
