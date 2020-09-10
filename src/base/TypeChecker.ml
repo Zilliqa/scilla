@@ -163,13 +163,23 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     | DynamicCost p ->
         let%bind p' =
           fromR_TE
-          @@ Polynomial.var_replace_pn_result p ~f:(fun v ->
-                 let open Result.Let_syntax in
-                 let%bind vt =
-                   TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
-                 in
-                 let vt' = rr_typ vt in
-                 MonadUtil.pure @@ add_type_to_ident v vt')
+          @@ Polynomial.var_replace_pn_result p ~f:(fun v' ->
+            let open Result.Let_syntax in
+            let f v =
+              let%bind vt =
+                TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
+              in
+              let vt' = rr_typ vt in
+              MonadUtil.pure @@ add_type_to_ident v vt'
+            in
+            match v' with
+            | SizeOf v ->
+              let%bind v'' = f v in
+              MonadUtil.pure @@ TypedSyntax.SizeOf v''
+            | ValueOf v ->
+              let%bind v'' = f v in
+              MonadUtil.pure @@ TypedSyntax.ValueOf v''
+            )
         in
         pure @@ TypedSyntax.DynamicCost p'
 

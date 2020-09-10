@@ -202,7 +202,11 @@ let eliminate_namespaces lib_tree ns_tree =
               | StaticCost _ -> g
               | DynamicCost p ->
                 let p' = Polynomial.var_replace_pn p ~f:(fun v ->
-                  check_and_prefix_id env v
+                  match v with
+                  | SizeOf v' ->
+                    SizeOf (check_and_prefix_id env v')
+                  | ValueOf v' ->
+                    ValueOf (check_and_prefix_id env v')
                 ) in
                 DynamicCost p'
               ) in

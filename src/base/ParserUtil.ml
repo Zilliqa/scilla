@@ -68,10 +68,18 @@ module type Syn = sig
     | Binder of ParserRep.rep SIdentifier.t
     | Constructor of ParserRep.rep SIdentifier.t * pattern list
 
+  type gas_charge_base =
+    (* Size of an identifier that resolves to a literal *)
+    | SizeOf of ParserRep.rep SIdentifier.t
+    (* Value of an identifier that resolves to an integer. *)
+    | ValueOf of ParserRep.rep SIdentifier.t
+  [@@deriving sexp]
+
   type gas_charge =
     | StaticCost of int
-    (* Each identifier in the polynomial must resolve to a literal during Eval. *)
-    | DynamicCost of ParserRep.rep SIdentifier.t Polynomial.polynomial
+    (* A polynomial in terms of gas_charge_base *)
+    | DynamicCost of gas_charge_base Polynomial.polynomial
+  [@@deriving sexp]
 
   type expr_annot = expr * ParserRep.rep
 

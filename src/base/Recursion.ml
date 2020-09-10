@@ -80,9 +80,17 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     walk p
 
   let recursion_gas_charge g =
+    let recursion_gas_charge_base = function
+      | SizeOf v -> RecursionSyntax.SizeOf v
+      | ValueOf v -> RecursionSyntax.ValueOf v
+    in
     match g with
     | StaticCost i -> RecursionSyntax.StaticCost i
-    | DynamicCost v -> RecursionSyntax.DynamicCost v
+    | DynamicCost p ->
+        let p' =
+          Polynomials.Polynomial.var_replace_pn p ~f:recursion_gas_charge_base
+        in
+        RecursionSyntax.DynamicCost p'
 
   let recursion_exp is_adt_in_scope is_adt_ctr_in_scope erep =
     let rec walk erep =
@@ -140,7 +148,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.Fixpoint (x, t, new_e)
         | GasExpr (g, sube) ->
             let%bind sube' = walk sube in
-            pure (RecursionSyntax.GasExpr(recursion_gas_charge g, sube'))
+            pure (RecursionSyntax.GasExpr (recursion_gas_charge g, sube'))
       in
       pure (new_e, rep)
     in
@@ -357,10 +365,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         SR.get_loc (get_rep lname) )
     @@ let%bind recursion_entries, adts, _, _ =
          foldM lentries ~init:([], [], [], [])
-           ~f:(fun
-                (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
-                entry
-              ->
+           ~f:(fun (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
+                   entry
+                   ->
              let%bind new_entry, adt_opt =
                recursion_lib_entry
                  (is_adt_in_scope adts_in_scope)

@@ -25,6 +25,7 @@ open Datatypes
 open PatternUtil
 open Exp_descriptions
 open Decision_Tree
+open Polynomials
 
 module ScillaPatternchecker
     (SR : Rep) (ER : sig
@@ -159,7 +160,12 @@ struct
 
   let lift_gas_charge = function
     | StaticCost i -> CheckedPatternSyntax.StaticCost i
-    | DynamicCost v -> CheckedPatternSyntax.DynamicCost v
+    | DynamicCost p -> 
+      let p' = Polynomial.var_replace_pn p ~f:(function 
+        | SizeOf v -> CheckedPatternSyntax.SizeOf v
+        | ValueOf v -> CheckedPatternSyntax.ValueOf v
+      ) in
+      CheckedPatternSyntax.DynamicCost p'
 
   let rec pm_check_expr erep =
     let e, rep = erep in

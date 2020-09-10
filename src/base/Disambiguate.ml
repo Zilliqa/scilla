@@ -231,7 +231,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     | StaticCost i -> pure ( PostDisSyntax.StaticCost i)
     | DynamicCost p ->
       let%bind p' = Polynomial.var_replace_pn_result p ~f:(fun v ->
-        disambiguate_identifier ns_dict simp_var_dict v
+        match v with
+        | SizeOf v' ->
+          let%bind v'' = disambiguate_identifier ns_dict simp_var_dict v' in
+          pure @@ PostDisSyntax.SizeOf v''
+        | ValueOf v' -> 
+          let%bind v'' = disambiguate_identifier ns_dict simp_var_dict v' in
+          pure @@ PostDisSyntax.ValueOf v''
       ) in
       pure (PostDisSyntax.DynamicCost p')
 
