@@ -120,6 +120,10 @@ clean:
 # but keeping a local opam switch and other dependencies built.
 	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/**
 
+# Clean up libff installation
+cleanall: clean
+	rm -rf deps/libff/{build,install}
+
 # Build a standalone scilla docker
 docker:
 	docker build .
