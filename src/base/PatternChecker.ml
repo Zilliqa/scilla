@@ -159,7 +159,7 @@ struct
 
   let lift_gas_charge = function
     | StaticCost i -> CheckedPatternSyntax.StaticCost i
-    | SizeOf v -> CheckedPatternSyntax.SizeOf v
+    | DynamicCost v -> CheckedPatternSyntax.DynamicCost v
 
   let rec pm_check_expr erep =
     let e, rep = erep in

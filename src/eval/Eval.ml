@@ -34,6 +34,7 @@ open EvalIdentifier
 open EvalType
 open EvalLiteral
 open EvalSyntax
+open Polynomials
 module CU = ScillaContractUtil (ParserRep) (ParserRep)
 
 (***************************************************)
@@ -74,17 +75,27 @@ let rec is_pure_literal l =
 
 (* Sanitize before storing into a message *)
 let sanitize_literal l =
-  let%bind t = fromR @@ literal_type l in
+  let open MonadUtil in
+  let open Result.Let_syntax in
+  let%bind t = literal_type l in
   if is_serializable_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let eval_gas_charge env = function
   | StaticCost i -> pure i
-  | SizeOf v ->
-    let%bind v' = Env.lookup env v in
-    let%bind v' = sanitize_literal v' in
-    let%bind i = fromR @@ EvalGas.literal_cost v' in
-    pure i
+  | DynamicCost p ->
+    (* Let's evaluate the polynomial *)
+    let%bind p' = fromR @@ Polynomial.expand_parameters_pn_result p ~f:(fun v ->
+      let open Result.Let_syntax in
+      let open MonadUtil in
+      let%bind v' = Env.lookup env v in
+      let%bind v' = sanitize_literal v' in
+      let%bind i = EvalGas.literal_cost v' in
+      pure @@ Some (Polynomial.const_pn i)
+    ) in
+    match Polynomial.get_const p' with
+    | Error _ -> fail0 "Gas charge did not evaluate to a constant"
+    | Ok i -> pure i
 
 
 (*******************************************************)
@@ -103,7 +114,7 @@ let rec exp_eval erep env =
   match e with
   | Literal l -> pure (l, env)
   | Var i ->
-      let%bind v = Env.lookup env i in
+      let%bind v = fromR @@ Env.lookup env i in
       pure @@ (v, env)
   | Let (i, _, lhs, rhs) ->
       let%bind lval, _ = exp_eval_wrapper lhs env in
@@ -115,12 +126,13 @@ let rec exp_eval erep env =
         match pld with
         | MLit l -> sanitize_literal l
         | MVar i ->
+            let open Result.Let_syntax in
             let%bind v = Env.lookup env i in
             sanitize_literal v
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
-        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ resolve pld)
+        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ fromR @@ resolve pld)
       in
       pure (Msg payload_resolved, env)
   | Fun (formal, _, body) ->
@@ -132,8 +144,8 @@ let rec exp_eval erep env =
       pure (Clo runner, env)
   | App (f, actuals) ->
       (* Resolve the actuals *)
-      let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
-      let%bind ff = Env.lookup env f in
+      let%bind args = mapM actuals ~f:(fun arg -> fromR @@ Env.lookup env arg) in
+      let%bind ff = fromR @@ Env.lookup env f in
       (* Apply iteratively, also evaluating curried lambdas *)
       let%bind fully_applied =
         List.fold_left args ~init:(pure ff) ~f:(fun res arg ->
@@ -155,12 +167,12 @@ let rec exp_eval erep env =
           (SR.get_loc (get_rep cname))
       else
         (* Resolve the actuals *)
-        let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+        let%bind args = mapM actuals ~f:(fun arg -> fromR @@ Env.lookup env arg) in
         (* Make sure we only pass "pure" literals, not closures *)
         let lit = ADTValue (get_id cname, ts, args) in
         pure (lit, env)
   | MatchExpr (x, clauses) ->
-      let%bind v = Env.lookup env x in
+      let%bind v = fromR @@ Env.lookup env x in
       (* Get the branch and the bindings *)
       let%bind (_, e_branch), bnds =
         tryM clauses
@@ -177,7 +189,7 @@ let rec exp_eval erep env =
       in
       exp_eval_wrapper e_branch env'
   | Builtin (i, actuals) ->
-      let%bind args = mapM actuals ~f:(fun arg -> Env.lookup env arg) in
+      let%bind args = mapM actuals ~f:(fun arg -> fromR @@ Env.lookup env arg) in
       let%bind tps = fromR @@ MonadUtil.mapM args ~f:literal_type in
       let%bind res = builtin_executor i tps args in
       pure (res, env)
@@ -197,7 +209,7 @@ let rec exp_eval erep env =
       in
       pure (TAbs typer, env)
   | TApp (tf, arg_types) ->
-      let%bind ff = Env.lookup env tf in
+      let%bind ff = fromR @@ Env.lookup env tf in
       let%bind fully_applied =
         List.fold_left arg_types ~init:(pure ff) ~f:(fun res arg_type ->
             let%bind v = res in
@@ -270,7 +282,7 @@ let rec stmt_eval conf stmts =
           let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Store (x, r) ->
-          let%bind v = Configuration.lookup conf r in
+          let%bind v = fromR @@ Configuration.lookup conf r in
           let%bind scon = Configuration.store x v in
           let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf sts
@@ -281,12 +293,12 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | MapUpdate (m, klist, ropt) ->
           let%bind klist' =
-            mapM ~f:(fun k -> Configuration.lookup conf k) klist
+            mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
           in
           let%bind v =
             match ropt with
             | Some r ->
-                let%bind v = Configuration.lookup conf r in
+                let%bind v = fromR @@ Configuration.lookup conf r in
                 pure (Some v)
             | None -> pure None
           in
@@ -295,7 +307,7 @@ let rec stmt_eval conf stmts =
           stmt_eval conf sts
       | MapGet (x, m, klist, fetchval) ->
           let%bind klist' =
-            mapM ~f:(fun k -> Configuration.lookup conf k) klist
+            mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
           in
           let%bind l, scon = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
@@ -307,7 +319,7 @@ let rec stmt_eval conf stmts =
           let%bind () = stmt_gas_wrap G_ReadFromBC sloc in
           stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
-          let%bind v = Env.lookup conf.env x in
+          let%bind v = fromR @@ Env.lookup conf.env x in
           let%bind (_, branch_stmts), bnds =
             tryM clauses
               ~msg:(fun () ->
@@ -334,12 +346,12 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)
       | SendMsgs ms ->
-          let%bind ms_resolved = Configuration.lookup conf ms in
+          let%bind ms_resolved = fromR @@ Configuration.lookup conf ms in
           let%bind conf', scon = Configuration.send_messages conf ms_resolved in
           let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | CreateEvnt params ->
-          let%bind eparams_resolved = Configuration.lookup conf params in
+          let%bind eparams_resolved = fromR @@ Configuration.lookup conf params in
           let%bind conf', scon =
             Configuration.create_event conf eparams_resolved
           in
@@ -348,7 +360,7 @@ let rec stmt_eval conf stmts =
       | CallProc (p, actuals) ->
           (* Resolve the actuals *)
           let%bind args =
-            mapM actuals ~f:(fun arg -> Env.lookup conf.env arg)
+            mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
           in
           let%bind proc, p_rest =
             Configuration.lookup_procedure conf (get_id p)
@@ -358,7 +370,7 @@ let rec stmt_eval conf stmts =
           let%bind () = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
       | Iterate (l, p) ->
-          let%bind l_actual = Env.lookup conf.env l in
+          let%bind l_actual = fromR @@ Env.lookup conf.env l in
           let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
           let%bind proc, p_rest =
             Configuration.lookup_procedure conf (get_id p)
@@ -376,7 +388,7 @@ let rec stmt_eval conf stmts =
           let%bind estr =
             match eopt with
             | Some e ->
-                let%bind e_resolved = Configuration.lookup conf e in
+                let%bind e_resolved = fromR @@ Configuration.lookup conf e in
                 pure @@ ": " ^ pp_literal e_resolved
             | None -> pure ""
           in
@@ -395,8 +407,8 @@ let rec stmt_eval conf stmts =
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
-  let%bind sender_value = Configuration.lookup conf (mk_loc_id "_sender") in
-  let%bind amount_value = Configuration.lookup conf (mk_loc_id "_amount") in
+  let%bind sender_value = fromR @@ Configuration.lookup conf (mk_loc_id "_sender") in
+  let%bind amount_value = fromR @@ Configuration.lookup conf (mk_loc_id "_amount") in
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }

@@ -19,6 +19,7 @@
 open ErrorUtils
 open Literal
 open Syntax
+open Polynomials
 
 (*******************************************************)
 (*              Location annotations                   *)
@@ -69,8 +70,8 @@ module type Syn = sig
 
   type gas_charge =
     | StaticCost of int
-    (* The identifier must resolve to a literal during Eval. *)
-    | SizeOf of ParserRep.rep SIdentifier.t
+    (* Each identifier in the polynomial must resolve to a literal during Eval. *)
+    | DynamicCost of ParserRep.rep SIdentifier.t Polynomial.polynomial
 
   type expr_annot = expr * ParserRep.rep
 

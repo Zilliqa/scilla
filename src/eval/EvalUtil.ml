@@ -96,6 +96,7 @@ module Env = struct
   let filter e ~f = List.filter e ~f:(fun (id, _) -> f id)
 
   let lookup e k =
+    let open MonadUtil in
     let i = get_id k in
     match List.Assoc.find e i ~equal:String.( = ) with
     | Some v -> pure v

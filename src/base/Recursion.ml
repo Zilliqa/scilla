@@ -82,7 +82,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   let recursion_gas_charge g =
     match g with
     | StaticCost i -> RecursionSyntax.StaticCost i
-    | SizeOf v -> RecursionSyntax.SizeOf v
+    | DynamicCost v -> RecursionSyntax.DynamicCost v
 
   let recursion_exp is_adt_in_scope is_adt_ctr_in_scope erep =
     let rec walk erep =

@@ -23,6 +23,7 @@ open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
+open Polynomials
 
 (* TODO: Parameterise this. *)
 module RUSyntax = ParserUtil.ParserSyntax
@@ -199,7 +200,11 @@ let eliminate_namespaces lib_tree ns_tree =
             | GasExpr (g, e) ->
               let g' = (match g with
               | StaticCost _ -> g
-              | SizeOf v -> SizeOf (check_and_prefix_id env v)
+              | DynamicCost p ->
+                let p' = Polynomial.var_replace_pn p ~f:(fun v ->
+                  check_and_prefix_id env v
+                ) in
+                DynamicCost p'
               ) in
               (GasExpr (g', rename_in_expr e env), eloc)
           in

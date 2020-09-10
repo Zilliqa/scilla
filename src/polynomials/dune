@@ -3,5 +3,7 @@
  (public_name scilla.polynomials)
  (wrapped true)
  (modes byte native)
+ (preprocess
+  (pps ppx_let ppx_sexp_conv ppx_deriving.show ppx_compare))
  (synopsis "Utility to deal with multivariate polynomials")
  (libraries core))

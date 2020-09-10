@@ -25,6 +25,7 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
+open Polynomials
 
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
 module TCLiteral = FlattenedLiteral
@@ -159,12 +160,18 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   let type_gas_cost tenv g =
     match g with
     | StaticCost i -> pure @@ TypedSyntax.StaticCost i
-    | SizeOf v ->
-        let%bind vt =
-          fromR_TE @@ TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
+    | DynamicCost p ->
+        let%bind p' =
+          fromR_TE
+          @@ Polynomial.var_replace_pn_result p ~f:(fun v ->
+                 let open Result.Let_syntax in
+                 let%bind vt =
+                   TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
+                 in
+                 let vt' = rr_typ vt in
+                 MonadUtil.pure @@ add_type_to_ident v vt')
         in
-        let vt' = rr_typ vt in
-        pure @@ TypedSyntax.SizeOf (add_type_to_ident v vt')
+        pure @@ TypedSyntax.DynamicCost p'
 
   (* tm[tvar := tp]
      Parallel implementation to the one in Syntax.ml to allow gas accounting.

@@ -21,14 +21,14 @@ exception Polynomial_error of string
  * Representation: co-efficient * (variable ^ pow) list
  * Example: (3, ['A', 2]) is 3 * (a^2)
  *)
-type 'a term = int * ('a * int) list
+type 'a term = int * ('a * int) list [@@deriving sexp]
 
 (* A polynomial is a sum of terms.
  * NOTE:
  *  The representation used here does not in itself guarantee
  *  a canonicalized form. Use canonicalize_* below as needed.
  *)
-type 'a polynomial = 'a term list
+type 'a polynomial = 'a term list [@@deriving sexp]
 
 (* If a variable occurs more than once in a term,
  * combine the occurrences by adding the powers. *)
@@ -65,12 +65,20 @@ val combine_pn :
 val max_combine_pn : 'a polynomial -> 'a polynomial -> 'a polynomial
 
 (* Replace every variable in the polynomial using a replacer. *)
-val var_replace_pn : 'a polynomial -> f:('a -> 'a) -> 'a polynomial
+val var_replace_pn : 'a polynomial -> f:('a -> 'b) -> 'b polynomial
+
+val var_replace_pn_result :
+  'a polynomial -> f:('a -> ('b, 'c) result) -> ('b polynomial, 'c) result
 
 (* Expand parameters in a polynomial into full polynomials. 
  * TODO: Make this efficient. *)
 val expand_parameters_pn :
   'a polynomial -> f:('a -> 'a polynomial option) -> 'a polynomial
+
+val expand_parameters_pn_result :
+  'a polynomial ->
+  f:('a -> ('a polynomial option, 'b) result) ->
+  ('a polynomial, 'b) result
 
 (* Print a polynomial, calling ~f to print a variable. *)
 val sprint_pn : 'a polynomial -> f:('a -> string) -> string
@@ -92,3 +100,6 @@ val is_const_term : 'a term -> bool
 
 (* Is this is a simple constant? *)
 val is_const_pn : 'a polynomial -> bool
+
+(* Give the integer constant of a is_const_pn polynomial. *)
+val get_const : 'a polynomial -> (int, string) result

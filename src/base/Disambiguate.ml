@@ -23,6 +23,7 @@ open MonadUtil
 open Identifier
 open Literal
 open Syntax
+open Polynomials
 
 (*****************************************************************)
 (*          Translate from local names to global names           *)
@@ -228,9 +229,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   let disambiguate_gas_charge ns_dict simp_var_dict g =
     match g with
     | StaticCost i -> pure ( PostDisSyntax.StaticCost i)
-    | SizeOf v ->
-      let%bind v' = disambiguate_identifier ns_dict simp_var_dict v in
-      pure (PostDisSyntax.SizeOf v')
+    | DynamicCost p ->
+      let%bind p' = Polynomial.var_replace_pn_result p ~f:(fun v ->
+        disambiguate_identifier ns_dict simp_var_dict v
+      ) in
+      pure (PostDisSyntax.DynamicCost p')
 
   let disambiguate_exp (dicts : name_dicts) erep =
     let disambiguate_identifier_helper simp_var_dict id =

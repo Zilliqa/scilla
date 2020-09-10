@@ -20,6 +20,7 @@ open Core_kernel
 open Sexplib.Std
 open ErrorUtils
 open Literal
+open Polynomials
 
 exception SyntaxError of string * loc
 
@@ -244,8 +245,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
 
   type gas_charge =
     | StaticCost of int
-    (* The identifier must resolve to a literal during Eval. *)
-    | SizeOf of ER.rep SIdentifier.t
+    (* Each identifier in the polynomial must resolve to a literal during Eval. *)
+    | DynamicCost of ER.rep SIdentifier.t Polynomial.polynomial
   [@@deriving sexp]
 
   type expr_annot = expr * ER.rep
