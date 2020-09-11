@@ -96,7 +96,6 @@ let eval_gas_charge env g =
   in
   GasCharge.eval vsize_resolver ival_resolver g
 
-
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)

@@ -1091,7 +1091,7 @@ struct
         in
         pure ([], SPol splist, cc)
     | GasExpr _ ->
-      fail0 "GasUseAnalysis: AST has explicit charges, not supported."
+        fail0 "GasUseAnalysis: AST has explicit charges, not supported."
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =

@@ -336,8 +336,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fixpoint (dis_f, dis_t, dis_body)
         | GasExpr (g, e) ->
-          let%bind e' = recurser simp_var_dict e in
-          pure @@ PostDisSyntax.GasExpr(g, e')
+            let%bind e' = recurser simp_var_dict e in
+            pure @@ PostDisSyntax.GasExpr (g, e')
       in
       pure @@ (new_e, rep)
     in
@@ -464,8 +464,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 ~f:(disambiguate_identifier_helper simp_var_dict_acc)
             in
             pure @@ (PostDisSyntax.Throw dis_xopt, simp_var_dict_acc)
-        | GasStmt g ->
-          pure @@ (PostDisSyntax.GasStmt(g), simp_var_dict_acc)
+        | GasStmt g -> pure @@ (PostDisSyntax.GasStmt g, simp_var_dict_acc)
       in
       pure @@ (new_simp_var_dict, (dis_s, rep) :: dis_stmts_acc_rev)
     in
@@ -675,10 +674,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
 
     (* Build dictionaries *)
     foldM imports ~init:([], [], [], [])
-      ~f:(fun
-           (ns_dict_acc, simp_var_dict_acc, simp_typ_dict_acc, simp_ctr_dict_acc)
-           (libname, ns_opt)
-         ->
+      ~f:(fun ( ns_dict_acc,
+                simp_var_dict_acc,
+                simp_typ_dict_acc,
+                simp_ctr_dict_acc )
+              (libname, ns_opt)
+              ->
         let%bind lib = find_lib libname extlibs in
         let%bind lib_filename = find_lib_filename lib in
         let add_key_and_lib_filename_to_dict dict key =
@@ -709,10 +710,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind simp_var_dict, simp_typ_dict, simp_ctr_dict =
               foldM lib.lentries
                 ~init:(simp_var_dict_acc, simp_typ_dict_acc, simp_ctr_dict_acc)
-                ~f:(fun
-                     (simp_var_dict_acc', simp_typ_dict_acc', simp_ctr_dict_acc')
-                     lentry
-                   ->
+                ~f:(fun ( simp_var_dict_acc',
+                          simp_typ_dict_acc',
+                          simp_ctr_dict_acc' )
+                        lentry
+                        ->
                   match lentry with
                   | LibVar (x, _, _) ->
                       (* simple var name *)

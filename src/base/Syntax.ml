@@ -442,8 +442,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         let t' = subst_type_in_type' tvar tp t in
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
-    | GasExpr (g, e) ->
-      (GasExpr (g, subst_type_in_expr tvar tp e), rep)
+    | GasExpr (g, e) -> (GasExpr (g, subst_type_in_expr tvar tp e), rep)
 
   (* get variables that get bound in pattern. *)
   let get_pattern_bounds p =

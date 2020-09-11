@@ -128,8 +128,7 @@ struct
       | Var i -> CFSyntax.Var (add_noinfo_to_ident i)
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
-      | GasExpr (g, body) ->
-          CFSyntax.GasExpr (g, cf_init_tag_expr body)
+      | GasExpr (g, body) -> CFSyntax.GasExpr (g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -201,7 +200,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
-      | GasStmt g -> CFSyntax.GasStmt (g)
+      | GasStmt g -> CFSyntax.GasStmt g
     in
     (res_s, rep)
 
@@ -1781,12 +1780,7 @@ struct
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | GasStmt g ->
-          ( GasStmt g,
-            param_env,
-            field_env,
-            local_env,
-            ctr_tag_map,
-            false )
+          (GasStmt g, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
           let m_tag =
             lub_tags NotMoney (lookup_var_tag2 m local_env param_env)
