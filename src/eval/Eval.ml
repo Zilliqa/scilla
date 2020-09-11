@@ -80,7 +80,22 @@ let sanitize_literal l =
   if is_serializable_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
-let eval_gas_charge _env = pure 0
+let eval_gas_charge env g =
+  let open MonadUtil in
+  let open Result.Let_syntax in
+  let vsize_resolver vstr =
+    let%bind l = Env.lookup env (mk_loc_id vstr) in
+    let%bind l' = sanitize_literal l in
+    EvalGas.literal_cost l'
+  in
+  let ival_resolver vstr =
+    let%bind l = Env.lookup env (mk_loc_id vstr) in
+    match l with
+    | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
+    | _ -> fail0 ("Variable " ^ vstr ^ " did not resolve to an integer")
+  in
+  GasCharge.eval vsize_resolver ival_resolver g
+
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)

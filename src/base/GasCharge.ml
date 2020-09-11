@@ -17,6 +17,8 @@
 *)
 
 open Core_kernel
+open Result.Let_syntax
+open MonadUtil
 
 type gas_charge =
   | StaticCost of int
@@ -35,5 +37,30 @@ let replace_variable_name g ~f =
     | ValueOf v -> ValueOf (f v)
     | SumOf (g1, g2) -> SumOf (recurser g1, recurser g2)
     | ProdOf (g1, g2) -> ProdOf (recurser g1, recurser g2)
+  in
+  recurser g
+
+(* Given two resolvers:
+     1. Resolve variable to a literal and provide it's size
+     2. Resolve variable to an integer 
+   evaluat gas_charge.
+*)
+let eval vsize_resolver ival_resolver g =
+  let rec recurser = function
+    | StaticCost i -> pure i
+    | SizeOf v ->
+        let%bind i = vsize_resolver v in
+        pure i
+    | ValueOf v ->
+        let%bind i = ival_resolver v in
+        pure i
+    | SumOf (g1, g2) ->
+        let%bind i1 = recurser g1 in
+        let%bind i2 = recurser g2 in
+        pure (i1 + i2)
+    | ProdOf (g1, g2) ->
+        let%bind i1 = recurser g1 in
+        let%bind i2 = recurser g2 in
+        pure (i1 * i2)
   in
   recurser g
