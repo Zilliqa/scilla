@@ -26,14 +26,14 @@ exception Polynomial_error of string
  * Representation: co-efficient * (variable ^ pow) list
  * Example: (3, ['A', 2]) is 3 * (a^2)
  *)
-type 'a term = int * ('a * int) list [@@deriving sexp]
+type 'a term = int * ('a * int) list
 
 (* A polynomial is a sum of terms.
  * NOTE:
  *  The representation used here does not in itself guarantee
  *  a canonicalized form. Use canonicalize_* below as needed.
  *)
-type 'a polynomial = 'a term list [@@deriving sexp]
+type 'a polynomial = 'a term list
 
 (* If a variable occurs more than once in a term,
  * combine the occurrences by adding the powers. *)
@@ -162,7 +162,7 @@ let max_combine_pn (p1' : 'a polynomial) (p2' : 'a polynomial) =
   res @ p2'
 
 (* Replace every variable in the polynomial using a replacer. *)
-let var_replace_pn (pn : 'a polynomial) ~(f : 'a -> 'b) =
+let var_replace_pn (pn : 'a polynomial) ~(f : 'a -> 'a) =
   let term_replacer (ter : 'a term) =
     let coef, vlist = ter in
     let vlist' =
@@ -173,19 +173,6 @@ let var_replace_pn (pn : 'a polynomial) ~(f : 'a -> 'b) =
     (coef, vlist')
   in
   List.map pn ~f:(fun t -> term_replacer t)
-
-(* Replace every variable in the polynomial using a replacer. *)
-let var_replace_pn_result (pn : 'a polynomial) ~(f : 'a -> ('b, 'c) result) :
-    ('b polynomial, 'c) result =
-  let err = ref None in
-  let f' a =
-    match f a with
-    | Ok r -> r
-    | Error _ as e ->
-        err := Some e;
-        raise (Failure "Polynomial: var_replace_pn_result ~f failed")
-  in
-  try Ok (var_replace_pn pn ~f:f') with Failure _ -> Option.value_exn !err
 
 (* Expand parameters in a polynomial into full polynomials. 
  * TODO: Make this efficient. *)
@@ -226,20 +213,6 @@ let expand_parameters_pn (pn' : 'a polynomial) ~(f : 'a -> 'a polynomial option)
   in
   subst pn
 
-let expand_parameters_pn_result (pn : 'a polynomial)
-    ~(f : 'a -> ('b polynomial option, 'c) result) : ('b polynomial, 'c) result
-    =
-  let err = ref None in
-  let f' a =
-    match f a with
-    | Ok r -> r
-    | Error _ as e ->
-        err := Some e;
-        raise (Failure "Polynomial: expand_parameters_pn_result ~f failed")
-  in
-  try Ok (expand_parameters_pn pn ~f:f')
-  with Failure _ -> Option.value_exn !err
-
 (* Print a polynomial, calling ~f to print a variable. *)
 let sprint_pn (pn : 'a polynomial) ~(f : 'a -> string) =
   let sprint_term (coef, vplist) =
@@ -274,11 +247,3 @@ let is_const_term t = match t with _, [] -> true | _ -> false
 let is_const_pn p =
   let p' = canonicalize_pn p in
   match p' with [] -> true | [ t ] -> is_const_term t | _ -> false
-
-(* Give the integer constant of a is_const_pn polynomial. *)
-let get_const p =
-  let p' = canonicalize_pn p in
-  match p' with
-  | [] -> Result.return 0
-  | [(i, [])] -> Result.return i
-  | _ -> Error "Not a constant polynomial"
