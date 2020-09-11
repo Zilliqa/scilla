@@ -23,7 +23,6 @@ open MonadUtil
 open Identifier
 open Literal
 open Syntax
-open Polynomials
 
 (*****************************************************************)
 (*          Translate from local names to global names           *)
@@ -226,21 +225,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     in
     recurser p
 
-  let disambiguate_gas_charge ns_dict simp_var_dict g =
-    match g with
-    | StaticCost i -> pure ( PostDisSyntax.StaticCost i)
-    | DynamicCost p ->
-      let%bind p' = Polynomial.var_replace_pn_result p ~f:(fun v ->
-        match v with
-        | SizeOf v' ->
-          let%bind v'' = disambiguate_identifier ns_dict simp_var_dict v' in
-          pure @@ PostDisSyntax.SizeOf v''
-        | ValueOf v' -> 
-          let%bind v'' = disambiguate_identifier ns_dict simp_var_dict v' in
-          pure @@ PostDisSyntax.ValueOf v''
-      ) in
-      pure (PostDisSyntax.DynamicCost p')
-
   let disambiguate_exp (dicts : name_dicts) erep =
     let disambiguate_identifier_helper simp_var_dict id =
       disambiguate_identifier dicts.ns_dict simp_var_dict id
@@ -352,9 +336,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fixpoint (dis_f, dis_t, dis_body)
         | GasExpr (g, e) ->
-          let%bind g' = disambiguate_gas_charge dicts.ns_dict simp_var_dict g in
           let%bind e' = recurser simp_var_dict e in
-          pure @@ PostDisSyntax.GasExpr(g', e')
+          pure @@ PostDisSyntax.GasExpr(g, e')
       in
       pure @@ (new_e, rep)
     in
@@ -482,8 +465,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.Throw dis_xopt, simp_var_dict_acc)
         | GasStmt g ->
-          let%bind g' = disambiguate_gas_charge dicts.ns_dict simp_var_dict_acc g in
-          pure @@ (PostDisSyntax.GasStmt(g'), simp_var_dict_acc)
+          pure @@ (PostDisSyntax.GasStmt(g), simp_var_dict_acc)
       in
       pure @@ (new_simp_var_dict, (dis_s, rep) :: dis_stmts_acc_rev)
     in

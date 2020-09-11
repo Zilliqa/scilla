@@ -25,7 +25,6 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
-open Polynomials
 
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
 module TCLiteral = FlattenedLiteral
@@ -156,32 +155,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           pure @@ (TypedSyntax.Constructor (cn, typed_ps), tps)
     in
     go sctyp [] pattern
-
-  let type_gas_cost tenv g =
-    match g with
-    | StaticCost i -> pure @@ TypedSyntax.StaticCost i
-    | DynamicCost p ->
-        let%bind p' =
-          fromR_TE
-          @@ Polynomial.var_replace_pn_result p ~f:(fun v' ->
-            let open Result.Let_syntax in
-            let f v =
-              let%bind vt =
-                TEnv.resolveT tenv (get_id v) ~lopt:(Some (get_rep v))
-              in
-              let vt' = rr_typ vt in
-              MonadUtil.pure @@ add_type_to_ident v vt'
-            in
-            match v' with
-            | SizeOf v ->
-              let%bind v'' = f v in
-              MonadUtil.pure @@ TypedSyntax.SizeOf v''
-            | ValueOf v ->
-              let%bind v'' = f v in
-              MonadUtil.pure @@ TypedSyntax.ValueOf v''
-            )
-        in
-        pure @@ TypedSyntax.DynamicCost p'
 
   (* tm[tvar := tp]
      Parallel implementation to the one in Syntax.ml to allow gas accounting.
@@ -497,9 +470,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         @@ ( TypedSyntax.Message (List.rev typed_bs_rev),
              (mk_qual_tp @@ msg_typ, rep) )
     | GasExpr (g, e) ->
-        let%bind g' = type_gas_cost tenv g in
         let%bind ((_, et) as e') = type_expr e tenv in
-        pure (TypedSyntax.GasExpr (g', e'), et)
+        pure (TypedSyntax.GasExpr (g, e'), et)
 
   and app_type tenv ftyp actuals ~lc =
     (* Type-check function application *)
@@ -868,10 +840,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      checked_stmts )
         | GasStmt g ->
             let%bind checked_stmts = type_stmts sts get_loc env in
-            let%bind g' = type_gas_cost env.pure g in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.GasStmt g', rep)
+                 (TypedSyntax.GasStmt g, rep)
                  checked_stmts )
 
   and type_match_stmt_branch env styp ptrn sts get_loc =

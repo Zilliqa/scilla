@@ -34,7 +34,6 @@ open EvalIdentifier
 open EvalType
 open EvalLiteral
 open EvalSyntax
-open Polynomials
 module CU = ScillaContractUtil (ParserRep) (ParserRep)
 
 (***************************************************)
@@ -81,31 +80,7 @@ let sanitize_literal l =
   if is_serializable_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
-let eval_gas_charge env = function
-  | StaticCost i -> pure i
-  | DynamicCost p -> (
-      (* Let's evaluate the polynomial *)
-      let%bind p' =
-        fromR
-        @@ Polynomial.expand_parameters_pn_result p ~f:(fun v ->
-               let open Result.Let_syntax in
-               let open MonadUtil in
-               match v with
-               | SizeOf v ->
-                   let%bind v' = Env.lookup env v in
-                   let%bind v' = sanitize_literal v' in
-                   let%bind i = EvalGas.literal_cost v' in
-                   pure @@ Some (Polynomial.const_pn i)
-               | ValueOf v -> (
-                   let%bind v' = Env.lookup env v in
-                   match v' with
-                   | UintLit (Uint32L ui) ->
-                       pure @@ Some (Polynomial.const_pn (Uint32.to_int ui))
-                   | _ -> fail0 "Expected ValuOf to be Uint32" ))
-      in
-      match Polynomial.get_const p' with
-      | Error _ -> fail0 "Gas charge did not evaluate to a constant"
-      | Ok i -> pure i )
+let eval_gas_charge _env = pure 0
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)

@@ -79,19 +79,6 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     walk p
 
-  let recursion_gas_charge g =
-    let recursion_gas_charge_base = function
-      | SizeOf v -> RecursionSyntax.SizeOf v
-      | ValueOf v -> RecursionSyntax.ValueOf v
-    in
-    match g with
-    | StaticCost i -> RecursionSyntax.StaticCost i
-    | DynamicCost p ->
-        let p' =
-          Polynomials.Polynomial.var_replace_pn p ~f:recursion_gas_charge_base
-        in
-        RecursionSyntax.DynamicCost p'
-
   let recursion_exp is_adt_in_scope is_adt_ctr_in_scope erep =
     let rec walk erep =
       let e, rep = erep in
@@ -148,7 +135,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.Fixpoint (x, t, new_e)
         | GasExpr (g, sube) ->
             let%bind sube' = walk sube in
-            pure (RecursionSyntax.GasExpr (recursion_gas_charge g, sube'))
+            pure (RecursionSyntax.GasExpr (g, sube'))
       in
       pure (new_e, rep)
     in
@@ -192,7 +179,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 (sprintf "Procedure %s is not in scope." (get_id p))
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
-        | GasStmt g -> pure @@ RecursionSyntax.GasStmt (recursion_gas_charge g)
+        | GasStmt g -> pure @@ RecursionSyntax.GasStmt g
       in
       pure (new_s, rep)
     in

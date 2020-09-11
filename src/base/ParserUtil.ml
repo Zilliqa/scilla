@@ -19,7 +19,7 @@
 open ErrorUtils
 open Literal
 open Syntax
-open Polynomials
+open GasCharge
 
 (*******************************************************)
 (*              Location annotations                   *)
@@ -67,19 +67,6 @@ module type Syn = sig
     | Wildcard
     | Binder of ParserRep.rep SIdentifier.t
     | Constructor of ParserRep.rep SIdentifier.t * pattern list
-
-  type gas_charge_base =
-    (* Size of an identifier that resolves to a literal *)
-    | SizeOf of ParserRep.rep SIdentifier.t
-    (* Value of an identifier that resolves to an integer. *)
-    | ValueOf of ParserRep.rep SIdentifier.t
-  [@@deriving sexp]
-
-  type gas_charge =
-    | StaticCost of int
-    (* A polynomial in terms of gas_charge_base *)
-    | DynamicCost of gas_charge_base Polynomial.polynomial
-  [@@deriving sexp]
 
   type expr_annot = expr * ParserRep.rep
 

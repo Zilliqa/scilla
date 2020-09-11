@@ -22,7 +22,6 @@ open Syntax
 open Datatypes
 open TypeUtil
 open ContractUtil
-open Polynomials
 
 module CashflowRep (R : Rep) = struct
   type money_tag =
@@ -121,17 +120,6 @@ struct
     | MLit l -> CFSyntax.MLit l
     | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
 
-  let cf_init_tag_gas_charge = function
-    | StaticCost i -> CFSyntax.StaticCost i
-    | DynamicCost p ->
-        let p' =
-          Polynomial.var_replace_pn p ~f:(fun v ->
-              match v with
-              | SizeOf v' -> CFSyntax.SizeOf (add_noinfo_to_ident v')
-              | ValueOf v' -> CFSyntax.ValueOf (add_noinfo_to_ident v'))
-        in
-        CFSyntax.DynamicCost p'
-
   let rec cf_init_tag_expr erep =
     let e, rep = erep in
     let res_e =
@@ -141,7 +129,7 @@ struct
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
       | GasExpr (g, body) ->
-          CFSyntax.GasExpr (cf_init_tag_gas_charge g, cf_init_tag_expr body)
+          CFSyntax.GasExpr (g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -213,7 +201,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
-      | GasStmt g -> CFSyntax.GasStmt (cf_init_tag_gas_charge g)
+      | GasStmt g -> CFSyntax.GasStmt (g)
     in
     (res_s, rep)
 
@@ -1189,39 +1177,6 @@ struct
         | Ident (name, (_, rep)) ->
             CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)) )
 
-  let cf_tag_gas_charge local_env param_env g =
-    match g with
-    | StaticCost _ -> (g, local_env, param_env, false)
-    | DynamicCost p ->
-        (* We want to do a map_fold over the variables in
-           * the Polynomial. This is the best way at the moment. *)
-        let new_local_env_r = ref local_env in
-        let new_param_env_r = ref param_env in
-        let changed_r = ref false in
-        let p' =
-          Polynomial.var_replace_pn p ~f:(fun v' ->
-              match v' with
-              | SizeOf v | ValueOf v -> (
-                  let new_v_tag =
-                    lookup_var_tag2 v !new_local_env_r !new_param_env_r
-                  in
-                  let new_v = update_id_tag v new_v_tag in
-                  let new_local_env, new_param_env =
-                    update_var_tag2 v new_v_tag !new_local_env_r
-                      !new_param_env_r
-                  in
-                  new_local_env_r := new_local_env;
-                  new_param_env_r := new_param_env;
-                  let changed =
-                    [%equal: ECFR.money_tag] new_v_tag (get_id_tag v)
-                  in
-                  changed_r := changed;
-                  match v' with
-                  | SizeOf _ -> SizeOf new_v
-                  | ValueOf _ -> ValueOf new_v ))
-        in
-        (DynamicCost p', !new_local_env_r, !new_param_env_r, !changed_r)
-
   let rec cf_tag_expr erep expected_tag param_env local_env ctr_tag_map =
     let lub t = lub_tags expected_tag t in
     let e, (tag, rep) = erep in
@@ -1560,22 +1515,19 @@ struct
             ctr_tag_map,
             changes )
       | GasExpr (g, e) ->
-          let g', new_local_env, new_param_env, g_changes =
-            cf_tag_gas_charge local_env param_env g
-          in
           let ( ((_, (new_e_tag, _)) as new_e),
                 e_param_env,
                 e_local_env,
                 e_ctr_tag_map,
                 e_changes ) =
-            cf_tag_expr e expected_tag new_param_env new_local_env ctr_tag_map
+            cf_tag_expr e expected_tag param_env local_env ctr_tag_map
           in
-          ( GasExpr (g', new_e),
+          ( GasExpr (g, new_e),
             new_e_tag,
             e_param_env,
             e_local_env,
             e_ctr_tag_map,
-            e_changes || g_changes )
+            e_changes )
     in
     let e_tag = lub new_e_tag in
     ( (new_e, (e_tag, rep)),
@@ -1829,15 +1781,12 @@ struct
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | GasStmt g ->
-          let g', new_local_env, new_param_env, g_changes =
-            cf_tag_gas_charge local_env param_env g
-          in
-          ( GasStmt g',
-            new_param_env,
+          ( GasStmt g,
+            param_env,
             field_env,
-            new_local_env,
+            local_env,
             ctr_tag_map,
-            g_changes )
+            false )
       | SendMsgs m ->
           let m_tag =
             lub_tags NotMoney (lookup_var_tag2 m local_env param_env)
