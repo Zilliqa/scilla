@@ -19,11 +19,12 @@
   (flags
    -std=c++11
    -fPIC
-   (:include c_flags.sexp)))
+   (:include c_flags.sexp))
+  (include_dirs %{project_root}/deps/libff/install/include))
  (c_library_flags
   -lstdc++
   (:include c_library_flags.sexp)
-  -lff)
+  -L%{project_root}/deps/libff/install/lib -lff)
  (library_flags
   (:include library_flags.sexp)))
 
