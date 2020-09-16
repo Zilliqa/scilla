@@ -45,15 +45,6 @@ module EvalGas = ScillaGas (SR) (ER)
 open EvalIdentifier
 open EvalSyntax
 
-(* Return a builtin_op wrapped in EvalMonad *)
-let builtin_executor f arg_tps arg_lits =
-  let%bind _, ret_typ, op =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f arg_tps
-  in
-  let%bind cost = fromR @@ EvalGas.builtin_cost f arg_lits in
-  let res () = op arg_lits ret_typ in
-  checkwrap_opR res (Uint64.of_int cost)
-
 (* Add a check that the just evaluated statement was in our gas limit. *)
 let stmt_gas_wrap scon sloc =
   let%bind cost = fromR @@ EvalGas.stmt_cost scon in

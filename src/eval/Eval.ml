@@ -83,18 +83,59 @@ let sanitize_literal l =
 let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
-  let vsize_resolver vstr =
-    let%bind l = Env.lookup env (mk_loc_id vstr) in
-    let%bind l' = sanitize_literal l in
-    EvalGas.literal_cost l'
+  let logger u = Float.to_int @@ Float.log (u +. 1.0) in
+  let resolver = function
+    | GasCharge.SizeOf vstr ->
+        let%bind l = Env.lookup env (mk_loc_id vstr) in
+        EvalGas.literal_cost l
+    | GasCharge.ValueOf vstr -> (
+        let%bind l = Env.lookup env (mk_loc_id vstr) in
+        match l with
+        | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
+        | _ -> fail0 ("Variable " ^ vstr ^ " did not resolve to an integer") )
+    | GasCharge.LogOf vstr -> (
+        let%bind l = Env.lookup env (mk_loc_id vstr) in
+        match l with
+        | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
+            let s = Bytes.of_string @@ Bystrx.to_raw_bytes s' in
+            let u = Integer256.Uint256.of_bytes_big_endian s 0 in
+            pure @@ logger (Integer256.Uint256.to_float u)
+        | UintLit (Uint32L i) -> pure (logger (Stdint.Uint32.to_float i))
+        | UintLit (Uint64L i) -> pure (logger (Stdint.Uint64.to_float i))
+        | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
+        | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
+        | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value" )
+    | GasCharge.LengthOf vstr -> (
+        let%bind l = Env.lookup env (mk_loc_id vstr) in
+        match l with
+        | Map (_, m) -> pure @@ Caml.Hashtbl.length m
+        | ADTValue _ ->
+            let%bind l' = Datatypes.scilla_list_to_ocaml l in
+            pure @@ List.length l'
+        | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists" )
+    | _ -> fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
-  let ival_resolver vstr =
-    let%bind l = Env.lookup env (mk_loc_id vstr) in
-    match l with
-    | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
-    | _ -> fail0 ("Variable " ^ vstr ^ " did not resolve to an integer")
+  GasCharge.eval resolver g
+
+let builtin_cost env f tps args_id =
+  let open MonadUtil in
+  let open Result.Let_syntax in
+  let%bind cost_expr = EvalGas.builtin_cost f tps args_id in
+  let%bind cost = eval_gas_charge env cost_expr in
+  pure cost
+
+(* Return a builtin_op wrapped in EvalMonad *)
+let builtin_executor env f args_id =
+  let%bind arg_lits =
+    mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
-  GasCharge.eval vsize_resolver ival_resolver g
+  let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
+  let%bind _, ret_typ, op =
+    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f tps
+  in
+  let%bind cost = fromR @@ builtin_cost env f tps args_id in
+  let res () = op arg_lits ret_typ in
+  checkwrap_opR res (Uint64.of_int cost)
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
@@ -191,11 +232,7 @@ let rec exp_eval erep env =
       in
       exp_eval_wrapper e_branch env'
   | Builtin (i, actuals) ->
-      let%bind args =
-        mapM actuals ~f:(fun arg -> fromR @@ Env.lookup env arg)
-      in
-      let%bind tps = fromR @@ MonadUtil.mapM args ~f:literal_type in
-      let%bind res = builtin_executor i tps args in
+      let%bind res = builtin_executor env i actuals in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =

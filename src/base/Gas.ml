@@ -22,9 +22,7 @@ open Result.Let_syntax
 open MonadUtil
 open Literal
 open Syntax
-open TypeUtil
 open Scilla_crypto.Schnorr
-open PrettyPrinters
 open Datatypes.SnarkTypes
 
 let scale_factor = Stdint.Uint64.of_int 8
@@ -45,9 +43,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module GasLiteral = FlattenedLiteral
   module GasType = GasLiteral.LType
-  module GasIdentifier = GasType.TIdentifier
+  module GI = GasType.TIdentifier
   module GasSyntax = ScillaSyntax (SR) (ER) (GasLiteral)
-  open TypeUtilities
   open GasType
   open GasLiteral
   open GasSyntax
@@ -175,140 +172,169 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
   type coster =
-    builtin -> GasLiteral.t list -> int -> (int, scilla_error list) result
+    builtin ->
+    ER.rep GI.t list ->
+    GasType.t list ->
+    (GasCharge.gas_charge, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
-  type builtin_record = builtin * GasType.t list * coster * int
+  type builtin_record = builtin * GasType.t list * coster
 
-  (* a static coster that only looks at base cost. *)
-  let base_coster (_ : builtin) (_ : GasLiteral.t list) base = pure base
-
-  let string_coster op args base =
+  let string_coster op args _arg_types =
     match (op, args) with
-    | Builtin_eq, [ StringLit s1; StringLit s2 ] ->
-        pure @@ (Int.min (String.length s1) (String.length s2) * base)
-    | Builtin_concat, [ StringLit s1; StringLit s2 ] ->
-        pure @@ ((String.length s1 + String.length s2) * base)
-    | ( Builtin_substr,
-        [ StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2) ] ) ->
+    | Builtin_eq, [ s1; s2 ] ->
         pure
-        @@ Int.min (String.length s)
-             (Stdint.Uint32.to_int i1 + Stdint.Uint32.to_int i2)
-           * base
-    | Builtin_strlen, [ StringLit s ] -> pure @@ (String.length s * base)
-    | Builtin_to_string, [ l ] ->
-        let%bind c = literal_cost l in
-        pure @@ (c * base)
+        @@ GasCharge.MinOf
+             (GasCharge.SizeOf (GI.get_id s1), GasCharge.SizeOf (GI.get_id s2))
+    | Builtin_concat, [ s1; s2 ] ->
+        pure
+        @@ GasCharge.SumOf
+             (GasCharge.SizeOf (GI.get_id s1), GasCharge.SizeOf (GI.get_id s2))
+    | Builtin_substr, [ s; i1; i2 ] ->
+        pure
+        @@ GasCharge.MinOf
+             ( GasCharge.SizeOf (GI.get_id s),
+               GasCharge.SumOf
+                 ( GasCharge.ValueOf (GI.get_id i1),
+                   GasCharge.ValueOf (GI.get_id i2) ) )
+    | Builtin_strlen, [ s ] -> pure @@ GasCharge.SizeOf (GI.get_id s)
+    | Builtin_to_string, [ l ] -> pure @@ GasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
-  let crypto_coster op args base =
-    let%bind types = mapM args ~f:literal_type in
-    let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
+  let crypto_coster op args types =
     match (op, types, args) with
-    | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ ByStr a1; _ ] ->
-        pure (Bystr.width a1 * base)
+    | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
+        pure @@ GasCharge.SizeOf (GI.get_id a1)
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
       ->
-        pure @@ (Option.value_exn (bystrx_width a1) * base)
+        let width = Option.value_exn (bystrx_width a1) in
+        pure @@ GasCharge.StaticCost width
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
-        pure (32 * base)
+        pure @@ GasCharge.StaticCost 32
     | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
         (* Block size of sha256hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64 * 15 * base)
+        let s = GasCharge.SizeOf (GI.get_id a) in
+        let n = GasCharge.StaticCost (64 * 15) in
+        pure (GasCharge.DivCeil (s, n))
     | Builtin_keccak256hash, _, [ a ] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 136 * 15 * base)
+        let s = GasCharge.SizeOf (GI.get_id a) in
+        let n = GasCharge.StaticCost (136 * 15) in
+        pure (GasCharge.DivCeil (s, n))
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64 * 10 * base)
-    | Builtin_schnorr_verify, _, [ _; ByStr s; _ ]
-    | Builtin_ecdsa_verify, _, [ _; ByStr s; _ ] ->
-        let x = div_ceil (Bystr.width s + 66) 64 in
-        pure @@ ((250 + (15 * x)) * base)
+        let s = GasCharge.SizeOf (GI.get_id a) in
+        let n = GasCharge.StaticCost (64 * 15) in
+        pure (GasCharge.DivCeil (s, n))
+    | Builtin_schnorr_verify, _, [ _; s; _ ]
+    | Builtin_ecdsa_verify, _, [ _; s; _ ] ->
+        (* x = div_ceil (Bystr.width s + 66) 64 *)
+        let x =
+          GasCharge.DivCeil
+            ( GasCharge.SumOf
+                (GasCharge.SizeOf (GI.get_id s), GasCharge.StaticCost 66),
+              GasCharge.StaticCost 64 )
+        in
+        (* (250 + (15 * x)) *)
+        pure
+          (GasCharge.SumOf
+             ( GasCharge.StaticCost 250,
+               GasCharge.ProdOf (GasCharge.StaticCost 15, x) ))
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
-        pure @@ (Option.value_exn (bystrx_width a) * base)
+        pure (GasCharge.StaticCost (Option.value_exn (bystrx_width a)))
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
+        let base = 4 in
         pure
-        @@ (String.length (pp_literal prefix) + String.length (pp_literal addr))
-           * base
+          (GasCharge.ProdOf
+             ( GasCharge.SumOf
+                 ( GasCharge.SizeOf (GI.get_id prefix),
+                   GasCharge.SizeOf (GI.get_id addr) ),
+               GasCharge.StaticCost base ))
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
         pure
-        @@ Option.(
-             (value_exn (bystrx_width a1) + value_exn (bystrx_width a2)) * base)
-    | Builtin_alt_bn128_G1_add, _, _ -> pure @@ (20 * base)
+          (GasCharge.StaticCost
+             Option.(value_exn (bystrx_width a1) + value_exn (bystrx_width a2)))
+    | Builtin_alt_bn128_G1_add, _, _ -> pure (GasCharge.StaticCost 20)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
-        let%bind s' = scilla_scalar_to_ocaml s in
-        let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string s') 0 in
-        let multiplier = Float.log (Integer256.Uint256.to_float u) in
-        let multiplier_int = Float.to_int multiplier in
-        pure @@ (20 * multiplier_int * base)
+        let multiplier = GasCharge.LogOf (GI.get_id s) in
+        pure @@ GasCharge.ProdOf (GasCharge.StaticCost 20, multiplier)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
-        let%bind opairs = scilla_g1g2pairlist_to_ocaml pairs in
-        let list_len = List.length opairs in
-        pure @@ (list_len * 40 * base)
+        let list_len = GasCharge.LengthOf (GI.get_id pairs) in
+        pure (GasCharge.ProdOf (GasCharge.StaticCost 40, list_len))
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster op args base =
+  let map_coster op args _arg_types =
     match args with
-    | Map (_, m) :: _ -> (
+    | m :: _ -> (
         (* size, get and contains do not make a copy of the Map, hence constant. *)
         match op with
-        | Builtin_size | Builtin_get | Builtin_contains -> pure base
-        | _ -> pure (base + (base * Caml.Hashtbl.length m)) )
+        | Builtin_size | Builtin_get | Builtin_contains ->
+            pure (GasCharge.StaticCost 1)
+        | _ ->
+            pure
+              (GasCharge.SumOf
+                 (GasCharge.StaticCost 1, GasCharge.LengthOf (GI.get_id m))) )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
-  let to_nat_coster _ args base =
+  let to_nat_coster _ args _arg_types =
     match args with
-    | [ UintLit (Uint32L i) ] -> pure @@ (Stdint.Uint32.to_int i * base)
+    | [ a ] -> pure (GasCharge.ValueOf (GI.get_id a))
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_conversion_coster w _ args base =
-    match args with
-    | [ IntLit _ ] | [ UintLit _ ] | [ StringLit _ ] ->
-        if w = 32 || w = 64 then pure base
-        else if w = 128 then pure (base * 2)
-        else if w = 256 then pure (base * 4)
+  let int_conversion_coster w _ _args arg_types =
+    let base = 4 in
+    match arg_types with
+    | [ PrimType (Uint_typ _) ]
+    | [ PrimType (Int_typ _) ]
+    | [ PrimType String_typ ] ->
+        if w = 32 || w = 64 then pure (GasCharge.StaticCost base)
+        else if w = 128 then pure (GasCharge.StaticCost (base * 2))
+        else if w = 256 then pure (GasCharge.StaticCost (base * 4))
         else fail0 @@ "Gas cost error for integer conversion"
     | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
 
-  let int_coster op args base =
+  let int_coster op args arg_types =
+    let base = 4 in
     let%bind base' =
       match op with
-      | Builtin_mul | Builtin_div | Builtin_rem -> pure (base * 5)
+      | Builtin_mul | Builtin_div | Builtin_rem ->
+          pure (GasCharge.StaticCost (5 * base))
       | Builtin_pow -> (
           match args with
-          | [ _; UintLit (Uint32L p) ] ->
-              pure (base * 5 * Stdint.Uint32.to_int p)
+          | [ _; p ] ->
+              pure
+                (GasCharge.ProdOf
+                   ( GasCharge.StaticCost (base * 5),
+                     GasCharge.ValueOf (GI.get_id p) ))
           | _ -> fail0 @@ "Gas cost error for built-in pow" )
-      | Builtin_isqrt ->
-          let%bind ifloat =
-            match args with
-            | [ UintLit (Uint32L i) ] -> pure @@ Stdint.Uint32.to_float i
-            | [ UintLit (Uint64L i) ] -> pure @@ Stdint.Uint64.to_float i
-            | [ UintLit (Uint128L i) ] -> pure @@ Stdint.Uint128.to_float i
-            | [ UintLit (Uint256L i) ] ->
-                pure @@ Float.of_string @@ Integer256.Uint256.to_string i
-            | _ -> fail0 "Invalid argument type to isqrt"
-          in
-          (* The +. 1.0 is just to ensure that we don't input 0 to Float.log. *)
-          pure @@ (base * Int.of_float (Float.log (ifloat +. 1.0)))
-      | _ -> pure base
+      | Builtin_isqrt -> (
+          match args with
+          | [ a ] ->
+              pure
+                (GasCharge.ProdOf
+                   (GasCharge.StaticCost base, GasCharge.LogOf (GI.get_id a)))
+          | _ -> fail0 "Invalid argument type to isqrt" )
+      | _ -> pure (GasCharge.StaticCost base)
     in
     let%bind w =
-      match args with
-      | IntLit i :: _ -> pure @@ int_lit_width i
-      | UintLit i :: _ -> pure @@ uint_lit_width i
+      match arg_types with
+      | a :: _ -> (
+          match int_width a with
+          | Some w -> pure w
+          | None -> fail0 "int_coster: cannot determine integer width" )
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'
-    else if w = 128 then pure (base' * 2)
-    else if w = 256 then pure (base' * 4)
+    else if w = 128 then pure (GasCharge.ProdOf (base', GasCharge.StaticCost 2))
+    else if w = 256 then pure (GasCharge.ProdOf (base', GasCharge.StaticCost 4))
     else fail0 @@ "Gas cost error for integer built-in"
+
+  let bnum_coster _op _args _arg_types = pure (GasCharge.StaticCost 32)
 
   let tvar s = TypeVar s
 
@@ -316,63 +342,65 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   (* built-in op costs are propotional to size of data they operate on. *)
   let builtin_records : builtin_record list = [
-    (* Strings *)
-    (Builtin_eq, [string_typ;string_typ], string_coster, 1);
-    (Builtin_concat, [string_typ;string_typ], string_coster, 1);
-    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
-    (Builtin_strlen, [string_typ], string_coster, 1);
-    (Builtin_to_string, [tvar "'A"], string_coster, 1);
+     (* Strings *)
+    (Builtin_eq, [string_typ;string_typ], string_coster);
+    (Builtin_concat, [string_typ;string_typ], string_coster);
+    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster);
+    (Builtin_strlen, [string_typ], string_coster);
+    (Builtin_to_string, [tvar "'A"], string_coster);
   
     (* Block numbers *)
-    (Builtin_eq, [bnum_typ;bnum_typ], base_coster, 32);
-    (Builtin_blt, [bnum_typ;bnum_typ], base_coster, 32);
-    (Builtin_badd, [bnum_typ;tvar "'A"], base_coster, 32);
-    (Builtin_bsub, [bnum_typ;bnum_typ], base_coster, 32);
+    (Builtin_eq, [bnum_typ;bnum_typ], bnum_coster);
+    (Builtin_blt, [bnum_typ;bnum_typ], bnum_coster);
+    (Builtin_badd, [bnum_typ;tvar "'A"], bnum_coster);
+    (Builtin_bsub, [bnum_typ;bnum_typ], bnum_coster);
   
     (* Crypto *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    (Builtin_to_bystr, [tvar "'A"], crypto_coster, 1);
-    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster, 4);
-    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster, 4);
-    (Builtin_to_uint256, [tvar "'A"], crypto_coster, 1);
-    (Builtin_sha256hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_keccak256hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
-    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
-    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
-    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
-    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
-    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster, 1);
+    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster);
+    (Builtin_to_bystr, [tvar "'A"], crypto_coster);
+    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster);
+    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster);
+    (Builtin_to_uint256, [tvar "'A"], crypto_coster);
+    (Builtin_sha256hash, [tvar "'A"], crypto_coster);
+    (Builtin_keccak256hash, [tvar "'A"], crypto_coster);
+    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster);
+    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster);
+    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster);
+    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster);
+    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster);
+    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster);
+    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster);
+    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster);
   
     (* Maps *)
-    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_to_list, [tvar "'A"], map_coster, 1);
-    (Builtin_size, [tvar "'A"], map_coster, 1);
+    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster);
+    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster);
+    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster);
+    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster);
+    (Builtin_to_list, [tvar "'A"], map_coster);
+    (Builtin_size, [tvar "'A"], map_coster);
   
     (* Integers *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster, 4);
-    (Builtin_isqrt, [tvar "'A"], int_coster, 4);
-    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32, 4);
-    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64, 4);
-    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128, 4);
-    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32, 4);
-    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
-    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
-    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_nat, [uint32_typ], to_nat_coster, 1);
+    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster);
+    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster);
+    (Builtin_isqrt, [tvar "'A"], int_coster);
+  
+    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32);
+    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64);
+    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128);
+    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256);
+    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32);
+    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64);
+    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128);
+    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256);
+  
+    (Builtin_to_nat, [uint32_typ], to_nat_coster);
   ]
 
   [@@@ocamlformat "enable"]
@@ -382,16 +410,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let ht : (builtin, builtin_record list) Hashtbl.t = Hashtbl.create 64 in
     List.iter
       (fun row ->
-        let opname, _, _, _ = row in
+        let opname, _, _ = row in
         match Hashtbl.find_opt ht opname with
         | Some p -> Hashtbl.add ht opname (row :: p)
         | None -> Hashtbl.add ht opname [ row ])
       builtin_records;
     ht
 
-  let builtin_cost (op, _) arg_literals =
-    let%bind arg_types = mapM arg_literals ~f:literal_type in
-    let matcher (name, types, fcoster, base) =
+  let builtin_cost (op, _) arg_types arg_ids =
+    let matcher (name, types, fcoster) =
       (* The names and type list lengths must match and *)
       if
         [%equal: Syntax.builtin] name op
@@ -404,7 +431,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)
              arg_types types
-      then fcoster op arg_literals base (* this can fail too *)
+      then fcoster op arg_ids arg_types (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in
     let msg =
