@@ -54,6 +54,7 @@ type args = {
   output_init : string;
   output_state : string;
   input : string;
+  ipc_address: string;
 }
 
 let f_input_init = ref ""
@@ -66,12 +67,15 @@ let f_output_state = ref ""
 
 let f_input = ref ""
 
+let i_ipc_address = ref ""
+
 let reset () =
   f_input_init := "";
   f_input_state := "";
   f_output_init := "";
   f_output_state := "";
-  f_input := ""
+  f_input := "";
+  i_ipc_address := ""
 
 let validate_main usage =
   let open Core_kernel in
@@ -95,14 +99,15 @@ let validate_main usage =
   in
   let msg =
     (* output_init file is mandatory *)
-    if String.is_empty !f_input then
+    if String.is_empty !f_output_init then
       msg ^ "Output initialization file must be specified\n"
     else msg
   in
   let msg =
-    (* output_init file is mandatory *)
-    if String.is_empty !f_input then
-      msg ^ "Output initialization file must be specified\n"
+    (* Either output_state file or -ipc must be specified, but not both *)
+    if (String.is_empty !f_output_state && String.is_empty !i_ipc_address)
+    || (not (String.is_empty !f_output_state) && not (String.is_empty !i_ipc_address)) then
+      msg ^ "Either the output state file or -ipc must be specified\n"
     else msg
   in
   if not @@ String.is_empty msg then
@@ -121,12 +126,13 @@ let parse ~exe_name =
       ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
       ("-oinit", Arg.String (fun x -> f_output_init := x), "Path to output init json");
       ("-ostate", Arg.String (fun x -> f_output_state := x), "Path to output state json");
+      ("-ipcaddress", Arg.String (fun x -> i_ipc_address := x), "IPC socket address");
     ]
   in
 
   let mandatory_usage =
     "Usage:\n" ^ exe_name ^ " -iinit input_init.json -istate input_state.json"
-    ^ " -oinit output_init.json -ostate output_state.json] -i input.scilla"
+    ^ " -oinit output_init.json [-ostate output_state.json] [-ipcaddress ipcaddress] -i input.scilla"
     ^ "\n"
   in
   let ignore_anon _ = () in
@@ -139,6 +145,7 @@ let parse ~exe_name =
     output_init = !f_output_init;
     output_state = !f_output_state;
     input = !f_input;
+    ipc_address = !i_ipc_address
   }
 
 
@@ -150,6 +157,15 @@ let disambiguate_name name this_address =
   match name with
   | SimpleLocal nm -> Identifier.GlobalName.parse_qualified_name this_address nm
   | QualifiedLocal _ -> 
+      let msg = sprintf "Unexpected qualified local name %s\n" (as_error_string name) in
+      plog msg;
+      fatal_error (mk_error0 msg)
+
+let convert_simple_name_to_simple_name name =
+  let open Identifier.LocalName in
+  match name with
+  | SimpleLocal nm -> Identifier.GlobalName.parse_simple_name nm
+  | QualifiedLocal _ ->
       let msg = sprintf "Unexpected qualified local name %s\n" (as_error_string name) in
       plog msg;
       fatal_error (mk_error0 msg)
@@ -401,8 +417,11 @@ let extract_this_address_from_init_json_data jlist =
   | Some jv ->
       let v = member_exn "value" jv |> to_string_exn in
       let lit = OutputLiteral.ByStrX (OutputLiteral.Bystrx.parse_hex v) in
-      Option.value (get_address_literal lit)
-        ~default:(raise (mk_invalid_json (sprintf "Unable to extract %s value as string" this_name)))
+      (match get_address_literal lit with
+       | None ->
+           raise (mk_invalid_json (sprintf "Unable to extract %s value as string" this_name))
+       | Some v -> v
+      )
   | None ->
       raise (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
 
@@ -467,6 +486,89 @@ let init_lib_entries libs this_address =
           ()
       | LibVar _ -> ())
 
+
+(* StateService.ml *)
+
+module InputStateService = struct
+
+  (* StateIPCClient.ml *)
+
+  module InputStateIPCClient = struct
+    open StateIPCIdl
+    module M = Idl.IdM
+    module IDL = Idl.Make (M)
+
+    module IPCClient = IPCIdl (IDL.GenClient ())
+
+    (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
+     * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
+    let fetch ~socket_addr ~fname ~keys ~tp =
+      let open Ipcmessage_types in
+      let q =
+        {
+          name = IPCCIdentifier.as_string fname;
+          mapdepth = TypeUtilities.map_depth tp;
+          indices = List.map keys ~f:serialize_literal;
+          ignoreval = false;
+        }
+      in
+      let%bind q' = encode_serialized_query q in
+      let%bind res =
+        let thunk () =
+          translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
+        in
+        ipcclient_exn_wrapper thunk
+      in
+      match res with
+      | true, res' ->
+          let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
+          let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+          let%bind res'' = deserialize_value decoded_pb tp' in
+          pure @@ Some res''
+      | false, _ -> pure None
+  end
+
+  open Result.Let_syntax
+  open MonadUtil
+
+  type ss_field = {
+    fname : InputName.t;
+    ftyp : InputType.t;
+    fval : InputLiteral.t option; (* We may or may not have the value in memory. *)
+  }
+
+  let fetch ~fname ~tp ~keys =
+    let%bind res = InputStateIPCClient.fetch ~socket_addr:args.ipc_address ~fname ~keys ~tp in
+    if not @@ List.is_empty keys then
+      pure @@ (res, G_MapGet (List.length keys, res))
+    else
+      match res with
+      | None ->
+          fail1
+            (sprintf "StateService: Field %s not found on IPC server."
+               (as_error_string fname))
+            (ER.get_loc (get_rep fname))
+      | Some res' -> pure @@ (res, G_Load res')
+
+  let get_full_state fl =
+    match 
+      mapM fl ~f:(fun f ->
+          let%bind vopt, _ = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~fp:f.ftyp ~keys:[] in
+          match vopt with
+          | Some v -> pure (f.fname, v)
+          | None ->
+              fail0
+                (sprintf
+                   "StateService: Field %s's value not found on server"
+                   (InputName.as_error_string f.fname)))
+    with
+    | Ok sl -> sl
+    | Error err ->
+        plog "Error during fetching of contract state.";
+        fatal_error err
+end
+
+
 (* Runner.ml *)
 
 let run_with_args args =
@@ -481,7 +583,8 @@ let run_with_args args =
            "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
            args.input);
       let init, state = 
-        try 
+        try
+          (* Read _this_address from init file. This is needed for all disambiguation *)
           let this_address = get_this_address_from_init_file args.input_init in
           (* Contract library. *)
           let clib_entries = Option.value_map cmod.libs ~default:[] ~f:(fun { lentries ; _ } -> lentries) in
@@ -490,6 +593,15 @@ let run_with_args args =
           
           (* parse_json reads, parses and disambiguates the json file *)
           let init = parse_json args.input_init this_address in
+
+          (* Fetch unambiguated state from IPC server *)
+          let fields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
+              let open InputStateService in
+              Some { fname = (InputIdentifier.get_id fname) ; ftyp = ftyp; fval = None })
+          in
+          let sm = IPC args.ipc_address in
+
+          
           let state = parse_json args.input_state this_address in
           (init, state)
         with Invalid_json s ->
@@ -510,7 +622,7 @@ let run ~exe_name =
 
 (* scilla_runner.ml *)
   
-let output_to_string = Yojson.Basic.to_string
+let output_to_string = Yojson.Basic.pretty_to_string
 
 let () =
   try
