@@ -919,7 +919,8 @@ struct
 
   (* Return gas use and result sizeref polynomials of evaluating an expression. *)
   let rec gua_expr genv (erep : expr_annot) =
-    let c = 1 in (* A static cost *)
+    let c = 1 in
+    (* A static cost *)
     let cc = const_pn c in
     let e, rep = erep in
     match e with

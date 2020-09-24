@@ -352,9 +352,10 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         SR.get_loc (get_rep lname) )
     @@ let%bind recursion_entries, adts, _, _ =
          foldM lentries ~init:([], [], [], [])
-           ~f:(fun (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
-                   entry
-                   ->
+           ~f:(fun
+                (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
+                entry
+              ->
              let%bind new_entry, adt_opt =
                recursion_lib_entry
                  (is_adt_in_scope adts_in_scope)

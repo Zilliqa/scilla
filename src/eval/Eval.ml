@@ -430,7 +430,9 @@ let rec stmt_eval conf stmts =
           fail (err @ elist)
       | GasStmt g ->
           let%bind cost = fromR @@ eval_gas_charge conf.env g in
-          let err = mk_error1 "Ran out of gas after evaluating statement" sloc in
+          let err =
+            mk_error1 "Ran out of gas after evaluating statement" sloc
+          in
           let remaining_stmts () = stmt_eval conf sts in
           checkwrap_op remaining_stmts (Uint64.of_int cost) err )
 

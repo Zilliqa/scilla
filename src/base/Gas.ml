@@ -177,9 +177,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               let g = GasStmt (GasCharge.SizeOf (GI.get_id v)) in
               [ (g, srep); (s, srep) ]
           | Bind (x, e) ->
-            let g = GasStmt (GasCharge.StaticCost 1) in
-            let s' = Bind (x, expr_static_cost e) in
-            [ (g, srep); (s', srep) ]
+              let g = GasStmt (GasCharge.StaticCost 1) in
+              let s' = Bind (x, expr_static_cost e) in
+              [ (g, srep); (s', srep) ]
           | ReadFromBC _ | CallProc _ ->
               let g = GasStmt (GasCharge.StaticCost 1) in
               [ (g, srep); (s, srep) ]
@@ -194,11 +194,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           | MapGet (x, _, klist, _) ->
               let n = GasCharge.StaticCost (List.length klist) in
               let g =
-                  GasCharge.SumOf
-                    ( GasCharge.SumOf
-                        ( GasCharge.SizeOf (GI.get_id x),
-                          GasCharge.MapSortCost (GI.get_id x) ),
-                      n )
+                GasCharge.SumOf
+                  ( GasCharge.SumOf
+                      ( GasCharge.SizeOf (GI.get_id x),
+                        GasCharge.MapSortCost (GI.get_id x) ),
+                    n )
               in
               [ (s, srep); (GasStmt g, srep) ]
           | MatchStmt (x, clauses) ->

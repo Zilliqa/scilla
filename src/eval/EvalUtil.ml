@@ -204,10 +204,8 @@ module Configuration = struct
           match vopt with
           | Some v ->
               let%bind v_lit = fromR @@ some_lit v in
-              pure (v_lit)
-          | None ->
-              pure (none_lit vt)
-      )
+              pure v_lit
+          | None -> pure (none_lit vt) )
       | None ->
           fail1
             (sprintf "Unable to fetch from map field %s" (get_id m))
@@ -320,7 +318,7 @@ module Configuration = struct
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
-    pure ({ conf with emitted })
+    pure { conf with emitted }
 
   let validate_event m' =
     let open EvalLiteral in
@@ -357,7 +355,7 @@ module Configuration = struct
     let%bind event' = validate_event event in
     let old_events = conf.events in
     let events = event' :: old_events in
-    pure ({ conf with events })
+    pure { conf with events }
 end
 
 (*****************************************************)
