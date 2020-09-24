@@ -104,70 +104,157 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Clo _ -> pure @@ 1
     | TAbs _ -> pure @@ 1
 
-  let expr_static_cost erep =
-    let e, _ = erep in
-    match e with
-    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _ | TFun _
-    | TApp _ ->
-        pure 1
-    | MatchExpr (_, clauses) -> pure @@ List.length clauses
-    | Fixpoint _ ->
-        pure 1 (* more cost accounted during recursive evaluation. *)
-    | Builtin _ | GasExpr _ -> pure 0
+  let rec map_sort_cost l =
+    match l with
+    | Map (_, kvlist) ->
+        let sub_cost =
+          Caml.Hashtbl.fold
+            (fun _ vlit acc -> acc + map_sort_cost vlit)
+            kvlist 0
+        in
+        let this_cost =
+          let len = Caml.Hashtbl.length kvlist in
+          if len > 0 then
+            let log_len = Int.of_float (Float.log (Int.to_float len)) in
+            len * log_len
+          else 0
+        in
+        sub_cost + this_cost
+    | _ -> 0
+
+  let rec expr_static_cost e =
+    let ee, erep = e in
+    let e' =
+      match ee with
+      | Literal _ | Var _ | Message _ | App _ | Constr _ | TApp _ ->
+          GasExpr (GasCharge.StaticCost 1, e)
+      | Fixpoint (f, t, e') ->
+          GasExpr
+            ( GasCharge.StaticCost 1,
+              (Fixpoint (f, t, expr_static_cost e'), erep) )
+      | Fun (f, t, e') ->
+          GasExpr
+            (GasCharge.StaticCost 1, (Fun (f, t, expr_static_cost e'), erep))
+      | TFun (f, e') ->
+          GasExpr (GasCharge.StaticCost 1, (TFun (f, expr_static_cost e'), erep))
+      | Let (i, t, lhs, rhs) ->
+          GasExpr
+            ( GasCharge.StaticCost 1,
+              (Let (i, t, expr_static_cost lhs, expr_static_cost rhs), erep) )
+      | MatchExpr (o, clauses) ->
+          GasExpr
+            ( GasCharge.StaticCost (List.length clauses),
+              ( MatchExpr
+                  ( o,
+                    List.map clauses ~f:(fun (p, e') ->
+                        (p, expr_static_cost e')) ),
+                erep ) )
+      | Builtin _
+      (* We don't add costs for Builtin because we can't know it statically
+       * without type info (Eval doesn't run the type checker). To know this
+       * statically, call builtin_cost below, providing argument types. *)
+      | GasExpr _ ->
+          ee
+    in
+    (e', erep)
 
   (* this is a dynamic cost. *)
+  let rec stmts_cost = function
+    | [] -> []
+    | (s, srep) :: rem_stmts ->
+        let s' =
+          match s with
+          | Load (x, _) ->
+              let g =
+                GasStmt
+                  (GasCharge.SumOf
+                     ( GasCharge.SizeOf (GI.get_id x),
+                       GasCharge.MapSortCost (GI.get_id x) ))
+              in
+              (* We charge *after* the load because we can't know the size before. *)
+              [ (s, srep); (g, srep) ]
+          | Store (_, v) | SendMsgs v | CreateEvnt v ->
+              let g = GasStmt (GasCharge.SizeOf (GI.get_id v)) in
+              [ (g, srep); (s, srep) ]
+          | Bind (x, e) ->
+            let g = GasStmt (GasCharge.StaticCost 1) in
+            let s' = Bind (x, expr_static_cost e) in
+            [ (g, srep); (s', srep) ]
+          | ReadFromBC _ | CallProc _ ->
+              let g = GasStmt (GasCharge.StaticCost 1) in
+              [ (g, srep); (s, srep) ]
+          | MapUpdate (_, klist, ropt) ->
+              let n = GasCharge.StaticCost (List.length klist) in
+              let g =
+                match ropt with
+                | Some r -> GasCharge.SumOf (GasCharge.SizeOf (GI.get_id r), n)
+                | None -> n
+              in
+              [ (GasStmt g, srep); (s, srep) ]
+          | MapGet (x, _, klist, _) ->
+              let n = GasCharge.StaticCost (List.length klist) in
+              let g =
+                  GasCharge.SumOf
+                    ( GasCharge.SumOf
+                        ( GasCharge.SizeOf (GI.get_id x),
+                          GasCharge.MapSortCost (GI.get_id x) ),
+                      n )
+              in
+              [ (s, srep); (GasStmt g, srep) ]
+          | MatchStmt (x, clauses) ->
+              let g = GasCharge.StaticCost (List.length clauses) in
+              let clauses' =
+                List.map clauses ~f:(fun (p, stmts) ->
+                    let stmts' = stmts_cost stmts in
+                    (p, stmts'))
+              in
+              let s' = MatchStmt (x, clauses') in
+              [ (GasStmt g, srep); (s', srep) ]
+          | AcceptPayment ->
+              let g = GasStmt (GasCharge.StaticCost 1) in
+              [ (g, srep); (s, srep) ]
+          | Iterate (l, _) ->
+              let g = GasStmt (GasCharge.LengthOf (GI.get_id l)) in
+              [ (g, srep); (s, srep) ]
+          | Throw _ (* TODO: Throw should charge same as event and send. *)
+          | GasStmt _ ->
+              [ (s, srep) ]
+        in
+        s' @ stmts_cost rem_stmts
 
-  let stmt_cost scon =
-    let rec map_sort_cost l =
-      match l with
-      | Map (_, kvlist) ->
-          let sub_cost =
-            Caml.Hashtbl.fold
-              (fun _ vlit acc -> acc + map_sort_cost vlit)
-              kvlist 0
-          in
-          let this_cost =
-            let len = Caml.Hashtbl.length kvlist in
-            if len > 0 then
-              let log_len = Int.of_float (Float.log (Int.to_float len)) in
-              len * log_len
-            else 0
-          in
-          sub_cost + this_cost
-      | _ -> 0
+  let lib_entry_cost = function
+    | LibVar (v, topt, e) -> LibVar (v, topt, expr_static_cost e)
+    | LibTyp _ as le -> le
+
+  let lib_cost lib =
+    { lib with lentries = List.map lib.lentries ~f:lib_entry_cost }
+
+  let rec libtree_cost ltree =
+    let deps' = List.map ltree.deps ~f:libtree_cost in
+    let libn' = lib_cost ltree.libn in
+    { libn = libn'; deps = deps' }
+
+  let lmod_cost lmod = { lmod with libs = lib_cost lmod.libs }
+
+  let cmod_cost (cmod : cmodule) =
+    let contr_cost contr =
+      let comp_cost comp =
+        { comp with comp_body = stmts_cost comp.comp_body }
+      in
+      {
+        contr with
+        cconstraint = expr_static_cost contr.cconstraint;
+        cfields =
+          List.map contr.cfields ~f:(fun (i, t, e) ->
+              (i, t, expr_static_cost e));
+        ccomps = List.map contr.ccomps ~f:comp_cost;
+      }
     in
-    match scon with
-    | G_Load l ->
-        let%bind l_cost = literal_cost l in
-        let sort_cost = map_sort_cost l in
-        pure (l_cost + sort_cost)
-    | G_Store l -> literal_cost l
-    | G_MapUpdate (n, lopt) ->
-        let%bind l_cost =
-          match lopt with Some l -> literal_cost l | None -> pure 0
-        in
-        pure @@ (n + l_cost)
-    | G_MapGet (n, lopt) ->
-        let%bind l_cost, sort_cost =
-          match lopt with
-          | Some l ->
-              let%bind l_cost = literal_cost l in
-              pure (l_cost, map_sort_cost l)
-          | None -> pure (0, 0)
-        in
-        pure (n + l_cost + sort_cost)
-    | G_Bind -> pure 1
-    | G_MatchStmt num_clauses -> pure num_clauses
-    | G_ReadFromBC -> pure 1
-    | G_AcceptPayment -> pure 1
-    | G_SendMsgs mlist ->
-        foldM
-          ~f:(fun acc m ->
-            let%bind c = literal_cost m in
-            pure (acc + c))
-          ~init:0 mlist
-    | G_CreateEvnt e -> literal_cost e
-    | G_CallProc -> pure 1
+    {
+      cmod with
+      libs = Option.map cmod.libs ~f:lib_cost;
+      contr = contr_cost cmod.contr;
+    }
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)

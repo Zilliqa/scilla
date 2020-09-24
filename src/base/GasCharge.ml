@@ -28,6 +28,9 @@ type gas_charge =
   | ValueOf of string
   (* The length of the Scilla list / map to which the varible resolves to. *)
   | LengthOf of string
+  (* The cost incurred in sorting a map read from the database.
+   * leveldb, our backend database doesn't guarantee order. *)
+  | MapSortCost of string
   (* Sum of two gas charges. *)
   | SumOf of gas_charge * gas_charge
   (* Product of two gas charges. *)
@@ -46,6 +49,7 @@ let replace_variable_name g ~f =
     | SizeOf v -> SizeOf (f v)
     | ValueOf v -> ValueOf (f v)
     | LengthOf v -> LengthOf (f v)
+    | MapSortCost m -> MapSortCost (f m)
     | SumOf (g1, g2) -> SumOf (recurser g1, recurser g2)
     | ProdOf (g1, g2) -> ProdOf (recurser g1, recurser g2)
     | MinOf (g1, g2) -> MinOf (recurser g1, recurser g2)
@@ -59,12 +63,12 @@ let replace_variable_name g ~f =
  *   ValueOf v : The value of the integer literal
  *   Other special purpose charges (ListLength, LogOfSnarkScalar) to an integer
  * compute the total gas charge (an integer) for g.
-*)
+ *)
 let eval resolver g =
   let rec recurser g =
     match g with
     | StaticCost i -> pure i
-    | SizeOf _ | ValueOf _ | LengthOf _ | LogOf _ -> resolver g
+    | SizeOf _ | ValueOf _ | LengthOf _ | LogOf _ | MapSortCost _ -> resolver g
     | SumOf (g1, g2) ->
         let%bind i1 = recurser g1 in
         let%bind i2 = recurser g2 in
@@ -78,9 +82,9 @@ let eval resolver g =
         let%bind i2 = recurser g2 in
         pure (Int.min i1 i2)
     | DivCeil (g1, g2) ->
-      let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
-      let%bind g1_i = recurser g1 in
-      let%bind g2_i = recurser g2 in
-      pure (div_ceil g1_i g2_i)
+        let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
+        let%bind g1_i = recurser g1 in
+        let%bind g2_i = recurser g2 in
+        pure (div_ceil g1_i g2_i)
   in
   recurser g

@@ -316,28 +316,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
 
   let pp_stmt s = spp_stmt s
 
-  (**************************************************)
-  (*          Statement evaluation info             *)
-  (**************************************************)
-  type stmt_eval_context =
-    (* literal being loaded *)
-    | G_Load of SLiteral.t
-    (* literal being stored *)
-    | G_Store of SLiteral.t
-    (* none *)
-    | G_Bind
-    (* nesting depth, new value *)
-    | G_MapUpdate of int * SLiteral.t option
-    (* nesting depth, literal retrieved *)
-    | G_MapGet of int * SLiteral.t option
-    (* number of clauses *)
-    | G_MatchStmt of int
-    | G_ReadFromBC
-    | G_AcceptPayment
-    | G_SendMsgs of SLiteral.t list
-    | G_CreateEvnt of SLiteral.t
-    | G_CallProc
-
   (*******************************************************)
   (*                    Contracts                        *)
   (*******************************************************)

@@ -113,6 +113,9 @@ let eval_gas_charge env g =
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
             pure @@ List.length l'
         | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists" )
+    | GasCharge.MapSortCost vstr ->
+        let%bind m = Env.lookup env (mk_loc_id vstr) in
+        pure @@ EvalGas.map_sort_cost m
     | _ -> fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
   GasCharge.eval resolver g
@@ -156,9 +159,9 @@ let rec exp_eval erep env =
       let%bind v = fromR @@ Env.lookup env i in
       pure @@ (v, env)
   | Let (i, _, lhs, rhs) ->
-      let%bind lval, _ = exp_eval_wrapper lhs env in
+      let%bind lval, _ = exp_eval lhs env in
       let env' = Env.bind env (get_id i) lval in
-      exp_eval_wrapper rhs env'
+      exp_eval rhs env'
   | Message bs ->
       (* Resolve all message payload *)
       let resolve pld =
@@ -178,7 +181,7 @@ let rec exp_eval erep env =
       (* Apply to an argument *)
       let runner arg =
         let env1 = Env.bind env (get_id formal) arg in
-        fstM @@ exp_eval_wrapper body env1
+        fstM @@ exp_eval body env1
       in
       pure (Clo runner, env)
   | App (f, actuals) ->
@@ -230,14 +233,14 @@ let rec exp_eval erep env =
         List.fold_left bnds ~init:env ~f:(fun z (i, w) ->
             Env.bind z (get_id i) w)
       in
-      exp_eval_wrapper e_branch env'
+      exp_eval e_branch env'
   | Builtin (i, actuals) ->
       let%bind res = builtin_executor env i actuals in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =
         let env1 = Env.bind env (get_id g) clo_fix in
-        let%bind fbody, _ = exp_eval_wrapper body env1 in
+        let%bind fbody, _ = exp_eval body env1 in
         match fbody with
         | Clo f -> f arg
         | _ -> fail0 "Cannot apply fxpoint argument to a value"
@@ -246,7 +249,7 @@ let rec exp_eval erep env =
   | TFun (tv, body) ->
       let typer arg_type =
         let body_subst = subst_type_in_expr tv arg_type body in
-        fstM @@ exp_eval_wrapper body_subst env
+        fstM @@ exp_eval body_subst env
       in
       pure (TAbs typer, env)
   | TApp (tf, arg_types) ->
@@ -257,7 +260,12 @@ let rec exp_eval erep env =
             try_apply_as_type_closure v arg_type)
       in
       pure (fully_applied, env)
-  | GasExpr _ -> fail0 "Not yet implemented"
+  | GasExpr (g, e') ->
+      let thunk () = exp_eval e' env in
+      let%bind cost = fromR @@ eval_gas_charge env g in
+      let emsg = sprintf "Ran out of gas.\n" in
+      (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
+      checkwrap_op thunk (Uint64.of_int cost) (mk_error1 emsg loc)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
@@ -269,15 +277,6 @@ and try_apply_as_type_closure v arg_type =
   match v with
   | TAbs tclo -> tclo arg_type
   | _ -> fail0 @@ sprintf "Not a type closure: %s." (Env.pp_value v)
-
-(* Adding gas cost to the reduction *)
-and exp_eval_wrapper expr env =
-  let _, eloc = expr in
-  let thunk () = exp_eval expr env in
-  let%bind cost = fromR @@ EvalGas.expr_static_cost expr in
-  let emsg = sprintf "Ran out of gas.\n" in
-  (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
-  checkwrap_op thunk (Uint64.of_int cost) (mk_error1 emsg eloc)
 
 (* [Initial Gas-Passing Continuation]
 
@@ -301,7 +300,7 @@ let init_gas_kont r gas' =
 
 *)
 let exp_eval_wrapper_no_cps expr env k gas =
-  let eval_res = exp_eval_wrapper expr env init_gas_kont gas in
+  let eval_res = exp_eval expr env init_gas_kont gas in
   let res, remaining_gas =
     match eval_res with Ok (z, g) -> (Ok z, g) | Error (m, g) -> (Error m, g)
   in
@@ -318,19 +317,16 @@ let rec stmt_eval conf stmts =
   | (s, sloc) :: sts -> (
       match s with
       | Load (x, r) ->
-          let%bind l, scon = Configuration.load conf r in
+          let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | Store (x, r) ->
           let%bind v = fromR @@ Configuration.lookup conf r in
-          let%bind scon = Configuration.store x v in
-          let%bind () = stmt_gas_wrap scon sloc in
+          let%bind () = Configuration.store x v in
           stmt_eval conf sts
       | Bind (x, e) ->
           let%bind lval, _ = exp_eval_wrapper_no_cps e conf.env in
           let conf' = Configuration.bind conf (get_id x) lval in
-          let%bind () = stmt_gas_wrap G_Bind sloc in
           stmt_eval conf' sts
       | MapUpdate (m, klist, ropt) ->
           let%bind klist' =
@@ -343,21 +339,18 @@ let rec stmt_eval conf stmts =
                 pure (Some v)
             | None -> pure None
           in
-          let%bind scon = Configuration.map_update m klist' v in
-          let%bind () = stmt_gas_wrap scon sloc in
+          let%bind () = Configuration.map_update m klist' v in
           stmt_eval conf sts
       | MapGet (x, m, klist, fetchval) ->
           let%bind klist' =
             mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
           in
-          let%bind l, scon = Configuration.map_get conf m klist' fetchval in
+          let%bind l = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind () = stmt_gas_wrap scon sloc in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
-          let%bind () = stmt_gas_wrap G_ReadFromBC sloc in
           stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
           let%bind v = fromR @@ Env.lookup conf.env x in
@@ -377,28 +370,20 @@ let rec stmt_eval conf stmts =
           let%bind conf'' = stmt_eval conf' branch_stmts in
           (* Restore initial immutable bindings *)
           let cont_conf = { conf'' with env = conf.env } in
-          let%bind () =
-            stmt_gas_wrap (G_MatchStmt (List.length clauses)) sloc
-          in
           stmt_eval cont_conf sts
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
-          let%bind () = stmt_gas_wrap G_AcceptPayment sloc in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)
       | SendMsgs ms ->
           let%bind ms_resolved = fromR @@ Configuration.lookup conf ms in
-          let%bind conf', scon = Configuration.send_messages conf ms_resolved in
-          let%bind () = stmt_gas_wrap scon sloc in
+          let%bind conf' = Configuration.send_messages conf ms_resolved in
           stmt_eval conf' sts
       | CreateEvnt params ->
           let%bind eparams_resolved =
             fromR @@ Configuration.lookup conf params
           in
-          let%bind conf', scon =
-            Configuration.create_event conf eparams_resolved
-          in
-          let%bind () = stmt_gas_wrap scon sloc in
+          let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
       | CallProc (p, actuals) ->
           (* Resolve the actuals *)
@@ -410,7 +395,6 @@ let rec stmt_eval conf stmts =
           in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
-          let%bind () = stmt_gas_wrap G_CallProc sloc in
           stmt_eval conf' sts
       | Iterate (l, p) ->
           let%bind l_actual = fromR @@ Env.lookup conf.env l in
@@ -423,7 +407,6 @@ let rec stmt_eval conf stmts =
                 let%bind conf' =
                   try_apply_as_procedure confacc proc p_rest [ arg ]
                 in
-                let%bind () = stmt_gas_wrap G_CallProc sloc in
                 pure conf')
           in
           stmt_eval conf' sts
@@ -445,7 +428,11 @@ let rec stmt_eval conf stmts =
                 })
           in
           fail (err @ elist)
-      | GasStmt _ -> fail0 "Not yet implemented" )
+      | GasStmt g ->
+          let%bind cost = fromR @@ eval_gas_charge conf.env g in
+          let err = mk_error1 "Ran out of gas after evaluating statement" sloc in
+          let remaining_stmts () = stmt_eval conf sts in
+          checkwrap_op remaining_stmts (Uint64.of_int cost) err )
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
@@ -548,7 +535,11 @@ let init_lib_entries env libs =
 let init_libraries clibs elibs =
   DebugMessage.plog "Loading library types and functions.";
   let%bind rec_env =
-    init_lib_entries (pure Env.empty) RecursionPrinciples.recursion_principles
+    let rlibs =
+      List.map ~f:EvalGas.lib_entry_cost
+        RecursionPrinciples.recursion_principles
+    in
+    init_lib_entries (pure Env.empty) rlibs
   in
   let rec recurser libnl =
     if List.is_empty libnl then pure rec_env
