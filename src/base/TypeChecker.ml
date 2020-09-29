@@ -974,9 +974,25 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         ~init:(([], [], []), remaining_gas)
         ~f:(fun ((acc, errs, blist), remaining_gas) lib_entry ->
           match lib_entry with
-          | LibTyp (_tname, ctr_defs) -> (
+          | LibTyp (tname, ctr_defs) -> (
               match type_lib_typ_ctrs env0 ctr_defs with
-              | Ok () -> Ok ((acc, errs, blist), remaining_gas)
+              | Ok () ->
+                  (* Ascribing dummy [Unit] type to the new ADT type constructor...
+                     This is needed because any identifier must have type ascription
+                     after this pass, even if it does not make sense. *)
+                  let dummy_type_annot = PlainTypes.mk_qualified_type Unit in
+                  let tname = add_type_to_ident tname dummy_type_annot
+                  (* Ascribing dummy [Unit] type to the new ADT constructors ... *)
+                  and ctr_defs =
+                    List.map ctr_defs ~f:(fun { cname; c_arg_types } ->
+                        TypedSyntax.
+                          {
+                            cname = add_type_to_ident cname dummy_type_annot;
+                            c_arg_types;
+                          })
+                  in
+                  let libtyp = TypedSyntax.LibTyp (tname, ctr_defs) in
+                  Ok ((libtyp :: acc, errs, blist), remaining_gas)
               | Error e -> Ok ((acc, errs @ e, blist), remaining_gas) )
           | LibVar (ln, ltopt, le) -> (
               let dep_on_blist = free_vars_dep_check le blist in
