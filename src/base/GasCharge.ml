@@ -61,8 +61,8 @@ let replace_variable_name g ~f =
 (* Assuming that resolver resolves
  *   SizeOf v : To the literal_size of v
  *   ValueOf v : The value of the integer literal
- *   Other special purpose charges (ListLength, LogOfSnarkScalar) to an integer
- * compute the total gas charge (an integer) for g.
+ *   Other special purpose charges (ListLength, LogOf, etc)
+ * to an integer compute the total gas charge (an integer) for g.
  *)
 let eval resolver g =
   let rec recurser g =
