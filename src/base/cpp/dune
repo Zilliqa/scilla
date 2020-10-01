@@ -19,11 +19,13 @@
   (flags
    -std=c++11
    -fPIC
-   (:include c_flags.sexp)))
+   (:include c_flags.sexp))
+  (include_dirs %{project_root}/deps/libff/install/include))
+ ; foreign_archives does not support %{vars} hence the relative path to deps/
+ (foreign_archives ../../../deps/libff/install/lib/ff)
  (c_library_flags
   -lstdc++
-  (:include c_library_flags.sexp)
-  -lff)
+  (:include c_library_flags.sexp))
  (library_flags
   (:include library_flags.sexp)))
 
