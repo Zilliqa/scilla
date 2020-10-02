@@ -149,6 +149,12 @@ let parse ~exe_name =
   }
 
 
+(* TypeUtil.ml *)
+  
+(* The depth of a nested map. *)
+let rec map_depth mt =
+  match mt with InputType.MapType (_, vt) -> 1 + map_depth vt | _ -> 0
+
 (* Copied/reimplemented from Disambiguate.ml *)
 
 (* Qualify a local simple name with this_address *)
@@ -389,8 +395,103 @@ let parse_typ_exn t =
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
   | Ok s -> s
 
+let build_prim_lit_exn t v =
+  let exn () =
+    mk_invalid_json ("Invalid " ^ OutputType.pp_typ t ^ " value " ^ v ^ " in JSON")
+  in
+  match t with
+  | OutputType.PrimType pt -> (
+      match OutputLiteral.build_prim_literal pt v with
+      | Some v' -> v'
+      | None -> raise (exn ()) )
+  | _ -> raise (exn ())
+
+let rec json_to_adttyps tjs =
+  match tjs with
+  | tj :: tr ->
+      let tjs = to_string_exn tj in
+      let t = parse_typ_exn tjs in
+      let trem = json_to_adttyps tr in
+      t :: trem
+  | _ -> []
+
+let rec json_to_adtargs cname tlist this_address ajs =
+  let dt =
+    match Datatypes.DataTypeDictionary.lookup_constructor cname with
+    | Error emsg -> raise (Invalid_json emsg)
+    | Ok (r, _) -> r
+  in
+  (* For each component literal of our ADT, calculate its type.
+   * This is essentially using DataTypes.constr_tmap and substituting safely. *)
+  let tmap =
+    constr_pattern_arg_types_exn (ADT (OutputIdentifier.mk_loc_id dt.tname, tlist)) cname
+  in
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t this_address j) in
+  OutputLiteral.ADTValue (cname, tlist, llist)
+
+and read_adt_json name this_address j tlist_verify =
+  let open Datatypes in
+  let open OutputLiteral in
+  let res =
+    match j with
+    | `List vli ->
+        let etyp = List.nth_exn tlist_verify 0 in
+        List.fold_right vli
+          ~f:(fun vl acc -> build_cons_lit (json_to_lit etyp this_address vl) etyp acc)
+          ~init:(build_nil_lit etyp)
+    | `Assoc _ ->
+        let constr_str = member_exn "constructor" j |> to_string_exn in
+        (* Trust that the constructor belongs to the datatype, but disambiguate *)
+        let dis_constr = disambiguate_ctr_name (InputName.parse_simple_name constr_str) this_address in
+        let argtypes = member_exn "argtypes" j |> JSON.to_list_exn in
+        let arguments = member_exn "arguments" j |> JSON.to_list_exn in
+        let tlist = json_to_adttyps argtypes in
+        let dis_tlist = List.map tlist ~f:(fun t -> disambiguate_type t this_address) in
+        json_to_adtargs dis_constr dis_tlist this_address arguments
+    | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT "
+                                   ^ (OutputName.as_error_string name)))
+  in
+  (* return built ADT *)
+  res
+
+(* Map is a `List of `Assoc jsons, with
+ * the first `Assoc specifying the map's from/to types.*)
+and read_map_json kt this_address vt j =
+  let open OutputLiteral in
+  match j with
+  | `List vli ->
+      let m = Caml.Hashtbl.create (List.length vli) in
+      let _ = mapvalues_from_json m kt vt this_address vli in
+      Map ((kt, vt), m)
+  | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
+  | _ -> raise (mk_invalid_json "JSON parsing: error parsing Map")
+
+and mapvalues_from_json m kt vt this_address l =
+  List.iter l ~f:(fun first ->
+      let kjson = member_exn "key" first in
+      let keylit =
+        match kt with
+        | PrimType _ -> build_prim_lit_exn kt (to_string_exn kjson)
+        | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
+      in
+      let vjson = member_exn "val" first in
+      let vallit = json_to_lit vt this_address vjson in
+      Caml.Hashtbl.replace m keylit vallit)
+
+and json_to_lit (t : OutputType.t) (this_address : string) (v : Basic.t) : OutputLiteral.t =
+  let open OutputType in
+  match t with
+  | MapType (kt, vt) ->
+      let vl = read_map_json kt this_address vt v in
+      vl
+  | ADT (name, tlist) ->
+      let vl = read_adt_json (OutputIdentifier.get_id name) this_address v tlist in
+      vl
+  | _ ->
+      let tv = build_prim_lit_exn t (to_string_exn v) in
+      tv
+
 (* Use parser for local type and constructor names *)
-(* TODO: this_address is not available at this point, so disambiguating the type needs to be done differently *)
 let jobj_to_statevar this_address json =
   let n = member_exn "vname" json |> to_string_exn in
   let tstring = member_exn "type" json |> to_string_exn in
@@ -424,6 +525,12 @@ let extract_this_address_from_init_json_data jlist =
       )
   | None ->
       raise (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
+
+(* Convert a single JSON serialized literal back to its Scilla value. *)
+let jstring_to_literal jstring tp this_address =
+  let thunk () = Yojson.Basic.from_string jstring in
+  let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
+  json_to_lit tp this_address jobj
 
 let get_json_data filename =
   let json = JSON.from_file filename in
@@ -494,26 +601,104 @@ module InputStateService = struct
   (* StateIPCClient.ml *)
 
   module InputStateIPCClient = struct
-    open StateIPCIdl
+    open Scilla_eval.StateIPCIdl
     module M = Idl.IdM
     module IDL = Idl.Make (M)
 
     module IPCClient = IPCIdl (IDL.GenClient ())
 
-    (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
-     * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
-    let fetch ~socket_addr ~fname ~keys ~tp =
-      let open Ipcmessage_types in
+    (* Translate JRPC result to our result. *)
+    let translate_res res =
+      match res |> IDL.T.get |> M.run with
+      | Error (e : Scilla_eval.IPCUtil.RPCError.err_t) ->
+          fatal_error (mk_error0
+            (Printf.sprintf
+               "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code
+               e.message))
+      | Ok res' -> res'
+
+    let ipcclient_exn_wrapper thunk =
+      try thunk () with
+      | Unix.Unix_error (_, s1, s2) ->
+          fatal_error (mk_error0 ("StateIPCClient: Unix error: " ^ s1 ^ s2))
+      | _ -> fatal_error (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call")
+
+    let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
+      let socket =
+        Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
+      in
+      Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
+      let ic, oc =
+        (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
+      in
+      let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
+      DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
+      (* Send data to the socket. *)
+      let _ = Scilla_eval.IPCUtil.send_delimited oc msg_buf in
+      (* Get response. *)
+      let response = Caml.input_line ic in
+      Unix.close socket;
+      DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
+      M.return @@ Jsonrpc.response_of_string response
+
+    let deserialize_literal s tp this_address =
+      try jstring_to_literal s tp this_address
+      with Invalid_json s ->
+        fatal_error
+          ( s
+            @ mk_error0
+              "StateIPCClient: Error deserializing literal fetched from IPC call" )
+
+    (* Deserialize proto_scilla_val, given its type. *)
+    let rec deserialize_value value tp this_address =
+      match value with
+      | Scilla_eval.Ipcmessage_types.Bval s -> deserialize_literal (Bytes.to_string s) tp this_address
+      | Scilla_eval.Ipcmessage_types.Mval m -> (
+          match tp with
+          | MapType (kt, vt) ->
+              let mlit = Caml.Hashtbl.create (List.length m.m) in
+              let _ =
+                let m =
+                  List.sort m.m ~compare:(fun (k1, _) (k2, _) ->
+                      String.compare k1 k2)
+                in
+                forallM m ~f:(fun (k, v) ->
+                    let%bind k' = deserialize_literal k kt this_address in
+                    let%bind v' = deserialize_value v vt this_address in
+                    Caml.Hashtbl.add mlit k' v';
+                    pure ())
+              in
+              pure (IPCCLiteral.Map ((kt, vt), mlit))
+          | _ ->
+              fail0
+                "StateIPCClient: Type mismatch deserializing value. Unexpected \
+                 protobuf map." )
+
+    let encode_serialized_query query =
+      try
+        let encoder = Pbrt.Encoder.create () in
+        Scilla_eval.Ipcmessage_pb.encode_proto_scilla_query query encoder;
+        Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+      with e -> fatal_error (mk_error0 (Exn.to_string e))
+                  
+    let decode_serialized_value value =
+      try
+        let decoder = Pbrt.Decoder.of_bytes value in
+        Scilla_eval.Ipcmessage_pb.decode_proto_scilla_val decoder
+      with e -> fatal_error (mk_error0 (Exn.to_string e))
+                  
+    let fetch ~socket_addr ~fname ~tp ~this_address =
+      let open Scilla_eval.Ipcmessage_types in
       let q =
         {
-          name = IPCCIdentifier.as_string fname;
-          mapdepth = TypeUtilities.map_depth tp;
-          indices = List.map keys ~f:serialize_literal;
+          name = InputIdentifier.as_string fname;
+          mapdepth = map_depth tp;
+          indices = []; (* indices are not needed, as we are only fetching entire states *)
           ignoreval = false;
         }
       in
-      let%bind q' = encode_serialized_query q in
-      let%bind res =
+      let q' = encode_serialized_query q in
+      let res =
         let thunk () =
           translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
         in
@@ -521,9 +706,8 @@ module InputStateService = struct
       in
       match res with
       | true, res' ->
-          let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
-          let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
-          let%bind res'' = deserialize_value decoded_pb tp' in
+          let decoded_pb = decode_serialized_value (Bytes.of_string res') in
+          let%bind res'' = deserialize_value decoded_pb tp this_address in
           pure @@ Some res''
       | false, _ -> pure None
   end
@@ -537,8 +721,8 @@ module InputStateService = struct
     fval : InputLiteral.t option; (* We may or may not have the value in memory. *)
   }
 
-  let fetch ~fname ~tp ~keys =
-    let%bind res = InputStateIPCClient.fetch ~socket_addr:args.ipc_address ~fname ~keys ~tp in
+  let fetch ~fname ~tp ~keys ~socket_addr ~this_address =
+    let%bind res = InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address in
     if not @@ List.is_empty keys then
       pure @@ (res, G_MapGet (List.length keys, res))
     else
@@ -550,10 +734,10 @@ module InputStateService = struct
             (ER.get_loc (get_rep fname))
       | Some res' -> pure @@ (res, G_Load res')
 
-  let get_full_state fl =
+  let get_full_state fl ~socket_addr ~this_address =
     match 
       mapM fl ~f:(fun f ->
-          let%bind vopt, _ = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~fp:f.ftyp ~keys:[] in
+          let%bind vopt, _ = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~fp:f.ftyp ~keys:[] ~socket_addr ~this_address in
           match vopt with
           | Some v -> pure (f.fname, v)
           | None ->
