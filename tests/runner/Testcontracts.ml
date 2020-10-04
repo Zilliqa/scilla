@@ -356,6 +356,8 @@ let contract_tests env =
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];
+                "UintParam"
+                >::: build_contract_tests env "UintParam" fail_code 1 3 [];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
                      "0x565556789012345678901234567890123456abcd" "init" true;

@@ -109,35 +109,10 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
   let rec recurser t =
     match t with
     | PrimType pt -> (
-        match pt with
-        | String_typ -> fun j -> StringLit (to_string_exn j)
-        | Bnum_typ -> fun j -> BNum (to_string_exn j)
-        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
-        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
-        | Int_typ Bits32 ->
-            fun j -> IntLit (Int32L (Int32.of_string (to_string_exn j)))
-        | Int_typ Bits64 ->
-            fun j -> IntLit (Int64L (Int64.of_string (to_string_exn j)))
-        | Int_typ Bits128 ->
-            fun j ->
-              IntLit (Int128L (Stdint.Int128.of_string (to_string_exn j)))
-        | Int_typ Bits256 ->
-            fun j ->
-              IntLit (Int256L (Integer256.Int256.of_string (to_string_exn j)))
-        | Uint_typ Bits32 ->
-            fun j ->
-              UintLit (Uint32L (Stdint.Uint32.of_string (to_string_exn j)))
-        | Uint_typ Bits64 ->
-            fun j ->
-              UintLit (Uint64L (Stdint.Uint64.of_string (to_string_exn j)))
-        | Uint_typ Bits128 ->
-            fun j ->
-              UintLit (Uint128L (Stdint.Uint128.of_string (to_string_exn j)))
-        | Uint_typ Bits256 ->
-            fun j ->
-              UintLit
-                (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
-        | _ -> raise (mk_invalid_json "Invalid primitive type") )
+        fun j ->
+          match JSONLiteral.build_prim_literal pt (to_string_exn j) with
+          | Some v -> v
+          | None -> raise (mk_invalid_json "Invalid primitive type"))
     | MapType (kt, vt) -> (
         let kp = recurser kt in
         let vp = recurser vt in
