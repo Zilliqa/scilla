@@ -112,7 +112,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
         fun j ->
           match JSONLiteral.build_prim_literal pt (to_string_exn j) with
           | Some v -> v
-          | None -> raise (mk_invalid_json "Invalid primitive type"))
+          | None -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
         let vp = recurser vt in
