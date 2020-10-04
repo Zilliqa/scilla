@@ -196,6 +196,12 @@ let fatal_error_gas err gas_remaining =
   let msg = scilla_error_gas_string gas_remaining err in
   raise (FatalError msg)
 
+let fatal_error_gas_scale scaling_factor err gas_remaining =
+  let msg =
+    scilla_error_gas_string (Uint64.div gas_remaining scaling_factor) err
+  in
+  raise (FatalError msg)
+
 let fatal_error_noformat msg = raise (FatalError msg)
 
 (*****************************************************)
