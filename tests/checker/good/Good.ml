@@ -71,6 +71,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "ud-registry.scilla";
       "ud-proxy.scilla";
       "listiter.scilla";
+      "UintParam.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
