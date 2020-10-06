@@ -59,6 +59,8 @@ sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev cmake
 ```
 
+On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
+
 </details>
 
 <details><summary>macOS</summary>
