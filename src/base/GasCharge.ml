@@ -43,20 +43,21 @@ type gas_charge =
   | LogOf of string
 [@@deriving sexp]
 
-let replace_variable_name g ~f =
-  let rec recurser = function
-    | StaticCost _ -> g
-    | SizeOf v -> SizeOf (f v)
-    | ValueOf v -> ValueOf (f v)
-    | LengthOf v -> LengthOf (f v)
-    | MapSortCost m -> MapSortCost (f m)
-    | SumOf (g1, g2) -> SumOf (recurser g1, recurser g2)
-    | ProdOf (g1, g2) -> ProdOf (recurser g1, recurser g2)
-    | MinOf (g1, g2) -> MinOf (recurser g1, recurser g2)
-    | DivCeil (g1, g2) -> DivCeil (recurser g1, recurser g2)
-    | LogOf v -> LogOf (f v)
-  in
-  recurser g
+let rec replace_variable_name ~f = function
+  | StaticCost _ as g -> g
+  | SizeOf v -> SizeOf (f v)
+  | ValueOf v -> ValueOf (f v)
+  | LengthOf v -> LengthOf (f v)
+  | MapSortCost m -> MapSortCost (f m)
+  | SumOf (g1, g2) ->
+      SumOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
+  | ProdOf (g1, g2) ->
+      ProdOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
+  | MinOf (g1, g2) ->
+      MinOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
+  | DivCeil (g1, g2) ->
+      DivCeil (replace_variable_name ~f g1, replace_variable_name ~f g2)
+  | LogOf v -> LogOf (f v)
 
 (* Assuming that resolver resolves
  *   SizeOf v : To the literal_size of v
