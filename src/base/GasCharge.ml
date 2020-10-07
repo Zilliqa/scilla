@@ -88,3 +88,17 @@ let eval resolver g =
         pure (div_ceil g1_i g2_i)
   in
   recurser g
+
+let rec pp_gas_charge = function
+  | StaticCost i -> Int.to_string i
+  | SizeOf v -> sprintf "sizeof (%s)" v
+  | ValueOf v -> sprintf "valueof (%s)" v
+  | LengthOf v -> sprintf "lengthof (%s)" v
+  | MapSortCost m -> sprintf "mapsortcost (%s)" m
+  | SumOf (g1, g2) -> sprintf "(%s + %s)" (pp_gas_charge g1) (pp_gas_charge g2)
+  | ProdOf (g1, g2) -> sprintf "(%s * %s)" (pp_gas_charge g1) (pp_gas_charge g2)
+  | MinOf (g1, g2) ->
+      sprintf "min(%s, %s)" (pp_gas_charge g1) (pp_gas_charge g2)
+  | DivCeil (g1, g2) ->
+      sprintf "divceil(%s, %s)" (pp_gas_charge g1) (pp_gas_charge g2)
+  | LogOf v -> sprintf "log (%s)" v
