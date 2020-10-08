@@ -36,6 +36,8 @@ module OutputType = OutputLiteral.LType
 module OutputIdentifier = OutputType.TIdentifier
 module OutputName = OutputIdentifier.Name
 
+module OutputStateService = Scilla_eval.StateService.MakeStateService ()
+
 (* ************************************************************************ * 
  * This executable parses a contract and reads its associated init and      *
  * state JSONs using local names, and outputs its init and state JSONs      *
@@ -151,10 +153,6 @@ let parse ~exe_name =
 
 (* TypeUtil.ml *)
   
-(* The depth of a nested map. *)
-let rec map_depth mt =
-  match mt with InputType.MapType (_, vt) -> 1 + map_depth vt | _ -> 0
-
 (* Copied/reimplemented from Disambiguate.ml *)
 
 (* Qualify a local simple name with this_address *)
@@ -653,24 +651,23 @@ module InputStateService = struct
     let rec deserialize_value value tp this_address =
       match value with
       | Scilla_eval.Ipcmessage_types.Bval s -> deserialize_literal (Bytes.to_string s) tp this_address
-      | Scilla_eval.Ipcmessage_types.Mval m -> (
+      | Scilla_eval.Ipcmessage_types.Mval m ->
           match tp with
           | MapType (kt, vt) ->
               let mlit = Caml.Hashtbl.create (List.length m.m) in
-              let _ =
+              let () =
                 let m =
                   List.sort m.m ~compare:(fun (k1, _) (k2, _) ->
                       String.compare k1 k2)
                 in
-                forallM m ~f:(fun (k, v) ->
-                    let%bind k' = deserialize_literal k kt this_address in
-                    let%bind v' = deserialize_value v vt this_address in
-                    Caml.Hashtbl.add mlit k' v';
-                    pure ())
+                List.iter m ~f:(fun (k, v) ->
+                    let k' = deserialize_literal k kt this_address in
+                    let v' = deserialize_value v vt this_address in
+                    Caml.Hashtbl.add mlit k' v')
               in
-              pure (IPCCLiteral.Map ((kt, vt), mlit))
+              GlobalLiteral.Map ((kt, vt), mlit)
           | _ ->
-              fail0
+              fatal_error (mk_error0
                 "StateIPCClient: Type mismatch deserializing value. Unexpected \
                  protobuf map." )
 
@@ -692,7 +689,7 @@ module InputStateService = struct
       let q =
         {
           name = InputIdentifier.as_string fname;
-          mapdepth = map_depth tp;
+          mapdepth = TypeUtil.TypeUtilities.map_depth tp;
           indices = []; (* indices are not needed, as we are only fetching entire states *)
           ignoreval = false;
         }
@@ -707,9 +704,9 @@ module InputStateService = struct
       match res with
       | true, res' ->
           let decoded_pb = decode_serialized_value (Bytes.of_string res') in
-          let%bind res'' = deserialize_value decoded_pb tp this_address in
-          pure @@ Some res''
-      | false, _ -> pure None
+          let res'' = deserialize_value decoded_pb tp this_address in
+          Some res''
+      | false, _ -> None
   end
 
   open Result.Let_syntax
@@ -717,39 +714,24 @@ module InputStateService = struct
 
   type ss_field = {
     fname : InputName.t;
-    ftyp : InputType.t;
+    (* Easier to disambiguate the type before fetching *)
+    ftyp : OutputType.t;
     fval : InputLiteral.t option; (* We may or may not have the value in memory. *)
   }
 
-  let fetch ~fname ~tp ~keys ~socket_addr ~this_address =
-    let%bind res = InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address in
-    if not @@ List.is_empty keys then
-      pure @@ (res, G_MapGet (List.length keys, res))
-    else
-      match res with
-      | None ->
-          fail1
-            (sprintf "StateService: Field %s not found on IPC server."
-               (as_error_string fname))
-            (ER.get_loc (get_rep fname))
-      | Some res' -> pure @@ (res, G_Load res')
+  let fetch ~fname ~tp ~socket_addr ~this_address =
+    let res = InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address in
+    match res with
+    | None ->
+        fatal_error (mk_error0
+          (sprintf "StateService: Field %s not found on IPC server."
+             (InputIdentifier.as_error_string fname)))
+    | Some res' -> res
 
   let get_full_state fl ~socket_addr ~this_address =
-    match 
-      mapM fl ~f:(fun f ->
-          let%bind vopt, _ = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~fp:f.ftyp ~keys:[] ~socket_addr ~this_address in
-          match vopt with
-          | Some v -> pure (f.fname, v)
-          | None ->
-              fail0
-                (sprintf
-                   "StateService: Field %s's value not found on server"
-                   (InputName.as_error_string f.fname)))
-    with
-    | Ok sl -> sl
-    | Error err ->
-        plog "Error during fetching of contract state.";
-        fatal_error err
+    List.map fl ~f:(fun f ->
+        let v = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~tp:f.ftyp ~socket_addr ~this_address in
+        (f.fname, f.ftyp, v))
 end
 
 
@@ -778,15 +760,29 @@ let run_with_args args =
           (* parse_json reads, parses and disambiguates the json file *)
           let init = parse_json args.input_init this_address in
 
-          (* Fetch unambiguated state from IPC server *)
-          let fields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
+          (* Fetch state from IPC server *)
+          let inputfields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
               let open InputStateService in
-              Some { fname = (InputIdentifier.get_id fname) ; ftyp = ftyp; fval = None })
+              (* Disambiguate type before fetching - it's easier to parse the json that way *)
+              { fname = (InputIdentifier.get_id fname) ; ftyp = disambiguate_type ftyp this_address; fval = None })
           in
-          let sm = IPC args.ipc_address in
+          (* Fetch state. Parsing the fetched jsons disambiguates *)
+          let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
 
+          (* Update using StateService.ml *)
+          let sm = Scilla_eval.StateService.IPC args.ipc_address in
+          let outputfields = List.map state ~f:(fun (n, tp, v) ->
+              let open Scilla_eval.StateService in
+              { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
+          (* Initialise with the final values - that's all that's needed. *)
+          let () = OutputStateService.initialize ~sm ~fields:outputfields in
+          let _ = OutputStateService.finalize () in
           
-          let state = parse_json args.input_state this_address in
+          ... (* TODO: Consider whether to still support state file input. *)
+            let state = parse_json args.input_state this_address in
+
+            ...
+              (* TODO: Make sure the ipc-generated state have the correct form for state output *)
           (init, state)
         with Invalid_json s ->
           fatal_error
