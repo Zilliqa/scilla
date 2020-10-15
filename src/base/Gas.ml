@@ -314,7 +314,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
         let s = GasCharge.SizeOf (GI.get_id a) in
-        let n = GasCharge.StaticCost (64 * 15) in
+        let n = GasCharge.StaticCost (64 * 10) in
         pure (GasCharge.DivCeil (s, n))
     | Builtin_schnorr_verify, _, [ _; s; _ ]
     | Builtin_ecdsa_verify, _, [ _; s; _ ] ->

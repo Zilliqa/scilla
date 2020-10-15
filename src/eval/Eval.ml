@@ -116,7 +116,9 @@ let eval_gas_charge env g =
     | GasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
         pure @@ EvalGas.map_sort_cost m
-    | _ -> fail0 "eval_gas_charge: Must be handled by GasCharge"
+    | GasCharge.SumOf _ | GasCharge.ProdOf _ | GasCharge.DivCeil _
+    | GasCharge.MinOf _ | GasCharge.StaticCost _ ->
+        fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
   GasCharge.eval resolver g
 
