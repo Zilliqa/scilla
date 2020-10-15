@@ -124,45 +124,48 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   let rec expr_static_cost e =
     let ee, erep = e in
-    let e' =
+    let%bind e' =
       match ee with
       | Literal _ | Var _ | Message _ | App _ | Constr _ | TApp _ ->
-          GasExpr (GasCharge.StaticCost 1, e)
+          pure @@ GasExpr (GasCharge.StaticCost 1, e)
       | Fixpoint (f, t, e') ->
-          GasExpr
-            ( GasCharge.StaticCost 1,
-              (Fixpoint (f, t, expr_static_cost e'), erep) )
+          let%bind e'' = expr_static_cost e' in
+          pure @@ GasExpr (GasCharge.StaticCost 1, (Fixpoint (f, t, e''), erep))
       | Fun (f, t, e') ->
-          GasExpr
-            (GasCharge.StaticCost 1, (Fun (f, t, expr_static_cost e'), erep))
+          let%bind e'' = expr_static_cost e' in
+          pure @@ GasExpr (GasCharge.StaticCost 1, (Fun (f, t, e''), erep))
       | TFun (f, e') ->
-          GasExpr (GasCharge.StaticCost 1, (TFun (f, expr_static_cost e'), erep))
+          let%bind e'' = expr_static_cost e' in
+          pure @@ GasExpr (GasCharge.StaticCost 1, (TFun (f, e''), erep))
       | Let (i, t, lhs, rhs) ->
-          GasExpr
-            ( GasCharge.StaticCost 1,
-              (Let (i, t, expr_static_cost lhs, expr_static_cost rhs), erep) )
+          let%bind lhs' = expr_static_cost lhs in
+          let%bind rhs' = expr_static_cost rhs in
+          pure
+          @@ GasExpr (GasCharge.StaticCost 1, (Let (i, t, lhs', rhs'), erep))
       | MatchExpr (o, clauses) ->
-          GasExpr
-            ( GasCharge.StaticCost (List.length clauses),
-              ( MatchExpr
-                  ( o,
-                    List.map clauses ~f:(fun (p, e') ->
-                        (p, expr_static_cost e')) ),
-                erep ) )
-      | Builtin _
-      (* We don't add costs for Builtin because we can't know it statically
-       * without type info (Eval doesn't run the type checker). To know this
-       * statically, call builtin_cost below, providing argument types. *)
-      | GasExpr _ ->
-          ee
+          let%bind clauses' =
+            mapM clauses ~f:(fun (p, e') ->
+                let%bind e'' = expr_static_cost e' in
+                pure (p, e''))
+          in
+          pure
+          @@ GasExpr
+               ( GasCharge.StaticCost (List.length clauses),
+                 (MatchExpr (o, clauses'), erep) )
+      | Builtin _ ->
+          (* We don't add costs for Builtin because we can't know it statically
+           * without type info (Eval doesn't run the type checker). To know this
+           * statically, call builtin_cost below, providing argument types. *)
+          pure ee
+      | GasExpr _ -> fail0 "Unexpected gas charge"
     in
-    (e', erep)
+    pure (e', erep)
 
   (* this is a dynamic cost. *)
   let rec stmts_cost = function
-    | [] -> []
+    | [] -> pure []
     | (s, srep) :: rem_stmts ->
-        let s' =
+        let%bind s' =
           match s with
           | Load (x, _) ->
               let g =
@@ -172,17 +175,18 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                        GasCharge.MapSortCost (GI.get_id x) ))
               in
               (* We charge *after* the load because we can't know the size before. *)
-              [ (s, srep); (g, srep) ]
+              pure @@ [ (s, srep); (g, srep) ]
           | Store (_, v) | SendMsgs v | CreateEvnt v ->
               let g = GasStmt (GasCharge.SizeOf (GI.get_id v)) in
-              [ (g, srep); (s, srep) ]
+              pure @@ [ (g, srep); (s, srep) ]
           | Bind (x, e) ->
               let g = GasStmt (GasCharge.StaticCost 1) in
-              let s' = Bind (x, expr_static_cost e) in
-              [ (g, srep); (s', srep) ]
+              let%bind e' = expr_static_cost e in
+              let s' = Bind (x, e') in
+              pure @@ [ (g, srep); (s', srep) ]
           | ReadFromBC _ | CallProc _ ->
               let g = GasStmt (GasCharge.StaticCost 1) in
-              [ (g, srep); (s, srep) ]
+              pure @@ [ (g, srep); (s, srep) ]
           | MapUpdate (_, klist, ropt) ->
               let n = GasCharge.StaticCost (List.length klist) in
               let g =
@@ -190,7 +194,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 | Some r -> GasCharge.SumOf (GasCharge.SizeOf (GI.get_id r), n)
                 | None -> n
               in
-              [ (GasStmt g, srep); (s, srep) ]
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
           | MapGet (x, _, klist, _) ->
               let n = GasCharge.StaticCost (List.length klist) in
               let g =
@@ -200,61 +204,74 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                         GasCharge.MapSortCost (GI.get_id x) ),
                     n )
               in
-              [ (s, srep); (GasStmt g, srep) ]
+              pure @@ [ (s, srep); (GasStmt g, srep) ]
           | MatchStmt (x, clauses) ->
               let g = GasCharge.StaticCost (List.length clauses) in
-              let clauses' =
-                List.map clauses ~f:(fun (p, stmts) ->
-                    let stmts' = stmts_cost stmts in
-                    (p, stmts'))
+              let%bind clauses' =
+                mapM clauses ~f:(fun (p, stmts) ->
+                    let%bind stmts' = stmts_cost stmts in
+                    pure @@ (p, stmts'))
               in
               let s' = MatchStmt (x, clauses') in
-              [ (GasStmt g, srep); (s', srep) ]
+              pure @@ [ (GasStmt g, srep); (s', srep) ]
           | AcceptPayment ->
               let g = GasStmt (GasCharge.StaticCost 1) in
-              [ (g, srep); (s, srep) ]
+              pure @@ [ (g, srep); (s, srep) ]
           | Iterate (l, _) ->
               let g = GasStmt (GasCharge.LengthOf (GI.get_id l)) in
-              [ (g, srep); (s, srep) ]
-          | Throw _ (* TODO: Throw should charge same as event and send. *)
-          | GasStmt _ ->
-              [ (s, srep) ]
+              pure @@ [ (g, srep); (s, srep) ]
+          | Throw _ ->
+              (* TODO: Throw should charge same as event and send. *)
+              pure @@ [ (s, srep) ]
+          | GasStmt _ -> fail0 "Unexpected gas charge"
         in
-        s' @ stmts_cost rem_stmts
+
+        let%bind rem_stmts' = stmts_cost rem_stmts in
+        pure (s' @ rem_stmts')
 
   let lib_entry_cost = function
-    | LibVar (v, topt, e) -> LibVar (v, topt, expr_static_cost e)
-    | LibTyp _ as le -> le
+    | LibVar (v, topt, e) ->
+        let%bind e' = expr_static_cost e in
+        pure @@ LibVar (v, topt, e')
+    | LibTyp _ as le -> pure le
 
   let lib_cost lib =
-    { lib with lentries = List.map lib.lentries ~f:lib_entry_cost }
+    let%bind lentries' = mapM lib.lentries ~f:lib_entry_cost in
+    pure { lib with lentries = lentries' }
 
   let rec libtree_cost ltree =
-    let deps' = List.map ltree.deps ~f:libtree_cost in
-    let libn' = lib_cost ltree.libn in
-    { libn = libn'; deps = deps' }
+    let%bind deps' = mapM ltree.deps ~f:libtree_cost in
+    let%bind libn' = lib_cost ltree.libn in
+    pure { libn = libn'; deps = deps' }
 
-  let lmod_cost lmod = { lmod with libs = lib_cost lmod.libs }
+  let lmod_cost lmod =
+    let%bind libs' = lib_cost lmod.libs in
+    pure @@ { lmod with libs = libs' }
 
   let cmod_cost (cmod : cmodule) =
     let contr_cost contr =
       let comp_cost comp =
-        { comp with comp_body = stmts_cost comp.comp_body }
+        let%bind body' = stmts_cost comp.comp_body in
+        pure { comp with comp_body = body' }
       in
-      {
-        contr with
-        cconstraint = expr_static_cost contr.cconstraint;
-        cfields =
-          List.map contr.cfields ~f:(fun (i, t, e) ->
-              (i, t, expr_static_cost e));
-        ccomps = List.map contr.ccomps ~f:comp_cost;
-      }
+      let%bind constraint' = expr_static_cost contr.cconstraint in
+      let%bind cfields' =
+        mapM contr.cfields ~f:(fun (i, t, e) ->
+            let%bind e' = expr_static_cost e in
+            pure (i, t, e'))
+      in
+      let%bind ccomps' = mapM contr.ccomps ~f:comp_cost in
+      pure
+        {
+          contr with
+          cconstraint = constraint';
+          cfields = cfields';
+          ccomps = ccomps';
+        }
     in
-    {
-      cmod with
-      libs = Option.map cmod.libs ~f:lib_cost;
-      contr = contr_cost cmod.contr;
-    }
+    let%bind libs' = option_mapM cmod.libs ~f:lib_cost in
+    let%bind contr' = contr_cost cmod.contr in
+    pure { cmod with libs = libs'; contr = contr' }
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)

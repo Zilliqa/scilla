@@ -28,6 +28,11 @@ module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 
 let default_gas_limit = Stdint.Uint64.of_int 2000
 
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
+
 let run () =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
@@ -40,12 +45,15 @@ let run () =
   in
   match parse_expr_from_file filename with
   | Ok e_nogas -> (
-      let e = RG.expr_static_cost e_nogas in
+      let e = gas_cost_rewriter_wrapper gas_limit RG.expr_static_cost e_nogas in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
-      let elibs = List.map ~f:RG.libtree_cost @@ import_all_libs lib_dirs in
+      let elibs =
+        List.map ~f:(gas_cost_rewriter_wrapper gas_limit RG.libtree_cost)
+        @@ import_all_libs lib_dirs
+      in
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let envres = Eval.init_libraries None elibs in
       let env, gas_remaining =

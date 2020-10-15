@@ -539,8 +539,8 @@ let init_lib_entries env libs =
 let init_libraries clibs elibs =
   DebugMessage.plog "Loading library types and functions.";
   let%bind rec_env =
-    let rlibs =
-      List.map ~f:EvalGas.lib_entry_cost
+    let%bind rlibs =
+      mapM ~f:(Fn.compose fromR (EvalGas.lib_entry_cost))
         RecursionPrinciples.recursion_principles
     in
     init_lib_entries (pure Env.empty) rlibs

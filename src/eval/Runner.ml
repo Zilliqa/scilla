@@ -150,6 +150,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   initargs
 
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
+
 let deploy_library args gas_remaining =
   match parse_lmodule args.input with
   | Error e ->
@@ -160,13 +165,15 @@ let deploy_library args gas_remaining =
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
            args.input);
-      let lmod = RG.lmod_cost lmod_nogas in
+      let lmod =
+        gas_cost_rewriter_wrapper gas_remaining RG.lmod_cost lmod_nogas
+      in
 
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
       let elibs =
-        List.map ~f:RG.libtree_cost
+        List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
         @@ import_libs lmod.elibs (Some args.input_init)
       in
       (* Contract library. *)
@@ -231,13 +238,15 @@ let run_with_args args =
           (sprintf
              "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
              args.input);
-        let cmod = RG.cmod_cost cmod_nogas in
+        let cmod =
+          gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost cmod_nogas
+        in
 
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
         let elibs =
-          List.map ~f:RG.libtree_cost
+          List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
           @@ import_libs cmod.elibs (Some args.input_init)
         in
 
