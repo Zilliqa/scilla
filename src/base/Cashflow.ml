@@ -128,6 +128,7 @@ struct
       | Var i -> CFSyntax.Var (add_noinfo_to_ident i)
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
+      | GasExpr (g, body) -> CFSyntax.GasExpr (g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -199,6 +200,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
+      | GasStmt g -> CFSyntax.GasStmt g
     in
     (res_s, rep)
 
@@ -1513,6 +1515,20 @@ struct
             new_local_env,
             ctr_tag_map,
             changes )
+      | GasExpr (g, e) ->
+          let ( ((_, (new_e_tag, _)) as new_e),
+                e_param_env,
+                e_local_env,
+                e_ctr_tag_map,
+                e_changes ) =
+            cf_tag_expr e expected_tag param_env local_env ctr_tag_map
+          in
+          ( GasExpr (g, new_e),
+            new_e_tag,
+            e_param_env,
+            e_local_env,
+            e_ctr_tag_map,
+            e_changes )
     in
     let e_tag = lub new_e_tag in
     ( (new_e, (e_tag, rep)),
@@ -1766,6 +1782,8 @@ struct
             not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
+      | GasStmt g ->
+          (GasStmt g, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
           let m_tag =
             lub_tags NotMoney (lookup_var_tag2 m local_env param_env)

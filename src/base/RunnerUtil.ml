@@ -92,15 +92,19 @@ let eliminate_namespaces lib_tree ns_tree =
       List.fold lib.lentries ~init:([], env, [])
         ~f:(fun (accentries, accenv, accnames) entry ->
           (* check if id is in env and prefix it with a namespace. *)
-          let check_and_prefix_id env id =
-            match List.Assoc.find env (get_id id) ~equal:String.( = ) with
+          let check_and_prefix_id_string env id =
+            match List.Assoc.find env id ~equal:String.( = ) with
             | Some ns when not @@ String.is_empty ns ->
-                let nname = ns ^ "." ^ get_id id in
+                let nname = ns ^ "." ^ id in
                 plog
                 @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
-                     (get_id id) nname;
-                mk_id nname (get_rep id)
+                     id nname;
+                nname
             | _ -> id
+          in
+          let check_and_prefix_id env id =
+            let idstr' = check_and_prefix_id_string env (get_id id) in
+            mk_id idstr' (get_rep id)
           in
           let rename_in_type t env =
             let rec recurser t =
@@ -196,6 +200,12 @@ let eliminate_namespaces lib_tree ns_tree =
                 in
                 let exp' = rename_in_expr e env' in
                 (Fixpoint (i, t, exp'), eloc)
+            | GasExpr (g, e) ->
+                let g' =
+                  GasCharge.replace_variable_name g
+                    ~f:(check_and_prefix_id_string env)
+                in
+                (GasExpr (g', rename_in_expr e env), eloc)
           in
           match entry with
           | LibTyp (i, ctrs) ->

@@ -29,6 +29,7 @@ open Stdint
 open RunnerUtil
 open RunnerCLI
 open GlobalConfig
+module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -149,20 +150,32 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   initargs
 
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
+
 let deploy_library args gas_remaining =
   match parse_lmodule args.input with
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
       fatal_error_gas_scale Gas.scale_factor e gas_remaining
-  | Ok lmod ->
+  | Ok lmod_nogas ->
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
            args.input);
+      let lmod =
+        gas_cost_rewriter_wrapper gas_remaining RG.lmod_cost lmod_nogas
+      in
+
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let elibs = import_libs lmod.elibs (Some args.input_init) in
+      let elibs =
+        List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+        @@ import_libs lmod.elibs (Some args.input_init)
+      in
       (* Contract library. *)
       let clibs = Some lmod.libs in
 
@@ -220,16 +233,23 @@ let run_with_args args =
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
         fatal_error_gas_scale Gas.scale_factor e gas_remaining
-    | Ok cmod ->
+    | Ok cmod_nogas ->
         plog
           (sprintf
              "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
              args.input);
+        let cmod =
+          gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost cmod_nogas
+        in
 
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
-        let elibs = import_libs cmod.elibs (Some args.input_init) in
+        let elibs =
+          List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+          @@ import_libs cmod.elibs (Some args.input_init)
+        in
+
         (* Contract library. *)
         let clibs = cmod.libs in
 

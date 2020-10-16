@@ -24,8 +24,14 @@ open RunnerUtil
 open ErrorUtils
 open GlobalConfig
 open PrettyPrinters
+module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 
 let default_gas_limit = Stdint.Uint64.of_int 2000
+
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
 
 let run () =
   GlobalConfig.reset ();
@@ -38,12 +44,16 @@ let run () =
     else cli.gas_limit
   in
   match parse_expr_from_file filename with
-  | Ok e -> (
+  | Ok e_nogas -> (
+      let e = gas_cost_rewriter_wrapper gas_limit RG.expr_static_cost e_nogas in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
-      let elibs = import_all_libs lib_dirs in
+      let elibs =
+        List.map ~f:(gas_cost_rewriter_wrapper gas_limit RG.libtree_cost)
+        @@ import_all_libs lib_dirs
+      in
       (* Since this is not a contract, we have no in-contract lib defined. *)
       let envres = Eval.init_libraries None elibs in
       let env, gas_remaining =
@@ -52,7 +62,7 @@ let run () =
         | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
       in
       let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
-      let res = Eval.(exp_eval_wrapper e env init_gas_kont gas_remaining) in
+      let res = Eval.(exp_eval e env init_gas_kont gas_remaining) in
       match res with
       | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
       | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )

@@ -469,6 +469,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         pure
         @@ ( TypedSyntax.Message (List.rev typed_bs_rev),
              (mk_qual_tp @@ msg_typ, rep) )
+    | GasExpr (g, e) ->
+        let%bind ((_, et) as e') = type_expr e tenv in
+        pure (TypedSyntax.GasExpr (g, e'), et)
 
   and app_type tenv ftyp actuals ~lc =
     (* Type-check function application *)
@@ -834,7 +837,13 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ add_stmt_to_stmts_env_gas
                      (TypedSyntax.Throw None, rep)
-                     checked_stmts ) )
+                     checked_stmts )
+        | GasStmt g ->
+            let%bind checked_stmts = type_stmts sts get_loc env in
+            pure
+            @@ add_stmt_to_stmts_env_gas
+                 (TypedSyntax.GasStmt g, rep)
+                 checked_stmts )
 
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in

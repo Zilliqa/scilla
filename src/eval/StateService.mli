@@ -21,7 +21,6 @@
 
 open Scilla_base
 open Literal
-open ParserUtil.ParserSyntax
 open ErrorUtils
 
 (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
@@ -73,26 +72,26 @@ val finalize : unit -> (unit, scilla_error list) result
 val fetch :
   fname:loc SSIdentifier.t ->
   keys:SSLiteral.t list ->
-  (SSLiteral.t option * stmt_eval_context, scilla_error list) result
+  (SSLiteral.t option, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   fname:loc SSIdentifier.t ->
   keys:SSLiteral.t list ->
   value:SSLiteral.t ->
-  (stmt_eval_context, scilla_error list) result
+  (unit, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
   fname:loc SSIdentifier.t ->
   keys:SSLiteral.t list ->
-  (bool * stmt_eval_context, scilla_error list) result
+  (bool, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
   fname:loc SSIdentifier.t ->
   keys:SSLiteral.t list ->
-  (stmt_eval_context, scilla_error list) result
+  (unit, scilla_error list) result
 
 (* Should rarely be used, and is useful only when multiple StateService objects are required *)
 module MakeStateService () : sig
@@ -106,21 +105,21 @@ module MakeStateService () : sig
   val fetch :
     fname:loc SSIdentifier.t ->
     keys:SSLiteral.t list ->
-    (SSLiteral.t option * stmt_eval_context, scilla_error list) result
+    (SSLiteral.t option, scilla_error list) result
 
   val update :
     fname:loc SSIdentifier.t ->
     keys:SSLiteral.t list ->
     value:SSLiteral.t ->
-    (stmt_eval_context, scilla_error list) result
+    (unit, scilla_error list) result
 
   val is_member :
     fname:loc SSIdentifier.t ->
     keys:SSLiteral.t list ->
-    (bool * stmt_eval_context, scilla_error list) result
+    (bool, scilla_error list) result
 
   val remove :
     fname:loc SSIdentifier.t ->
     keys:SSLiteral.t list ->
-    (stmt_eval_context, scilla_error list) result
+    (unit, scilla_error list) result
 end
