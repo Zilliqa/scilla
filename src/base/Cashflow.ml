@@ -129,6 +129,7 @@ struct
       | Var i -> CFSyntax.Var (add_noinfo_to_ident i)
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
+      | GasExpr (g, body) -> CFSyntax.GasExpr (g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -200,6 +201,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
+      | GasStmt g -> CFSyntax.GasStmt g
     in
     (res_s, rep)
 
@@ -1070,13 +1072,14 @@ struct
       | Constructor (s, ps) ->
           let new_ps, new_ps_tags, new_local_env, ps_ctr_tag_map, ps_changes =
             List.fold_right ps ~init:([], [], local_env, ctr_tag_map, false)
-              ~f:(fun p
-                      ( acc_ps,
-                        acc_ps_tags,
-                        acc_local_env,
-                        acc_ctr_tag_map,
-                        acc_changes )
-                      ->
+              ~f:(fun
+                   p
+                   ( acc_ps,
+                     acc_ps_tags,
+                     acc_local_env,
+                     acc_ctr_tag_map,
+                     acc_changes )
+                 ->
                 let new_p, new_p_tag, p_local_env, p_ctr_tag_map, p_changes =
                   walk p acc_local_env acc_ctr_tag_map
                 in
@@ -1288,9 +1291,10 @@ struct
               | Ok res -> res
             in
             List.fold_right tags_list ~init:([], param_env, local_env, false)
-              ~f:(fun (arg, arg_tag)
-                      (acc_args, acc_param_env, acc_local_env, acc_changes)
-                      ->
+              ~f:(fun
+                   (arg, arg_tag)
+                   (acc_args, acc_param_env, acc_local_env, acc_changes)
+                 ->
                 let new_local_env, new_param_env =
                   update_var_tag2 arg arg_tag acc_local_env acc_param_env
                 in
@@ -1390,14 +1394,15 @@ struct
                 res_clause_changes ) =
             List.fold_right clauses
               ~init:([], expected_tag, param_env, local_env, ctr_tag_map, false)
-              ~f:(fun (p, ep)
-                      ( acc_clauses,
-                        acc_res_tag,
-                        acc_param_env,
-                        acc_local_env,
-                        acc_ctr_tag_map,
-                        acc_changes )
-                      ->
+              ~f:(fun
+                   (p, ep)
+                   ( acc_clauses,
+                     acc_res_tag,
+                     acc_param_env,
+                     acc_local_env,
+                     acc_ctr_tag_map,
+                     acc_changes )
+                 ->
                 let sub_local_env =
                   insert_pattern_vars_into_env p acc_local_env
                 in
@@ -1476,9 +1481,8 @@ struct
           (* Find initializers and update env as appropriate *)
           let new_bs, new_param_env, new_local_env, changes =
             List.fold_right bs ~init:([], param_env, local_env, false)
-              ~f:(fun (s, p)
-                      (acc_bs, acc_param_env, acc_local_env, acc_changes)
-                      ->
+              ~f:(fun (s, p) (acc_bs, acc_param_env, acc_local_env, acc_changes)
+                 ->
                 match p with
                 | MLit _ ->
                     ((s, p) :: acc_bs, acc_param_env, acc_local_env, acc_changes)
@@ -1516,6 +1520,20 @@ struct
             new_local_env,
             ctr_tag_map,
             changes )
+      | GasExpr (g, e) ->
+          let ( ((_, (new_e_tag, _)) as new_e),
+                e_param_env,
+                e_local_env,
+                e_ctr_tag_map,
+                e_changes ) =
+            cf_tag_expr e expected_tag param_env local_env ctr_tag_map
+          in
+          ( GasExpr (g, new_e),
+            new_e_tag,
+            e_param_env,
+            e_local_env,
+            e_ctr_tag_map,
+            e_changes )
     in
     let e_tag = lub new_e_tag in
     ( (new_e, (e_tag, rep)),
@@ -1699,14 +1717,15 @@ struct
                 res_clause_changes ) =
             List.fold_right clauses
               ~init:([], param_env, field_env, local_env, ctr_tag_map, false)
-              ~f:(fun (p, sp)
-                      ( acc_clauses,
-                        acc_param_env,
-                        acc_field_env,
-                        acc_local_env,
-                        acc_ctr_tag_map,
-                        acc_changes )
-                      ->
+              ~f:(fun
+                   (p, sp)
+                   ( acc_clauses,
+                     acc_param_env,
+                     acc_field_env,
+                     acc_local_env,
+                     acc_ctr_tag_map,
+                     acc_changes )
+                 ->
                 let sub_local_env =
                   insert_pattern_vars_into_env p acc_local_env
                 in
@@ -1769,6 +1788,8 @@ struct
             not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
+      | GasStmt g ->
+          (GasStmt g, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
           let m_tag =
             lub_tags NotMoney (lookup_var_tag2 m local_env param_env)
@@ -1863,14 +1884,15 @@ struct
     in
     List.fold_right ss
       ~init:([], param_env, field_env, init_local_env, ctr_tag_map, false)
-      ~f:(fun s
-              ( acc_ss,
-                acc_param_env,
-                acc_field_env,
-                acc_local_env,
-                acc_ctr_tag_map,
-                acc_changes )
-              ->
+      ~f:(fun
+           s
+           ( acc_ss,
+             acc_param_env,
+             acc_field_env,
+             acc_local_env,
+             acc_ctr_tag_map,
+             acc_changes )
+         ->
         let ( new_s,
               new_param_env,
               new_field_env,
@@ -1961,13 +1983,14 @@ struct
         List.fold_right components
           ~init:
             ([], tmp_param_env, field_env, tmp_ctr_tag_map, constraint_changes)
-          ~f:(fun t
-                  ( acc_ts,
-                    acc_param_env,
-                    acc_field_env,
-                    acc_ctr_tag_map,
-                    acc_changes )
-                  ->
+          ~f:(fun
+               t
+               ( acc_ts,
+                 acc_param_env,
+                 acc_field_env,
+                 acc_ctr_tag_map,
+                 acc_changes )
+             ->
             let new_t, new_param_env, new_field_env, new_ctr_tag_map, t_changes
                 =
               cf_tag_component t acc_param_env acc_field_env acc_ctr_tag_map

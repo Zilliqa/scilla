@@ -19,6 +19,7 @@
 open ErrorUtils
 open Literal
 open Syntax
+open GasCharge
 
 (*******************************************************)
 (*              Location annotations                   *)
@@ -88,6 +89,7 @@ module type Syn = sig
     | TApp of ParserRep.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ParserRep.rep SIdentifier.t * SType.t * expr_annot
+    | GasExpr of gas_charge * expr_annot
 
   (*******************************************************)
   (*                   Statements                        *)
@@ -122,6 +124,7 @@ module type Syn = sig
     | CreateEvnt of ParserRep.rep SIdentifier.t
     | CallProc of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t list
     | Throw of ParserRep.rep SIdentifier.t option
+    | GasStmt of gas_charge
 
   (*******************************************************)
   (*                    Contracts                        *)

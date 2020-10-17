@@ -97,7 +97,7 @@ let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
 
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
 
-let process_json_validation () = GlobalConfig.set_validate_json !b_validate_json
+let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
@@ -230,9 +230,6 @@ let parse args ~exe_name =
       ( "-disable-pp-json",
         Arg.Unit (fun () -> b_pp_json := false),
         "Disable pretty printing of JSONs" );
-      ( "-disable-validate-json",
-        Arg.Unit (fun () -> b_validate_json := false),
-        "Disable validation of input JSONs" );
     ]
   in
 

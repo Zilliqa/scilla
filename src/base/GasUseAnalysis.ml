@@ -932,7 +932,8 @@ struct
 
   (* Return gas use and result sizeref polynomials of evaluating an expression. *)
   let rec gua_expr genv (erep : expr_annot) =
-    let%bind c = Gas.expr_static_cost erep in
+    let c = 1 in
+    (* A static cost *)
     let cc = const_pn c in
     let e, rep = erep in
     match e with
@@ -1106,6 +1107,8 @@ struct
             ~init:empty_pn plist
         in
         pure ([], SPol splist, cc)
+    | GasExpr _ ->
+        fail0 "GasUseAnalysis: AST has explicit charges, not supported."
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =

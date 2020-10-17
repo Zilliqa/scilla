@@ -20,11 +20,12 @@ open Core_kernel
 open Sexplib.Std
 open ErrorUtils
 open Literal
+open GasCharge
 
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 8, 0)
+let scilla_version = (0, 9, 0)
 
 let address_length = 20
 
@@ -258,6 +259,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
+    | GasExpr of gas_charge * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -303,6 +305,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | CreateEvnt of ER.rep SIdentifier.t
     | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
     | Throw of ER.rep SIdentifier.t option
+    | GasStmt of gas_charge
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -312,28 +315,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   let spp_stmt s = sexp_of_stmt s |> Sexplib.Sexp.to_string
 
   let pp_stmt s = spp_stmt s
-
-  (**************************************************)
-  (*          Statement evaluation info             *)
-  (**************************************************)
-  type stmt_eval_context =
-    (* literal being loaded *)
-    | G_Load of SLiteral.t
-    (* literal being stored *)
-    | G_Store of SLiteral.t
-    (* none *)
-    | G_Bind
-    (* nesting depth, new value *)
-    | G_MapUpdate of int * SLiteral.t option
-    (* nesting depth, literal retrieved *)
-    | G_MapGet of int * SLiteral.t option
-    (* number of clauses *)
-    | G_MatchStmt of int
-    | G_ReadFromBC
-    | G_AcceptPayment
-    | G_SendMsgs of SLiteral.t list
-    | G_CreateEvnt of SLiteral.t
-    | G_CallProc
 
   (*******************************************************)
   (*                    Contracts                        *)
@@ -439,6 +420,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         let t' = subst_type_in_type' tvar tp t in
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
+    | GasExpr (g, e) -> (GasExpr (g, subst_type_in_expr tvar tp e), rep)
 
   (* get variables that get bound in pattern. *)
   let get_pattern_bounds p =
@@ -488,6 +470,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
               (* bind variables in pattern and recurse for expression. *)
               let bound_vars' = get_pattern_bounds p @ bound_vars in
               recurser e bound_vars' acc)
+      | GasExpr (_, sube) -> recurser sube bound_vars acc
     in
     let fvs = recurser erep [] [] in
     SIdentifier.dedup_id_list fvs
@@ -534,6 +517,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             (as_error_string tf)
       | TFun (tf, _) ->
           sprintf "Type error in type function `%s`:\n" (as_error_string tf)
+      | GasExpr _ -> "Type error in charging gas :-O, this can't occur.\n"
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
             (as_error_string f) ),
@@ -580,6 +564,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
+      | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->
           let is =
             match i with

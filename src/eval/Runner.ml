@@ -30,6 +30,7 @@ open Stdint
 open RunnerUtil
 open RunnerCLI
 open GlobalConfig
+module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
@@ -57,14 +58,16 @@ let check_libs clibs elibs name gas_limit =
                  ~f:(fun x -> EvalUtil.EvalName.as_string (fst x))))
            name);
       gas_remaining
-  | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
+  | Error (err, gas_remaining) ->
+      fatal_error_gas_scale Gas.scale_factor err gas_remaining
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) -> fatal_error_gas err remaining_gas
+  | Error (err, remaining_gas) ->
+      fatal_error_gas_scale Gas.scale_factor err remaining_gas
   | Ok ((_, cstate, field_vals), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
       (cstate, remaining_gas, field_vals)
@@ -75,7 +78,8 @@ let check_extract_cstate name res gas_limit =
 
 let check_after_step res gas_limit =
   match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) -> fatal_error_gas err remaining_gas
+  | Error (err, remaining_gas) ->
+      fatal_error_gas_scale Gas.scale_factor err remaining_gas
   | Ok ((cstate, outs, events, accepted_b), remaining_gas) ->
       plog
         ( sprintf "Success! Here's what we got:\n"
@@ -122,7 +126,7 @@ let output_message_json gas_remaining mlist =
     (List.map mlist ~f:(function
       | Msg m -> JSON.Message.message_to_json m
       | _ ->
-          fatal_error_gas
+          fatal_error_gas_scale Gas.scale_factor
             (mk_error0 "Attempt to send non-message construct.")
             gas_remaining))
 
@@ -137,7 +141,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
   let initargs_str =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
-      fatal_error_gas
+      fatal_error_gas_scale Gas.scale_factor
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
@@ -156,21 +160,31 @@ let validate_get_init_json init_file gas_remaining source_ver =
     | Some (UintLit (Uint32L v)) ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
-        if v' <> mver || mver <> source_ver then fatal_error_gas emsg rgas
-    | _ -> fatal_error_gas emsg rgas
+        if v' <> mver || mver <> source_ver then
+          fatal_error_gas_scale Gas.scale_factor emsg rgas
+    | _ -> fatal_error_gas_scale Gas.scale_factor emsg rgas
   in
   initargs
+
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
 
 let deploy_library args gas_remaining =
   match FEParser.parse_lmodule args.input with
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
-      fatal_error_gas e gas_remaining
-  | Ok lmod ->
+      fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok lmod_nogas ->
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
            args.input);
+      let lmod =
+        gas_cost_rewriter_wrapper gas_remaining RG.lmod_cost lmod_nogas
+      in
+
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
@@ -183,24 +197,30 @@ let deploy_library args gas_remaining =
             (mk_error0 msg)
             gas_remaining
       | Some this_address ->
-          let elibs = import_libs lmod.elibs init_address_map in
+          let elibs =
+            List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+            @@ import_libs lmod.elibs init_address_map
+          in
           let dis_lmod = match Dis.disambiguate_lmodule lmod elibs init_address_map this_address with
-          | Error e ->
-              plog (sprintf "%s\n" "Failed to disambiguate library file.");
-              fatal_error_gas e gas_remaining
-          | Ok res ->
-              plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
-              res
-        in
-        (* Contract library. *)
-        let clibs = Some dis_lmod.libs in
-        
-        (* Checking initialized libraries! *)
-        let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
-        let _ =
-          validate_get_init_json args.input_init gas_remaining' lmod.smver
-        in
-        `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining')) ]
+            | Error e ->
+                plog (sprintf "%s\n" "Failed to disambiguate library file.");
+                fatal_error_gas e gas_remaining
+            | Ok res ->
+                plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
+                res
+          in
+          (* Contract library. *)
+          let clibs = Some dis_lmod.libs in
+
+          (* Checking initialized libraries! *)
+          let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
+          let _ =
+            validate_get_init_json args.input_init gas_remaining' lmod.smver
+          in
+          let gas_remaining'' =
+            Gas.finalize_remaining_gas args.gas_limit gas_remaining'
+          in
+          `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ]
 
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
@@ -209,6 +229,7 @@ let run_with_args args =
     FilePath.check_extension args.input
       GlobalConfig.StdlibTracker.file_extn_library
   in
+  let initial_gas_limit = Uint64.mul args.gas_limit Gas.scale_factor in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
@@ -216,26 +237,26 @@ let run_with_args args =
         UnixLabels.((stat args.input).st_size + (stat args.input_init).st_size)
       in
       let cost = Uint64.of_int cost' in
-      if Uint64.compare args.gas_limit cost < 0 then
-        fatal_error_gas
+      if Uint64.compare initial_gas_limit cost < 0 then
+        fatal_error_gas_scale Gas.scale_factor
           (mk_error0
              (sprintf "Ran out of gas when parsing contract/init files.\n"))
           Uint64.zero
-      else Uint64.sub args.gas_limit cost
+      else Uint64.sub initial_gas_limit cost
     else
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)
       if is_library then
-        fatal_error_gas
+        fatal_error_gas_scale Gas.scale_factor
           (mk_error0
              (sprintf
                 "Cannot run a library contract. They can only be deployed\n"))
           Uint64.zero
-      else if Uint64.compare args.gas_limit cost < 0 then
-        fatal_error_gas
+      else if Uint64.compare initial_gas_limit cost < 0 then
+        fatal_error_gas_scale Gas.scale_factor
           (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
           Uint64.zero
-      else Uint64.sub args.gas_limit cost
+      else Uint64.sub initial_gas_limit cost
   in
 
   if is_library then deploy_library args gas_remaining
@@ -244,12 +265,15 @@ let run_with_args args =
     | Error e ->
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
-        fatal_error_gas e gas_remaining
-    | Ok cmod ->
+        fatal_error_gas_scale Gas.scale_factor e gas_remaining
+    | Ok cmod_nogas ->
         plog
           (sprintf
              "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
              args.input);
+        let cmod =
+          gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost cmod_nogas
+        in
 
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
@@ -264,7 +288,10 @@ let run_with_args args =
                  (sprintf "Ran out of gas when parsing contract/init files.\n"))
               gas_remaining
         | Some this_address ->
-            let elibs = import_libs cmod.elibs init_address_map in
+            let elibs =
+              List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+              @@ import_libs cmod.elibs init_address_map
+            in
             let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
               | Error e ->
                   plog (sprintf "%s\n" "Failed to disambiguate contract file.");
@@ -275,7 +302,7 @@ let run_with_args args =
             in
             (* Contract library. *)
             let clibs = dis_cmod.libs in
-            
+
             (* Checking initialized libraries! *)
             let gas_remaining = check_libs clibs elibs args.input gas_remaining in
             let initargs =
@@ -286,7 +313,7 @@ let run_with_args args =
             let bstate =
               try JSON.BlockChainState.get_json_data args.input_blockchain
               with Invalid_json s ->
-                fatal_error_gas
+                fatal_error_gas_scale Gas.scale_factor
                   ( s
                     @ mk_error0
                       (sprintf "Failed to parse json %s:\n" args.input_blockchain)
@@ -333,7 +360,8 @@ let run_with_args args =
                       in
                       finalize ()
                     with
-                    | Error s -> fatal_error_gas s remaining_gas'
+                    | Error s ->
+                        fatal_error_gas_scale Gas.scale_factor s remaining_gas'
                     | Ok _ -> () );
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
@@ -350,7 +378,7 @@ let run_with_args args =
                 let mmsg =
                   try JSON.Message.get_json_data args.input_message
                   with Invalid_json s ->
-                    fatal_error_gas
+                    fatal_error_gas_scale Gas.scale_factor
                       ( s
                         @ mk_error0
                           (sprintf "Failed to parse json %s:\n" args.input_message)
@@ -437,7 +465,7 @@ let run_with_args args =
                     with
                     | Ok fv, Ok () -> fv
                     | _ ->
-                        fatal_error_gas
+                        fatal_error_gas_scale Gas.scale_factor
                           (mk_error0 "Error finalizing state from StateService")
                           gas
                 in
@@ -445,7 +473,8 @@ let run_with_args args =
                 let osj = output_state_json cstate'.balance field_vals in
                 let omj = output_message_json gas mlist in
                 let oej = `List (output_event_json elist) in
-                ((omj, osj, oej, accepted_b), gas)
+                let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
+                ((omj, osj, oej, accepted_b), gas')
             in
             `Assoc
               [

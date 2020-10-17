@@ -132,6 +132,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             let%bind () = recursion_typ is_adt_in_scope t in
             let%bind new_e = walk e in
             pure @@ RecursionSyntax.Fixpoint (x, t, new_e)
+        | GasExpr (g, sube) ->
+            let%bind sube' = walk sube in
+            pure (RecursionSyntax.GasExpr (g, sube'))
       in
       pure (new_e, rep)
     in
@@ -175,6 +178,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 (sprintf "Procedure %s is not in scope." (as_error_string p))
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
+        | GasStmt g -> pure @@ RecursionSyntax.GasStmt g
       in
       pure (new_s, rep)
     in
@@ -347,9 +351,10 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         SR.get_loc (get_rep lname) )
     @@ let%bind recursion_entries, adts, _, _ =
          foldM lentries ~init:([], [], [], [])
-           ~f:(fun (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
-                   entry
-                   ->
+           ~f:(fun
+                (rec_entries, datatypes, adts_in_scope, adt_ctrs_in_scope)
+                entry
+              ->
              let%bind new_entry, adt_opt =
                recursion_lib_entry
                  (is_adt_in_scope adts_in_scope)

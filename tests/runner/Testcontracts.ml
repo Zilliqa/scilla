@@ -40,12 +40,9 @@ let rec build_contract_tests_with_init_file env name exit_code i n
   if i > n then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
-    let test ~disable_validate_json ~ipc_mode =
+    let test ~ipc_mode =
       let istr = Int.to_string i in
-      let testname =
-        name ^ "_" ^ istr
-        ^ if disable_validate_json then "_disable_validate_json" else ""
-      in
+      let testname = name ^ "_" ^ istr in
       testname
       >:: (* function to run scilla-runner and check exit code *)
       fun test_ctxt ->
@@ -101,11 +98,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           ~f:(fun lib_name cur_args ->
             "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
       in
-      let args =
-        if disable_validate_json || env.server test_ctxt then
-          "-disable-validate-json" :: args'
-        else args'
-      in
+      let args = args' in
       (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
       let runner =
         if env.server test_ctxt then "scilla-client" else "scilla-runner"
@@ -146,14 +139,11 @@ let rec build_contract_tests_with_init_file env name exit_code i n
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
     if Poly.(exit_code = succ_code) then
-      test ~disable_validate_json:true ~ipc_mode:true
-      :: test ~disable_validate_json:false ~ipc_mode:true
-      :: test ~disable_validate_json:false ~ipc_mode:false
-      :: test ~disable_validate_json:true ~ipc_mode:false
+      test ~ipc_mode:true :: test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
            additional_libs init_name
     else
-      test ~disable_validate_json:false ~ipc_mode:false
+      test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
            additional_libs init_name
 
@@ -356,6 +346,8 @@ let contract_tests env =
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];
+                "UintParam"
+                >::: build_contract_tests env "UintParam" fail_code 1 3 [];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
                      "0x565556789012345678901234567890123456abcd" "init" true;

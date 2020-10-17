@@ -24,7 +24,11 @@ Brewfile.lock.json
 _build/
 
 # opam local switch
-_opam/*
+_opam/
+
+# esy package manager
+_esy/
+esy.lock/
 
 # ocamlbuild targets
 *.byte
@@ -41,6 +45,8 @@ scilla
 
 # ocamldebug init file
 .ocamldebug
+
+.vscode/
 
 # -----------------------------------------------------------------------------
 #  Emacs-generated TeX files

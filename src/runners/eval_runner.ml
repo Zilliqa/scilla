@@ -28,12 +28,19 @@ open Result.Let_syntax
 open ParserUtil
 open MonadUtil
 
+module RG = Gas.ScillaGas (ParserRep) (ParserRep)
+
 (* Stdlib are implicitly imported, so we need to use local names in the parser *)
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module GlobalSyntax = Dis.PostDisSyntax
 
 let default_gas_limit = Stdint.Uint64.of_int 2000
+
+let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
+  match rewriter anode with
+  | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
+  | Ok anode' -> anode'
 
 let disambiguate e (std_lib : GlobalSyntax.libtree list) =
   let open Dis in
@@ -67,12 +74,16 @@ let run () =
     else cli.gas_limit
   in
   match FEParser.parse_expr_from_file filename with
-  | Ok e -> (
+  | Ok e_nogas -> (
+      let e = gas_cost_rewriter_wrapper gas_limit RG.expr_static_cost e_nogas in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libraries in known stdlib paths. *)
-      let elibs = import_all_libs lib_dirs in
+      let elibs =
+        List.map ~f:(gas_cost_rewriter_wrapper gas_limit RG.libtree_cost)
+        @@ import_all_libs lib_dirs
+      in
       match disambiguate e elibs with
       | Ok dis_e -> (
           (* Since this is not a contract, we have no in-contract lib defined. *)

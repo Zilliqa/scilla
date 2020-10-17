@@ -267,6 +267,7 @@ struct
       match e with
       | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ ->
           pure ()
+      | GasExpr (_, e) -> expr_iter e cparams cfields pnames
       | Let (i, _, e_lhs, e_rhs) ->
           check_warn_redef cparams cfields pnames [] i;
           let%bind () = expr_iter e_lhs cparams cfields pnames in
@@ -335,7 +336,7 @@ struct
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
-                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
+                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->

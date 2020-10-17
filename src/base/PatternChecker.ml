@@ -197,6 +197,9 @@ struct
         wrap_pmcheck_err erep
         @@ let%bind checked_body = pm_check_expr body in
            pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
+    | GasExpr (g, e) ->
+        let%bind e' = pm_check_expr e in
+        pure (CheckedPatternSyntax.GasExpr (g, e'), rep)
 
   let rec pm_check_stmts stmts =
     match stmts with
@@ -236,6 +239,7 @@ struct
           | CallProc (p, args) ->
               pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
+          | GasStmt g -> pure (CheckedPatternSyntax.GasStmt g, rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
         pure @@ (checked_s :: checked_stmts)

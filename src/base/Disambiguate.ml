@@ -399,6 +399,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fixpoint (dis_f, dis_t, dis_body)
+        | GasExpr (g, e) ->
+            (* TODO: Might need to disambiguate g - check with Vaivas *)
+            ...
+            let%bind e' = recurser simp_var_dict e in
+            pure @@ PostDisSyntax.GasExpr (g, e')
       in
       pure @@ (new_e, rep)
     in
@@ -534,6 +539,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 ~f:(disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
             pure @@ (PostDisSyntax.Throw dis_xopt, var_dict_acc)
+        | GasStmt g ->
+            (* TODO: May need to disambiguate g *)
+            ...
+            pure @@ (PostDisSyntax.GasStmt g, var_dict_acc)
       in
       pure @@ (new_var_dict, (dis_s, rep) :: dis_stmts_acc_rev)
     in

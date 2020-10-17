@@ -95,6 +95,7 @@ struct
         ots :: List.concat clausets
     | Builtin (_, il) -> List.map il ~f:calc_ident_locs
     | TFun (i, e) -> calc_ident_locs i :: type_info_expr e
+    | GasExpr (_, e) -> type_info_expr e
 
   let rec type_info_stmts stmts =
     List.fold_right stmts ~init:[] ~f:(fun (stmt, _srep) acc ->
@@ -121,7 +122,7 @@ struct
             in
             ots :: List.concat clausets
         | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
-        | AcceptPayment -> []
+        | AcceptPayment | GasStmt _ -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
         | Iterate (l, _) -> [ calc_ident_locs l ]
         | Throw iopt -> (

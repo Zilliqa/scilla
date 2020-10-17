@@ -21,7 +21,6 @@ open Scilla_base
 open ParserUtil
 open Literal
 open Syntax
-open ErrorUtils
 open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
@@ -44,23 +43,6 @@ module EvalBuiltIns = ScillaBuiltIns (SR) (ER)
 module EvalGas = ScillaGas (SR) (ER)
 open EvalIdentifier
 open EvalSyntax
-
-(* Return a builtin_op wrapped in EvalMonad *)
-let builtin_executor f arg_tps arg_lits =
-  let%bind _, ret_typ, op =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f arg_tps
-  in
-  let%bind cost = fromR @@ EvalGas.builtin_cost f arg_lits in
-  let res () = op arg_lits ret_typ in
-  checkwrap_opR res (Uint64.of_int cost)
-
-(* Add a check that the just evaluated statement was in our gas limit. *)
-let stmt_gas_wrap scon sloc =
-  let%bind cost = fromR @@ EvalGas.stmt_cost scon in
-  let err = mk_error1 "Ran out of gas evaluating statement" sloc in
-  let dummy () = pure () in
-  (* the operation is already executed unfortunately *)
-  checkwrap_op dummy (Uint64.of_int cost) err
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
@@ -96,6 +78,7 @@ module Env = struct
   let filter e ~f = List.filter e ~f:(fun (id, _) -> f id)
 
   let lookup e k =
+    let open MonadUtil in
     let i = get_id k in
     match List.Assoc.find e i ~equal:[%equal : EvalName.t] with
     | Some v -> pure v
@@ -191,11 +174,11 @@ module Configuration = struct
     if [%equal : EvalName.t] i balance_label then
       (* Balance is a special case *)
       let l = EvalLiteral.UintLit (Uint128L st.balance) in
-      pure (l, G_Load l)
+      pure l
     else
       let%bind fval = fromR @@ StateService.fetch ~fname:k ~keys:[] in
       match fval with
-      | Some v, g -> pure (v, g)
+      | Some v -> pure v
       | _ ->
           fail1
             (Printf.sprintf "Error loading field %s" (EvalName.as_error_string i))
@@ -219,38 +202,19 @@ module Configuration = struct
           in
           (* Need to wrap the result in a Scilla Option. *)
           match vopt with
-          | Some v, G_MapGet (i, Some lo) ->
-              let%bind lo_lit = fromR @@ some_lit lo in
+          | Some v ->
               let%bind v_lit = fromR @@ some_lit v in
-              let g' = G_MapGet (i, Some lo_lit) in
-              pure (v_lit, g')
-          | None, G_MapGet (i, None) ->
-              let g' = G_MapGet (i, Some (none_lit vt)) in
-              pure (none_lit vt, g')
-          | _ ->
-              fail1
-                (sprintf
-                   "Inconsistency in fetching map value form StateService for \
-                    field %s"
-                   (as_error_string m))
-                (ER.get_loc (get_rep m)) )
+              pure v_lit
+          | None -> pure (none_lit vt) )
       | None ->
           fail1
             (sprintf "Unable to fetch from map field %s" (as_error_string m))
             (ER.get_loc (get_rep m))
     else
-      let%bind is_member, g =
+      let%bind is_member =
         fromR @@ StateService.is_member ~fname:m ~keys:klist
       in
-      match g with
-      | G_MapGet (i, _) ->
-          let is_member_lit = EvalLiteral.build_bool_lit is_member in
-          let g' = G_MapGet (i, Some is_member_lit) in
-          pure (is_member_lit, g')
-      | _ ->
-          fail1
-            (sprintf "Unable to check exists for map field %s" (as_error_string m))
-            (ER.get_loc (get_rep m))
+      pure @@ EvalLiteral.build_bool_lit is_member
 
   let bind st k v =
     let e = st.env in
@@ -354,7 +318,7 @@ module Configuration = struct
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
-    pure ({ conf with emitted }, G_SendMsgs ls)
+    pure { conf with emitted }
 
   let validate_event m' =
     let open EvalLiteral in
@@ -391,7 +355,7 @@ module Configuration = struct
     let%bind event' = validate_event event in
     let old_events = conf.events in
     let events = event' :: old_events in
-    pure ({ conf with events }, G_CreateEvnt event')
+    pure { conf with events }
 end
 
 (*****************************************************)
