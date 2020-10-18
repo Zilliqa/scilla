@@ -49,15 +49,12 @@ let reserved_names =
     RecursionPrinciples.recursion_principles
 
 (* Printing result *)
-let pp_result r exclude_names =
+let pp_result (e, env) exclude_names gas_remaining =
   let enames = List.append exclude_names reserved_names in
-  match r with
-  | Error (s, _) -> sprint_scilla_error_list s
-  | Ok ((e, env), _) ->
-      let filter_prelude (k, _) =
-        not @@ List.mem enames k ~equal:String.( = )
-      in
-      sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
+  let filter_prelude (k, _) = not @@ List.mem enames k ~equal:String.( = ) in
+  sprintf "%s,\n%s\nGas remaining: %s" (Env.pp_value e)
+    (Env.pp ~f:filter_prelude env)
+    (Stdint.Uint64.to_string gas_remaining)
 
 (* Makes sure that the literal has no closures in it *)
 (* TODO: Augment with deep checking *)

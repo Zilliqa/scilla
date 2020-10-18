@@ -220,9 +220,13 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           | Iterate (l, _) ->
               let g = GasStmt (GasCharge.LengthOf (GI.get_id l)) in
               pure @@ [ (g, srep); (s, srep) ]
-          | Throw _ ->
-              (* TODO: Throw should charge same as event and send. *)
-              pure @@ [ (s, srep) ]
+          | Throw eopt ->
+              let g =
+                match eopt with
+                | Some e -> GasCharge.SizeOf (GI.get_id e)
+                | None -> GasCharge.StaticCost 1
+              in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
           | GasStmt _ -> fail0 "Unexpected gas charge"
         in
 

@@ -64,7 +64,8 @@ let run () =
       let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
       let res = Eval.(exp_eval e env init_gas_kont gas_remaining) in
       match res with
-      | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
+      | Ok (res', gas_remaining) ->
+          printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining)
       | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
   | Error e -> fatal_error e
 
