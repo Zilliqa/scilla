@@ -80,17 +80,18 @@ let sanitize_literal l =
 let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
+  let open EvalGas.GasSyntax in
   let logger u = Float.to_int @@ Float.log (u +. 1.0) in
   let resolver = function
-    | GasCharge.SizeOf vstr ->
+    | SGasCharge.SizeOf vstr ->
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         EvalGas.literal_cost l
-    | GasCharge.ValueOf vstr -> (
+    | SGasCharge.ValueOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
         | _ -> fail0 ("Variable " ^ vstr ^ " did not resolve to an integer") )
-    | GasCharge.LogOf vstr -> (
+    | SGasCharge.LogOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
@@ -102,7 +103,7 @@ let eval_gas_charge env g =
         | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
         | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
         | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value" )
-    | GasCharge.LengthOf vstr -> (
+    | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | Map (_, m) -> pure @@ Caml.Hashtbl.length m
@@ -110,14 +111,14 @@ let eval_gas_charge env g =
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
             pure @@ List.length l'
         | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists" )
-    | GasCharge.MapSortCost vstr ->
+    | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
         pure @@ EvalGas.map_sort_cost m
-    | GasCharge.SumOf _ | GasCharge.ProdOf _ | GasCharge.DivCeil _
-    | GasCharge.MinOf _ | GasCharge.StaticCost _ ->
+    | SGasCharge.SumOf _ | SGasCharge.ProdOf _ | SGasCharge.DivCeil _
+    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ ->
         fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
-  GasCharge.eval resolver g
+  SGasCharge.eval resolver g
 
 let builtin_cost env f tps args_id =
   let open MonadUtil in

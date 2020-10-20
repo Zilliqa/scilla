@@ -240,6 +240,31 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         fail @@ mk_type_error1 msg lc
 
   (**************************************************************)
+  (*               Typing explict gas charges                   *)
+  (**************************************************************)
+
+  (* No actual typechecking required - we just need to translate
+     gas_charge constructors to the new syntax *)
+
+  let rec type_gas_charge gc =
+    let open UntypedSyntax.SGasCharge in
+    match gc with
+    | StaticCost i -> TypedSyntax.SGasCharge.StaticCost i
+    | SizeOf v -> TypedSyntax.SGasCharge.SizeOf v
+    | ValueOf v -> TypedSyntax.SGasCharge.ValueOf v
+    | LengthOf v -> TypedSyntax.SGasCharge.LengthOf v
+    | MapSortCost m -> TypedSyntax.SGasCharge.MapSortCost m
+    | SumOf (g1, g2) ->
+        TypedSyntax.SGasCharge.SumOf (type_gas_charge g1, type_gas_charge g2)
+    | ProdOf (g1, g2) ->
+        TypedSyntax.SGasCharge.ProdOf (type_gas_charge g1, type_gas_charge g2)
+    | MinOf (g1, g2) ->
+        TypedSyntax.SGasCharge.MinOf (type_gas_charge g1, type_gas_charge g2)
+    | DivCeil (g1, g2) ->
+        TypedSyntax.SGasCharge.DivCeil (type_gas_charge g1, type_gas_charge g2)
+    | LogOf v -> TypedSyntax.SGasCharge.LogOf v
+
+  (**************************************************************)
   (*                   Typing expressions                       *)
   (**************************************************************)
 
@@ -471,7 +496,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              (mk_qual_tp @@ msg_typ, rep) )
     | GasExpr (g, e) ->
         let%bind ((_, et) as e') = type_expr e tenv in
-        pure (TypedSyntax.GasExpr (g, e'), et)
+        pure (TypedSyntax.GasExpr (type_gas_charge g, e'), et)
 
   and app_type tenv ftyp actuals ~lc =
     (* Type-check function application *)
@@ -842,7 +867,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts = type_stmts sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.GasStmt g, rep)
+                 (TypedSyntax.GasStmt (type_gas_charge g), rep)
                  checked_stmts )
 
   and type_match_stmt_branch env styp ptrn sts get_loc =

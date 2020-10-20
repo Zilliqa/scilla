@@ -108,6 +108,25 @@ struct
 
   let add_noinfo_to_builtin (op, rep) = (op, (ECFR.NoInfo, rep))
 
+  let rec cf_init_gas_charge gc =
+    let open TypedSyntax.SGasCharge in
+    match gc with
+    | StaticCost i -> CFSyntax.SGasCharge.StaticCost i
+    | SizeOf v -> CFSyntax.SGasCharge.SizeOf v
+    | ValueOf v -> CFSyntax.SGasCharge.ValueOf v
+    | LengthOf v -> CFSyntax.SGasCharge.LengthOf v
+    | MapSortCost m -> CFSyntax.SGasCharge.MapSortCost m
+    | SumOf (g1, g2) ->
+        CFSyntax.SGasCharge.SumOf (cf_init_gas_charge g1, cf_init_gas_charge g2)
+    | ProdOf (g1, g2) ->
+        CFSyntax.SGasCharge.ProdOf (cf_init_gas_charge g1, cf_init_gas_charge g2)
+    | MinOf (g1, g2) ->
+        CFSyntax.SGasCharge.MinOf (cf_init_gas_charge g1, cf_init_gas_charge g2)
+    | DivCeil (g1, g2) ->
+        CFSyntax.SGasCharge.DivCeil
+          (cf_init_gas_charge g1, cf_init_gas_charge g2)
+    | LogOf v -> CFSyntax.SGasCharge.LogOf v
+
   let rec cf_init_tag_pattern p =
     match p with
     | Wildcard -> CFSyntax.Wildcard
@@ -128,7 +147,8 @@ struct
       | Var i -> CFSyntax.Var (add_noinfo_to_ident i)
       | Fun (arg, t, body) ->
           CFSyntax.Fun (add_noinfo_to_ident arg, t, cf_init_tag_expr body)
-      | GasExpr (g, body) -> CFSyntax.GasExpr (g, cf_init_tag_expr body)
+      | GasExpr (g, body) ->
+          CFSyntax.GasExpr (cf_init_gas_charge g, cf_init_tag_expr body)
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
@@ -200,7 +220,7 @@ struct
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
           | None -> CFSyntax.Throw None )
-      | GasStmt g -> CFSyntax.GasStmt g
+      | GasStmt g -> CFSyntax.GasStmt (cf_init_gas_charge g)
     in
     (res_s, rep)
 

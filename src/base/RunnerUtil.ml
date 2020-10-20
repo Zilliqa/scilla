@@ -202,7 +202,7 @@ let eliminate_namespaces lib_tree ns_tree =
                 (Fixpoint (i, t, exp'), eloc)
             | GasExpr (g, e) ->
                 let g' =
-                  GasCharge.replace_variable_name g
+                  RUSyntax.SGasCharge.replace_variable_name g
                     ~f:(check_and_prefix_id_string env)
                 in
                 (GasExpr (g', rename_in_expr e env), eloc)
