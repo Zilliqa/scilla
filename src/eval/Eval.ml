@@ -50,7 +50,7 @@ let reserved_names =
     RecursionPrinciples.recursion_principles
 
 (* Printing result *)
-let pp_result r exclude_names =
+let pp_result r exclude_names gas_remaining =
   let enames = List.append exclude_names reserved_names in
   match r with
   | Error (s, _) -> sprint_scilla_error_list s
@@ -58,7 +58,7 @@ let pp_result r exclude_names =
       let filter_prelude (k, _) =
         not @@ List.mem enames k ~equal:[%equal : EvalName.t]
       in
-      sprintf "%s,\n%s" (Env.pp_value e) (Env.pp ~f:filter_prelude env)
+      sprintf "%s,\n%s\nGas remaining: %s" (Env.pp_value e) (Env.pp ~f:filter_prelude env) (Stdint.Uint64.to_string gas_remaining)
 
 (* Makes sure that the literal has no closures in it *)
 (* TODO: Augment with deep checking *)
@@ -84,17 +84,18 @@ let sanitize_literal l =
 let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
+  let open EvalGas.GasSyntax in
   let logger u = Float.to_int @@ Float.log (u +. 1.0) in
   let resolver = function
-    | GasCharge.SizeOf vstr ->
+    | SGasCharge.SizeOf vstr ->
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         EvalGas.literal_cost l
-    | GasCharge.ValueOf vstr -> (
+    | SGasCharge.ValueOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
-        | _ -> fail0 ("Variable " ^ vstr ^ " did not resolve to an integer") )
-    | GasCharge.LogOf vstr -> (
+        | _ -> fail0 ("Variable " ^ (EvalName.as_error_string vstr) ^ " did not resolve to an integer") )
+    | SGasCharge.LogOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
@@ -106,7 +107,7 @@ let eval_gas_charge env g =
         | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
         | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
         | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value" )
-    | GasCharge.LengthOf vstr -> (
+    | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | Map (_, m) -> pure @@ Caml.Hashtbl.length m
@@ -114,14 +115,14 @@ let eval_gas_charge env g =
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
             pure @@ List.length l'
         | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists" )
-    | GasCharge.MapSortCost vstr ->
+    | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
         pure @@ EvalGas.map_sort_cost m
-    | GasCharge.SumOf _ | GasCharge.ProdOf _ | GasCharge.DivCeil _
-    | GasCharge.MinOf _ | GasCharge.StaticCost _ ->
+    | SGasCharge.SumOf _ | SGasCharge.ProdOf _ | SGasCharge.DivCeil _
+    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ ->
         fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
-  GasCharge.eval resolver g
+  SGasCharge.eval resolver g
 
 let builtin_cost env f tps args_id =
   let open MonadUtil in
@@ -443,8 +444,8 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
   let sender = GlobalName.parse_simple_name (MessagePayload.sender_label) in
   let amount = GlobalName.parse_simple_name (MessagePayload.amount_label) in
-  let%bind sender_value = Configuration.lookup conf (mk_loc_id sender) in
-  let%bind amount_value = Configuration.lookup conf (mk_loc_id amount) in
+  let%bind sender_value = fromR @@ Configuration.lookup conf (mk_loc_id sender) in
+  let%bind amount_value = fromR @@ Configuration.lookup conf (mk_loc_id amount) in
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }

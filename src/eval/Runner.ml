@@ -181,9 +181,6 @@ let deploy_library args gas_remaining =
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
            args.input);
-      let lmod =
-        gas_cost_rewriter_wrapper gas_remaining RG.lmod_cost lmod_nogas
-      in
 
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
@@ -193,21 +190,25 @@ let deploy_library args gas_remaining =
       | None -> 
           let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
           plog msg;
-          fatal_error_gas 
+          fatal_error_gas_scale
+            Gas.scale_factor
             (mk_error0 msg)
             gas_remaining
       | Some this_address ->
           let elibs =
             List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
-            @@ import_libs lmod.elibs init_address_map
+            @@ import_libs lmod_nogas.elibs init_address_map
           in
-          let dis_lmod = match Dis.disambiguate_lmodule lmod elibs init_address_map this_address with
+          let dis_lmod_nogas = match Dis.disambiguate_lmodule lmod_nogas elibs init_address_map this_address with
             | Error e ->
                 plog (sprintf "%s\n" "Failed to disambiguate library file.");
-                fatal_error_gas e gas_remaining
+                fatal_error_gas_scale Gas.scale_factor e gas_remaining
             | Ok res ->
                 plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
                 res
+          in
+          let dis_lmod =
+            gas_cost_rewriter_wrapper gas_remaining RG.lmod_cost dis_lmod_nogas
           in
           (* Contract library. *)
           let clibs = Some dis_lmod.libs in
@@ -215,7 +216,7 @@ let deploy_library args gas_remaining =
           (* Checking initialized libraries! *)
           let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
           let _ =
-            validate_get_init_json args.input_init gas_remaining' lmod.smver
+            validate_get_init_json args.input_init gas_remaining' dis_lmod.smver
           in
           let gas_remaining'' =
             Gas.finalize_remaining_gas args.gas_limit gas_remaining'
@@ -271,9 +272,6 @@ let run_with_args args =
           (sprintf
              "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
              args.input);
-        let cmod =
-          gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost cmod_nogas
-        in
 
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
@@ -283,30 +281,34 @@ let run_with_args args =
         | None -> 
             let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
             plog msg;
-            fatal_error_gas 
+            fatal_error_gas_scale Gas.scale_factor
               (mk_error0
                  (sprintf "Ran out of gas when parsing contract/init files.\n"))
               gas_remaining
         | Some this_address ->
             let elibs =
               List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
-              @@ import_libs cmod.elibs init_address_map
+              @@ import_libs cmod_nogas.elibs init_address_map
             in
-            let dis_cmod = match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
+            let dis_cmod_nogas = match Dis.disambiguate_cmodule cmod_nogas elibs init_address_map this_address with
               | Error e ->
                   plog (sprintf "%s\n" "Failed to disambiguate contract file.");
-                  fatal_error_gas e gas_remaining
+                  fatal_error_gas_scale Gas.scale_factor e gas_remaining
               | Ok res ->
                   plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
                   res
             in
+            let dis_cmod =
+              gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost dis_cmod_nogas
+            in
+
             (* Contract library. *)
             let clibs = dis_cmod.libs in
 
             (* Checking initialized libraries! *)
             let gas_remaining = check_libs clibs elibs args.input gas_remaining in
             let initargs =
-              validate_get_init_json args.input_init gas_remaining cmod.smver
+              validate_get_init_json args.input_init gas_remaining dis_cmod.smver
             in
 
             (* Retrieve block chain state  *)
@@ -396,6 +398,7 @@ let run_with_args args =
                     let cstate, gas_remaining', _ =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+
                     (* Initialize the state server. *)
                     let fields =
                       List.filter_map cstate.fields ~f:(fun (s, t) ->
@@ -412,7 +415,7 @@ let run_with_args args =
                     let curargs, cur_bal =
                       try input_state_json args.input_state
                       with Invalid_json s ->
-                        fatal_error_gas
+                        fatal_error_gas_scale Gas.scale_factor
                           ( s
                             @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
@@ -474,11 +477,12 @@ let run_with_args args =
                 let omj = output_message_json gas mlist in
                 let oej = `List (output_event_json elist) in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
+
                 ((omj, osj, oej, accepted_b), gas')
             in
             `Assoc
               [
-                ("scilla_major_version", `String (Int.to_string cmod.smver));
+                ("scilla_major_version", `String (Int.to_string dis_cmod.smver));
                 ("gas_remaining", `String (Uint64.to_string gas));
                 (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
                 ("messages", output_msg_json);

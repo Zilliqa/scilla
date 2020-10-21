@@ -194,6 +194,52 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     recurse t
 
   (**************************************************************)
+  (*               Disambiguating explict gas charges           *)
+  (**************************************************************)
+
+  (* No variable bindings in gas charge nodes, so dis_id_helper just wraps
+     a call to disambiguate_identifier using the appropriate dictionaries. *)
+
+  let disambiguate_gas_charge dis_id_helper gc =
+    let rec recurser gc =
+      let open PreDisSyntax.SGasCharge in
+      match gc with
+      | StaticCost i -> pure @@ PostDisSyntax.SGasCharge.StaticCost i
+      | SizeOf v ->
+          let%bind dis_v = dis_id_helper v in
+          pure @@ PostDisSyntax.SGasCharge.SizeOf dis_v
+      | ValueOf v ->
+          let%bind dis_v = dis_id_helper v in
+          pure @@ PostDisSyntax.SGasCharge.ValueOf dis_v
+      | LengthOf v ->
+          let%bind dis_v = dis_id_helper v in
+          pure @@ PostDisSyntax.SGasCharge.LengthOf dis_v
+      | MapSortCost m ->
+          let%bind dis_m = dis_id_helper m in
+          pure @@ PostDisSyntax.SGasCharge.MapSortCost dis_m
+      | SumOf (g1, g2) ->
+          let%bind dis_g1 = recurser g1 in
+          let%bind dis_g2 = recurser g2 in
+          pure @@ PostDisSyntax.SGasCharge.SumOf (dis_g1, dis_g2)
+      | ProdOf (g1, g2) ->
+          let%bind dis_g1 = recurser g1 in
+          let%bind dis_g2 = recurser g2 in
+          pure @@ PostDisSyntax.SGasCharge.ProdOf (dis_g1, dis_g2)
+      | MinOf (g1, g2) ->
+          let%bind dis_g1 = recurser g1 in
+          let%bind dis_g2 = recurser g2 in
+          pure @@ PostDisSyntax.SGasCharge.MinOf (dis_g1, dis_g2)
+      | DivCeil (g1, g2) ->
+          let%bind dis_g1 = recurser g1 in
+          let%bind dis_g2 = recurser g2 in
+          pure @@ PostDisSyntax.SGasCharge.DivCeil (dis_g1, dis_g2)
+      | LogOf v ->
+          let%bind dis_v = dis_id_helper v in
+          pure @@ PostDisSyntax.SGasCharge.LogOf dis_v
+    in
+    recurser gc
+
+  (**************************************************************)
   (*                Disambiguate expressions                    *)
   (**************************************************************)
 
@@ -290,6 +336,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
     recurser p
 
   let disambiguate_exp (dicts : name_dicts) erep =
+    let disambiguate_name_helper simp_var_dict loc nm =
+      disambiguate_name simp_var_dict nm loc
+    in
     let disambiguate_identifier_helper simp_var_dict loc id =
       disambiguate_identifier simp_var_dict id loc
     in
@@ -400,10 +449,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_body = recurser body_simp_var_dict body in
             pure @@ PostDisSyntax.Fixpoint (dis_f, dis_t, dis_body)
         | GasExpr (g, e) ->
-            (* TODO: Might need to disambiguate g - check with Vaivas *)
-            ...
-            let%bind e' = recurser simp_var_dict e in
-            pure @@ PostDisSyntax.GasExpr (g, e')
+            let%bind dis_g =
+              disambiguate_gas_charge (disambiguate_name_helper simp_var_dict (ER.get_loc rep)) g
+            in
+            let%bind dis_e = recurser simp_var_dict e in
+            pure @@ PostDisSyntax.GasExpr (dis_g, dis_e)
       in
       pure @@ (new_e, rep)
     in
@@ -414,6 +464,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (**************************************************************)
 
   let rec disambiguate_stmts (dicts : name_dicts) stmts =
+    let disambiguate_name_helper simp_var_dict loc nm =
+      disambiguate_name simp_var_dict nm loc
+    in
     let disambiguate_identifier_helper simp_var_dict loc id =
       disambiguate_identifier simp_var_dict id loc
     in
@@ -540,9 +593,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.Throw dis_xopt, var_dict_acc)
         | GasStmt g ->
-            (* TODO: May need to disambiguate g *)
-            ...
-            pure @@ (PostDisSyntax.GasStmt g, var_dict_acc)
+            let%bind dis_g =
+              disambiguate_gas_charge
+                (disambiguate_name_helper var_dict_acc (SR.get_loc rep))
+                g
+            in
+            pure @@ (PostDisSyntax.GasStmt dis_g, var_dict_acc)
       in
       pure @@ (new_var_dict, (dis_s, rep) :: dis_stmts_acc_rev)
     in

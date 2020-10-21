@@ -428,7 +428,6 @@ let rec json_to_adtargs cname tlist this_address ajs =
   OutputLiteral.ADTValue (cname, tlist, llist)
 
 and read_adt_json name this_address j tlist_verify =
-  let open Datatypes in
   let open OutputLiteral in
   let res =
     match j with
@@ -709,9 +708,6 @@ module InputStateService = struct
       | false, _ -> None
   end
 
-  open Result.Let_syntax
-  open MonadUtil
-
   type ss_field = {
     fname : InputName.t;
     (* Easier to disambiguate the type before fetching *)
@@ -726,7 +722,7 @@ module InputStateService = struct
         fatal_error (mk_error0
           (sprintf "StateService: Field %s not found on IPC server."
              (InputIdentifier.as_error_string fname)))
-    | Some res' -> res
+    | Some _ -> res
 
   let get_full_state fl ~socket_addr ~this_address =
     List.map fl ~f:(fun f ->
@@ -777,11 +773,11 @@ let run_with_args args =
           (* Initialise with the final values - that's all that's needed. *)
           let () = OutputStateService.initialize ~sm ~fields:outputfields in
           let _ = OutputStateService.finalize () in
-          
-          ... (* TODO: Consider whether to still support state file input. *)
+          (*           ...  *)
+(* TODO: Consider whether to still support state file input. *)
             let state = parse_json args.input_state this_address in
 
-            ...
+(*            ...*)
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
           (init, state)
         with Invalid_json s ->

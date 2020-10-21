@@ -61,6 +61,28 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     walk t
 
+  let rec recursion_gas_charge gc =
+    let open PreRecursionSyntax.SGasCharge in
+    match gc with
+    | StaticCost i -> RecursionSyntax.SGasCharge.StaticCost i
+    | SizeOf v -> RecursionSyntax.SGasCharge.SizeOf v
+    | ValueOf v -> RecursionSyntax.SGasCharge.ValueOf v
+    | LengthOf v -> RecursionSyntax.SGasCharge.LengthOf v
+    | MapSortCost m -> RecursionSyntax.SGasCharge.MapSortCost m
+    | SumOf (g1, g2) ->
+        RecursionSyntax.SGasCharge.SumOf
+          (recursion_gas_charge g1, recursion_gas_charge g2)
+    | ProdOf (g1, g2) ->
+        RecursionSyntax.SGasCharge.ProdOf
+          (recursion_gas_charge g1, recursion_gas_charge g2)
+    | MinOf (g1, g2) ->
+        RecursionSyntax.SGasCharge.MinOf
+          (recursion_gas_charge g1, recursion_gas_charge g2)
+    | DivCeil (g1, g2) ->
+        RecursionSyntax.SGasCharge.DivCeil
+          (recursion_gas_charge g1, recursion_gas_charge g2)
+    | LogOf v -> RecursionSyntax.SGasCharge.LogOf v
+
   let recursion_payload p =
     match p with
     | MLit l -> RecursionSyntax.MLit l
@@ -134,7 +156,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.Fixpoint (x, t, new_e)
         | GasExpr (g, sube) ->
             let%bind sube' = walk sube in
-            pure (RecursionSyntax.GasExpr (g, sube'))
+            pure (RecursionSyntax.GasExpr (recursion_gas_charge g, sube'))
       in
       pure (new_e, rep)
     in
@@ -178,7 +200,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 (sprintf "Procedure %s is not in scope." (as_error_string p))
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
-        | GasStmt g -> pure @@ RecursionSyntax.GasStmt g
+        | GasStmt g -> pure @@ RecursionSyntax.GasStmt (recursion_gas_charge g)
       in
       pure (new_s, rep)
     in

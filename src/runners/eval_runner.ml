@@ -75,7 +75,6 @@ let run () =
   in
   match FEParser.parse_expr_from_file filename with
   | Ok e_nogas -> (
-      let e = gas_cost_rewriter_wrapper gas_limit RG.expr_static_cost e_nogas in
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
       let lib_dirs = StdlibTracker.get_stdlib_dirs () in
       if List.is_empty lib_dirs then stdlib_not_found_err ();
@@ -84,8 +83,9 @@ let run () =
         List.map ~f:(gas_cost_rewriter_wrapper gas_limit RG.libtree_cost)
         @@ import_all_libs lib_dirs
       in
-      match disambiguate e elibs with
-      | Ok dis_e -> (
+      match disambiguate e_nogas elibs with
+      | Ok dis_e_nogas -> (
+          let dis_e = gas_cost_rewriter_wrapper gas_limit RG.expr_static_cost dis_e_nogas in
           (* Since this is not a contract, we have no in-contract lib defined. *)
           let envres = Eval.init_libraries None elibs in
           let env, gas_remaining =
@@ -94,9 +94,9 @@ let run () =
             | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
           in
           let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
-          let res = Eval.(exp_eval_wrapper dis_e env init_gas_kont gas_remaining) in
-          match res with
-          | Ok _ -> printf "%s\n" (Eval.pp_result res lib_fnames)
+          let res' = Eval.(exp_eval dis_e env init_gas_kont gas_remaining) in
+          match res' with
+          | Ok (_, gas_remaining)  -> printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining)
           | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
       | Error e -> fatal_error e )
   | Error e -> fatal_error e

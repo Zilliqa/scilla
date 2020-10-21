@@ -174,6 +174,25 @@ let partition_mapM ~f l =
   in
   (List.rev fst_rev, List.rev snd_rev)
 
+(* Monadic version of List.filter_map *)
+let filter_mapM ~f alist =
+  let rec recurser alist =
+    match alist with
+    | [] -> pure []
+    | a :: rem -> (
+        match%bind f a with
+        | Some a' ->
+            let%bind rem' = recurser rem in
+            pure (a' :: rem')
+        | None -> recurser rem )
+  in
+  recurser alist
+
+(* Monadic version of List.filter *)
+let filter f alist =
+  let f' a = match%bind f a with true -> pure (Some a) | false -> pure None in
+  filter_mapM ~f:f' alist
+
 (* Monadic wrapper around any container's fold (Set, Map etc). *)
 (* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
 let wrapM_folder ~folder ~f ~init l =
