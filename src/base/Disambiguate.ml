@@ -273,8 +273,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           let%bind dis_ls = mapM ls ~f:recurser in
           pure @@ PostDisSyntax.SLiteral.ADTValue (dis_s, dis_ts, dis_ls)
-      (* TODO: Msg and Map are needed to migrate existing jsons. They can be changed to fail once migration is done. *)
       | Msg msg_entries ->
+          (* Msg literals are strictly speaking illegal, but the parser should prevent us from ever getting here. *)
           let%bind res_msg_entries =
             foldrM msg_entries ~init:[] ~f:(fun acc (label, l) ->
                 let%bind res_l = recurser l in
@@ -282,6 +282,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
+          (* A map literal can only be Empty, but we disambiguate everything just in case *)
           let open Sexplib.Std in
           (* Use Sexplib.Std hashtable *)
           let%bind res_kt =

@@ -106,10 +106,10 @@ let validate_main usage =
     else msg
   in
   let msg =
-    (* Either output_state file or -ipc must be specified, but not both *)
-    if (String.is_empty !f_output_state && String.is_empty !i_ipc_address)
-    || (not (String.is_empty !f_output_state) && not (String.is_empty !i_ipc_address)) then
-      msg ^ "Either the output state file or -ipc must be specified\n"
+    (* Either input_state file or -ipc must be specified, but not both *)
+    if (String.is_empty !f_input_state && String.is_empty !i_ipc_address)
+    || (not (String.is_empty !f_input_state) && not (String.is_empty !i_ipc_address)) then
+      msg ^ "Either the input state file or -ipc must be specified\n"
     else msg
   in
   if not @@ String.is_empty msg then
@@ -756,29 +756,37 @@ let run_with_args args =
           (* parse_json reads, parses and disambiguates the json file *)
           let init = parse_json args.input_init this_address in
 
-          (* Fetch state from IPC server *)
-          let inputfields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
-              let open InputStateService in
-              (* Disambiguate type before fetching - it's easier to parse the json that way *)
-              { fname = (InputIdentifier.get_id fname) ; ftyp = disambiguate_type ftyp this_address; fval = None })
-          in
-          (* Fetch state. Parsing the fetched jsons disambiguates *)
-          let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
+          let state =
+            if not @@ String.is_empty args.input_state
+            then
+              (* State json provided. Do not use IPC. *)
+              parse_json args.input_state this_address
+            else
+              (* No state json. Use IPC *)
+              (* Fetch state from IPC server *)
+              let inputfields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
+                  let open InputStateService in
+                  (* Disambiguate type before fetching - it's easier to parse the json that way *)
+                  { fname = (InputIdentifier.get_id fname) ; ftyp = disambiguate_type ftyp this_address; fval = None })
+              in
+              (* Fetch state. Parsing the fetched jsons disambiguates *)
+              let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
 
-          (* Update using StateService.ml *)
-          let sm = Scilla_eval.StateService.IPC args.ipc_address in
-          let outputfields = List.map state ~f:(fun (n, tp, v) ->
-              let open Scilla_eval.StateService in
-              { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
-          (* Initialise with the final values - that's all that's needed. *)
-          let () = OutputStateService.initialize ~sm ~fields:outputfields in
-          let _ = OutputStateService.finalize () in
-          (*           ...  *)
-(* TODO: Consider whether to still support state file input. *)
-            let state = parse_json args.input_state this_address in
+              (* Update using StateService.ml *)
+              let sm = Scilla_eval.StateService.IPC args.ipc_address in
+              let outputfields = List.map state ~f:(fun (n, tp, v) ->
+                  let open Scilla_eval.StateService in
+                  { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
+              (* Initialise with the final values - that's all that's needed. *)
+              let () = OutputStateService.initialize ~sm ~fields:outputfields in
+              let _ = OutputStateService.finalize () in
 
-(*            ...*)
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
+              match OutputStateService.get_full_state () with
+              | Ok state -> state
+              | Error e ->
+                  fatal_error e
+          in
           (init, state)
         with Invalid_json s ->
           fatal_error
