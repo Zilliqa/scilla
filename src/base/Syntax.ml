@@ -229,6 +229,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   module SLiteral = Literal
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
+  module SGasCharge = ScillaGasCharge (SIdentifier.Name)
 
   (*******************************************************)
   (*                   Expressions                       *)
@@ -259,7 +260,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
-    | GasExpr of gas_charge * expr_annot
+    | GasExpr of SGasCharge.gas_charge * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -305,7 +306,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | CreateEvnt of ER.rep SIdentifier.t
     | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
     | Throw of ER.rep SIdentifier.t option
-    | GasStmt of gas_charge
+    | GasStmt of SGasCharge.gas_charge
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep

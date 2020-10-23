@@ -19,8 +19,6 @@
 open Core_kernel
 open Scilla_base
 open ParserUtil
-open Literal
-open Syntax
 open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
@@ -33,14 +31,14 @@ open Gas
 module SR = ParserRep
 module ER = ParserRep
 
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module EvalLiteral = FlattenedLiteral
-module EvalType = EvalLiteral.LType
-module EvalIdentifier = EvalType.TIdentifier
-module EvalSyntax = ScillaSyntax (SR) (ER) (EvalLiteral)
+(* EvalLiteral is FlattenedLiteral, but need to pull it from EvalGas *)
+module EvalGas = ScillaGas (SR) (ER)
+module EvalSyntax = EvalGas.GasSyntax
+module EvalLiteral = EvalSyntax.SLiteral
 module EvalTypeUtilities = TypeUtilities
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER)
-module EvalGas = ScillaGas (SR) (ER)
+module EvalType = EvalSyntax.SType
+module EvalIdentifier = EvalSyntax.SIdentifier
 open EvalIdentifier
 open EvalSyntax
 

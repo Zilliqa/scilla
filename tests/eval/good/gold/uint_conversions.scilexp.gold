@@ -10,3 +10,4 @@
   [minus_one -> (Int32 -1)],
   [one -> (Int32 1)],
   [zero -> (Int32 0)] }
+Gas remaining: 4001716

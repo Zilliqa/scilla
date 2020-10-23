@@ -42,9 +42,10 @@ let version_mismatch_penalty = 97
 module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
   module GasLiteral = FlattenedLiteral
-  module GasType = GasLiteral.LType
-  module GI = GasType.TIdentifier
   module GasSyntax = ScillaSyntax (SR) (ER) (GasLiteral)
+  module GasType = GasSyntax.SType
+  module GI = GasSyntax.SIdentifier
+  module GasGasCharge = GasSyntax.SGasCharge
   open GasType
   open GasLiteral
   open GasSyntax
@@ -83,13 +84,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if String.(cn = "Cons") then
+        if String.(GI.Name.as_string cn = "Cons") then
           let rec walk elm acc_cost =
             match elm with
-            | ADTValue ("Cons", _, [ l; ll ]) ->
+            | ADTValue (c, _, [ l; ll ])
+              when String.(GI.Name.as_string c = "Cons") ->
                 let%bind lcost = literal_cost l in
                 walk ll (acc_cost + lcost)
-            | ADTValue ("Nil", _, _) -> pure (acc_cost + 1)
+            | ADTValue (c, _, _) when String.(GI.Name.as_string c = "Nil") ->
+                pure (acc_cost + 1)
             | _ -> fail0 "Malformed list while computing literal cost"
           in
           walk als 0
@@ -127,21 +130,22 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let%bind e' =
       match ee with
       | Literal _ | Var _ | Message _ | App _ | Constr _ | TApp _ ->
-          pure @@ GasExpr (GasCharge.StaticCost 1, e)
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, e)
       | Fixpoint (f, t, e') ->
           let%bind e'' = expr_static_cost e' in
-          pure @@ GasExpr (GasCharge.StaticCost 1, (Fixpoint (f, t, e''), erep))
+          pure
+          @@ GasExpr (GasGasCharge.StaticCost 1, (Fixpoint (f, t, e''), erep))
       | Fun (f, t, e') ->
           let%bind e'' = expr_static_cost e' in
-          pure @@ GasExpr (GasCharge.StaticCost 1, (Fun (f, t, e''), erep))
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, (Fun (f, t, e''), erep))
       | TFun (f, e') ->
           let%bind e'' = expr_static_cost e' in
-          pure @@ GasExpr (GasCharge.StaticCost 1, (TFun (f, e''), erep))
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, (TFun (f, e''), erep))
       | Let (i, t, lhs, rhs) ->
           let%bind lhs' = expr_static_cost lhs in
           let%bind rhs' = expr_static_cost rhs in
           pure
-          @@ GasExpr (GasCharge.StaticCost 1, (Let (i, t, lhs', rhs'), erep))
+          @@ GasExpr (GasGasCharge.StaticCost 1, (Let (i, t, lhs', rhs'), erep))
       | MatchExpr (o, clauses) ->
           let%bind clauses' =
             mapM clauses ~f:(fun (p, e') ->
@@ -150,7 +154,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           in
           pure
           @@ GasExpr
-               ( GasCharge.StaticCost (List.length clauses),
+               ( GasGasCharge.StaticCost (List.length clauses),
                  (MatchExpr (o, clauses'), erep) )
       | Builtin _ ->
           (* We don't add costs for Builtin because we can't know it statically
@@ -170,43 +174,44 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           | Load (x, _) ->
               let g =
                 GasStmt
-                  (GasCharge.SumOf
-                     ( GasCharge.SizeOf (GI.get_id x),
-                       GasCharge.MapSortCost (GI.get_id x) ))
+                  (GasGasCharge.SumOf
+                     ( GasGasCharge.SizeOf (GI.get_id x),
+                       GasGasCharge.MapSortCost (GI.get_id x) ))
               in
               (* We charge *after* the load because we can't know the size before. *)
               pure @@ [ (s, srep); (g, srep) ]
           | Store (_, v) | SendMsgs v | CreateEvnt v ->
-              let g = GasStmt (GasCharge.SizeOf (GI.get_id v)) in
+              let g = GasStmt (GasGasCharge.SizeOf (GI.get_id v)) in
               pure @@ [ (g, srep); (s, srep) ]
           | Bind (x, e) ->
-              let g = GasStmt (GasCharge.StaticCost 1) in
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
               let%bind e' = expr_static_cost e in
               let s' = Bind (x, e') in
               pure @@ [ (g, srep); (s', srep) ]
           | ReadFromBC _ | CallProc _ ->
-              let g = GasStmt (GasCharge.StaticCost 1) in
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
               pure @@ [ (g, srep); (s, srep) ]
           | MapUpdate (_, klist, ropt) ->
-              let n = GasCharge.StaticCost (List.length klist) in
+              let n = GasGasCharge.StaticCost (List.length klist) in
               let g =
                 match ropt with
-                | Some r -> GasCharge.SumOf (GasCharge.SizeOf (GI.get_id r), n)
+                | Some r ->
+                    GasGasCharge.SumOf (GasGasCharge.SizeOf (GI.get_id r), n)
                 | None -> n
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
           | MapGet (x, _, klist, _) ->
-              let n = GasCharge.StaticCost (List.length klist) in
+              let n = GasGasCharge.StaticCost (List.length klist) in
               let g =
-                GasCharge.SumOf
-                  ( GasCharge.SumOf
-                      ( GasCharge.SizeOf (GI.get_id x),
-                        GasCharge.MapSortCost (GI.get_id x) ),
+                GasGasCharge.SumOf
+                  ( GasGasCharge.SumOf
+                      ( GasGasCharge.SizeOf (GI.get_id x),
+                        GasGasCharge.MapSortCost (GI.get_id x) ),
                     n )
               in
               pure @@ [ (s, srep); (GasStmt g, srep) ]
           | MatchStmt (x, clauses) ->
-              let g = GasCharge.StaticCost (List.length clauses) in
+              let g = GasGasCharge.StaticCost (List.length clauses) in
               let%bind clauses' =
                 mapM clauses ~f:(fun (p, stmts) ->
                     let%bind stmts' = stmts_cost stmts in
@@ -215,14 +220,18 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               let s' = MatchStmt (x, clauses') in
               pure @@ [ (GasStmt g, srep); (s', srep) ]
           | AcceptPayment ->
-              let g = GasStmt (GasCharge.StaticCost 1) in
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
               pure @@ [ (g, srep); (s, srep) ]
           | Iterate (l, _) ->
-              let g = GasStmt (GasCharge.LengthOf (GI.get_id l)) in
+              let g = GasStmt (GasGasCharge.LengthOf (GI.get_id l)) in
               pure @@ [ (g, srep); (s, srep) ]
-          | Throw _ ->
-              (* TODO: Throw should charge same as event and send. *)
-              pure @@ [ (s, srep) ]
+          | Throw eopt ->
+              let g =
+                match eopt with
+                | Some e -> GasGasCharge.SizeOf (GI.get_id e)
+                | None -> GasGasCharge.StaticCost 1
+              in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
           | GasStmt _ -> fail0 "Unexpected gas charge"
         in
 
@@ -279,7 +288,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     builtin ->
     ER.rep GI.t list ->
     GasType.t list ->
-    (GasCharge.gas_charge, scilla_error list) result
+    (GasGasCharge.gas_charge, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
   type builtin_record = builtin * GasType.t list * coster
@@ -288,88 +297,90 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match (op, args) with
     | Builtin_eq, [ s1; s2 ] ->
         pure
-        @@ GasCharge.MinOf
-             (GasCharge.SizeOf (GI.get_id s1), GasCharge.SizeOf (GI.get_id s2))
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
     | Builtin_concat, [ s1; s2 ] ->
         pure
-        @@ GasCharge.SumOf
-             (GasCharge.SizeOf (GI.get_id s1), GasCharge.SizeOf (GI.get_id s2))
+        @@ GasGasCharge.SumOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
     | Builtin_substr, [ s; i1; i2 ] ->
         pure
-        @@ GasCharge.MinOf
-             ( GasCharge.SizeOf (GI.get_id s),
-               GasCharge.SumOf
-                 ( GasCharge.ValueOf (GI.get_id i1),
-                   GasCharge.ValueOf (GI.get_id i2) ) )
-    | Builtin_strlen, [ s ] -> pure @@ GasCharge.SizeOf (GI.get_id s)
-    | Builtin_to_string, [ l ] -> pure @@ GasCharge.SizeOf (GI.get_id l)
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s),
+               GasGasCharge.SumOf
+                 ( GasGasCharge.ValueOf (GI.get_id i1),
+                   GasGasCharge.ValueOf (GI.get_id i2) ) )
+    | Builtin_strlen, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
+    | Builtin_to_string, [ l ] -> pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args types =
     match (op, types, args) with
     | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
-        pure @@ GasCharge.SizeOf (GI.get_id a1)
+        pure @@ GasGasCharge.SizeOf (GI.get_id a1)
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
       ->
         let width = Option.value_exn (bystrx_width a1) in
-        pure @@ GasCharge.StaticCost width
+        pure @@ GasGasCharge.StaticCost width
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
-        pure @@ GasCharge.StaticCost 32
+        pure @@ GasGasCharge.StaticCost 32
     | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
         (* Block size of sha256hash is 512 *)
-        let s = GasCharge.SizeOf (GI.get_id a) in
-        let n = GasCharge.StaticCost (64 * 15) in
-        pure (GasCharge.DivCeil (s, n))
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (64 * 15) in
+        pure (GasGasCharge.DivCeil (s, n))
     | Builtin_keccak256hash, _, [ a ] ->
         (* Block size of keccak256hash is 1088 *)
-        let s = GasCharge.SizeOf (GI.get_id a) in
-        let n = GasCharge.StaticCost (136 * 15) in
-        pure (GasCharge.DivCeil (s, n))
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (136 * 15) in
+        pure (GasGasCharge.DivCeil (s, n))
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
-        let s = GasCharge.SizeOf (GI.get_id a) in
-        let n = GasCharge.StaticCost (64 * 10) in
-        pure (GasCharge.DivCeil (s, n))
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (64 * 10) in
+        pure (GasGasCharge.DivCeil (s, n))
     | Builtin_schnorr_verify, _, [ _; s; _ ]
     | Builtin_ecdsa_verify, _, [ _; s; _ ] ->
         (* x = div_ceil (Bystr.width s + 66) 64 *)
         let x =
-          GasCharge.DivCeil
-            ( GasCharge.SumOf
-                (GasCharge.SizeOf (GI.get_id s), GasCharge.StaticCost 66),
-              GasCharge.StaticCost 64 )
+          GasGasCharge.DivCeil
+            ( GasGasCharge.SumOf
+                (GasGasCharge.SizeOf (GI.get_id s), GasGasCharge.StaticCost 66),
+              GasGasCharge.StaticCost 64 )
         in
         (* (250 + (15 * x)) *)
         pure
-          (GasCharge.SumOf
-             ( GasCharge.StaticCost 250,
-               GasCharge.ProdOf (GasCharge.StaticCost 15, x) ))
+          (GasGasCharge.SumOf
+             ( GasGasCharge.StaticCost 250,
+               GasGasCharge.ProdOf (GasGasCharge.StaticCost 15, x) ))
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
-        pure (GasCharge.StaticCost (Option.value_exn (bystrx_width a)))
+        pure (GasGasCharge.StaticCost (Option.value_exn (bystrx_width a)))
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
         let base = 4 in
         pure
-          (GasCharge.ProdOf
-             ( GasCharge.SumOf
-                 ( GasCharge.SizeOf (GI.get_id prefix),
-                   GasCharge.SizeOf (GI.get_id addr) ),
-               GasCharge.StaticCost base ))
+          (GasGasCharge.ProdOf
+             ( GasGasCharge.SumOf
+                 ( GasGasCharge.SizeOf (GI.get_id prefix),
+                   GasGasCharge.SizeOf (GI.get_id addr) ),
+               GasGasCharge.StaticCost base ))
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
         pure
-          (GasCharge.StaticCost
+          (GasGasCharge.StaticCost
              Option.(value_exn (bystrx_width a1) + value_exn (bystrx_width a2)))
-    | Builtin_alt_bn128_G1_add, _, _ -> pure (GasCharge.StaticCost 20)
+    | Builtin_alt_bn128_G1_add, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
-        let multiplier = GasCharge.LogOf (GI.get_id s) in
-        pure @@ GasCharge.ProdOf (GasCharge.StaticCost 20, multiplier)
+        let multiplier = GasGasCharge.LogOf (GI.get_id s) in
+        pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
-        let list_len = GasCharge.LengthOf (GI.get_id pairs) in
-        pure (GasCharge.ProdOf (GasCharge.StaticCost 40, list_len))
+        let list_len = GasGasCharge.LengthOf (GI.get_id pairs) in
+        pure (GasGasCharge.ProdOf (GasGasCharge.StaticCost 40, list_len))
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
   let map_coster op args _arg_types =
@@ -378,16 +389,17 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         (* size, get and contains do not make a copy of the Map, hence constant. *)
         match op with
         | Builtin_size | Builtin_get | Builtin_contains ->
-            pure (GasCharge.StaticCost 1)
+            pure (GasGasCharge.StaticCost 1)
         | _ ->
             pure
-              (GasCharge.SumOf
-                 (GasCharge.StaticCost 1, GasCharge.LengthOf (GI.get_id m))) )
+              (GasGasCharge.SumOf
+                 (GasGasCharge.StaticCost 1, GasGasCharge.LengthOf (GI.get_id m)))
+        )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
   let to_nat_coster _ args _arg_types =
     match args with
-    | [ a ] -> pure (GasCharge.ValueOf (GI.get_id a))
+    | [ a ] -> pure (GasGasCharge.ValueOf (GI.get_id a))
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
   let int_conversion_coster w _ _args arg_types =
@@ -396,9 +408,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | [ PrimType (Uint_typ _) ]
     | [ PrimType (Int_typ _) ]
     | [ PrimType String_typ ] ->
-        if w = 32 || w = 64 then pure (GasCharge.StaticCost base)
-        else if w = 128 then pure (GasCharge.StaticCost (base * 2))
-        else if w = 256 then pure (GasCharge.StaticCost (base * 4))
+        if w = 32 || w = 64 then pure (GasGasCharge.StaticCost base)
+        else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
+        else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
         else fail0 @@ "Gas cost error for integer conversion"
     | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
 
@@ -407,23 +419,24 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let%bind base' =
       match op with
       | Builtin_mul | Builtin_div | Builtin_rem ->
-          pure (GasCharge.StaticCost (5 * base))
+          pure (GasGasCharge.StaticCost (5 * base))
       | Builtin_pow -> (
           match args with
           | [ _; p ] ->
               pure
-                (GasCharge.ProdOf
-                   ( GasCharge.StaticCost (base * 5),
-                     GasCharge.ValueOf (GI.get_id p) ))
+                (GasGasCharge.ProdOf
+                   ( GasGasCharge.StaticCost (base * 5),
+                     GasGasCharge.ValueOf (GI.get_id p) ))
           | _ -> fail0 @@ "Gas cost error for built-in pow" )
       | Builtin_isqrt -> (
           match args with
           | [ a ] ->
               pure
-                (GasCharge.ProdOf
-                   (GasCharge.StaticCost base, GasCharge.LogOf (GI.get_id a)))
+                (GasGasCharge.ProdOf
+                   ( GasGasCharge.StaticCost base,
+                     GasGasCharge.LogOf (GI.get_id a) ))
           | _ -> fail0 "Invalid argument type to isqrt" )
-      | _ -> pure (GasCharge.StaticCost base)
+      | _ -> pure (GasGasCharge.StaticCost base)
     in
     let%bind w =
       match arg_types with
@@ -434,11 +447,13 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'
-    else if w = 128 then pure (GasCharge.ProdOf (base', GasCharge.StaticCost 2))
-    else if w = 256 then pure (GasCharge.ProdOf (base', GasCharge.StaticCost 4))
+    else if w = 128 then
+      pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 2))
+    else if w = 256 then
+      pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 4))
     else fail0 @@ "Gas cost error for integer built-in"
 
-  let bnum_coster _op _args _arg_types = pure (GasCharge.StaticCost 32)
+  let bnum_coster _op _args _arg_types = pure (GasGasCharge.StaticCost 32)
 
   let tvar s = TypeVar s
 
