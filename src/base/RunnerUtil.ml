@@ -413,13 +413,14 @@ let parse_cli args ~exe_name =
         Arg.Unit (fun () -> r_type_info := true),
         "Print types of variables with location" );
       ( "-debuglevel",
-        Arg.Symbol (["none";"normal";"verbose"], 
-          (fun s -> match s with
-          | "none" -> GlobalConfig.set_debug_level Debug_None
-          | "normal" -> GlobalConfig.set_debug_level Debug_Normal
-          | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
-          | _ -> raise (ErrorUtils.FatalError "Invalid debug log level")
-          )),
+        Arg.Symbol
+          ( [ "none"; "normal"; "verbose" ],
+            fun s ->
+              match s with
+              | "none" -> GlobalConfig.set_debug_level Debug_None
+              | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+              | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+              | _ -> raise (ErrorUtils.FatalError "Invalid debug log level") ),
         "Set debug logging level" );
       ( "-disable-validate-json",
         Arg.Unit (fun () -> r_validate_json := false),
