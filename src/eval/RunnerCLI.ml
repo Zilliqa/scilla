@@ -227,6 +227,15 @@ let parse args ~exe_name =
       ( "-jsonerrors",
         Arg.Unit (fun () -> b_json_errors := true),
         "Print errors in JSON format" );
+      ( "-debuglevel",
+        Arg.Symbol (["none";"normal";"verbose"], 
+          (fun s -> match s with
+          | "none" -> GlobalConfig.set_debug_level Debug_None
+          | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+          | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+          | _ -> raise (ErrorUtils.FatalError "Invalid debug log level")
+          )),
+        ": Set debug logging level" );
       ( "-disable-pp-json",
         Arg.Unit (fun () -> b_pp_json := false),
         "Disable pretty printing of JSONs" );

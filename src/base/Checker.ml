@@ -358,11 +358,6 @@ let run args ~exe_name =
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
   if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name ();
 
-  (* Testsuite runs this executable with cwd=tests and ends
-       up complaining about missing _build directory for logger.
-       So disable the logger. *)
-  set_debug_level Debug_None;
-
   let open FilePath in
   let open StdlibTracker in
   if check_extension cli.input_file file_extn_library then

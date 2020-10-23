@@ -35,7 +35,7 @@ open RUSyntax
 
 let get_init_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
-    plog (sprintf "Invalid init json %s file" filename);
+    plog (sprintf "Invalid init json file %s\n" filename);
     [] )
   else
     try
@@ -412,6 +412,15 @@ let parse_cli args ~exe_name =
       ( "-typeinfo",
         Arg.Unit (fun () -> r_type_info := true),
         "Print types of variables with location" );
+      ( "-debuglevel",
+        Arg.Symbol (["none";"normal";"verbose"], 
+          (fun s -> match s with
+          | "none" -> GlobalConfig.set_debug_level Debug_None
+          | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+          | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+          | _ -> raise (ErrorUtils.FatalError "Invalid debug log level")
+          )),
+        "Set debug logging level" );
       ( "-disable-validate-json",
         Arg.Unit (fun () -> r_validate_json := false),
         "Disable validation of input JSONs" );
