@@ -117,7 +117,6 @@ let run () =
   let cli = parse_cli None ~exe_name:Sys.argv.(0) in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
-  set_debug_level Debug_None;
   let filename = cli.input_file in
   let gas_limit = cli.gas_limit in
   match FEParser.parse_file Parser.Incremental.exp_term filename with
