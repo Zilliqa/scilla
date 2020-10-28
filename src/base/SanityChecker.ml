@@ -192,8 +192,7 @@ struct
           List.iter stmts ~f:(fun (stmt, _) ->
               match stmt with
               (* Recursion basis. *)
-              | Load (_, s) | MapGet (s, _, _, _) ->
-                  check_typ_warn s
+              | Load (_, s) | MapGet (s, _, _, _) -> check_typ_warn s
               | MapUpdate (_, _, vopt) -> (
                   match vopt with Some s -> check_typ_warn s | None -> () )
               (* Recurse through match statements. *)
