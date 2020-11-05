@@ -88,12 +88,6 @@ let validate_main usage =
     else msg
   in
   let msg =
-    (* input_state.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_state then
-      msg ^ "Invalid input state file\n"
-    else msg
-  in
-  let msg =
     (* input file is mandatory *)
     if not @@ Sys.file_exists !f_input then
       msg ^ "Invalid input contract file\n"
@@ -106,10 +100,17 @@ let validate_main usage =
     else msg
   in
   let msg =
-    (* Either input_state file or -ipc must be specified, but not both *)
-    if (String.is_empty !f_input_state && String.is_empty !i_ipc_address)
-    || (not (String.is_empty !f_input_state) && not (String.is_empty !i_ipc_address)) then
-      msg ^ "Either the input state file or -ipc must be specified\n"
+    (* Either an input state or an ipc address must be provided *)
+    if not @@ Sys.file_exists !f_input_state &&
+       String.is_empty !i_ipc_address then
+      msg ^ "Either an input state file or an ipc address must be specified\n"
+    else msg
+  in
+  let msg =
+    (* If ostate is given, then input_state.json is mandatory, because the balance cannot be read using ipc *)
+    if not @@ String.is_empty !f_output_state &&
+       not @@ Sys.file_exists !f_input_state then
+      msg ^ "Input state file is mandatory if output state file is expected\n"
     else msg
   in
   if not @@ String.is_empty msg then
@@ -133,8 +134,9 @@ let parse ~exe_name =
   in
 
   let mandatory_usage =
-    "Usage:\n" ^ exe_name ^ " -iinit input_init.json -istate input_state.json"
-    ^ " -oinit output_init.json [-ostate output_state.json] [-ipcaddress ipcaddress] -i input.scilla"
+    "Usage:\n" ^ exe_name ^ " -iinit input_init.json "
+    ^ " [ -istate input_state.json ] [ -ipcaddress ipcaddress ]"
+    ^ " -oinit output_init.json [-ostate output_state.json] -i input.scilla"
     ^ "\n"
   in
   let ignore_anon _ = () in
@@ -397,11 +399,17 @@ let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ OutputType.pp_typ t ^ " value " ^ v ^ " in JSON")
   in
+  printf "Attempting to build prim literal of type %s\n" (OutputType.pp_typ t);
+  printf "v is: \"%s\"\n" v;
   match t with
   | OutputType.PrimType pt -> (
       match OutputLiteral.build_prim_literal pt v with
-      | Some v' -> v'
-      | None -> raise (exn ()) )
+      | Some v' ->
+          printf "Literal built: %s\n" (PrettyPrinters.pp_literal_simplified v');
+          v'
+      | None ->
+          printf "Failed to build literal\n";
+          raise (exn ()) )
   | _ -> raise (exn ())
 
 let rec json_to_adttyps tjs =
@@ -526,7 +534,10 @@ let extract_this_address_from_init_json_data jlist =
 (* Convert a single JSON serialized literal back to its Scilla value. *)
 let jstring_to_literal jstring tp this_address =
   let thunk () = Yojson.Basic.from_string jstring in
+  printf "Attempting to parse string into literal of type %s\n" (JSONParser.JSONType.pp_typ tp);
+  printf "jstring is: \"%s\"\n" jstring;
   let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
+  printf "json_exn_wrapped succesful\n";
   json_to_lit tp this_address jobj
 
 let get_json_data filename =
@@ -644,12 +655,14 @@ module InputStateService = struct
         fatal_error
           ( s
             @ mk_error0
-              "StateIPCClient: Error deserializing literal fetched from IPC call" )
+              "InputStateIPCClient: Error deserializing literal fetched from IPC call" )
 
     (* Deserialize proto_scilla_val, given its type. *)
     let rec deserialize_value value tp this_address =
       match value with
-      | Scilla_eval.Ipcmessage_types.Bval s -> deserialize_literal (Bytes.to_string s) tp this_address
+      | Scilla_eval.Ipcmessage_types.Bval s ->
+          printf "deserialize_value bval branch: s = \"%s\"\n" (Bytes.to_string s);
+          deserialize_literal (Bytes.to_string s) tp this_address
       | Scilla_eval.Ipcmessage_types.Mval m ->
           match tp with
           | MapType (kt, vt) ->
@@ -660,6 +673,7 @@ module InputStateService = struct
                       String.compare k1 k2)
                 in
                 List.iter m ~f:(fun (k, v) ->
+                    printf "deserialize_value mval branch: key = \"%s\"\n" k;
                     let k' = deserialize_literal k kt this_address in
                     let v' = deserialize_value v vt this_address in
                     Caml.Hashtbl.add mlit k' v')
@@ -726,6 +740,7 @@ module InputStateService = struct
 
   let get_full_state fl ~socket_addr ~this_address =
     List.map fl ~f:(fun f ->
+        printf "Fetching value of field %s\n" (InputName.as_string f.fname);
         let v = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~tp:f.ftyp ~socket_addr ~this_address in
         (f.fname, f.ftyp, v))
 end
@@ -757,12 +772,12 @@ let run_with_args args =
           let init = parse_json args.input_init this_address in
 
           let state =
-            if not @@ String.is_empty args.input_state
+            if String.is_empty args.ipc_address
             then
-              (* State json provided. Do not use IPC. *)
+              (* Use the provided state json. *)
               parse_json args.input_state this_address
             else
-              (* No state json. Use IPC *)
+              (* Use IPC *)
               (* Fetch state from IPC server *)
               let inputfields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
                   let open InputStateService in
@@ -783,7 +798,11 @@ let run_with_args args =
 
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
-              | Ok state -> state
+              | Ok state ->
+                  (* _balance is not availabe from IPC server, so use the one from the state file *)
+                  let state_from_file = parse_json args.input_state this_address in
+                  let balance = List.find_exn state_from_file ~f:(fun (fname, _) -> OutputName.equal fname ContractUtil.balance_label) in
+                  balance :: state
               | Error e ->
                   fatal_error e
           in

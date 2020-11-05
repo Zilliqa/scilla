@@ -35,7 +35,12 @@ open JSONTypeUtilities
 (*************************************)
 
 let json_exn_wrapper ?filename thunk =
-  try thunk () with
+  printf "json_exn_wrapper called. Filename %s\n" (Option.value ~default:"" filename);
+  try
+    let v = thunk () in
+    printf "json_exn_wrapper successful\n";
+    v
+  with
   | Yojson.Json_error s
   | Yojson.Basic.Util.Undefined (s, _)
   | Yojson.Basic.Util.Type_error (s, _) ->
