@@ -777,12 +777,6 @@ let run_with_args args =
               (* Fetch state. Parsing the fetched jsons disambiguates *)
               let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
 
-(*              let _ = 
-                printf "Fetched state:\n";
-                List.iter state ~f:(fun (f, t, l) -> printf "%s : %s = %s\n" (InputName.as_string f) (OutputType.pp_typ t) (match l with Some v -> PrettyPrinters.pp_literal_simplified v | None -> "<no value>"));
-                printf "State ends\n"
-              in
-*)
               (* Update using StateService.ml *)
               let sm = Scilla_eval.StateService.IPC args.ipc_address in
               let outputfields = List.map state ~f:(fun (n, tp, v) ->
@@ -804,11 +798,6 @@ let run_with_args args =
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
               | Ok state ->
-(*                  let _ = 
-                    printf "Fetched state:\n";
-                    List.iter state ~f:(fun (f, l) -> printf "%s = %s\n" (Scilla_eval.StateService.SSName.as_string f) (PrettyPrinters.pp_literal_simplified l));
-                    printf "State ends\n"
-                    in *)
                   (* _balance is not availabe from IPC server, so use the one from the state file *)
                   let state_from_file = parse_json args.input_state this_address in
                   let balance = List.find_exn state_from_file ~f:(fun (fname, _) -> OutputName.equal fname ContractUtil.balance_label) in
