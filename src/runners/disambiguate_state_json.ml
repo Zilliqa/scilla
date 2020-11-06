@@ -788,7 +788,7 @@ let run_with_args args =
               let outputfields = List.map state ~f:(fun (n, tp, v) ->
                   let open Scilla_eval.StateService in
                   { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
-              (* Initialise with the final values - that's all that's needed. *)
+              (* Initialise with the final values, then update, then finalise. *)
               let () = OutputStateService.initialize ~sm ~fields:outputfields in
               let () = List.iter outputfields ~f:(fun ssf ->
                   let open Scilla_eval.StateService in
