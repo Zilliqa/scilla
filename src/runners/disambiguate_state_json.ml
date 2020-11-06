@@ -399,16 +399,12 @@ let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ OutputType.pp_typ t ^ " value " ^ v ^ " in JSON")
   in
-  printf "Attempting to build prim literal of type %s\n" (OutputType.pp_typ t);
-  printf "v is: \"%s\"\n" v;
   match t with
   | OutputType.PrimType pt -> (
       match OutputLiteral.build_prim_literal pt v with
       | Some v' ->
-          printf "Literal built: %s\n" (PrettyPrinters.pp_literal_simplified v');
           v'
       | None ->
-          printf "Failed to build literal\n";
           raise (exn ()) )
   | _ -> raise (exn ())
 
@@ -534,10 +530,7 @@ let extract_this_address_from_init_json_data jlist =
 (* Convert a single JSON serialized literal back to its Scilla value. *)
 let jstring_to_literal jstring tp this_address =
   let thunk () = Yojson.Basic.from_string jstring in
-  printf "Attempting to parse string into literal of type %s\n" (JSONParser.JSONType.pp_typ tp);
-  printf "jstring is: \"%s\"\n" jstring;
   let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
-  printf "json_exn_wrapped succesful\n";
   json_to_lit tp this_address jobj
 
 let get_json_data filename =
@@ -661,7 +654,6 @@ module InputStateService = struct
     let rec deserialize_value value tp this_address =
       match value with
       | Scilla_eval.Ipcmessage_types.Bval s ->
-          printf "deserialize_value bval branch: s = \"%s\"\n" (Bytes.to_string s);
           deserialize_literal (Bytes.to_string s) tp this_address
       | Scilla_eval.Ipcmessage_types.Mval m ->
           match tp with
@@ -673,7 +665,6 @@ module InputStateService = struct
                       String.compare k1 k2)
                 in
                 List.iter m ~f:(fun (k, v) ->
-                    printf "deserialize_value mval branch: key = \"%s\"\n" k;
                     let k' = deserialize_literal k kt this_address in
                     let v' = deserialize_value v vt this_address in
                     Caml.Hashtbl.add mlit k' v')
@@ -740,7 +731,6 @@ module InputStateService = struct
 
   let get_full_state fl ~socket_addr ~this_address =
     List.map fl ~f:(fun f ->
-        printf "Fetching value of field %s\n" (InputName.as_string f.fname);
         let v = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~tp:f.ftyp ~socket_addr ~this_address in
         (f.fname, f.ftyp, v))
 end
@@ -787,6 +777,12 @@ let run_with_args args =
               (* Fetch state. Parsing the fetched jsons disambiguates *)
               let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
 
+(*              let _ = 
+                printf "Fetched state:\n";
+                List.iter state ~f:(fun (f, t, l) -> printf "%s : %s = %s\n" (InputName.as_string f) (OutputType.pp_typ t) (match l with Some v -> PrettyPrinters.pp_literal_simplified v | None -> "<no value>"));
+                printf "State ends\n"
+              in
+*)
               (* Update using StateService.ml *)
               let sm = Scilla_eval.StateService.IPC args.ipc_address in
               let outputfields = List.map state ~f:(fun (n, tp, v) ->
@@ -794,11 +790,25 @@ let run_with_args args =
                   { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
               (* Initialise with the final values - that's all that's needed. *)
               let () = OutputStateService.initialize ~sm ~fields:outputfields in
+              let () = List.iter outputfields ~f:(fun ssf ->
+                  let open Scilla_eval.StateService in
+                  let { fname ; fval ; _ } = ssf in
+                  match fval with
+                  | None -> fatal_error (mk_error0 (sprintf "Missing value for field %s\n" (SSName.as_string fname)))
+                  | Some v -> (
+                      match OutputStateService.update ~fname:(SSIdentifier.mk_loc_id fname) ~keys:[] ~value:v with
+                      | Ok () -> ()
+                      | Error e -> fatal_error e)) in
               let _ = OutputStateService.finalize () in
 
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
               | Ok state ->
+(*                  let _ = 
+                    printf "Fetched state:\n";
+                    List.iter state ~f:(fun (f, l) -> printf "%s = %s\n" (Scilla_eval.StateService.SSName.as_string f) (PrettyPrinters.pp_literal_simplified l));
+                    printf "State ends\n"
+                    in *)
                   (* _balance is not availabe from IPC server, so use the one from the state file *)
                   let state_from_file = parse_json args.input_state this_address in
                   let balance = List.find_exn state_from_file ~f:(fun (fname, _) -> OutputName.equal fname ContractUtil.balance_label) in
