@@ -837,6 +837,20 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStrX bs ] -> pure @@ ByStr (Bystrx.to_bystr bs)
       | _ -> builtin_fail "Crypto.to_bystr" ls
 
+    let substr_arity = 3
+
+    let substr_type =
+      fun_typ bystr_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ bystr_typ
+
+    let substr ls _ =
+      try
+        match ls with
+        | [ ByStr x; UintLit (Uint32L s); UintLit (Uint32L e) ] ->
+            pure
+            @@ ByStr (Bystr.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+        | _ -> builtin_fail "Crypto.substr" ls
+      with Invalid_argument msg -> builtin_fail ("Crypto.substr: " ^ msg) ls
+
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
 
     let to_uint256_arity = 1
@@ -908,11 +922,14 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ts with
       | [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + w2) ])
+      | [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
+          elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
       | _ -> fail0 "Failed to elaborate"
 
     let concat ls _ =
       match ls with
       | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ ByStrX (Bystrx.concat bs1 bs2)
+      | [ ByStr bs1; ByStr bs2 ] -> pure @@ ByStr (Bystr.concat bs1 bs2)
       | _ -> builtin_fail "Crypto.concat" ls
 
     let[@warning "-32"] ec_gen_key_pair_type =
@@ -1299,6 +1316,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     (* All built-in functions *)
     let built_in_multidict : builtin -> built_in_record list = function
+      (* Polymorphic builtins *)
       | Builtin_eq -> [String.eq_arity, String.eq_type, elab_id, String.eq;
                        BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq;
                        Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq;
@@ -1308,8 +1326,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                            Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat]
       | Builtin_to_uint256 -> [Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256;
                                Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256]
-      (* Strings *)
-      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr]
+      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr;
+                           Crypto.substr_arity, Crypto.substr_type, elab_id, Crypto.substr
+                          ]
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, elab_id, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
     

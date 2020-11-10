@@ -320,6 +320,19 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match (op, types, args) with
     | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
         pure @@ GasGasCharge.SizeOf (GI.get_id a1)
+    | ( Builtin_substr,
+        [
+          PrimType Bystr_typ;
+          PrimType (Uint_typ Bits32);
+          PrimType (Uint_typ Bits32);
+        ],
+        [ s; i1; i2 ] ) ->
+        pure
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s),
+               GasGasCharge.SumOf
+                 ( GasGasCharge.ValueOf (GI.get_id i1),
+                   GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
@@ -369,6 +382,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                  ( GasGasCharge.SizeOf (GI.get_id prefix),
                    GasGasCharge.SizeOf (GI.get_id addr) ),
                GasGasCharge.StaticCost base ))
+    | Builtin_concat, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ s1; s2 ] ->
+        pure
+        @@ GasGasCharge.SumOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
         pure
@@ -477,6 +495,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* Crypto *)
     (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster);
     (Builtin_to_bystr, [tvar "'A"], crypto_coster);
+    (Builtin_substr, [bystr_typ; uint32_typ; uint32_typ], crypto_coster);
     (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster);
     (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster);
     (Builtin_to_uint256, [tvar "'A"], crypto_coster);
