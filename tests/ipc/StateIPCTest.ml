@@ -152,7 +152,7 @@ let sort_mapkeys goldj outj =
       (List.map2_exn goldstates outstates ~f:(fun goldstate outstate ->
            let vname = json_member "vname" goldstate in
            let t =
-             json_member "type" goldstate |> json_to_string |> parse_typ_wrapper
+             json_member "type" outstate |> json_to_string |> parse_typ_wrapper
            in
            assert_bool
              "sort_mapkeys: order of gold states and out states mismatch"
@@ -168,7 +168,7 @@ let sort_mapkeys goldj outj =
            `Assoc
              [
                ("vname", vname);
-               ("type", json_member "type" goldstate);
+               ("type", json_member "type" outstate);
                ("value", outval);
              ]))
   in
