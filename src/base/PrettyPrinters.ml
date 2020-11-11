@@ -89,7 +89,7 @@ and literal_to_json lit =
         let argl = adtargs_to_json v in
         `Assoc
           [
-            ("constructor", `String (PPName.as_error_string n));
+            ("constructor", `String (PPName.as_string n));
             ("argtypes", `List argtl);
             ("arguments", `List argl);
           ]
