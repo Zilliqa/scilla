@@ -108,7 +108,7 @@ let import_libs names_and_namespaces init_address_map =
               let ilib, this_address, ilib_import_map = import_lib (ilib_address) (get_rep libname) in
               let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
               (* Transform local names to global names *)
-              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs address_map this_address with
+              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs ilib_import_map this_address with
               | Error s -> fatal_error (s @ (mk_error1 (sprintf "Failed to disambiguate imported library %s.\n" (as_string libname)) (get_rep libname)))
               | Ok dis_lib -> 
                   let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
