@@ -188,6 +188,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "str-bad-char-3.scilexp";
       "type-renaming-really-bad.scilexp";
       "type-renaming-should-be-allowed.scilexp";
+      "to_byst.scilexp";
+      "to_bystrx.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1
