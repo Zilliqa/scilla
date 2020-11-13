@@ -30,7 +30,6 @@ open BuiltIns
 open Gas
 module SR = ParserRep
 module ER = ParserRep
-
 module EvalGas = ScillaGas (SR) (ER)
 module EvalSyntax = EvalGas.GasSyntax
 module EvalLiteral = EvalSyntax.SLiteral
@@ -59,7 +58,7 @@ module Env = struct
     let e_filtered = List.filter e ~f in
     let ps =
       List.map e_filtered ~f:(fun (k, v) ->
-          " [" ^ (EvalName.as_string k) ^ " -> " ^ pp_value v ^ "]")
+          " [" ^ EvalName.as_string k ^ " -> " ^ pp_value v ^ "]")
     in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
@@ -67,7 +66,7 @@ module Env = struct
   let empty = []
 
   (* Core's List.Assoc.add function removes duplicate key-value entries to keep lists small *)
-  let bind e k v = List.Assoc.add e k v ~equal:[%equal : EvalName.t]
+  let bind e k v = List.Assoc.add e k v ~equal:[%equal: EvalName.t]
 
   let bind_all e kvs =
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
@@ -78,11 +77,12 @@ module Env = struct
   let lookup e k =
     let open MonadUtil in
     let i = get_id k in
-    match List.Assoc.find e i ~equal:[%equal : EvalName.t] with
+    match List.Assoc.find e i ~equal:[%equal: EvalName.t] with
     | Some v -> pure v
     | None ->
         fail1
-          (sprintf "Identifier \"%s\" is not bound in environment:\n" (EvalName.as_error_string i))
+          (sprintf "Identifier \"%s\" is not bound in environment:\n"
+             (EvalName.as_error_string i))
           (get_rep k)
 end
 
@@ -169,7 +169,7 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if [%equal : EvalName.t] i balance_label then
+    if [%equal: EvalName.t] i balance_label then
       (* Balance is a special case *)
       let l = EvalLiteral.UintLit (Uint128L st.balance) in
       pure l
@@ -179,7 +179,8 @@ module Configuration = struct
       | Some v -> pure v
       | _ ->
           fail1
-            (Printf.sprintf "Error loading field %s" (EvalName.as_error_string i))
+            (Printf.sprintf "Error loading field %s"
+               (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
@@ -193,7 +194,9 @@ module Configuration = struct
     let open BuiltIns.UsefulLiterals in
     if fetchval then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
-      match List.Assoc.find st.fields (get_id m) ~equal:[%equal : EvalName.t]  with
+      match
+        List.Assoc.find st.fields (get_id m) ~equal:[%equal: EvalName.t]
+      with
       | Some mt -> (
           let%bind vt =
             fromR @@ EvalTypeUtilities.map_access_type mt (List.length klist)
@@ -216,7 +219,7 @@ module Configuration = struct
 
   let bind st k v =
     let e = st.env in
-    { st with env = List.Assoc.add e k v ~equal:[%equal : EvalName.t] }
+    { st with env = List.Assoc.add e k v ~equal:[%equal: EvalName.t] }
 
   let bind_all st ks vs =
     let e = st.env in
@@ -228,7 +231,7 @@ module Configuration = struct
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
-              not (List.mem ks (fst z) ~equal:[%equal : EvalName.t] ))
+              not (List.mem ks (fst z) ~equal:[%equal: EvalName.t]))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -259,7 +262,8 @@ module Configuration = struct
       | p :: p_rest when EvalIdentifier.equal p.comp_name proc_name ->
           pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
-      | [] -> fail0 @@ sprintf "Procedure %s not found." (as_error_string proc_name)
+      | [] ->
+          fail0 @@ sprintf "Procedure %s not found." (as_error_string proc_name)
     in
     finder st.procedures
 

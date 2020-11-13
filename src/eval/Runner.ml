@@ -31,12 +31,11 @@ open RunnerUtil
 open RunnerCLI
 open GlobalConfig
 module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
-
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module RunnerSyntax = Dis.PostDisSyntax
-module RunnerName = RunnerSyntax.SIdentifier.Name                        
-  
+module RunnerName = RunnerSyntax.SIdentifier.Name
+
 (****************************************************)
 (*          Checking initialized libraries          *)
 (****************************************************)
@@ -54,8 +53,8 @@ let check_libs clibs elibs name gas_limit =
             Libraries for [%s] are on. All seems fine so far!\n\n"
            (* (Env.pp res) *)
            (String.concat ~sep:", "
-              (List.rev_map res
-                 ~f:(fun x -> EvalUtil.EvalName.as_string (fst x))))
+              (List.rev_map res ~f:(fun x ->
+                   EvalUtil.EvalName.as_string (fst x))))
            name);
       gas_remaining
   | Error (err, gas_remaining) ->
@@ -92,7 +91,7 @@ let check_after_step res gas_limit =
 let map_json_input_strings_to_names map =
   List.map map ~f:(fun (x, l) ->
       match String.split x ~on:'.' with
-      | [simple_name] -> (RunnerName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 (* Parse the input state json and extract out _balance separately *)
@@ -101,17 +100,24 @@ let input_state_json filename =
   let states_str = get_json_data filename in
   let states = map_json_input_strings_to_names states_str in
   let bal_lit =
-    match List.Assoc.find states balance_label ~equal:[%equal : RunnerName.t] with
+    match
+      List.Assoc.find states balance_label ~equal:[%equal: RunnerName.t]
+    with
     | Some v -> v
-    | None -> raise @@ mk_invalid_json (sprintf "%s field missing" (RunnerName.as_string balance_label))
+    | None ->
+        raise
+        @@ mk_invalid_json
+             (sprintf "%s field missing" (RunnerName.as_string balance_label))
   in
   let bal_int =
     match bal_lit with
     | UintLit (Uint128L x) -> x
-    | _ -> raise (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
+    | _ ->
+        raise
+          (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:[%equal : RunnerName.t]
+    List.Assoc.remove states balance_label ~equal:[%equal: RunnerName.t]
   in
   (no_bal_states, bal_int)
 
@@ -152,7 +158,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
   let init_json_scilla_version =
-    List.Assoc.find initargs ~equal:[%equal : RunnerName.t]
+    List.Assoc.find initargs ~equal:[%equal: RunnerName.t]
       ContractUtil.scilla_version_label
   in
   let () =
@@ -177,7 +183,7 @@ let deploy_library args gas_remaining =
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
       fatal_error_gas_scale Gas.scale_factor e gas_remaining
-  | Ok lmod_nogas ->
+  | Ok lmod_nogas -> (
       plog
         (sprintf "\n[Parsing]:\nLibrary module [%s] is successfully parsed.\n"
            args.input);
@@ -185,26 +191,39 @@ let deploy_library args gas_remaining =
       (* Parse external libraries. *)
       let lib_dirs = FilePath.dirname args.input :: args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
-      let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
+      let this_address_opt, init_address_map =
+        get_init_this_address_and_extlibs args.input_init
+      in
       match this_address_opt with
-      | None -> 
-          let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
+      | None ->
+          let msg =
+            sprintf "No %s entry found in init file %s\n"
+              (CUName.as_string ContractUtil.this_address_label)
+              args.input_init
+          in
           plog msg;
-          fatal_error_gas_scale
-            Gas.scale_factor
-            (mk_error0 msg)
-            gas_remaining
+          fatal_error_gas_scale Gas.scale_factor (mk_error0 msg) gas_remaining
       | Some this_address ->
           let elibs =
-            List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+            List.map
+              ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
             @@ import_libs lmod_nogas.elibs init_address_map
           in
-          let dis_lmod_nogas = match Dis.disambiguate_lmodule lmod_nogas elibs init_address_map this_address with
+          let dis_lmod_nogas =
+            match
+              Dis.disambiguate_lmodule lmod_nogas elibs init_address_map
+                this_address
+            with
             | Error e ->
                 plog (sprintf "%s\n" "Failed to disambiguate library file.");
                 fatal_error_gas_scale Gas.scale_factor e gas_remaining
             | Ok res ->
-                plog (sprintf "\n[Disambiguation]:\nLibrary module [%s] is successfully disambiguated.\n" args.input);
+                plog
+                  (sprintf
+                     "\n\
+                      [Disambiguation]:\n\
+                      Library module [%s] is successfully disambiguated.\n"
+                     args.input);
                 res
           in
           let dis_lmod =
@@ -214,14 +233,17 @@ let deploy_library args gas_remaining =
           let clibs = Some dis_lmod.libs in
 
           (* Checking initialized libraries! *)
-          let gas_remaining' = check_libs clibs elibs args.input gas_remaining in
+          let gas_remaining' =
+            check_libs clibs elibs args.input gas_remaining
+          in
           let _ =
             validate_get_init_json args.input_init gas_remaining' dis_lmod.smver
           in
           let gas_remaining'' =
             Gas.finalize_remaining_gas args.gas_limit gas_remaining'
           in
-          `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ]
+          `Assoc
+            [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ] )
 
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
@@ -267,7 +289,7 @@ let run_with_args args =
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
         fatal_error_gas_scale Gas.scale_factor e gas_remaining
-    | Ok cmod_nogas ->
+    | Ok cmod_nogas -> (
         plog
           (sprintf
              "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
@@ -276,10 +298,16 @@ let run_with_args args =
         (* Parse external libraries. *)
         let lib_dirs = FilePath.dirname args.input :: args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
-        let this_address_opt, init_address_map = get_init_this_address_and_extlibs args.input_init in
+        let this_address_opt, init_address_map =
+          get_init_this_address_and_extlibs args.input_init
+        in
         match this_address_opt with
-        | None -> 
-            let msg = sprintf "No %s entry found in init file %s\n" (CUName.as_string ContractUtil.this_address_label) args.input_init in
+        | None ->
+            let msg =
+              sprintf "No %s entry found in init file %s\n"
+                (CUName.as_string ContractUtil.this_address_label)
+                args.input_init
+            in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
               (mk_error0
@@ -287,28 +315,42 @@ let run_with_args args =
               gas_remaining
         | Some this_address ->
             let elibs =
-              List.map ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
+              List.map
+                ~f:(gas_cost_rewriter_wrapper gas_remaining RG.libtree_cost)
               @@ import_libs cmod_nogas.elibs init_address_map
             in
-            let dis_cmod_nogas = match Dis.disambiguate_cmodule cmod_nogas elibs init_address_map this_address with
+            let dis_cmod_nogas =
+              match
+                Dis.disambiguate_cmodule cmod_nogas elibs init_address_map
+                  this_address
+              with
               | Error e ->
                   plog (sprintf "%s\n" "Failed to disambiguate contract file.");
                   fatal_error_gas_scale Gas.scale_factor e gas_remaining
               | Ok res ->
-                  plog (sprintf "\n[Disambiguation]:\nContract module [%s] is successfully disambiguated.\n" args.input);
+                  plog
+                    (sprintf
+                       "\n\
+                        [Disambiguation]:\n\
+                        Contract module [%s] is successfully disambiguated.\n"
+                       args.input);
                   res
             in
             let dis_cmod =
-              gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost dis_cmod_nogas
+              gas_cost_rewriter_wrapper gas_remaining RG.cmod_cost
+                dis_cmod_nogas
             in
 
             (* Contract library. *)
             let clibs = dis_cmod.libs in
 
             (* Checking initialized libraries! *)
-            let gas_remaining = check_libs clibs elibs args.input gas_remaining in
+            let gas_remaining =
+              check_libs clibs elibs args.input gas_remaining
+            in
             let initargs =
-              validate_get_init_json args.input_init gas_remaining dis_cmod.smver
+              validate_get_init_json args.input_init gas_remaining
+                dis_cmod.smver
             in
 
             (* Retrieve block chain state  *)
@@ -317,9 +359,9 @@ let run_with_args args =
               with Invalid_json s ->
                 fatal_error_gas_scale Gas.scale_factor
                   ( s
-                    @ mk_error0
-                      (sprintf "Failed to parse json %s:\n" args.input_blockchain)
-                  )
+                  @ mk_error0
+                      (sprintf "Failed to parse json %s:\n"
+                         args.input_blockchain) )
                   gas_remaining
             in
             let ( ( output_msg_json,
@@ -341,30 +383,30 @@ let run_with_args args =
                 (* If the data store is not local, we must update the store with the initial field values.
                  * Refer to the details comments at [Initialization of StateService]. *)
                 ( if is_ipc then
-                    let open StateService in
-                    let open MonadUtil in
-                    let open Result.Let_syntax in
-                    (* We push all fields except _balance. *)
-                    let fields =
-                      List.filter_map cstate'.fields ~f:(fun (s, t) ->
-                          if [%equal : RunnerName.t] s balance_label then None
-                          else Some { fname = s; ftyp = t; fval = None })
+                  let open StateService in
+                  let open MonadUtil in
+                  let open Result.Let_syntax in
+                  (* We push all fields except _balance. *)
+                  let fields =
+                    List.filter_map cstate'.fields ~f:(fun (s, t) ->
+                        if [%equal: RunnerName.t] s balance_label then None
+                        else Some { fname = s; ftyp = t; fval = None })
+                  in
+                  let sm = IPC args.ipc_address in
+                  let () = initialize ~sm ~fields in
+                  match
+                    (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
+                    let%bind () =
+                      Result.ignore_m
+                      @@ mapM field_vals ~f:(fun (s, v) ->
+                             update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
+                               ~value:v)
                     in
-                    let sm = IPC args.ipc_address in
-                    let () = initialize ~sm ~fields in
-                    match
-                      (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
-                      let%bind () =
-                        Result.ignore_m
-                        @@ mapM field_vals ~f:(fun (s, v) ->
-                            update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
-                              ~value:v)
-                      in
-                      finalize ()
-                    with
-                    | Error s ->
-                        fatal_error_gas_scale Gas.scale_factor s remaining_gas'
-                    | Ok _ -> () );
+                    finalize ()
+                  with
+                  | Error s ->
+                      fatal_error_gas_scale Gas.scale_factor s remaining_gas'
+                  | Ok _ -> () );
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
                 let field_vals' = if is_ipc then [] else field_vals in
@@ -382,9 +424,9 @@ let run_with_args args =
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
                       ( s
-                        @ mk_error0
-                          (sprintf "Failed to parse json %s:\n" args.input_message)
-                      )
+                      @ mk_error0
+                          (sprintf "Failed to parse json %s:\n"
+                             args.input_message) )
                       gas_remaining
                 in
                 let m = JSON.JSONLiteral.Msg mmsg in
@@ -403,7 +445,7 @@ let run_with_args args =
                     let fields =
                       List.filter_map cstate.fields ~f:(fun (s, t) ->
                           let open StateService in
-                          if [%equal : RunnerName.t] s balance_label then None
+                          if [%equal: RunnerName.t] s balance_label then None
                           else Some { fname = s; ftyp = t; fval = None })
                     in
                     let () =
@@ -417,7 +459,7 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           ( s
-                            @ mk_error0
+                          @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
                                  args.input_state) )
                           gas_remaining
@@ -438,7 +480,8 @@ let run_with_args args =
                       List.map field_vals ~f:(fun (s, l) ->
                           let open StateService in
                           let t =
-                            List.Assoc.find_exn cstate.fields s ~equal:[%equal : RunnerName.t]
+                            List.Assoc.find_exn cstate.fields s
+                              ~equal:[%equal: RunnerName.t]
                           in
                           { fname = s; ftyp = t; fval = Some l })
                     in
@@ -453,7 +496,8 @@ let run_with_args args =
                   (sprintf "Executing message:\n%s\n"
                      (JSON.Message.message_to_jstring mmsg));
                 plog
-                  (sprintf "In a Blockchain State:\n%s\n" (pp_literal_map bstate));
+                  (sprintf "In a Blockchain State:\n%s\n"
+                     (pp_literal_map bstate));
                 let step_result = handle_message ctr cstate bstate m in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining'
@@ -484,11 +528,12 @@ let run_with_args args =
               [
                 ("scilla_major_version", `String (Int.to_string dis_cmod.smver));
                 ("gas_remaining", `String (Uint64.to_string gas));
-                (RunnerName.as_string ContractUtil.accepted_label, `String (Bool.to_string accepted_b));
+                ( RunnerName.as_string ContractUtil.accepted_label,
+                  `String (Bool.to_string accepted_b) );
                 ("messages", output_msg_json);
                 ("states", output_state_json);
                 ("events", output_events_json);
-              ]
+              ] )
 
 let run args_list ~exe_name =
   GlobalConfig.reset ();

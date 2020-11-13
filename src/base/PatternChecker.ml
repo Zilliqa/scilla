@@ -35,7 +35,6 @@ module ScillaPatternchecker
 struct
   module SPR = SR
   module EPR = ER
-
   module PCLiteral = GlobalLiteral
   module PCType = PCLiteral.LType
   module PCIdentifier = PCType.TIdentifier

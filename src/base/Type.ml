@@ -182,7 +182,8 @@ module MkType (I : ScillaIdentifier) = struct
       | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (recurser kt) (recurser vt)
       | ADT (name, targs) ->
           let elems =
-            (if is_error then TIdentifier.as_error_string name else TIdentifier.as_string name)
+            ( if is_error then TIdentifier.as_error_string name
+            else TIdentifier.as_string name )
             :: List.map targs ~f:(fun t -> sprintf "(%s)" (recurser t))
           in
           String.concat ~sep:" " elems
@@ -196,7 +197,7 @@ module MkType (I : ScillaIdentifier) = struct
       | _ -> recurser t
     in
     recurser t
-  
+
   let pp_typ = pp_typ_helper false
 
   let pp_typ_error = pp_typ_helper true

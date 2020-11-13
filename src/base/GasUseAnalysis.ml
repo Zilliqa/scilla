@@ -36,7 +36,6 @@ module ScillaGUA
 struct
   module SER = SR
   module EER = ER
-
   module GUALiteral = GlobalLiteral
   module GUAType = GUALiteral.LType
   module GUAIdentifier = GUAType.TIdentifier
@@ -50,13 +49,14 @@ struct
   let guaname_of_string = GUAName.parse_simple_name
 
   let mk_gua_id i = mk_id @@ guaname_of_string i
-    
+
   let mk_typed_id i t =
-    mk_id (guaname_of_string i) (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
+    mk_id (guaname_of_string i)
+      (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
 
   let mk_typed_id_from_name i t =
     mk_id i (ER.mk_rep dummy_loc (PlainTypes.mk_qualified_type t))
-  
+
   type sizeref =
     (* Refer to the size of a variable. *)
     | Base of ER.rep GUAIdentifier.t
@@ -198,7 +198,9 @@ struct
       if params = [] then ""
       else
         "Parameter list: "
-        ^ List.fold_left (fun acc p -> acc ^ as_error_string p ^ " ") "( " params
+        ^ List.fold_left
+            (fun acc p -> acc ^ as_error_string p ^ " ")
+            "( " params
         ^ ")\n"
     in
     args ^ "Gas use polynomial:\n" ^ sprint_gup pn ^ "\nResult size: "
@@ -755,24 +757,22 @@ struct
     | Binder i -> pure @@ GUAEnv.addS genv (as_string i) ([], msref, empty_pn)
     | Constructor (cname, _)
       when is_true_ctr_name (get_id cname)
-        || is_false_ctr_name (get_id cname)
-        || is_nil_ctr_name (get_id cname)
-        || is_none_ctr_name (get_id cname) -> pure @@ genv
-    | Constructor (cname, plist)
-      when is_some_ctr_name (get_id cname) ->
+           || is_false_ctr_name (get_id cname)
+           || is_nil_ctr_name (get_id cname)
+           || is_none_ctr_name (get_id cname) ->
+        pure @@ genv
+    | Constructor (cname, plist) when is_some_ctr_name (get_id cname) ->
         (* TypeChecker will ensure that plist has unit length. *)
         let arg = List.nth plist 0 in
         bind_pattern genv msref arg
-    | Constructor (cname, plist)
-      when is_cons_ctr_name (get_id cname) ->
+    | Constructor (cname, plist) when is_cons_ctr_name (get_id cname) ->
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
         let arg1 = List.nth plist 1 in
         let%bind genv' = bind_pattern genv (Element msref) arg0 in
         let%bind genv'' = bind_pattern genv' msref arg1 in
         pure genv''
-    | Constructor (cname, plist)
-      when is_pair_ctr_name (get_id cname) ->
+    | Constructor (cname, plist) when is_pair_ctr_name (get_id cname) ->
         (* TypeChecker will ensure that plist has two elements. *)
         let arg0 = List.nth plist 0 in
         let arg1 = List.nth plist 1 in
@@ -784,7 +784,7 @@ struct
         fail0
           (Printf.sprintf "Unsupported constructor %s in gas analysis."
              (GUAIdentifier.as_error_string cname))
-          
+
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
   let builtin_cost (ops, opl') params =
@@ -970,7 +970,9 @@ struct
         (* Build a lambda for "f". It will be expanded next (along with inner lambdas if possible). *)
         let srparams = List.map (fun i -> Base i) actuals in
         let u = SApp (mk_gua_id (pp_builtin b) rep, srparams) in
-        let v = single_simple_pn (GApp (mk_gua_id (pp_builtin b) rep, srparams)) in
+        let v =
+          single_simple_pn (GApp (mk_gua_id (pp_builtin b) rep, srparams))
+        in
         (* Expand all lambdas that we can. *)
         let%bind ressize', gup' = resolve_expand genv' u v in
         (* TODO: Return value having no arguments implies partial application not supported. *)
@@ -991,19 +993,18 @@ struct
         let%bind ressize =
           if is_true_ctr_name cname_as_name || is_false_ctr_name cname_as_name
           then pure @@ SPol (const_pn 1)
-          else if is_nil_ctr_name cname_as_name
-          then pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
-          else if is_none_ctr_name cname_as_name
-          then pure @@ SPol (const_pn 1)
-          else if is_some_ctr_name cname_as_name
-          then (* TypeChecker will ensure that actuals has unit length. *)
+          else if is_nil_ctr_name cname_as_name then
+            pure @@ Container (SPol (const_pn 0), SPol (const_pn 1))
+          else if is_none_ctr_name cname_as_name then pure @@ SPol (const_pn 1)
+          else if is_some_ctr_name cname_as_name then
+            (* TypeChecker will ensure that actuals has unit length. *)
             let arg = List.nth actuals 0 in
             let%bind _, compsize, _ =
               GUAEnv.resolvS genv (as_string arg) ~lopt:(Some (get_rep arg))
             in
             pure @@ compsize
-          else if is_pair_ctr_name cname_as_name
-          then (* TypeChecker will ensure that actuals has two elements. *)
+          else if is_pair_ctr_name cname_as_name then
+            (* TypeChecker will ensure that actuals has two elements. *)
             let arg0 = List.nth actuals 0 in
             let arg1 = List.nth actuals 1 in
             let%bind _, compsize0, _ =
@@ -1015,8 +1016,8 @@ struct
             let compsize0' = sizeref_to_pol compsize0 in
             let compsize1' = sizeref_to_pol compsize1 in
             pure @@ SPol (add_pn compsize0' compsize1')
-          else if is_cons_ctr_name cname_as_name
-          then (* TypeChecker will ensure that actuals has two elements. *)
+          else if is_cons_ctr_name cname_as_name then
+            (* TypeChecker will ensure that actuals has two elements. *)
             let arg0 = List.nth actuals 0 in
             let arg1 = List.nth actuals 1 in
             let%bind _, compsize0, _ =
@@ -1031,9 +1032,7 @@ struct
                 let el = Element compsize1 in
                 let len =
                   SPol
-                    (add_pn
-                       (single_simple_pn @@ Length compsize1)
-                       (const_pn 1))
+                    (add_pn (single_simple_pn @@ Length compsize1) (const_pn 1))
                 in
                 pure @@ Container (len, el)
             | Container (SPol len, elm) ->
@@ -1043,13 +1042,14 @@ struct
                 (* what to do? *)
                 pure
                 @@ SPol
-                  (add_pn (sizeref_to_pol compsize0)
-                     (sizeref_to_pol compsize1))
-          else fail1
+                     (add_pn (sizeref_to_pol compsize0)
+                        (sizeref_to_pol compsize1))
+          else
+            fail1
               (Printf.sprintf "Unsupported constructor %s in gas analysis."
                  (as_error_string cname))
               (ER.get_loc rep)
-        in 
+        in
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
         let%bind _, xsize, _ =
@@ -1113,7 +1113,9 @@ struct
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
     (*  list_foldr: forall 'A . forall 'B . g:('A -> 'B -> 'B) -> b:'B -> a:(List 'A) -> 'B *)
-    let a = mk_typed_id "a" (Datatypes.DataTypeDictionary.list_typ (TypeVar "'A")) in
+    let a =
+      mk_typed_id "a" (Datatypes.DataTypeDictionary.list_typ (TypeVar "'A"))
+    in
     let g =
       mk_typed_id "g"
         (FunType (TypeVar "'A", FunType (TypeVar "'B", TypeVar "'B")))
@@ -1280,7 +1282,8 @@ struct
               GUAEnv.filterS genv_lib ~f:(fun name ->
                   List.exists
                     (function
-                      | LibTyp _ -> false | LibVar (i, _, _) -> as_string i = name)
+                      | LibTyp _ -> false
+                      | LibVar (i, _, _) -> as_string i = name)
                     lib.libn.lentries
                   || GUAEnv.existsS genv_folds name)
             in

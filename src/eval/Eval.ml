@@ -56,9 +56,11 @@ let pp_result r exclude_names gas_remaining =
   | Error (s, _) -> sprint_scilla_error_list s
   | Ok ((e, env), _) ->
       let filter_prelude (k, _) =
-        not @@ List.mem enames k ~equal:[%equal : EvalName.t]
+        not @@ List.mem enames k ~equal:[%equal: EvalName.t]
       in
-      sprintf "%s,\n%s\nGas remaining: %s" (Env.pp_value e) (Env.pp ~f:filter_prelude env) (Stdint.Uint64.to_string gas_remaining)
+      sprintf "%s,\n%s\nGas remaining: %s" (Env.pp_value e)
+        (Env.pp ~f:filter_prelude env)
+        (Stdint.Uint64.to_string gas_remaining)
 
 (* Makes sure that the literal has no closures in it *)
 (* TODO: Augment with deep checking *)
@@ -94,7 +96,11 @@ let eval_gas_charge env g =
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
-        | _ -> fail0 ("Variable " ^ (EvalName.as_error_string vstr) ^ " did not resolve to an integer") )
+        | _ ->
+            fail0
+              ( "Variable "
+              ^ EvalName.as_error_string vstr
+              ^ " did not resolve to an integer" ) )
     | SGasCharge.LogOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
@@ -394,18 +400,14 @@ let rec stmt_eval conf stmts =
           let%bind args =
             mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
           in
-          let%bind proc, p_rest =
-            Configuration.lookup_procedure conf p
-          in
+          let%bind proc, p_rest = Configuration.lookup_procedure conf p in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
           stmt_eval conf' sts
       | Iterate (l, p) ->
           let%bind l_actual = fromR @@ Env.lookup conf.env l in
           let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
-          let%bind proc, p_rest =
-            Configuration.lookup_procedure conf p
-          in
+          let%bind proc, p_rest = Configuration.lookup_procedure conf p in
           let%bind conf' =
             foldM l' ~init:conf ~f:(fun confacc arg ->
                 let%bind conf' =
@@ -426,7 +428,7 @@ let rec stmt_eval conf stmts =
           let elist =
             List.map conf.component_stack ~f:(fun cname ->
                 {
-                  emsg = "Raised from " ^ (as_error_string cname);
+                  emsg = "Raised from " ^ as_error_string cname;
                   startl = ER.get_loc (get_rep cname);
                   endl = dummy_loc;
                 })
@@ -442,10 +444,14 @@ let rec stmt_eval conf stmts =
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
-  let sender = GlobalName.parse_simple_name (MessagePayload.sender_label) in
-  let amount = GlobalName.parse_simple_name (MessagePayload.amount_label) in
-  let%bind sender_value = fromR @@ Configuration.lookup conf (mk_loc_id sender) in
-  let%bind amount_value = fromR @@ Configuration.lookup conf (mk_loc_id amount) in
+  let sender = GlobalName.parse_simple_name MessagePayload.sender_label in
+  let amount = GlobalName.parse_simple_name MessagePayload.amount_label in
+  let%bind sender_value =
+    fromR @@ Configuration.lookup conf (mk_loc_id sender)
+  in
+  let%bind amount_value =
+    fromR @@ Configuration.lookup conf (mk_loc_id amount)
+  in
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
@@ -498,8 +504,7 @@ let check_blockchain_entries entries =
 let eval_constraint cconstraint env =
   let%bind contract_val, _ = exp_eval_wrapper_no_cps cconstraint env in
   match contract_val with
-  | ADTValue (c, [], [])
-    when Datatypes.is_true_ctr_name c -> pure ()
+  | ADTValue (c, [], []) when Datatypes.is_true_ctr_name c -> pure ()
   | _ -> fail0 (sprintf "Contract constraint violation.\n")
 
 let init_lib_entries env libs =
@@ -563,8 +568,8 @@ let init_libraries clibs elibs =
                 List.exists entries ~f:(fun entry ->
                     match entry with
                     | LibTyp _ -> false (* Types are not part of Env. *)
-                    | LibVar (i, _, _) -> [%equal : EvalName.t] (get_id i) name)
-                || List.Assoc.mem rec_env name ~equal:[%equal : EvalName.t])
+                    | LibVar (i, _, _) -> [%equal: EvalName.t] (get_id i) name)
+                || List.Assoc.mem rec_env name ~equal:[%equal: EvalName.t])
           in
           pure @@ Env.bind_all acc_env env)
   in
@@ -581,9 +586,10 @@ let init_fields env fs =
     let%bind v, _ = exp_eval_wrapper_no_cps fexp env in
     match v with
     | l when is_pure_literal l -> pure (fname, l)
-    | _ -> fail0
+    | _ ->
+        fail0
         @@ sprintf "Closure cannot be stored in a field %s."
-          (EvalName.as_error_string fname)
+             (EvalName.as_error_string fname)
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
@@ -603,15 +609,18 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
         let emsg () =
           mk_error0
             (sprintf "Parameter %s : %s is not specified in the contract.\n"
-               (EvalName.as_error_string (fst a)) (pp_typ atyp))
+               (EvalName.as_error_string (fst a))
+               (pp_typ atyp))
         in
         (* For each argument there should be a parameter *)
         let%bind _, mp =
           tryM
             ~f:(fun (ps, pt) ->
               let%bind at = fromR @@ literal_type (snd a) in
-              if [%equal : EvalName.t] (get_id ps) (fst a) && [%equal: EvalType.t] pt at then
-                pure ()
+              if
+                [%equal: EvalName.t] (get_id ps) (fst a)
+                && [%equal: EvalType.t] pt at
+              then pure ()
               else fail0 "")
             cparams ~msg:emsg
         in
@@ -622,7 +631,10 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
     forallM
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
-        if List.count args ~f:(fun a -> [%equal : EvalName.t] (get_id p) (fst a)) <> 1 then
+        if
+          List.count args ~f:(fun a -> [%equal: EvalName.t] (get_id p) (fst a))
+          <> 1
+        then
           fail0
             (sprintf "Parameter %s must occur exactly once in input.\n"
                (as_error_string p))
@@ -650,7 +662,8 @@ let create_cur_state_fields initcstate curcstate =
         let%bind t_lc = fromR @@ literal_type lc in
         let emsg () =
           mk_error0
-            (sprintf "Field %s : %s not defined in the contract\n" (EvalName.as_error_string s)
+            (sprintf "Field %s : %s not defined in the contract\n"
+               (EvalName.as_error_string s)
                (pp_typ t_lc))
         in
         let%bind _, ex =
@@ -658,7 +671,8 @@ let create_cur_state_fields initcstate curcstate =
             ~f:(fun (t, li) ->
               let%bind t1 = fromR @@ literal_type lc in
               let%bind t2 = fromR @@ literal_type li in
-              if [%equal : EvalName.t] s t && [%equal: EvalType.t] t1 t2 then pure ()
+              if [%equal: EvalName.t] s t && [%equal: EvalType.t] t1 t2 then
+                pure ()
               else fail0 "")
             initcstate ~msg:emsg
         in
@@ -669,15 +683,19 @@ let create_cur_state_fields initcstate curcstate =
   let%bind () =
     forallM
       ~f:(fun (e, _) ->
-        if List.count curcstate ~f:(fun (e', _) -> [%equal : EvalName.t ] e e') > 1 then
-          fail0 (sprintf "Field %s occurs more than once in input.\n" (EvalName.as_error_string e))
+        if
+          List.count curcstate ~f:(fun (e', _) -> [%equal: EvalName.t] e e') > 1
+        then
+          fail0
+            (sprintf "Field %s occurs more than once in input.\n"
+               (EvalName.as_error_string e))
         else pure ())
       initcstate
   in
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
     List.filter initcstate ~f:(fun (s, _) ->
-        not (List.Assoc.mem curcstate s ~equal:[%equal : EvalName.t]))
+        not (List.Assoc.mem curcstate s ~equal:[%equal: EvalName.t]))
   in
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
@@ -817,11 +835,9 @@ let handle_message contr cstate bstate m =
     foldM tenv ~init:env ~f:(fun e (n, l) ->
         (* TODO, Issue #836: Message fields may contain periods, which shouldn't be allowed. *)
         match String.split n ~on:'.' with
-        | [ simple_name ] -> pure @@ Env.bind e (GlobalName.parse_simple_name simple_name) l
-        | _ ->
-            fail0
-            @@ sprintf
-              "Illegal field %s in incoming message" n)
+        | [ simple_name ] ->
+            pure @@ Env.bind e (GlobalName.parse_simple_name simple_name) l
+        | _ -> fail0 @@ sprintf "Illegal field %s in incoming message" n)
   in
   let open Configuration in
   (* Create configuration *)

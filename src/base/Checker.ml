@@ -40,7 +40,6 @@ open Literal
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Parser = FEParser.Parser
 module ParserSyntax = FEParser.FESyntax
-
 module PSRep = ParserRep
 module PERep = ParserRep
 module Dis = Disambiguate.ScillaDisambiguation (PSRep) (PERep)
@@ -74,7 +73,7 @@ let disambiguate_lmod lmod elibs names_and_addresses this_address =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Disambiguation]:\n lmodule [%s] is successfully checked.\n"
-      (PreDisIdentifier.as_error_string lmod.libs.lname);
+         (PreDisIdentifier.as_error_string lmod.libs.lname);
   res
 
 (* Change local names to global names *)
@@ -84,7 +83,7 @@ let disambiguate_cmod cmod elibs names_and_addresses this_address =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Disambiguation]:\n cmodule [%s] is successfully checked.\n"
-      (PreDisIdentifier.as_error_string cmod.contr.cname);
+         (PreDisIdentifier.as_error_string cmod.contr.cname);
   res
 
 (* Check restrictions on inductive datatypes, and on associated recursion principles *)
@@ -239,12 +238,17 @@ let check_lmodule cli =
     in
     let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
-        ~default:(None, []) in
-    let this_address = Option.value this_address_opt ~default:(FilePath.chop_extension (FilePath.basename cli.input_file)) in
+        ~default:(None, [])
+    in
+    let this_address =
+      Option.value this_address_opt
+        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
       wrap_error_with_gas initial_gas
-      @@ disambiguate_lmod lmod elibs init_address_map this_address in
+      @@ disambiguate_lmod lmod elibs init_address_map this_address
+    in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion_lmod dis_lmod elibs
     in
@@ -303,12 +307,17 @@ let check_cmodule cli =
     (* Import whatever libs we want. *)
     let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
-        ~default:(None, []) in
-    let this_address = Option.value this_address_opt ~default:(FilePath.chop_extension (FilePath.basename cli.input_file)) in
+        ~default:(None, [])
+    in
+    let this_address =
+      Option.value this_address_opt
+        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
       wrap_error_with_gas initial_gas
-      @@ disambiguate_cmod cmod elibs init_address_map this_address in
+      @@ disambiguate_cmod cmod elibs init_address_map this_address
+    in
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
     in

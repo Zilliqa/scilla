@@ -128,8 +128,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
@@ -137,8 +138,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
   [@@deriving sexp]
 
@@ -337,8 +339,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
@@ -346,8 +349,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (LType.TIdentifier.Name.t * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
   [@@deriving sexp]
 
@@ -486,7 +490,7 @@ module MkLiteral (T : ScillaType) = struct
 
   let zero_lit =
     ADTValue (LType.TIdentifier.Name.parse_simple_name "Zero", [], [])
-  
+
   let build_succ_lit nat =
     ADTValue (LType.TIdentifier.Name.parse_simple_name "Succ", [], [ nat ])
 
@@ -501,12 +505,10 @@ module MkLiteral (T : ScillaType) = struct
       (LType.TIdentifier.Name.parse_simple_name "Pair", [ t1; t2 ], [ l1; l2 ])
 
   let build_nil_lit t =
-    ADTValue
-      (LType.TIdentifier.Name.parse_simple_name "Nil", [ t ], [])
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Nil", [ t ], [])
 
   let build_cons_lit hd t tl =
-    ADTValue
-      (LType.TIdentifier.Name.parse_simple_name "Cons", [ t ], [ hd ; tl ])
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Cons", [ t ], [ hd; tl ])
 end
 
 module LocalLiteral = MkLiteral (MkType (MkIdentifier (LocalName)))

@@ -248,11 +248,14 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
           json_from_string (Bytes.to_string bal) |> json_to_string
       | _ ->
           assert_failure
-            ( "Incorrect type of " ^ CUName.as_error_string balance_label
+            ( "Incorrect type of "
+            ^ CUName.as_error_string balance_label
             ^ " in state.json" ) )
   | None ->
       assert_failure
-        ("Unable to find " ^ CUName.as_error_string balance_label ^ " in state.json")
+        ( "Unable to find "
+        ^ CUName.as_error_string balance_label
+        ^ " in state.json" )
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish ~sock_addr =
@@ -269,7 +272,10 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
   let svars' =
     List.fold_right goldjs ~init:svars ~f:(fun goldv acc ->
         let golds = json_member "vname" goldv |> json_to_string in
-        if String.(golds = ContractUtil.CUName.as_string ContractUtil.balance_label) then acc
+        if
+          String.(
+            golds = ContractUtil.CUName.as_string ContractUtil.balance_label)
+        then acc
         else
           let s', rest =
             List.partition_tf acc ~f:(fun (s, _, _) -> String.(s = golds))

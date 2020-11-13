@@ -87,12 +87,10 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         if is_cons_ctr_name cn then
           let rec walk elm acc_cost =
             match elm with
-            | ADTValue (c, _, [ l; ll ])
-                when is_cons_ctr_name c ->
-                  let%bind lcost = literal_cost l in
-                  walk ll (acc_cost + lcost)
-            | ADTValue (c, _, _)
-                when is_nil_ctr_name c -> pure (acc_cost + 1)
+            | ADTValue (c, _, [ l; ll ]) when is_cons_ctr_name c ->
+                let%bind lcost = literal_cost l in
+                walk ll (acc_cost + lcost)
+            | ADTValue (c, _, _) when is_nil_ctr_name c -> pure (acc_cost + 1)
             | _ -> fail0 "Malformed list while computing literal cost"
           in
           walk als 0

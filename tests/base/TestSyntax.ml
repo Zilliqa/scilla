@@ -98,13 +98,16 @@ let unannotated_syntax_tests =
            ( "subst_type_in_literal-1",
              assert_equal ~printer:pp_literal
                (IntLit (Int32L (Int32.of_int 42)))
-               (subst_type_in_literal (mk_loc_id (parse_simple_name "'X"))
+               (subst_type_in_literal
+                  (mk_loc_id (parse_simple_name "'X"))
                   (FunType (int32_typ, int32_typ))
                   (IntLit (Int32L (Int32.of_int 42)))) );
            ( "subst_type_in_literal-2",
              assert_equal ~printer:pp_literal
                (Map ((int32_typ, int32_typ), Caml.Hashtbl.create 4))
-               (subst_type_in_literal (mk_loc_id (parse_simple_name "'X")) int32_typ
+               (subst_type_in_literal
+                  (mk_loc_id (parse_simple_name "'X"))
+                  int32_typ
                   (Map ((TypeVar "'X", TypeVar "'X"), Caml.Hashtbl.create 4)))
            );
            ( "free_tvars-1",
@@ -149,7 +152,10 @@ let unannotated_syntax_tests =
            ( "free_tvars-6",
              assert_equal ~printer:ident_list_printer
                ~cmp:(List.equal TestSyntaxIdentifier.equal)
-               [ mk_loc_id (parse_simple_name "a"); mk_loc_id (parse_simple_name "d") ]
+               [
+                 mk_loc_id (parse_simple_name "a");
+                 mk_loc_id (parse_simple_name "d");
+               ]
                (let expr =
                   "match a with \n\
                   \                   | Pair a b => \n\

@@ -20,7 +20,6 @@ open Syntax
 open ErrorUtils
 open Core_kernel
 open Literal
-
 module BILiteral = GlobalLiteral
 module BIType = BILiteral.LType
 

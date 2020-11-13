@@ -50,7 +50,8 @@ let get_init_this_address_and_extlibs filename =
   else
     try
       let this_address, name_addr_pairs =
-        JSON.ContractState.get_init_this_address_and_extlibs filename in
+        JSON.ContractState.get_init_this_address_and_extlibs filename
+      in
       if
         List.contains_dup
           ~compare:(fun a b -> String.compare (fst a) (fst b))
@@ -58,8 +59,8 @@ let get_init_this_address_and_extlibs filename =
       then
         fatal_error
         @@ mk_error0
-          (sprintf "Duplicate extlib map entries in init JSON file %s."
-             filename)
+             (sprintf "Duplicate extlib map entries in init JSON file %s."
+                filename)
       else (this_address, name_addr_pairs)
     with Invalid_json s ->
       fatal_error
@@ -75,7 +76,9 @@ let import_lib name sloc =
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
-        let init_this_address, extlibs = get_init_this_address_and_extlibs initf in
+        let init_this_address, extlibs =
+          get_init_this_address_and_extlibs initf
+        in
         (* If this_address is unspecified in the init file, then use the base filename without extension as the address *)
         let this_address = Option.value init_this_address ~default:name in
         (libf, this_address, extlibs)
@@ -91,28 +94,55 @@ let import_libs names_and_namespaces init_address_map =
     let imported_libs_rev =
       List.fold_left names_and_namespaces ~init:[]
         ~f:(fun libacc_rev (libname, _) ->
-            let open RULocalIdentifier in
-            if List.mem stack (get_id libname) ~equal:[%equal : RULocalName.t] then
-              let errmsg =
-                match List.Assoc.find init_address_map (as_string libname) ~equal:String.(=) with
-                | Some filename -> 
-                    sprintf "Cyclic dependence found when importing %s (mapped to %s)."
-                      (as_error_string libname) filename
-                | None -> sprintf "Cyclic dependence found when importing %s." (as_error_string libname)
-              in fatal_error @@ mk_error1 errmsg (get_rep libname)
-            else
-              let ilib_address =
-                Option.value (List.Assoc.find address_map (as_string libname) ~equal:String.(=))
-                  ~default:(as_string libname)
-              in
-              let ilib, this_address, ilib_import_map = import_lib (ilib_address) (get_rep libname) in
-              let import_ilibs = importer ilib.elibs ilib_import_map (get_id libname :: stack) in
-              (* Transform local names to global names *)
-              match RUDisambiguation.disambiguate_lmodule ilib import_ilibs ilib_import_map this_address with
-              | Error s -> fatal_error (s @ (mk_error1 (sprintf "Failed to disambiguate imported library %s.\n" (as_string libname)) (get_rep libname)))
-              | Ok dis_lib -> 
-                  let libnode = { RUGlobalSyntax.libn = dis_lib.libs; RUGlobalSyntax.deps = import_ilibs } in
-                  libnode :: libacc_rev)
+          let open RULocalIdentifier in
+          if List.mem stack (get_id libname) ~equal:[%equal: RULocalName.t] then
+            let errmsg =
+              match
+                List.Assoc.find init_address_map (as_string libname)
+                  ~equal:String.( = )
+              with
+              | Some filename ->
+                  sprintf
+                    "Cyclic dependence found when importing %s (mapped to %s)."
+                    (as_error_string libname) filename
+              | None ->
+                  sprintf "Cyclic dependence found when importing %s."
+                    (as_error_string libname)
+            in
+            fatal_error @@ mk_error1 errmsg (get_rep libname)
+          else
+            let ilib_address =
+              Option.value
+                (List.Assoc.find address_map (as_string libname)
+                   ~equal:String.( = ))
+                ~default:(as_string libname)
+            in
+            let ilib, this_address, ilib_import_map =
+              import_lib ilib_address (get_rep libname)
+            in
+            let import_ilibs =
+              importer ilib.elibs ilib_import_map (get_id libname :: stack)
+            in
+            (* Transform local names to global names *)
+            match
+              RUDisambiguation.disambiguate_lmodule ilib import_ilibs
+                ilib_import_map this_address
+            with
+            | Error s ->
+                fatal_error
+                  ( s
+                  @ mk_error1
+                      (sprintf "Failed to disambiguate imported library %s.\n"
+                         (as_string libname))
+                      (get_rep libname) )
+            | Ok dis_lib ->
+                let libnode =
+                  {
+                    RUGlobalSyntax.libn = dis_lib.libs;
+                    RUGlobalSyntax.deps = import_ilibs;
+                  }
+                in
+                libnode :: libacc_rev)
     in
     List.rev imported_libs_rev
   in
@@ -122,10 +152,10 @@ let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
        ( "A path to Scilla stdlib not found. Please set "
-         ^ StdlibTracker.scilla_stdlib_env
-         ^ " environment variable, or pass through command-line argument for \
-            this script.\n" ^ "Example:\n" ^ exe_name
-         ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
+       ^ StdlibTracker.scilla_stdlib_env
+       ^ " environment variable, or pass through command-line argument for \
+          this script.\n" ^ "Example:\n" ^ exe_name
+       ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
@@ -141,8 +171,10 @@ let import_all_libs ldirs =
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
             let lib_name = chop_extension (basename file) in
-            Some (RULocalIdentifier.mk_loc_id
-                    (RULocalName.parse_simple_name lib_name), None (* no import-as *))
+            Some
+              ( RULocalIdentifier.mk_loc_id
+                  (RULocalName.parse_simple_name lib_name),
+                None (* no import-as *) )
           else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
@@ -180,12 +212,12 @@ let parse_cli args ~exe_name =
       ( "-version",
         Arg.Unit
           (fun () ->
-             DebugMessage.pout
-               (sprintf "Scilla version: %s\n"
-                  PrettyPrinters.scilla_version_string);
-             if true then exit 0;
-             (* if "true" to avoid warning on exit 0 *)
-             ()),
+            DebugMessage.pout
+              (sprintf "Scilla version: %s\n"
+                 PrettyPrinters.scilla_version_string);
+            if true then exit 0;
+            (* if "true" to avoid warning on exit 0 *)
+            ()),
         "Print Scilla version and exit" );
       ( "-libdir",
         Arg.String
@@ -194,8 +226,8 @@ let parse_cli args ~exe_name =
       ( "-gaslimit",
         Arg.String
           (fun i ->
-             let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
-             r_gas_limit := g),
+            let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
+            r_gas_limit := g),
         "Gas limit" );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),

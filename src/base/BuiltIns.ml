@@ -27,7 +27,6 @@ open Stdint
 open TypeUtil
 open Integer256
 open TypeUtilities
-
 module BILiteral = GlobalLiteral
 module BIType = BILiteral.LType
 module BIIdentifier = BIType.TIdentifier
@@ -764,7 +763,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                 Core_kernel.String.concat ~sep:"" raw_strings
             | ADTValue (cons_name, _, params) ->
                 let raw_params = List.map params ~f:raw_bytes in
-                Core_kernel.String.concat ~sep:"" (BIName.as_string cons_name :: raw_params)
+                Core_kernel.String.concat ~sep:""
+                  (BIName.as_string cons_name :: raw_params)
             | Clo _fun -> "(Clo <fun>)"
             | TAbs _fun -> "(Tabs <fun>)"
           in
@@ -1392,7 +1392,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               (sprintf
                  "Type error: cannot apply \"%s\" built-in to argument(s) of \
                   type(s) %s."
-                 (pp_builtin op) (pp_typ_list_error argtypes))
+                 (pp_builtin op)
+                 (pp_typ_list_error argtypes))
               (ER.get_loc rep))
       in
       pure (type_elab, res_type, exec)

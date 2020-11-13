@@ -22,7 +22,6 @@ open Syntax
 open Yojson
 open ErrorUtils
 open Stdint
-
 module PPLiteral = GlobalLiteral
 module PPType = PPLiteral.LType
 module PPIdentifier = PPType.TIdentifier
@@ -253,15 +252,14 @@ let rec pp_literal_simplified l =
         ^ "]"
       in
       "(Map " ^ PPType.pp_typ kt ^ " " ^ PPType.pp_typ vt ^ " " ^ items ^ ")"
-  | ADTValue (cn, _, _)
-    when Datatypes.is_cons_ctr_name cn ->
+  | ADTValue (cn, _, _) when Datatypes.is_cons_ctr_name cn ->
       (* Print non-empty lists in a readable way. *)
       let list_buffer = Buffer.create 1024 in
       let rec plist = function
-        | ADTValue (ctr, _, [])
-            when Datatypes.is_nil_ctr_name ctr -> Buffer.add_string list_buffer "(Nil)"
-        | ADTValue (ctr, _, [ head; tail ])
-          when Datatypes.is_cons_ctr_name ctr ->
+        | ADTValue (ctr, _, []) when Datatypes.is_nil_ctr_name ctr ->
+            Buffer.add_string list_buffer "(Nil)"
+        | ADTValue (ctr, _, [ head; tail ]) when Datatypes.is_cons_ctr_name ctr
+          ->
             let head_str = pp_literal_simplified head ^ ", " in
             Buffer.add_string list_buffer head_str;
             plist tail
@@ -275,19 +273,18 @@ let rec pp_literal_simplified l =
     when Datatypes.is_zero_ctr_name cn || Datatypes.is_succ_ctr_name cn ->
       let rec counter nat acc =
         match nat with
-        | ADTValue (ctr, _, [])
-          when Datatypes.is_zero_ctr_name ctr -> Some acc
-        | ADTValue (ctr, _, [ pred ])
-          when Datatypes.is_succ_ctr_name ctr -> counter pred (Uint32.succ acc)
+        | ADTValue (ctr, _, []) when Datatypes.is_zero_ctr_name ctr -> Some acc
+        | ADTValue (ctr, _, [ pred ]) when Datatypes.is_succ_ctr_name ctr ->
+            counter pred (Uint32.succ acc)
         | _ -> None
       in
       let res = Option.map (counter l Uint32.zero) ~f:Uint32.to_string in
       "(Nat " ^ Option.value res ~default:"(Malformed Nat)" ^ ")"
   | ADTValue (cn, _, al) ->
       (* Generic printing for other ADTs. *)
-      "(" ^ (PPName.as_string cn)
+      "(" ^ PPName.as_string cn
       ^ List.fold_left al ~init:"" ~f:(fun a l' ->
-          a ^ " " ^ pp_literal_simplified l')
+            a ^ " " ^ pp_literal_simplified l')
       ^ ")"
   | Clo _ -> "<closure>"
   | TAbs _ -> "<type_closure>"
@@ -312,7 +309,8 @@ let pp_literal_list ls =
 
 let pp_typ_map s =
   let ps =
-    List.map s ~f:(fun (k, v) -> sprintf " [%s : %s]" (PPName.as_string k) (PPType.pp_typ v))
+    List.map s ~f:(fun (k, v) ->
+        sprintf " [%s : %s]" (PPName.as_string k) (PPType.pp_typ v))
   in
   let cs = String.concat ~sep:",\n" ps in
   sprintf "{%s }" cs

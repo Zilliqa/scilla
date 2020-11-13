@@ -19,7 +19,6 @@
 open Scilla_base
 open ErrorUtils
 open Literal
-
 module IPCCLiteral = GlobalLiteral
 module IPCCType = IPCCLiteral.LType
 module IPCCIdentifier = IPCCType.TIdentifier

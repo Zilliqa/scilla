@@ -20,7 +20,6 @@ open Core_kernel
 open ErrorUtils
 open Literal
 open Syntax
-
 module TULiteral = GlobalLiteral
 module TUType = TULiteral.LType
 module TUIdentifier = TUType.TIdentifier

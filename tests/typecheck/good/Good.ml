@@ -25,7 +25,6 @@ open ErrorUtils
 
 (* Use GlobalLiteral for compatibility with TypeUtil *)
 module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
-
 module TestTypeUtils = TypeUtil.TypeUtilities
 module TestTypeType = TypeUtil.TUType
 

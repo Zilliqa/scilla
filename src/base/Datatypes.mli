@@ -19,7 +19,6 @@
 open ErrorUtils
 open Core_kernel
 open Literal
-
 module DTLiteral = GlobalLiteral
 module DTType = DTLiteral.LType
 module DTIdentifier = DTType.TIdentifier
@@ -55,7 +54,7 @@ type adt = {
 
 module DataTypeDictionary : sig
   (* Hiding the actual data type dicionary *)
-    
+
   (* Re-initialize environment with the built-in ADTs *)
   val reinit : unit -> unit
 
@@ -93,16 +92,27 @@ module DataTypeDictionary : sig
 end
 
 val is_true_ctr_name : DTName.t -> bool
+
 val is_false_ctr_name : DTName.t -> bool
+
 val is_nil_ctr_name : DTName.t -> bool
+
 val is_cons_ctr_name : DTName.t -> bool
+
 val is_list_adt_name : DTName.t -> bool
+
 val is_pair_ctr_name : DTName.t -> bool
+
 val is_pair_adt_name : DTName.t -> bool
+
 val is_zero_ctr_name : DTName.t -> bool
+
 val is_succ_ctr_name : DTName.t -> bool
+
 val is_none_ctr_name : DTName.t -> bool
+
 val is_some_ctr_name : DTName.t -> bool
+
 val is_option_adt_name : DTName.t -> bool
 
 val scilla_list_to_ocaml :

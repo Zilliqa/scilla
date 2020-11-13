@@ -72,7 +72,7 @@ module GlobalName = struct
        - Fields and contract parameters
        SimpleGlobals are not exposed to the outside world. *)
     | SimpleGlobal of string (* name *)
-    (* A QualifiedGlobal is name that is defined in the library part of a contract, 
+    (* A QualifiedGlobal is name that is defined in the library part of a contract,
        or in an imported library:
        - Library variables
        - User-defined types
@@ -86,10 +86,10 @@ module GlobalName = struct
   (* The type t contains a t_name as described above, and a user-readable string for error reporting. *)
   type t = t_name * string (* error string *) [@@deriving sexp, compare]
 
-  (* Do not use derived equality, because the error string of imported names 
+  (* Do not use derived equality, because the error string of imported names
      will be different from the error string where the name is used *)
-  let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal : t_name] an bn
-  
+  let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
+
   let as_string = function
     | SimpleGlobal n, _ -> n
     | QualifiedGlobal (ns, n), _ -> flatten_name ns n

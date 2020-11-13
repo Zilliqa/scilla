@@ -77,23 +77,41 @@ let t2 =
 
 (* Bool ADT with some arg. *)
 let t3 =
-  let badt = ADTValue (TIdentifier.Name.parse_simple_name "False", [], [ int_builder Bits32 "1" ]) in
+  let badt =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "False",
+        [],
+        [ int_builder Bits32 "1" ] )
+  in
   make_bad_lit_test badt
 
 (* Bool ADT with some type. *)
 let t4 =
-  let badt = ADTValue (TIdentifier.Name.parse_simple_name "False", [ int32_typ ], [ int_builder Bits32 "1" ]) in
+  let badt =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "False",
+        [ int32_typ ],
+        [ int_builder Bits32 "1" ] )
+  in
   make_bad_lit_test badt
 
 (* Malformed Option ADT. *)
 let t5 =
-  let bado = ADTValue (TIdentifier.Name.parse_simple_name "Some", [ int32_typ ], [ int_builder Bits64 "1" ]) in
+  let bado =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "Some",
+        [ int32_typ ],
+        [ int_builder Bits64 "1" ] )
+  in
   make_bad_lit_test bado
 
 (* Malformed Option ADT. *)
 let t6 =
   let bado =
-    ADTValue (TIdentifier.Name.parse_simple_name "Some", [ int32_typ; int32_typ ], [ int_builder Bits32 "1" ])
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "Some",
+        [ int32_typ; int32_typ ],
+        [ int_builder Bits32 "1" ] )
   in
   make_bad_lit_test bado
 
@@ -106,27 +124,48 @@ let t7 =
 let t8 =
   (* l1 is malformed. *)
   let l1 = ADTValue (TIdentifier.Name.parse_simple_name "Nil", [], []) in
-  let l2 = ADTValue (TIdentifier.Name.parse_simple_name "Cons", [ int32_typ ], [ int_builder Bits32 "1"; l1 ]) in
+  let l2 =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "Cons",
+        [ int32_typ ],
+        [ int_builder Bits32 "1"; l1 ] )
+  in
   make_bad_lit_test l2
 
 (* Malformed List *)
 let t9 =
   (* l2 should have a second arg. *)
-  let l2 = ADTValue (TIdentifier.Name.parse_simple_name "Cons", [ int32_typ ], [ int_builder Bits32 "1" ]) in
+  let l2 =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "Cons",
+        [ int32_typ ],
+        [ int_builder Bits32 "1" ] )
+  in
   make_bad_lit_test l2
 
 (* Malformed List *)
 let t10 =
-  let l1 = ADTValue (TIdentifier.Name.parse_simple_name "Nil", [ int32_typ ], []) in
+  let l1 =
+    ADTValue (TIdentifier.Name.parse_simple_name "Nil", [ int32_typ ], [])
+  in
   (* l2 should have Int32 as first arg and l1 as second arg. *)
-  let l2 = ADTValue (TIdentifier.Name.parse_simple_name "Cons", [ int32_typ ], [ l1 ]) in
+  let l2 =
+    ADTValue (TIdentifier.Name.parse_simple_name "Cons", [ int32_typ ], [ l1 ])
+  in
   make_bad_lit_test l2
 
 (* Malformed List *)
 let t11 =
   (* l1 has different type compared to l2 *)
-  let l1 = ADTValue (TIdentifier.Name.parse_simple_name "Nil", [ int64_typ ], []) in
-  let l2 = ADTValue (TIdentifier.Name.parse_simple_name "Cons", [ int32_typ ], [ int_builder Bits32 "1"; l1 ]) in
+  let l1 =
+    ADTValue (TIdentifier.Name.parse_simple_name "Nil", [ int64_typ ], [])
+  in
+  let l2 =
+    ADTValue
+      ( TIdentifier.Name.parse_simple_name "Cons",
+        [ int32_typ ],
+        [ int_builder Bits32 "1"; l1 ] )
+  in
   make_bad_lit_test l2
 
 let lit_typ_tests =

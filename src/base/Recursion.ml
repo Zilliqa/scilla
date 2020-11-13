@@ -246,7 +246,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     let%bind recursion_ccomps_rev, _ =
       foldM ccomps ~init:([], []) ~f:(fun (acc_comps, acc_procs) comp ->
-          let is_proc_in_scope p = List.mem acc_procs p ~equal:[%equal : RecName.t] in
+          let is_proc_in_scope p =
+            List.mem acc_procs p ~equal:[%equal: RecName.t]
+          in
           let%bind checked_component =
             recursion_component is_adt_in_scope is_adt_ctr_in_scope
               is_proc_in_scope comp
@@ -347,8 +349,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let { lname; lentries } = lib in
     let is_adt_in_scope adts_in_scope adt_name =
       (* Check if type has already been declared *)
-      if List.mem adts_in_scope (get_id adt_name) ~equal:[%equal : RecName.t] then
-        pure ()
+      if List.mem adts_in_scope (get_id adt_name) ~equal:[%equal: RecName.t]
+      then pure ()
       else
         (* Check if the name is a builtin ADT *)
         let%bind _ =
@@ -359,8 +361,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     let is_adt_ctr_in_scope adt_ctrs_in_scope ctr_name =
       (* Check if type has already been declared *)
-      if List.mem adt_ctrs_in_scope (get_id ctr_name) ~equal:[%equal : RecName.t] then
-        pure ()
+      if List.mem adt_ctrs_in_scope (get_id ctr_name) ~equal:[%equal: RecName.t]
+      then pure ()
       else
         (* Check if the name is a builtin ADT *)
         DataTypeDictionary.lookup_constructor

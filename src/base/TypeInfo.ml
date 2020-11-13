@@ -48,7 +48,6 @@ module ScillaTypeInfo
 struct
   module SER = SR
   module EER = ER
-
   module TILiteral = GlobalLiteral
   module TIType = TILiteral.LType
   module TIIdentifier = TIType.TIdentifier

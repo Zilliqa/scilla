@@ -22,7 +22,6 @@ open Literal
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
-
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 open FEParser
 

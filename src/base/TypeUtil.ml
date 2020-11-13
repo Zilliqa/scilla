@@ -229,7 +229,8 @@ functor
               if List.length ts <> List.length adt.tparams then
                 fail1
                   (sprintf "ADT type %s expects %d arguments but got %d.\n"
-                     (as_error_string n) (List.length adt.tparams) (List.length ts))
+                     (as_error_string n) (List.length adt.tparams)
+                     (List.length ts))
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
@@ -240,7 +241,8 @@ functor
               else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
-                @@ sprintf "Unbound type variable %s in type %s" a (pp_typ_error t)
+                @@ sprintf "Unbound type variable %s in type %s" a
+                     (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
         in
         is_wf_typ' t []
@@ -260,7 +262,10 @@ functor
             let sloc =
               match lopt with Some l -> R.get_loc l | None -> dummy_loc
             in
-            fail1 (sprintf "Couldn't resolve the identifier \"%s\".\n" (TUName.as_error_string id)) sloc
+            fail1
+              (sprintf "Couldn't resolve the identifier \"%s\".\n"
+                 (TUName.as_error_string id))
+              sloc
 
       let existsT env id = Hashtbl.mem env.tenv (TUName.as_string id)
 
@@ -367,9 +372,7 @@ module TypeUtilities = struct
           (* Inductive ADT - ignore this branch *)
         else
           (* Check that ADT is serializable *)
-          match
-            lookup_name ~sloc:(get_rep tname) (get_id tname)
-          with
+          match lookup_name ~sloc:(get_rep tname) (get_id tname) with
           | Error _ -> false (* Handle errors outside *)
           | Ok adt ->
               let adt_serializable =
@@ -432,7 +435,8 @@ module TypeUtilities = struct
               %s\n\
               doesn't apply, as a function, to the arguments of types\n\
               %s."
-             (pp_typ_error ft) (pp_typ_list_error argtypes))
+             (pp_typ_error ft)
+             (pp_typ_list_error argtypes))
           lc
 
   let proc_type_applies ~lc formals actuals =
@@ -476,14 +480,13 @@ module TypeUtilities = struct
       fail1
         (sprintf "Constructor %s expects %d type arguments, but got %d."
            (TUName.as_error_string cn)
-           plen
-           alen)
+           plen alen)
         lc
     else pure ()
 
   (* Avoid variable clashes *)
   let refresh_adt adt taken =
-    let { tparams ; tmap ; _ } = adt in
+    let { tparams; tmap; _ } = adt in
     let tkn = tparams @ taken in
     let subst = List.map tparams ~f:(fun tp -> (tp, mk_fresh_var tkn tp)) in
     let tparams' = List.unzip subst |> snd in
@@ -510,7 +513,7 @@ module TypeUtilities = struct
     let alen = List.length targs in
     let%bind () = validate_param_length ~lc cn plen alen in
     let res_typ = ADT (mk_loc_id adt.tname, targs) in
-    match List.Assoc.find adt.tmap cn ~equal:[%equal : TUName.t] with
+    match List.Assoc.find adt.tmap cn ~equal:[%equal: TUName.t] with
     | None -> pure res_typ
     | Some ctparams ->
         let tmap = List.zip_exn adt.tparams targs in
@@ -524,7 +527,7 @@ module TypeUtilities = struct
   let extract_targs ?(lc = dummy_loc) cn (adt : Datatypes.adt) atyp =
     match atyp with
     | ADT (name, targs) ->
-        if [%equal : TUName.t ] adt.tname (get_id name) then
+        if [%equal: TUName.t] adt.tname (get_id name) then
           let plen = List.length adt.tparams in
           let alen = List.length targs in
           let%bind () = validate_param_length ~lc cn plen alen in
@@ -534,9 +537,11 @@ module TypeUtilities = struct
             (sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               (TUName.as_error_string adt.tname) (as_string name))
+               (TUName.as_error_string adt.tname)
+               (as_string name))
             (get_rep name)
-    | _ -> fail1 (sprintf "Not an algebraic data type: %s" (pp_typ_error atyp)) lc
+    | _ ->
+        fail1 (sprintf "Not an algebraic data type: %s" (pp_typ_error atyp)) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
@@ -638,7 +643,8 @@ module TypeUtilities = struct
             fail0 @@ sprintf "Malformed literal %s" (pp_literal l)
             (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ_error kt)
+        else
+          fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ_error kt)
     | ADTValue (cname, ts, args) ->
         let%bind adt, constr = DataTypeDictionary.lookup_constructor cname in
         let tparams = adt.tparams in
@@ -648,12 +654,16 @@ module TypeUtilities = struct
           @@ sprintf
                "Wrong number of type parameters for ADT %s (%i) in constructor \
                 %s."
-               (TUName.as_error_string tname) (List.length ts) (TUName.as_error_string cname)
+               (TUName.as_error_string tname)
+               (List.length ts)
+               (TUName.as_error_string cname)
         else if not (List.length args = constr.arity) then
           fail0
           @@ sprintf
                "Wrong number of arguments to ADT %s (%i) in constructor %s."
-               (TUName.as_error_string tname) (List.length args) (TUName.as_error_string cname)
+               (TUName.as_error_string tname)
+               (List.length args)
+               (TUName.as_error_string cname)
           (* Verify that the types of args match that declared. *)
         else
           let res = ADT (mk_loc_id tname, ts) in

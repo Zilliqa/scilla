@@ -25,7 +25,6 @@ open TypeUtil
 open Datatypes
 open BuiltIns
 open ContractUtil
-
 module TCLiteral = GlobalLiteral
 module TCType = TCLiteral.LType
 module TCIdentifier = TCType.TIdentifier
@@ -418,7 +417,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         if TEnv.existsV tenv id then
           fail
             (mk_type_error1
-               (sprintf "Type variable %s is already in use\n" (TCName.as_error_string id))
+               (sprintf "Type variable %s is already in use\n"
+                  (TCName.as_error_string id))
                (ER.get_loc (get_rep tvar)))
         else
           let%bind ((_, (bt, _)) as typed_b) =
@@ -545,7 +545,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   }
 
   let lookup_proc env pname =
-    List.Assoc.find env.procedures ~equal:[%equal : TCName.t] (get_id pname)
+    List.Assoc.find env.procedures ~equal:[%equal: TCName.t] (get_id pname)
 
   (* Return typed map accesses and the accessed value's type. *)
   (* (m[k1][k2]... -> (typed_m, typed_k_list, type_of_accessed_value) *)
@@ -612,7 +612,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts
         | Store (f, r) ->
-            if List.mem ~equal:[%equal : TCName.t] no_store_fields (get_id f) then
+            if List.mem ~equal:[%equal: TCName.t] no_store_fields (get_id f)
+            then
               fail
                 (mk_type_error1
                    (sprintf "Writing to the field `%s` is prohibited."
@@ -694,10 +695,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               pure @@ (typed_m, typed_klist, v_type)
             in
             (* The return type of MapGet would be (Option v_type) or Bool. *)
-            let v_type' =
-              if valfetch then option_typ v_type
-              else bool_typ
-            in
+            let v_type' = if valfetch then option_typ v_type else bool_typ in
             (* Update environment. *)
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
@@ -895,8 +893,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           else
             fail
               (mk_type_error1
-                 (sprintf "Type %s cannot be used as %s parameter" (pp_typ_error t)
-                    component_type_string)
+                 (sprintf "Type %s cannot be used as %s parameter"
+                    (pp_typ_error t) component_type_string)
                  (ER.get_loc (get_rep param))))
         comp_params
     in
@@ -910,7 +908,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompTrans -> procedures
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
-          List.Assoc.add procedures ~equal:[%equal : TCName.t] (get_id comp_name)
+          List.Assoc.add procedures ~equal:[%equal: TCName.t] (get_id comp_name)
             proc_sig
     in
     pure
@@ -1206,9 +1204,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              type_expr cconstraint tenv0 init_gas_kont remaining_gas
            in
            match
-             assert_type_equiv
-               Datatypes.DataTypeDictionary.bool_typ
-               ityp.tp ~lc:(ER.get_loc rep)
+             assert_type_equiv Datatypes.DataTypeDictionary.bool_typ ityp.tp
+               ~lc:(ER.get_loc rep)
            with
            | Ok () -> pure (checked_constraint, remaining_gas)
            | Error e -> Error ((TypeError, e), remaining_gas)

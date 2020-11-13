@@ -27,7 +27,6 @@ open Syntax
 module ER = ParserRep
 module SR = ParserRep
 module SSTypeUtil = TypeUtilities
-
 module SSLiteral = GlobalLiteral
 module SSType = SSLiteral.LType
 module SSIdentifier = SSType.TIdentifier
@@ -64,7 +63,9 @@ module MakeStateService () = struct
     | SS (sm, fields) -> pure (sm, fields)
 
   let field_type fields fname =
-    match List.find fields ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
+    match
+      List.find fields ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
@@ -74,7 +75,9 @@ module MakeStateService () = struct
 
   let fetch_local ~fname ~keys fields =
     let s = fields in
-    match List.find s ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
@@ -108,7 +111,8 @@ module MakeStateService () = struct
               | _ ->
                   fail1
                     (sprintf
-                       "StateService: Cannot index into map %s. Too many index \ keys."
+                       "StateService: Cannot index into map %s. Too many \
+                        index  keys."
                        (as_error_string fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
@@ -123,7 +127,8 @@ module MakeStateService () = struct
     | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ Some l
     | _ ->
         fail1
-          (sprintf "StateService: field \"%s\" not found.\n" (as_error_string fname))
+          (sprintf "StateService: field \"%s\" not found.\n"
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let fetch ~fname ~keys =
@@ -145,7 +150,9 @@ module MakeStateService () = struct
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
-    match List.find s ~f:(fun z -> [%equal : SSName.t] z.fname (get_id fname)) with
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
@@ -207,7 +214,8 @@ module MakeStateService () = struct
         match vopt with
         | Some fval' ->
             let fields' =
-              List.filter fields ~f:(fun f -> not ([%equal : SSName.t] f.fname (get_id fname)))
+              List.filter fields ~f:(fun f ->
+                  not ([%equal: SSName.t] f.fname (get_id fname)))
             in
             pure ({ fname = f; ftyp = t; fval = Some fval' } :: fields')
         | None ->
@@ -217,7 +225,8 @@ module MakeStateService () = struct
               (ER.get_loc (get_rep fname)) )
     | _ ->
         fail1
-          (sprintf "StateService: Field \"%s\" not found.\n" (as_error_string fname))
+          (sprintf "StateService: Field \"%s\" not found.\n"
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let update ~fname ~keys ~value =

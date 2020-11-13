@@ -22,7 +22,6 @@ open Syntax
 open Datatypes
 open TypeUtil
 open ContractUtil
-
 module CFLiteral = GlobalLiteral
 module CFType = CFLiteral.LType
 module CFIdentifier = CFType.TIdentifier
@@ -79,7 +78,6 @@ module ScillaCashflowChecker
 struct
   module SCFR = SR
   module ECFR = CashflowRep (ER)
-
   module TypedSyntax = ScillaSyntax (SR) (ER) (CFLiteral)
   module CFSyntax = ScillaSyntax (SCFR) (ECFR) (CFLiteral)
   open TypedSyntax
@@ -238,7 +236,7 @@ struct
   let cf_init_tag_contract contract token_fields =
     let { cname; cparams; cconstraint; cfields; ccomps } = contract in
     let token_fields_contains x =
-      List.mem token_fields (CFIdentifier.as_string x) ~equal:String.(=)
+      List.mem token_fields (CFIdentifier.as_string x) ~equal:String.( = )
     in
     {
       CFSyntax.cname;
@@ -372,7 +370,9 @@ struct
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
                      | [ ADT (arg_typ_name, _) ] ->
-                         [%equal : CFName.t] (CFIdentifier.get_id arg_typ_name) adt.tname
+                         [%equal: CFName.t]
+                           (CFIdentifier.get_id arg_typ_name)
+                           adt.tname
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -455,7 +455,7 @@ struct
               let zipped_tvar_tags =
                 match expected_tag with
                 | Adt (exp_typ_name, arg_tags)
-                  when [%equal : CFName.t ] exp_typ_name adt.tname ->
+                  when [%equal: CFName.t] exp_typ_name adt.tname ->
                     List.zip adt.tparams arg_tags
                 | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
                 (* Nat case *) ->
@@ -518,7 +518,9 @@ struct
                   if ctr_arg_filter t then Some NoInfo else None)
             in
             if List.exists tag_list ~f:Option.is_some then
-              List.Assoc.add acc ~equal:String.(=) (CFName.as_string ctr.cname) tag_list
+              List.Assoc.add acc ~equal:String.( = )
+                (CFName.as_string ctr.cname)
+                tag_list
             else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
@@ -539,7 +541,7 @@ struct
               (List.Assoc.add ctr_tag_map ~equal:String.( = ) ctr_name new_tags)
         | _ -> None )
 
-  let option_adt_tag t = Adt (CFName.parse_simple_name "Option", [ t ] )
+  let option_adt_tag t = Adt (CFName.parse_simple_name "Option", [ t ])
 
   (*******************************************************)
   (*      Helper functions for local variables           *)
@@ -1239,8 +1241,9 @@ struct
             | _ -> Inconsistent
           in
           let body_local_env =
-            AssocDictionary.insert (CFIdentifier.as_string arg) (get_id_tag arg)
-              local_env
+            AssocDictionary.insert
+              (CFIdentifier.as_string arg)
+              (get_id_tag arg) local_env
           in
           let ( ((_, (new_body_tag, _)) as new_body),
                 res_param_env,
@@ -1252,7 +1255,9 @@ struct
           in
           let res_arg_tag = lookup_var_tag arg res_body_local_env in
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.as_string arg) res_body_local_env
+            AssocDictionary.remove
+              (CFIdentifier.as_string arg)
+              res_body_local_env
           in
           ( Fun (update_id_tag arg res_arg_tag, t, new_body),
             Map new_body_tag,
@@ -1684,8 +1689,7 @@ struct
           let val_tag =
             if fetch then
               match x_tag with
-              | Adt (tname, [ t ])
-                when is_option_adt_name tname -> t
+              | Adt (tname, [ t ]) when is_option_adt_name tname -> t
               | NoInfo -> NoInfo
               | _ -> Inconsistent
             else NoInfo
@@ -1940,7 +1944,8 @@ struct
     let init_local_env =
       List.fold_left comp_params ~init:implicit_local_env
         ~f:(fun acc_env (p, _) ->
-          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p) acc_env)
+          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p)
+            acc_env)
     in
     let ( new_comp_body,
           new_param_env,
@@ -1974,7 +1979,8 @@ struct
     let empty_env = AssocDictionary.make_dict () in
     let init_param_env =
       List.fold_left cparams ~init:empty_env ~f:(fun acc_env (p, _) ->
-          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p) acc_env)
+          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p)
+            acc_env)
     in
     let implicit_field_env =
       AssocDictionary.insert (CFName.as_string balance_label) Money empty_env
@@ -2078,7 +2084,8 @@ struct
           match
             List.filter_map adt.tconstr ~f:(fun ctr ->
                 match
-                  List.Assoc.find ctr_tag_map ~equal:String.( = ) (CFName.as_string ctr.cname)
+                  List.Assoc.find ctr_tag_map ~equal:String.( = )
+                    (CFName.as_string ctr.cname)
                 with
                 | Some arg_tag_opts -> Some (ctr.cname, arg_tag_opts)
                 | None -> None)

@@ -23,7 +23,6 @@ open MonadUtil
 open Stdint
 open Core_kernel.Result.Let_syntax
 open PrettyPrinters
-
 module CULiteral = GlobalLiteral
 module CUType = CULiteral.LType
 module CUIdentifier = CUType.TIdentifier
@@ -133,16 +132,20 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
     List.filter args ~f:(fun a ->
-        not (List.mem nonevalargs (fst a) ~equal:[%equal : CUName.t]))
+        not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
   let append_implict_comp_params cparams =
     let open CUType in
     let sender =
-      ( CUIdentifier.mk_id (label_name_of_string MessagePayload.sender_label) ER.address_rep,
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.sender_label)
+          ER.address_rep,
         bystrx_typ address_length )
     in
     let amount =
-      ( CUIdentifier.mk_id (label_name_of_string MessagePayload.amount_label) ER.uint128_rep,
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.amount_label)
+          ER.uint128_rep,
         uint128_typ )
     in
     amount :: sender :: cparams

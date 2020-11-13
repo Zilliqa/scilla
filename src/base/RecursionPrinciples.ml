@@ -44,6 +44,7 @@ let parse_type_wrapper expr =
   | Ok e -> e
 
 let rpname_of_string str = RPName.parse_simple_name str
+
 let rpid_of_string str = RPIdentifier.mk_loc_id @@ rpname_of_string str
 
 (* Folding over natural numbers *)
@@ -141,8 +142,7 @@ module ListRec = struct
     let fold_type =
       parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (avar, PolyFun (bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -165,7 +165,9 @@ module ListRec = struct
 
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
-    let fold = (TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -176,8 +178,7 @@ module ListRec = struct
     let fold_type =
       parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (avar, PolyFun (bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -200,7 +201,9 @@ module ListRec = struct
 
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
-    let fold = (TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -212,8 +215,7 @@ module ListRec = struct
       parse_type_wrapper
         "('B -> 'A -> ('B -> 'B) -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (avar, PolyFun (bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -237,7 +239,9 @@ module ListRec = struct
 
     let fold_fixed = (Fun (f, comb_type, fold_fix), loc)
 
-    let fold = (TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end

@@ -23,14 +23,12 @@ open DebugMessage
 open PrettyPrinters
 open Literal
 open Yojson
-
 module InputFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module InputSyntax = InputFEParser.FESyntax
 module InputLiteral = InputSyntax.SLiteral
 module InputType = InputSyntax.SType
 module InputIdentifier = InputSyntax.SIdentifier
 module InputName = InputIdentifier.Name
-
 module OutputLiteral = GlobalLiteral
 module OutputType = OutputLiteral.LType
 module OutputIdentifier = OutputType.TIdentifier
@@ -56,7 +54,7 @@ type args = {
   output_init : string;
   output_state : string;
   input : string;
-  ipc_address: string;
+  ipc_address : string;
 }
 
 let f_input_init = ref ""
@@ -84,7 +82,8 @@ let validate_main usage =
   let msg = "" in
   let msg =
     (* input_init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then "Invalid input initialization file\n"
+    if not @@ Sys.file_exists !f_input_init then
+      "Invalid input initialization file\n"
     else msg
   in
   let msg =
@@ -101,15 +100,17 @@ let validate_main usage =
   in
   let msg =
     (* Either an input state or an ipc address must be provided *)
-    if not @@ Sys.file_exists !f_input_state &&
-       String.is_empty !i_ipc_address then
+    if (not @@ Sys.file_exists !f_input_state) && String.is_empty !i_ipc_address
+    then
       msg ^ "Either an input state file or an ipc address must be specified\n"
     else msg
   in
   let msg =
     (* If ostate is given, then input_state.json is mandatory, because the balance cannot be read using ipc *)
-    if not @@ String.is_empty !f_output_state &&
-       not @@ Sys.file_exists !f_input_state then
+    if
+      (not @@ String.is_empty !f_output_state)
+      && (not @@ Sys.file_exists !f_input_state)
+    then
       msg ^ "Input state file is mandatory if output state file is expected\n"
     else msg
   in
@@ -127,9 +128,15 @@ let parse ~exe_name =
         Arg.String (fun x -> f_input_state := x),
         "Path to state input json" );
       ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
-      ("-oinit", Arg.String (fun x -> f_output_init := x), "Path to output init json");
-      ("-ostate", Arg.String (fun x -> f_output_state := x), "Path to output state json");
-      ("-ipcaddress", Arg.String (fun x -> i_ipc_address := x), "IPC socket address");
+      ( "-oinit",
+        Arg.String (fun x -> f_output_init := x),
+        "Path to output init json" );
+      ( "-ostate",
+        Arg.String (fun x -> f_output_state := x),
+        "Path to output state json" );
+      ( "-ipcaddress",
+        Arg.String (fun x -> i_ipc_address := x),
+        "IPC socket address" );
     ]
   in
 
@@ -149,12 +156,11 @@ let parse ~exe_name =
     output_init = !f_output_init;
     output_state = !f_output_state;
     input = !f_input;
-    ipc_address = !i_ipc_address
+    ipc_address = !i_ipc_address;
   }
 
-
 (* TypeUtil.ml *)
-  
+
 (* Copied/reimplemented from Disambiguate.ml *)
 
 (* Qualify a local simple name with this_address *)
@@ -162,8 +168,10 @@ let disambiguate_name name this_address =
   let open Identifier.LocalName in
   match name with
   | SimpleLocal nm -> Identifier.GlobalName.parse_qualified_name this_address nm
-  | QualifiedLocal _ -> 
-      let msg = sprintf "Unexpected qualified local name %s\n" (as_error_string name) in
+  | QualifiedLocal _ ->
+      let msg =
+        sprintf "Unexpected qualified local name %s\n" (as_error_string name)
+      in
       plog msg;
       fatal_error (mk_error0 msg)
 
@@ -172,7 +180,9 @@ let convert_simple_name_to_simple_name name =
   match name with
   | SimpleLocal nm -> Identifier.GlobalName.parse_simple_name nm
   | QualifiedLocal _ ->
-      let msg = sprintf "Unexpected qualified local name %s\n" (as_error_string name) in
+      let msg =
+        sprintf "Unexpected qualified local name %s\n" (as_error_string name)
+      in
       plog msg;
       fatal_error (mk_error0 msg)
 
@@ -180,24 +190,28 @@ let disambiguate_dt_dictionary_name name this_address lookup =
   let open Identifier.LocalName in
   match name with
   | QualifiedLocal _ ->
-      raise (
-        mk_invalid_json (
-          sprintf "Found qualified type name %s in file" 
-            (InputName.as_error_string name)))
-  | SimpleLocal nm ->
+      raise
+        (mk_invalid_json
+           (sprintf "Found qualified type name %s in file"
+              (InputName.as_error_string name)))
+  | SimpleLocal nm -> (
       (* Try nm as a simple global name *)
       let tmp_nm = OutputName.parse_simple_name nm in
       match lookup tmp_nm with
-      | Ok _ -> (* Name exists => Name is predefined *)
+      | Ok _ ->
+          (* Name exists => Name is predefined *)
           tmp_nm
-      | Error _ -> (* Name does not exist => Name is user-defined *)
-          OutputName.parse_qualified_name this_address nm
-      
+      | Error _ ->
+          (* Name does not exist => Name is user-defined *)
+          OutputName.parse_qualified_name this_address nm )
+
 let disambiguate_adt_name name this_address =
-  disambiguate_dt_dictionary_name name this_address Datatypes.DataTypeDictionary.lookup_name
+  disambiguate_dt_dictionary_name name this_address
+    Datatypes.DataTypeDictionary.lookup_name
 
 let disambiguate_ctr_name name this_address =
-  disambiguate_dt_dictionary_name name this_address Datatypes.DataTypeDictionary.lookup_constructor
+  disambiguate_dt_dictionary_name name this_address
+    Datatypes.DataTypeDictionary.lookup_constructor
 
 let disambiguate_type t this_address =
   let open InputType in
@@ -212,15 +226,19 @@ let disambiguate_type t this_address =
         let dis_arg_t = recurse arg_t in
         let dis_res_t = recurse res_t in
         OutputType.FunType (dis_arg_t, dis_res_t)
-    | ADT (t_name, targs) -> (
-        let dis_nm = disambiguate_adt_name (InputIdentifier.get_id t_name) this_address in
-        let dis_t_name = OutputIdentifier.mk_id dis_nm (InputIdentifier.get_rep t_name) in
+    | ADT (t_name, targs) ->
+        let dis_nm =
+          disambiguate_adt_name (InputIdentifier.get_id t_name) this_address
+        in
+        let dis_t_name =
+          OutputIdentifier.mk_id dis_nm (InputIdentifier.get_rep t_name)
+        in
         let dis_targs = List.map targs ~f:recurse in
-        OutputType.ADT (dis_t_name, dis_targs))
+        OutputType.ADT (dis_t_name, dis_targs)
     | TypeVar tvar -> OutputType.TypeVar tvar
     | PolyFun (tvar, t) ->
-      let dis_t = recurse t in
-      OutputType.PolyFun (tvar, dis_t)
+        let dis_t = recurse t in
+        OutputType.PolyFun (tvar, dis_t)
     | Unit -> OutputType.Unit
   in
   recurse t
@@ -232,7 +250,7 @@ let json_exn_wrapper = JSONParser.json_exn_wrapper
 let member_exn = JSONParser.member_exn
 
 let to_string_exn = JSONParser.to_string_exn
-                      
+
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let lookup_adt_name_exn = JSONParser.lookup_adt_name_exn
@@ -244,7 +262,8 @@ let lookup_adt_parser_opt = JSONParser.lookup_adt_parser_opt
 let lookup_adt_parser = JSONParser.lookup_adt_parser
 
 (* Generate a parser. Parse directly into OutputLiteral *)
-let gen_parser (t' : OutputType.t) (this_address : string) : Basic.t -> OutputLiteral.t =
+let gen_parser (t' : OutputType.t) (this_address : string) :
+    Basic.t -> OutputLiteral.t =
   let open Basic in
   let open OutputType in
   let open OutputLiteral in
@@ -335,7 +354,11 @@ let gen_parser (t' : OutputType.t) (this_address : string) : Basic.t -> OutputLi
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if not (Datatypes.is_list_adt_name (OutputIdentifier.get_id name)) then
+                    if
+                      not
+                        (Datatypes.is_list_adt_name
+                           (OutputIdentifier.get_id name))
+                    then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")
@@ -352,8 +375,8 @@ let gen_parser (t' : OutputType.t) (this_address : string) : Basic.t -> OutputLi
                       let etyp = List.nth_exn tmap 0 in
                       List.fold_right vli
                         ~f:(fun vl acc ->
-                            (* Apply eparser thunk, and then apply to argument *)
-                            build_cons_lit (eparser' vl) etyp acc)
+                          (* Apply eparser thunk, and then apply to argument *)
+                          build_cons_lit (eparser' vl) etyp acc)
                         ~init:(build_nil_lit etyp)
                 | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
               in
@@ -368,8 +391,12 @@ let gen_parser (t' : OutputType.t) (this_address : string) : Basic.t -> OutputLi
             | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")
           in
           (* cn is a local name. Disambiguate before lookup *)
-          let dis_cn = disambiguate_ctr_name (InputName.parse_simple_name cn) this_address in
-          match AssocDictionary.lookup (OutputName.as_string dis_cn) cn_parsers with
+          let dis_cn =
+            disambiguate_ctr_name (InputName.parse_simple_name cn) this_address
+          in
+          match
+            AssocDictionary.lookup (OutputName.as_string dis_cn) cn_parsers
+          with
           | Some parser -> parser j
           | None ->
               raise
@@ -397,15 +424,14 @@ let parse_typ_exn t =
 
 let build_prim_lit_exn t v =
   let exn () =
-    mk_invalid_json ("Invalid " ^ OutputType.pp_typ t ^ " value " ^ v ^ " in JSON")
+    mk_invalid_json
+      ("Invalid " ^ OutputType.pp_typ t ^ " value " ^ v ^ " in JSON")
   in
   match t with
   | OutputType.PrimType pt -> (
       match OutputLiteral.build_prim_literal pt v with
-      | Some v' ->
-          v'
-      | None ->
-          raise (exn ()) )
+      | Some v' -> v'
+      | None -> raise (exn ()) )
   | _ -> raise (exn ())
 
 let rec json_to_adttyps tjs =
@@ -426,9 +452,13 @@ let rec json_to_adtargs cname tlist this_address ajs =
   (* For each component literal of our ADT, calculate its type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    constr_pattern_arg_types_exn (ADT (OutputIdentifier.mk_loc_id dt.tname, tlist)) cname
+    constr_pattern_arg_types_exn
+      (ADT (OutputIdentifier.mk_loc_id dt.tname, tlist))
+      cname
   in
-  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t this_address j) in
+  let llist =
+    List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t this_address j)
+  in
   OutputLiteral.ADTValue (cname, tlist, llist)
 
 and read_adt_json name this_address j tlist_verify =
@@ -438,19 +468,29 @@ and read_adt_json name this_address j tlist_verify =
     | `List vli ->
         let etyp = List.nth_exn tlist_verify 0 in
         List.fold_right vli
-          ~f:(fun vl acc -> build_cons_lit (json_to_lit etyp this_address vl) etyp acc)
+          ~f:(fun vl acc ->
+            build_cons_lit (json_to_lit etyp this_address vl) etyp acc)
           ~init:(build_nil_lit etyp)
     | `Assoc _ ->
         let constr_str = member_exn "constructor" j |> to_string_exn in
         (* Trust that the constructor belongs to the datatype, but disambiguate *)
-        let dis_constr = disambiguate_ctr_name (InputName.parse_simple_name constr_str) this_address in
+        let dis_constr =
+          disambiguate_ctr_name
+            (InputName.parse_simple_name constr_str)
+            this_address
+        in
         let argtypes = member_exn "argtypes" j |> JSON.to_list_exn in
         let arguments = member_exn "arguments" j |> JSON.to_list_exn in
         let tlist = json_to_adttyps argtypes in
-        let dis_tlist = List.map tlist ~f:(fun t -> disambiguate_type t this_address) in
+        let dis_tlist =
+          List.map tlist ~f:(fun t -> disambiguate_type t this_address)
+        in
         json_to_adtargs dis_constr dis_tlist this_address arguments
-    | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT "
-                                   ^ (OutputName.as_error_string name)))
+    | _ ->
+        raise
+          (mk_invalid_json
+             ( "JSON parsing: error parsing ADT "
+             ^ OutputName.as_error_string name ))
   in
   (* return built ADT *)
   res
@@ -479,14 +519,17 @@ and mapvalues_from_json m kt vt this_address l =
       let vallit = json_to_lit vt this_address vjson in
       Caml.Hashtbl.replace m keylit vallit)
 
-and json_to_lit (t : OutputType.t) (this_address : string) (v : Basic.t) : OutputLiteral.t =
+and json_to_lit (t : OutputType.t) (this_address : string) (v : Basic.t) :
+    OutputLiteral.t =
   let open OutputType in
   match t with
   | MapType (kt, vt) ->
       let vl = read_map_json kt this_address vt v in
       vl
   | ADT (name, tlist) ->
-      let vl = read_adt_json (OutputIdentifier.get_id name) this_address v tlist in
+      let vl =
+        read_adt_json (OutputIdentifier.get_id name) this_address v tlist
+      in
       vl
   | _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in
@@ -499,13 +542,13 @@ let jobj_to_statevar this_address json =
   let t = parse_typ_exn tstring in
   let dis_t = disambiguate_type t this_address in
   let v = member_exn "value" json in
-  (n, parse_json dis_t this_address v) 
+  (n, parse_json dis_t this_address v)
 
 (* Inserted from Runner.ml *)
 let map_json_input_strings_to_names map =
   List.map map ~f:(fun (x, l) ->
       match String.split x ~on:'.' with
-      | [simple_name] -> (OutputName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (OutputName.parse_simple_name simple_name, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 let get_address_literal = JSON.get_address_literal
@@ -513,19 +556,23 @@ let get_address_literal = JSON.get_address_literal
 let extract_this_address_from_init_json_data jlist =
   let this_name = OutputName.as_string ContractUtil.this_address_label in
   (* init json contains a _this_address entry, which we need for parsing values *)
-  match List.find jlist ~f:(fun j ->
-      let n = member_exn "vname" j |> to_string_exn in
-      String.(n = this_name)) with
-  | Some jv ->
+  match
+    List.find jlist ~f:(fun j ->
+        let n = member_exn "vname" j |> to_string_exn in
+        String.(n = this_name))
+  with
+  | Some jv -> (
       let v = member_exn "value" jv |> to_string_exn in
       let lit = OutputLiteral.ByStrX (OutputLiteral.Bystrx.parse_hex v) in
-      (match get_address_literal lit with
-       | None ->
-           raise (mk_invalid_json (sprintf "Unable to extract %s value as string" this_name))
-       | Some v -> v
-      )
+      match get_address_literal lit with
+      | None ->
+          raise
+            (mk_invalid_json
+               (sprintf "Unable to extract %s value as string" this_name))
+      | Some v -> v )
   | None ->
-      raise (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
+      raise
+        (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
 
 (* Convert a single JSON serialized literal back to its Scilla value. *)
 let jstring_to_literal jstring tp this_address =
@@ -568,18 +615,19 @@ let init_lib_entries libs this_address =
           let ctrs, tmaps =
             List.fold_right ctr_defs ~init:([], [])
               ~f:(fun ctr_def (tmp_ctrs, tmp_tmaps) ->
-                  let { cname; c_arg_types } = ctr_def in
-                  (* cname is a user-defined constructor, so qualify with this_address *)
-                  let dis_cname = disambiguate_name (get_id cname) this_address in
-                  let dis_c_arg_types = List.fold_right c_arg_types ~init:[]
-                      ~f:(fun c_arg_typ acc ->
-                          disambiguate_type c_arg_typ this_address :: acc) in
-                  ( {
+                let { cname; c_arg_types } = ctr_def in
+                (* cname is a user-defined constructor, so qualify with this_address *)
+                let dis_cname = disambiguate_name (get_id cname) this_address in
+                let dis_c_arg_types =
+                  List.fold_right c_arg_types ~init:[] ~f:(fun c_arg_typ acc ->
+                      disambiguate_type c_arg_typ this_address :: acc)
+                in
+                ( {
                     Datatypes.cname = dis_cname;
                     Datatypes.arity = List.length c_arg_types;
                   }
-                    :: tmp_ctrs,
-                    (dis_cname, dis_c_arg_types) :: tmp_tmaps ))
+                  :: tmp_ctrs,
+                  (dis_cname, dis_c_arg_types) :: tmp_tmaps ))
           in
           let dis_tname = disambiguate_name (get_id tname) this_address in
           let adt =
@@ -594,11 +642,9 @@ let init_lib_entries libs this_address =
           ()
       | LibVar _ -> ())
 
-
 (* StateService.ml *)
 
 module InputStateService = struct
-
   (* StateIPCClient.ml *)
 
   module InputStateIPCClient = struct
@@ -612,17 +658,20 @@ module InputStateService = struct
     let translate_res res =
       match res |> IDL.T.get |> M.run with
       | Error (e : Scilla_eval.IPCUtil.RPCError.err_t) ->
-          fatal_error (mk_error0
-            (Printf.sprintf
-               "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code
-               e.message))
+          fatal_error
+            (mk_error0
+               (Printf.sprintf
+                  "StateIPCClient: Error in IPC access: (code:%d, message:%s)."
+                  e.code e.message))
       | Ok res' -> res'
 
     let ipcclient_exn_wrapper thunk =
       try thunk () with
       | Unix.Unix_error (_, s1, s2) ->
           fatal_error (mk_error0 ("StateIPCClient: Unix error: " ^ s1 ^ s2))
-      | _ -> fatal_error (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call")
+      | _ ->
+          fatal_error
+            (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call")
 
     let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
       let socket =
@@ -647,15 +696,16 @@ module InputStateService = struct
       with Invalid_json s ->
         fatal_error
           ( s
-            @ mk_error0
-              "InputStateIPCClient: Error deserializing literal fetched from IPC call" )
+          @ mk_error0
+              "InputStateIPCClient: Error deserializing literal fetched from \
+               IPC call" )
 
     (* Deserialize proto_scilla_val, given its type. *)
     let rec deserialize_value value tp this_address =
       match value with
       | Scilla_eval.Ipcmessage_types.Bval s ->
           deserialize_literal (Bytes.to_string s) tp this_address
-      | Scilla_eval.Ipcmessage_types.Mval m ->
+      | Scilla_eval.Ipcmessage_types.Mval m -> (
           match tp with
           | MapType (kt, vt) ->
               let mlit = Caml.Hashtbl.create (List.length m.m) in
@@ -671,9 +721,10 @@ module InputStateService = struct
               in
               GlobalLiteral.Map ((kt, vt), mlit)
           | _ ->
-              fatal_error (mk_error0
-                "StateIPCClient: Type mismatch deserializing value. Unexpected \
-                 protobuf map." )
+              fatal_error
+                (mk_error0
+                   "StateIPCClient: Type mismatch deserializing value. \
+                    Unexpected protobuf map.") )
 
     let encode_serialized_query query =
       try
@@ -681,27 +732,29 @@ module InputStateService = struct
         Scilla_eval.Ipcmessage_pb.encode_proto_scilla_query query encoder;
         Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
       with e -> fatal_error (mk_error0 (Exn.to_string e))
-                  
+
     let decode_serialized_value value =
       try
         let decoder = Pbrt.Decoder.of_bytes value in
         Scilla_eval.Ipcmessage_pb.decode_proto_scilla_val decoder
       with e -> fatal_error (mk_error0 (Exn.to_string e))
-                  
+
     let fetch ~socket_addr ~fname ~tp ~this_address =
       let open Scilla_eval.Ipcmessage_types in
       let q =
         {
           name = InputIdentifier.as_string fname;
           mapdepth = TypeUtil.TypeUtilities.map_depth tp;
-          indices = []; (* indices are not needed, as we are only fetching entire states *)
+          indices = [];
+          (* indices are not needed, as we are only fetching entire states *)
           ignoreval = false;
         }
       in
       let q' = encode_serialized_query q in
       let res =
         let thunk () =
-          translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
+          translate_res
+          @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
         in
         ipcclient_exn_wrapper thunk
       in
@@ -717,24 +770,29 @@ module InputStateService = struct
     fname : InputName.t;
     (* Easier to disambiguate the type before fetching *)
     ftyp : OutputType.t;
-    fval : InputLiteral.t option; (* We may or may not have the value in memory. *)
+    fval : InputLiteral.t option;
+        (* We may or may not have the value in memory. *)
   }
 
   let fetch ~fname ~tp ~socket_addr ~this_address =
     let res = InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address in
     match res with
     | None ->
-        fatal_error (mk_error0
-          (sprintf "StateService: Field %s not found on IPC server."
-             (InputIdentifier.as_error_string fname)))
+        fatal_error
+          (mk_error0
+             (sprintf "StateService: Field %s not found on IPC server."
+                (InputIdentifier.as_error_string fname)))
     | Some _ -> res
 
   let get_full_state fl ~socket_addr ~this_address =
     List.map fl ~f:(fun f ->
-        let v = fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~tp:f.ftyp ~socket_addr ~this_address in
+        let v =
+          fetch
+            ~fname:(InputIdentifier.mk_loc_id f.fname)
+            ~tp:f.ftyp ~socket_addr ~this_address
+        in
         (f.fname, f.ftyp, v))
 end
-
 
 (* Runner.ml *)
 
@@ -746,74 +804,102 @@ let run_with_args args =
       fatal_error e
   | Ok cmod ->
       plog
-        (sprintf
-           "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
+        (sprintf "\n[Parsing]:\nContract module [%s] is successfully parsed.\n"
            args.input);
-      let init, state = 
+      let init, state =
         try
           (* Read _this_address from init file. This is needed for all disambiguation *)
           let this_address = get_this_address_from_init_file args.input_init in
           (* Contract library. *)
-          let clib_entries = Option.value_map cmod.libs ~default:[] ~f:(fun { lentries ; _ } -> lentries) in
+          let clib_entries =
+            Option.value_map cmod.libs ~default:[] ~f:(fun { lentries; _ } ->
+                lentries)
+          in
           (* Initialise datatype dictionary with user-defined types *)
           let () = init_lib_entries clib_entries this_address in
-          
+
           (* parse_json reads, parses and disambiguates the json file *)
           let init = parse_json args.input_init this_address in
 
           let state =
-            if String.is_empty args.ipc_address
-            then
+            if String.is_empty args.ipc_address then
               (* Use the provided state json. *)
               parse_json args.input_state this_address
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
-              let inputfields = List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
-                  let open InputStateService in
-                  (* Disambiguate type before fetching - it's easier to parse the json that way *)
-                  { fname = (InputIdentifier.get_id fname) ; ftyp = disambiguate_type ftyp this_address; fval = None })
+              let inputfields =
+                List.map cmod.contr.cfields ~f:(fun (fname, ftyp, _) ->
+                    let open InputStateService in
+                    (* Disambiguate type before fetching - it's easier to parse the json that way *)
+                    {
+                      fname = InputIdentifier.get_id fname;
+                      ftyp = disambiguate_type ftyp this_address;
+                      fval = None;
+                    })
               in
               (* Fetch state. Parsing the fetched jsons disambiguates *)
-              let state = InputStateService.get_full_state inputfields ~socket_addr:args.ipc_address ~this_address in
+              let state =
+                InputStateService.get_full_state inputfields
+                  ~socket_addr:args.ipc_address ~this_address
+              in
 
               (* Update using StateService.ml *)
               let sm = Scilla_eval.StateService.IPC args.ipc_address in
-              let outputfields = List.map state ~f:(fun (n, tp, v) ->
-                  let open Scilla_eval.StateService in
-                  { fname = convert_simple_name_to_simple_name n; ftyp = tp; fval = v }) in
+              let outputfields =
+                List.map state ~f:(fun (n, tp, v) ->
+                    let open Scilla_eval.StateService in
+                    {
+                      fname = convert_simple_name_to_simple_name n;
+                      ftyp = tp;
+                      fval = v;
+                    })
+              in
               (* Initialise with the final values, then update, then finalise. *)
               let () = OutputStateService.initialize ~sm ~fields:outputfields in
-              let () = List.iter outputfields ~f:(fun ssf ->
-                  let open Scilla_eval.StateService in
-                  let { fname ; fval ; _ } = ssf in
-                  match fval with
-                  | None -> fatal_error (mk_error0 (sprintf "Missing value for field %s\n" (SSName.as_string fname)))
-                  | Some v -> (
-                      match OutputStateService.update ~fname:(SSIdentifier.mk_loc_id fname) ~keys:[] ~value:v with
-                      | Ok () -> ()
-                      | Error e -> fatal_error e)) in
+              let () =
+                List.iter outputfields ~f:(fun ssf ->
+                    let open Scilla_eval.StateService in
+                    let { fname; fval; _ } = ssf in
+                    match fval with
+                    | None ->
+                        fatal_error
+                          (mk_error0
+                             (sprintf "Missing value for field %s\n"
+                                (SSName.as_string fname)))
+                    | Some v -> (
+                        match
+                          OutputStateService.update
+                            ~fname:(SSIdentifier.mk_loc_id fname)
+                            ~keys:[] ~value:v
+                        with
+                        | Ok () -> ()
+                        | Error e -> fatal_error e ))
+              in
               let _ = OutputStateService.finalize () in
 
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
               | Ok state ->
                   (* _balance is not availabe from IPC server, so use the one from the state file *)
-                  let state_from_file = parse_json args.input_state this_address in
-                  let balance = List.find_exn state_from_file ~f:(fun (fname, _) -> OutputName.equal fname ContractUtil.balance_label) in
+                  let state_from_file =
+                    parse_json args.input_state this_address
+                  in
+                  let balance =
+                    List.find_exn state_from_file ~f:(fun (fname, _) ->
+                        OutputName.equal fname ContractUtil.balance_label)
+                  in
                   balance :: state
-              | Error e ->
-                  fatal_error e
+              | Error e -> fatal_error e
           in
           (init, state)
         with Invalid_json s ->
-          fatal_error
-            ( s @ mk_error0 "Failed to parse json\n" )
+          fatal_error (s @ mk_error0 "Failed to parse json\n")
       in
       (* state_to_json maps name * literal to a vname * type * value json, which is
          the format for both init and state jsons *)
-      (JSON.ContractState.state_to_json init,
-       JSON.ContractState.state_to_json state)
+      ( JSON.ContractState.state_to_json init,
+        JSON.ContractState.state_to_json state )
 
 let run ~exe_name =
   ErrorUtils.reset_warnings ();
@@ -823,7 +909,7 @@ let run ~exe_name =
   (result_init, result_state, args)
 
 (* scilla_runner.ml *)
-  
+
 let output_to_string = Yojson.Basic.pretty_to_string
 
 let () =
