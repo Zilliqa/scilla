@@ -184,13 +184,10 @@ let parse_builtin s loc =
       let err = SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) in
       (* Check for "bystrx". Not using Str (regex) to keep it fast. *)
       try
-        let n = String.length "to_bystr" in
-        if String.equal (String.sub s ~pos:0 ~len:n) "to_bystr" then
-          let i =
-            int_of_string (String.sub s ~pos:n ~len:(String.length s - n))
-          in
-          Builtin_to_bystrx i
-        else raise err
+        let osize = String.chop_prefix s ~prefix:"to_bystr" in
+        match osize with
+        | Some size -> Builtin_to_bystrx (Int.of_string size)
+        | None -> raise err
       with Invalid_argument _ | Failure _ -> raise err )
 
 (*******************************************************)
