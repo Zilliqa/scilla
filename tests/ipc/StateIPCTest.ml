@@ -118,13 +118,28 @@ let state_to_json s =
 let sort_mapkeys goldj outj =
   let goldstates = json_to_list @@ json_member "states" goldj in
   let outstates = json_to_list @@ json_member "states" outj in
+  let rec map_dumper outmap t =
+    let open IPCTestType in
+    match t with
+    | MapType (_, vt) ->
+        let outlist = json_to_list outmap in
+        let outlist_complete =
+          List.map outlist ~f:(fun out ->
+              let outkey = json_member "key" out in
+              let outval = json_member "val" out in
+              let outval' = map_dumper outval vt in
+              `Assoc [ ("key", outkey); ("val", outval') ])
+        in
+        `List outlist_complete
+    | _ -> outmap
+  in
   let rec map_sorter goldmap outmap t =
     let open IPCTestType in
     match t with
     | MapType (_, vt) ->
         let goldlist = json_to_list goldmap in
         let outlist = json_to_list outmap in
-        let outlist' =
+        let outlist_goldkeys =
           List.fold_right goldlist
             ~f:(fun gold outacc ->
               let goldkey = json_member "key" gold |> json_to_string in
@@ -144,7 +159,27 @@ let sort_mapkeys goldj outj =
               | None -> outacc)
             ~init:[]
         in
-        `List outlist'
+        let outlist_complete =
+          List.fold_left outlist ~init:outlist_goldkeys ~f:(fun outacc out ->
+              let outkey = json_member "key" out in
+              match
+                List.find outlist_goldkeys ~f:(fun other_out ->
+                    let other_outkey =
+                      json_member "key" other_out |> json_to_string
+                    in
+                    String.(json_to_string outkey = other_outkey))
+              with
+              | Some _ ->
+                  (* Ignore - already sorted *)
+                  outacc
+              | None ->
+                  (* New key not present in the gold file *)
+                  let outval = json_member "val" out in
+                  let outval' = map_dumper outval vt in
+                  let outj = `Assoc [ ("key", outkey); ("val", outval') ] in
+                  outj :: outacc)
+        in
+        `List outlist_complete
     | _ -> outmap
   in
   let outstates' =
@@ -152,7 +187,7 @@ let sort_mapkeys goldj outj =
       (List.map2_exn goldstates outstates ~f:(fun goldstate outstate ->
            let vname = json_member "vname" goldstate in
            let t =
-             json_member "type" goldstate |> json_to_string |> parse_typ_wrapper
+             json_member "type" outstate |> json_to_string |> parse_typ_wrapper
            in
            assert_bool
              "sort_mapkeys: order of gold states and out states mismatch"
@@ -168,7 +203,7 @@ let sort_mapkeys goldj outj =
            `Assoc
              [
                ("vname", vname);
-               ("type", json_member "type" goldstate);
+               ("type", json_member "type" outstate);
                ("value", outval);
              ]))
   in
