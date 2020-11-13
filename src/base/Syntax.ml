@@ -181,13 +181,11 @@ let parse_builtin s loc =
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
   | _ -> (
-      let err = SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) in
       try
-        let osize = String.chop_prefix s ~prefix:"to_bystr" in
-        match osize with
-        | Some size -> Builtin_to_bystrx (Int.of_string size)
-        | None -> raise err
-      with Invalid_argument _ | Failure _ -> raise err )
+        let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
+        Builtin_to_bystrx (Int.of_string size)
+      with Invalid_argument _ | Failure _ ->
+        raise @@ SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) )
 
 (*******************************************************)
 (*               Types of components                   *)
