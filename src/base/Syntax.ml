@@ -136,7 +136,6 @@ let pp_builtin b =
   | Builtin_to_nat -> "to_nat"
 
 let parse_builtin s loc =
-
   match s with
   | "eq" -> Builtin_eq
   | "concat" -> Builtin_concat
@@ -181,21 +180,18 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ ->
-    let err = (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc)) in
-    (* Check for "bystrx". Not using Str (regex) to keep it fast. *)
-    try
-      let n = (String.length "to_bystr") in
-      if String.equal (String.sub s ~pos:0 ~len:n) "to_bystr"
-      then
-        let i = int_of_string (String.sub s ~pos:n ~len:((String.length s) - n)) in
-        Builtin_to_bystrx i
-      else
-        raise err
-    with
-    | Invalid_argument _
-    | Failure _ ->
-      raise err
+  | _ -> (
+      let err = SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) in
+      (* Check for "bystrx". Not using Str (regex) to keep it fast. *)
+      try
+        let n = String.length "to_bystr" in
+        if String.equal (String.sub s ~pos:0 ~len:n) "to_bystr" then
+          let i =
+            int_of_string (String.sub s ~pos:n ~len:(String.length s - n))
+          in
+          Builtin_to_bystrx i
+        else raise err
+      with Invalid_argument _ | Failure _ -> raise err )
 
 (*******************************************************)
 (*               Types of components                   *)
