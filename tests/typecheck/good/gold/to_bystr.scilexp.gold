@@ -1,0 +1,257 @@
+{
+  "type_info": [
+    {
+      "vname": "x",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "y",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 2,
+        "column": 6
+      }
+    },
+    {
+      "vname": "x",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 2,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 2,
+        "column": 27
+      }
+    },
+    {
+      "vname": "xx_opt",
+      "type": "Option (ByStr2)",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 3,
+        "column": 11
+      }
+    },
+    {
+      "vname": "y",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 3,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 3,
+        "column": 33
+      }
+    },
+    {
+      "vname": "res1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 4,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 4,
+        "column": 9
+      }
+    },
+    {
+      "vname": "xx_opt",
+      "type": "Option (ByStr2)",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 5,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 5,
+        "column": 15
+      }
+    },
+    {
+      "vname": "xx",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 12
+      }
+    },
+    {
+      "vname": "x",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 28
+      }
+    },
+    {
+      "vname": "xx",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 6,
+        "column": 31
+      }
+    },
+    {
+      "vname": "xx_opt",
+      "type": "Option (ByStr3)",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 11,
+        "column": 11
+      }
+    },
+    {
+      "vname": "y",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 11,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 11,
+        "column": 33
+      }
+    },
+    {
+      "vname": "res2",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 12,
+        "column": 9
+      }
+    },
+    {
+      "vname": "xx_opt",
+      "type": "Option (ByStr3)",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 13,
+        "column": 9
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 13,
+        "column": 15
+      }
+    },
+    {
+      "vname": "xx",
+      "type": "ByStr3",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 14,
+        "column": 10
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 14,
+        "column": 12
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 5
+      }
+    },
+    {
+      "vname": "res1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 6
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 10
+      }
+    },
+    {
+      "vname": "res2",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/to_bystr.scilexp",
+        "line": 19,
+        "column": 15
+      }
+    }
+  ],
+  "type": "Bool"
+}

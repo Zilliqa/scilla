@@ -822,6 +822,19 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let ripemd160hash ls _ =
       hash_helper ripemd160_hasher "ripemd160hash" address_length ls
 
+    (* ByStr -> Option ByStrX *)
+    let to_bystrx_type x = fun_typ bystr_typ (option_typ (bystrx_typ x))
+
+    let to_bystrx_arity = 1
+
+    let to_bystrx x ls _ =
+      match ls with
+      | [ ByStr bs ] -> (
+          match Bystrx.of_raw_bytes x (Bystr.to_raw_bytes bs) with
+          | Some l' -> some_lit (ByStrX l')
+          | None -> pure @@ none_lit (bystrx_typ x) )
+      | _ -> builtin_fail "Crypto.to_bystr" ls
+
     (* ByStrX -> ByStr *)
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
 
@@ -836,6 +849,20 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ ByStrX bs ] -> pure @@ ByStr (Bystrx.to_bystr bs)
       | _ -> builtin_fail "Crypto.to_bystr" ls
+
+    let substr_arity = 3
+
+    let substr_type =
+      fun_typ bystr_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ bystr_typ
+
+    let substr ls _ =
+      try
+        match ls with
+        | [ ByStr x; UintLit (Uint32L s); UintLit (Uint32L e) ] ->
+            pure
+            @@ ByStr (Bystr.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
+        | _ -> builtin_fail "Crypto.substr" ls
+      with Invalid_argument msg -> builtin_fail ("Crypto.substr: " ^ msg) ls
 
     let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
 
@@ -908,11 +935,14 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match ts with
       | [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + w2) ])
+      | [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
+          elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
       | _ -> fail0 "Failed to elaborate"
 
     let concat ls _ =
       match ls with
       | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ ByStrX (Bystrx.concat bs1 bs2)
+      | [ ByStr bs1; ByStr bs2 ] -> pure @@ ByStr (Bystr.concat bs1 bs2)
       | _ -> builtin_fail "Crypto.concat" ls
 
     let[@warning "-32"] ec_gen_key_pair_type =
@@ -1299,6 +1329,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     (* All built-in functions *)
     let built_in_multidict : builtin -> built_in_record list = function
+      (* Polymorphic builtins *)
       | Builtin_eq -> [String.eq_arity, String.eq_type, elab_id, String.eq;
                        BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq;
                        Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq;
@@ -1308,8 +1339,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                            Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat]
       | Builtin_to_uint256 -> [Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256;
                                Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256]
-      (* Strings *)
-      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr]
+      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr;
+                           Crypto.substr_arity, Crypto.substr_type, elab_id, Crypto.substr
+                          ]
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, elab_id, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
     
@@ -1323,6 +1355,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
       | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
       | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
+      | Builtin_to_bystrx i -> [Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i]
       | Builtin_bech32_to_bystr20 -> [Crypto.bech32_to_bystr20_arity, Crypto.bech32_to_bystr20_type, elab_id, Crypto.bech32_to_bystr20]
       | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]

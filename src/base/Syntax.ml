@@ -46,6 +46,7 @@ type builtin =
   | Builtin_keccak256hash
   | Builtin_ripemd160hash
   | Builtin_to_bystr
+  | Builtin_to_bystrx of int
   | Builtin_bech32_to_bystr20
   | Builtin_bystr20_to_bech32
   | Builtin_schnorr_verify
@@ -102,6 +103,7 @@ let pp_builtin b =
   | Builtin_keccak256hash -> "keccak256hash"
   | Builtin_ripemd160hash -> "ripemd160hash"
   | Builtin_to_bystr -> "to_bystr"
+  | Builtin_to_bystrx i -> "to_bystr" ^ Int.to_string i
   | Builtin_bech32_to_bystr20 -> "bech32_to_bystr20"
   | Builtin_bystr20_to_bech32 -> "bystr20_to_bech32"
   | Builtin_schnorr_verify -> "schnorr_verify"
@@ -178,7 +180,12 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc))
+  | _ -> (
+      try
+        let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
+        Builtin_to_bystrx (Int.of_string size)
+      with Invalid_argument _ | Failure _ ->
+        raise @@ SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) )
 
 (*******************************************************)
 (*               Types of components                   *)
