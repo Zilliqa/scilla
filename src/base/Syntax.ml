@@ -182,7 +182,6 @@ let parse_builtin s loc =
   | "to_nat" -> Builtin_to_nat
   | _ -> (
       let err = SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) in
-      (* Check for "bystrx". Not using Str (regex) to keep it fast. *)
       try
         let osize = String.chop_prefix s ~prefix:"to_bystr" in
         match osize with
