@@ -46,6 +46,7 @@ type builtin =
   | Builtin_keccak256hash
   | Builtin_ripemd160hash
   | Builtin_to_bystr
+  | Builtin_to_bystrx of int
   | Builtin_bech32_to_bystr20
   | Builtin_bystr20_to_bech32
   | Builtin_schnorr_verify
@@ -102,6 +103,7 @@ let pp_builtin b =
   | Builtin_keccak256hash -> "keccak256hash"
   | Builtin_ripemd160hash -> "ripemd160hash"
   | Builtin_to_bystr -> "to_bystr"
+  | Builtin_to_bystrx i -> "to_bystr" ^ Int.to_string i
   | Builtin_bech32_to_bystr20 -> "bech32_to_bystr20"
   | Builtin_bystr20_to_bech32 -> "bystr20_to_bech32"
   | Builtin_schnorr_verify -> "schnorr_verify"
@@ -134,6 +136,7 @@ let pp_builtin b =
   | Builtin_to_nat -> "to_nat"
 
 let parse_builtin s loc =
+
   match s with
   | "eq" -> Builtin_eq
   | "concat" -> Builtin_concat
@@ -178,7 +181,21 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc))
+  | _ ->
+    let err = (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc)) in
+    (* Check for "bystrx". Not using Str (regex) to keep it fast. *)
+    try
+      let n = (String.length "to_bystr") in
+      if String.equal (String.sub s ~pos:0 ~len:n) "to_bystr"
+      then
+        let i = int_of_string (String.sub s ~pos:n ~len:((String.length s) - n)) in
+        Builtin_to_bystrx i
+      else
+        raise err
+    with
+    | Invalid_argument _
+    | Failure _ ->
+      raise err
 
 (*******************************************************)
 (*               Types of components                   *)

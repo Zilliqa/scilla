@@ -822,6 +822,19 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let ripemd160hash ls _ =
       hash_helper ripemd160_hasher "ripemd160hash" address_length ls
 
+    (* ByStr -> Option ByStrX *)
+    let to_bystrx_type x = fun_typ bystr_typ (option_typ (bystrx_typ x))
+
+    let to_bystrx_arity = 1
+
+    let to_bystrx x ls _ =
+      match ls with
+      | [ ByStr bs ] -> (
+          match Bystrx.of_raw_bytes x (Bystr.to_raw_bytes bs) with
+          | Some l' -> some_lit (ByStrX l')
+          | None -> pure @@ none_lit (bystrx_typ x) )
+      | _ -> builtin_fail "Crypto.to_bystr" ls
+
     (* ByStrX -> ByStr *)
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
 
@@ -1342,6 +1355,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
       | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
       | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
+      | Builtin_to_bystrx i -> [Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i]
       | Builtin_bech32_to_bystr20 -> [Crypto.bech32_to_bystr20_arity, Crypto.bech32_to_bystr20_type, elab_id, Crypto.bech32_to_bystr20]
       | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
