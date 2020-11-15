@@ -212,6 +212,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "zip.scilexp";
       "str-nonprint-char-1.scilexp";
       "map_value_type_pair.scilexp";
+      "to_bystr.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0

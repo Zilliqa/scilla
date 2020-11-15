@@ -318,6 +318,19 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match (op, types, args) with
     | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
         pure @@ GasGasCharge.SizeOf (GI.get_id a1)
+    | ( Builtin_substr,
+        [
+          PrimType Bystr_typ;
+          PrimType (Uint_typ Bits32);
+          PrimType (Uint_typ Bits32);
+        ],
+        [ s; i1; i2 ] ) ->
+        pure
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s),
+               GasGasCharge.SumOf
+                 ( GasGasCharge.ValueOf (GI.get_id i1),
+                   GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
@@ -358,6 +371,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                GasGasCharge.ProdOf (GasGasCharge.StaticCost 15, x) ))
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
         pure (GasGasCharge.StaticCost (Option.value_exn (bystrx_width a)))
+    | Builtin_to_bystrx i, [ PrimType Bystr_typ ], _ ->
+        pure (GasGasCharge.StaticCost i)
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
         let base = 4 in
@@ -367,6 +382,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                  ( GasGasCharge.SizeOf (GI.get_id prefix),
                    GasGasCharge.SizeOf (GI.get_id addr) ),
                GasGasCharge.StaticCost base ))
+    | Builtin_concat, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ s1; s2 ] ->
+        pure
+        @@ GasGasCharge.SumOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
         pure
@@ -458,88 +478,85 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   [@@@ocamlformat "disable"]
 
   (* built-in op costs are propotional to size of data they operate on. *)
-  let builtin_records : builtin_record list = [
-     (* Strings *)
-    (Builtin_eq, [string_typ;string_typ], string_coster);
-    (Builtin_concat, [string_typ;string_typ], string_coster);
-    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster);
-    (Builtin_strlen, [string_typ], string_coster);
-    (Builtin_to_string, [tvar "'A"], string_coster);
+  let builtin_records_find = function
+    (* Polymorhpic *)
+    | Builtin_eq -> [
+      ([string_typ;string_typ], string_coster);
+      ([bnum_typ;bnum_typ], bnum_coster);
+      ([tvar "'A"; tvar "'A"], crypto_coster);
+      ([tvar "'A"; tvar "'A"], int_coster)
+    ];
+    | Builtin_substr -> [
+      ([string_typ; tvar "'A"; tvar "'A"], string_coster);
+      ([bystr_typ; uint32_typ; uint32_typ], crypto_coster)
+    ];
+    | Builtin_concat -> [
+      ([string_typ;string_typ], string_coster);
+      ([tvar "'A"; tvar "'A"], crypto_coster)
+    ];
+    | Builtin_to_uint256 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
+    ];
+  
+    (* Strings *)
+    | Builtin_strlen -> [([string_typ], string_coster)];
+    | Builtin_to_string -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)
-    (Builtin_eq, [bnum_typ;bnum_typ], bnum_coster);
-    (Builtin_blt, [bnum_typ;bnum_typ], bnum_coster);
-    (Builtin_badd, [bnum_typ;tvar "'A"], bnum_coster);
-    (Builtin_bsub, [bnum_typ;bnum_typ], bnum_coster);
+    | Builtin_blt -> [([bnum_typ;bnum_typ], bnum_coster)];
+    | Builtin_badd -> [([bnum_typ;tvar "'A"], bnum_coster)];
+    | Builtin_bsub -> [([bnum_typ;bnum_typ], bnum_coster)];
   
     (* Crypto *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster);
-    (Builtin_to_bystr, [tvar "'A"], crypto_coster);
-    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster);
-    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster);
-    (Builtin_to_uint256, [tvar "'A"], crypto_coster);
-    (Builtin_sha256hash, [tvar "'A"], crypto_coster);
-    (Builtin_keccak256hash, [tvar "'A"], crypto_coster);
-    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster);
-    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster);
-    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster);
-    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster);
-    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster);
-    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster);
-    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster);
-    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster);
+    | Builtin_to_bystr -> [([tvar "'A"], crypto_coster)];
+    | Builtin_to_bystrx _ -> [([tvar "'A"], crypto_coster)];
+    | Builtin_bech32_to_bystr20 -> [([string_typ;string_typ], crypto_coster)];
+    | Builtin_bystr20_to_bech32 -> [([string_typ;bystrx_typ address_length], crypto_coster)];
+    | Builtin_sha256hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_keccak256hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_ripemd160hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_schnorr_verify -> [([bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster)];
+    | Builtin_ecdsa_verify -> [([bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster)];
+    | Builtin_schnorr_get_address -> [([bystrx_typ pubkey_len], crypto_coster)];
+    | Builtin_alt_bn128_G1_add -> [([g1point_type; g1point_type], crypto_coster)];
+    | Builtin_alt_bn128_G1_mul -> [([g1point_type; scalar_type], crypto_coster)];
+    | Builtin_alt_bn128_pairing_product -> [([g1g2pair_list_type], crypto_coster)];
   
     (* Maps *)
-    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster);
-    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster);
-    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster);
-    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster);
-    (Builtin_to_list, [tvar "'A"], map_coster);
-    (Builtin_size, [tvar "'A"], map_coster);
+    | Builtin_contains -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_put -> [([tvar "'A"; tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_get -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_remove -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_to_list -> [([tvar "'A"], map_coster)];
+    | Builtin_size -> [([tvar "'A"], map_coster)];
   
     (* Integers *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster);
-    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster);
-    (Builtin_isqrt, [tvar "'A"], int_coster);
+    | Builtin_lt -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_add -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_sub -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_mul -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_div -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_rem -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_pow -> [([tvar "'A"; uint32_typ], int_coster)];
+    | Builtin_isqrt -> [([tvar "'A"], int_coster)];
   
-    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32);
-    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64);
-    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128);
-    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256);
-    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32);
-    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64);
-    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128);
-    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256);
+    | Builtin_to_int32 -> [([tvar "'A"], int_conversion_coster 32)];
+    | Builtin_to_int64 -> [([tvar "'A"], int_conversion_coster 64)];
+    | Builtin_to_int128 -> [([tvar "'A"], int_conversion_coster 128)];
+    | Builtin_to_int256 -> [([tvar "'A"], int_conversion_coster 256)];
+    | Builtin_to_uint32 -> [([tvar "'A"], int_conversion_coster 32)];
+    | Builtin_to_uint64 -> [([tvar "'A"], int_conversion_coster 64)];
+    | Builtin_to_uint128 -> [([tvar "'A"], int_conversion_coster 128)];
   
-    (Builtin_to_nat, [uint32_typ], to_nat_coster);
-  ]
+    | Builtin_to_nat -> [([uint32_typ], to_nat_coster)];
 
   [@@@ocamlformat "enable"]
 
-  let builtin_hashtbl =
-    let open Caml in
-    let ht : (builtin, builtin_record list) Hashtbl.t = Hashtbl.create 64 in
-    List.iter
-      (fun row ->
-        let opname, _, _ = row in
-        match Hashtbl.find_opt ht opname with
-        | Some p -> Hashtbl.add ht opname (row :: p)
-        | None -> Hashtbl.add ht opname [ row ])
-      builtin_records;
-    ht
-
   let builtin_cost (op, _) arg_types arg_ids =
-    let matcher (name, types, fcoster) =
+    let matcher (types, fcoster) =
       (* The names and type list lengths must match and *)
       if
-        [%equal: Syntax.builtin] name op
-        && List.length types = List.length arg_types
+        List.length types = List.length arg_types
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
@@ -554,11 +571,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     let msg =
       sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
     in
-    let dict =
-      match Caml.Hashtbl.find_opt builtin_hashtbl op with
-      | Some rows -> rows
-      | None -> []
+    let%bind _, cost =
+      tryM (builtin_records_find op) ~f:matcher ~msg:(fun () -> mk_error0 msg)
     in
-    let%bind _, cost = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 end
