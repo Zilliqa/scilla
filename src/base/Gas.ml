@@ -339,6 +339,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       ->
         let width = Option.value_exn (bystrx_width a1) in
         pure @@ GasGasCharge.StaticCost width
+    | Builtin_to_uint32, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 4 ->
+        pure @@ GasGasCharge.StaticCost 4
+    | Builtin_to_uint64, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 8 ->
+        pure @@ GasGasCharge.StaticCost 8
+    | Builtin_to_uint128, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 16 ->
+        pure @@ GasGasCharge.StaticCost 16
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure @@ GasGasCharge.StaticCost 32
@@ -427,8 +436,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match arg_types with
     | [ PrimType (Uint_typ _) ]
     | [ PrimType (Int_typ _) ]
-    | [ PrimType String_typ ]
-    | [ PrimType (Bystrx_typ _) ] ->
+    | [ PrimType String_typ ] ->
         if w = 32 || w = 64 then pure (GasGasCharge.StaticCost base)
         else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
         else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
@@ -544,9 +552,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_int64 -> [([tvar "'A"], int_conversion_coster 64)];
     | Builtin_to_int128 -> [([tvar "'A"], int_conversion_coster 128)];
     | Builtin_to_int256 -> [([tvar "'A"], int_conversion_coster 256)];
-    | Builtin_to_uint32 -> [([tvar "'A"], int_conversion_coster 32)];
-    | Builtin_to_uint64 -> [([tvar "'A"], int_conversion_coster 64)];
-    | Builtin_to_uint128 -> [([tvar "'A"], int_conversion_coster 128)];
+    | Builtin_to_uint32 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 32)
+    ];
+    | Builtin_to_uint64 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 64)
+    ];
+    | Builtin_to_uint128 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 128)
+    ];
     | Builtin_to_uint256 -> [
       ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
     ];
