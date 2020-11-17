@@ -62,6 +62,12 @@ module PrimType = struct
     | Bits128 -> "128"
     | Bits256 -> "256"
 
+  let int_bit_width_to_int = function
+    | Bits32 -> 32
+    | Bits64 -> 64
+    | Bits128 -> 128
+    | Bits256 -> 256
+
   let pp_prim_typ = function
     | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
     | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw

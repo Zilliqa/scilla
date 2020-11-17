@@ -427,7 +427,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     match arg_types with
     | [ PrimType (Uint_typ _) ]
     | [ PrimType (Int_typ _) ]
-    | [ PrimType String_typ ] ->
+    | [ PrimType String_typ ]
+    | [ PrimType (Bystrx_typ _) ] ->
         if w = 32 || w = 64 then pure (GasGasCharge.StaticCost base)
         else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
         else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
@@ -496,9 +497,6 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       ([string_typ;string_typ], string_coster);
       ([tvar "'A"; tvar "'A"], crypto_coster)
     ];
-    | Builtin_to_uint256 -> [
-      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
-    ];
   
     (* Strings *)
     | Builtin_strlen -> [([string_typ], string_coster)];
@@ -549,6 +547,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_uint32 -> [([tvar "'A"], int_conversion_coster 32)];
     | Builtin_to_uint64 -> [([tvar "'A"], int_conversion_coster 64)];
     | Builtin_to_uint128 -> [([tvar "'A"], int_conversion_coster 128)];
+    | Builtin_to_uint256 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
+    ];
   
     | Builtin_to_nat -> [([uint32_typ], to_nat_coster)];
 
