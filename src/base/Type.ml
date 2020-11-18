@@ -343,10 +343,8 @@ module MkType (I : ScillaIdentifier) = struct
   let bystrx_typ b = PrimType (Bystrx_typ b)
 
   let int_width = function
-    | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
-    | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
-    | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
-    | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+    | PrimType (Int_typ bits) | PrimType (Uint_typ bits) ->
+        Some (PrimType.int_bit_width_to_int bits)
     | _ -> None
 
   (* Given a ByStrX string, return integer X *)
