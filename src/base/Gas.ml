@@ -507,7 +507,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     ];
   
     (* Strings *)
-    | Builtin_strlen -> [([string_typ], string_coster)];
+    | Builtin_strlen -> [([string_typ], string_coster); ([bystr_typ], string_coster);];
     | Builtin_to_string -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)

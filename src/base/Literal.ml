@@ -81,6 +81,8 @@ module type ScillaLiteral = sig
 
     val sub : t -> pos:int -> len:int -> t
 
+    val length : t -> int
+
     val concat : t -> t -> t
   end
 
@@ -256,6 +258,8 @@ module MkLiteral (T : ScillaType) = struct
 
     val sub : t -> pos:int -> len:int -> t
 
+    val length : t -> int
+
     val concat : t -> t -> t
   end
 
@@ -283,6 +287,8 @@ module MkLiteral (T : ScillaType) = struct
     let equal = String.equal
 
     let sub = String.sub
+
+    let length = String.length
 
     let concat = ( ^ )
   end

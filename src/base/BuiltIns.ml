@@ -140,12 +140,22 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let strlen_arity = 1
 
-    let strlen_type = fun_typ string_typ uint32_typ
+    let strlen_type = tfun_typ "'A" (fun_typ (tvar "'A") uint32_typ)
+
+    let strlen_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | String_typ | Bystr_typ -> elab_tfun_with_args_no_gas strlen_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
 
     let strlen ls _ =
       match ls with
       | [ StringLit x ] ->
           pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
+      | [ ByStr bs ] ->
+          pure @@ UintLit (Uint32L (Uint32.of_int (Bystr.length bs)))
       | _ -> builtin_fail "String.strlen" ls
 
     let to_string_arity = 1
@@ -1350,7 +1360,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr;
                            Crypto.substr_arity, Crypto.substr_type, elab_id, Crypto.substr
                           ]
-      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, elab_id, String.strlen]
+      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
     
       (* Block numbers *)
