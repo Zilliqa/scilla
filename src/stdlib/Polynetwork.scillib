@@ -1,0 +1,198 @@
+(* ******************************************************************************** *)
+(*   This file is part of scilla.                                                   *)
+(*                                                                                  *)
+(*   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.                        *)
+(*                                                                                  *)
+(*   scilla is free software: you can redistribute it and/or modify it under the    *)
+(*   terms of the GNU General Public License as published by the Free Software      *)
+(*   Foundation, either version 3 of the License, or (at your option) any later     *)
+(*   version.                                                                       *)
+(*                                                                                  *)
+(*   scilla is distributed in the hope that it will be useful, but WITHOUT ANY      *)
+(*   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR  *)
+(*   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.    *)
+(*                                                                                  *)
+(*   You should have received a copy of the GNU General Public License along with   *)
+(*   scilla.  If not, see <http://www.gnu.org/licenses/>.                           *)
+(* ******************************************************************************** *)
+scilla_version 0
+
+import Conversions
+
+library Polynetwork
+
+type Header =
+  | Header of
+    Uint32                        (* version *)
+    Uint64                        (* chainID *)
+    Uint32                        (* timestamp *)
+    Uint32                        (* height *)
+    Uint32                        (* consensusData *)
+    ByStr32                       (* prevBlockHash *)
+    ByStr32                       (* transactionRoot *)
+    ByStr32                       (* crossStatesRoot *)
+    ByStr32                       (* blockRoot *)
+    ByStr                         (* consensusPayload *)
+    ByStr32                       (* nextBookkeeper *)
+
+type TxParam =
+  | TxParam of
+    ByStr                       (* txHash *)
+    ByStr                       (* crossChainId *)
+    ByStr                       (* fromContract *)
+    Uint64                      (* toChainId *)
+    ByStr                       (* toContract *)
+    ByStr                       (* method *)
+    ByStr                       (* args *)
+
+type ToMerkleValue =
+  | ToMerkleValue of
+    ByStr                       (* txHash *)
+    Uint64                      (* fromChainID *)
+    TxParam                     (* makeTxParam *)
+
+(* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
+(* ZeroCopySource.sol : NextVarUint *)
+let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let first_byte_nextpos = extract_bystr1 bs pos in
+    match first_byte_nextpos with
+    | Some (Pair first_byte nextpos) =>
+      let bit16_marker = 0xfd in
+      let is_16bit = builtin eq first_byte bit16_marker in
+      match is_16bit with
+      | True =>
+        (* Extract the next 16bits and convert to an integer. *)
+        let b16_nextpos = extract_bystr2 bs nextpos in
+        match b16_nextpos with
+        | Some (Pair b16 nextpos) =>
+          let b16_u32 = builtin to_uint64 b16 in
+          let res = Pair {Uint64 Uint32} b16_u32 nextpos in 
+          Some {(Pair Uint64 Uint32)} res
+        | None =>
+          None {(Pair Uint64 Uint32)}
+        end
+      | False =>
+        (* It's either 32bits or 64bits or 8bits. *)
+        let b32_marker = 0xfe in
+        let is_32b = builtin eq first_byte b32_marker in
+        match is_32b with
+        | True =>
+          (* This is a 32b integer *)
+          let uint32val_nextpos = extract_uint32 bs nextpos in
+          match uint32val_nextpos with
+          | Some (Pair uint32val nextpos) =>
+            (* Upcast to a Uint64 value. *)
+            let uint64val_opt = builtin to_uint64 uint32val in
+            match uint64val_opt with
+            | Some uint64val =>
+              let res = Pair {Uint64 Uint32} uint64val nextpos in
+              Some {(Pair Uint64 Uint32)} res
+            | None => None {(Pair Uint64 Uint32)}
+            end
+          | None => None {(Pair Uint64 Uint32)}
+          end
+        | False =>
+          (* 64b or 8bits. *)
+          let b64_marker = 0xff in
+          let is_64b = builtin eq first_byte b64_marker in
+          match is_64b with
+          | True =>
+            extract_uint64 bs nextpos
+          | False =>
+            let u8_val = builtin to_uint64 first_byte in
+            let res = Pair {Uint64 Uint32} u8_val nextpos in
+            Some {(Pair Uint64 Uint32)} res
+          end
+        end
+      end
+    | None =>
+      None {(Pair Uint64 Uint32)}
+    end
+
+(* Extract a Bystr value start at pos. See ZeroCopySource.sol:NextVarBytes. *)
+let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let bystr_len_64_opt = next_var_uint bs pos in
+    match bystr_len_64_opt with
+    | Some (Pair bystr_len_64 nextpos) =>
+      let bystr_len_32_opt = builtin to_uint32 bystr_len_64 in
+      match bystr_len_32_opt with
+      | Some bystr_len_32 =>
+        let some = fun (a : ByStr) => Some {ByStr} a in
+        let unit = fun (a : ByStr) => a in
+        let extractor = @extract_scillaval ByStr ByStr in
+        extractor some unit bs nextpos bystr_len_32
+      | None => None {(Pair ByStr Uint32)}
+      end
+    | None => None {(Pair ByStr Uint32)}
+    end
+
+let deserialize_Header : ByStr -> Option Header =
+  fun (header : ByStr) =>
+    let nextpos = Uint32 0 in (* starting from position 0 *)
+    let version_nextpos = extract_uint32 header nextpos in
+    match version_nextpos with
+    | Some (Pair version nextpos) =>
+      let chainid_nextpos = extract_uint64 header nextpos in
+      match chainid_nextpos with
+      | Some (Pair chainid nextpos) =>
+        let timestamp_nextpos = extract_uint32 header nextpos in
+        match timestamp_nextpos with
+        | Some (Pair timestamp nextpos) =>
+          let height_nextpos = extract_uint32 header nextpos in
+          match height_nextpos with
+          | Some (Pair height nextpos) =>
+            let consensusData_nextpos = extract_uint32 header nextpos in
+            match consensusData_nextpos with
+            | Some (Pair consensusData nextpos) =>
+              let prevBlockHash_nextpos = extract_bystr32 header nextpos in
+              match prevBlockHash_nextpos with
+              | Some (Pair prevBlockHash nextpos) =>
+                let txnroot_nextpos = extract_bystr32 header nextpos in
+                match txnroot_nextpos with
+                | Some (Pair txnroot nextpos) =>
+                  let crossStatesRoot_nextpos = extract_bystr32 header nextpos in
+                  match crossStatesRoot_nextpos with
+                  | Some (Pair crossStatesRoot nextpos) =>
+                    let blockRoot_nextpos = extract_bystr32 header nextpos in
+                    match blockRoot_nextpos with
+                    | Some (Pair blockRoot nextpos) =>
+                      let consensusPayload_nextpos = extract_bystr header nextpos in
+                      match consensusPayload_nextpos with
+                      | Some (Pair consensusPayload nextpos) =>
+                        let nextBookkeeper_nextpos = extract_bystr32 header nextpos in
+                        match nextBookkeeper_nextpos with
+                        | Some (Pair nextBoookkeeper nextpos) =>
+                          let header =
+                            Header version chainid timestamp height consensusData
+                            prevBlockHash txnroot crossStatesRoot blockRoot consensusPayload
+                            nextBoookkeeper in
+                          Some {Header} header
+                        | None => None {Header}
+                        end
+                      | None => None {Header}
+                      end
+                    | None => None {Header}
+                    end
+                  | None => None {Header}
+                  end
+                | None => None {Header}
+                end
+              | None => None {Header}
+              end
+            | None =>
+              None {Header}
+            end
+          | None =>
+            None {Header}
+          end
+        | None =>
+          None {Header}
+        end
+      | None => None {Header}
+      end
+    | None => None {Header}
+    end
