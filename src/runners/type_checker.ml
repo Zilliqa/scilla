@@ -34,7 +34,10 @@ open ErrorUtils
 module PSRep = ParserRep
 module PERep = ParserRep
 module Parser = ScillaParser.Make (ParserSyntax)
-module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module RC = Recursion.ScillaRecursion (PSRep) (PERep)
+module RCSRep = RC.OutputSRep
+module RCERep = RC.OutputERep
+module TC = TypeChecker.ScillaTypechecker (RCSRep) (RCERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
@@ -51,15 +54,35 @@ let check_parsing filename =
            filename;
       pure e
 
+let check_recursion e elibs =
+  let open TC in
+  let%bind rrlibs, relibs =
+    match RC.recursion_rprins_elibs recursion_principles elibs None with
+    | Error s -> fail s
+    | Ok (rlibs, elibs, _, emsgs) ->
+        if List.is_empty emsgs then pure (rlibs, elibs) else fail emsgs
+  in
+  let%bind re =
+    RC.recursion_exp
+      (fun n ->
+        Result.ignore_m
+        @@ Datatypes.DataTypeDictionary.lookup_name
+             ~sloc:(TCIdentifier.get_rep n) (TCIdentifier.get_id n))
+      (fun n ->
+        Result.ignore_m
+        @@ Datatypes.DataTypeDictionary.lookup_constructor
+             ~sloc:(PSRep.get_loc (TCIdentifier.get_rep n))
+             (TCIdentifier.get_id n))
+      e
+  in
+  pure (rrlibs, relibs, re)
+
 (* Type check the expression with external libraries *)
-let check_typing e elibs gas_limit =
+let check_typing e elibs rlibs gas_limit =
   let open TC in
   let open TC.TypeEnv in
   let rec_lib =
-    {
-      ParserSyntax.lname = TCIdentifier.mk_loc_id "rec_lib";
-      ParserSyntax.lentries = recursion_principles;
-    }
+    { RC.lname = TCIdentifier.mk_loc_id "rec_lib"; RC.lentries = rlibs }
   in
   let tenv0 = TEnv.mk () in
   let%bind typed_rlibs, remaining_gas = type_library tenv0 rec_lib gas_limit in
@@ -96,7 +119,12 @@ let run () =
       if List.is_empty lib_dirs then stdlib_not_found_err ();
       (* Import all libs. *)
       let std_lib = import_all_libs lib_dirs in
-      match check_typing e std_lib gas_limit with
+      let rlibs, elibs, e =
+        match check_recursion e std_lib with
+        | Ok (rlibs, elibs, e) -> (rlibs, elibs, e)
+        | Error s -> fatal_error s
+      in
+      match check_typing e elibs rlibs gas_limit with
       | Ok
           ( (typed_rlibs, typed_elibs, ((_, (e_typ, _)) as typed_erep)),
             _remaining_gas ) -> (
