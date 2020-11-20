@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Multiple declarations of type constructor Item1",
+      "error_message":
+        "Multiple declarations of type constructor Item1 in library BadADTLib2",
       "start_location": {
         "file": "checker/bad/lib/BadADTLib2.scillib",
         "line": 10,

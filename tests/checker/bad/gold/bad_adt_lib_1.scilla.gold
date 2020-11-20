@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Multiple declarations of type BadType",
+      "error_message":
+        "Multiple declarations of type BadType in library BadADTLib1",
       "start_location": {
         "file": "checker/bad/lib/BadADTLib1.scillib",
         "line": 9,

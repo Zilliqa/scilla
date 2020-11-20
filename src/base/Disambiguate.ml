@@ -87,7 +87,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   let check_duplicate_dict_entry nm_dict name_key msg error_loc =
     match List.Assoc.find nm_dict name_key ~equal:String.( = ) with
     | None -> pure () (* Name has not already been defined *)
-    | Some _ -> fail1 msg error_loc
+    | Some addr -> fail1 (sprintf "%s %s" msg addr) error_loc
 
   (* Name has already been defined *)
 
@@ -711,7 +711,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
            Then map simple names to the address of the current module. *)
         let%bind res_typ_dict =
           let msg =
-            sprintf "Multiple declarations of type %s" (as_error_string tname)
+            sprintf "Multiple declarations of type %s in library" (as_error_string tname)
           in
           let%bind () =
             check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname)
@@ -724,7 +724,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         in
         let%bind res_ctr_dict =
           let mk_msg cname =
-            sprintf "Multiple declarations of type constructor %s"
+            sprintf "Multiple declarations of type constructor %s in library"
               (as_error_string cname)
           in
           foldM ctrs ~init:dicts.ctr_dict
@@ -850,8 +850,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                  Only check against previous imports -
                  duplicate names within the same library does not affect disambiguation *)
             let msg =
-              sprintf "Variable %s imported from multiple sources"
-                (as_error_string x)
+              sprintf "Variable %s imported from multiple sources: libraries %s and"
+                (as_error_string x) lib_address
             in
             let%bind () =
               check_duplicate_dict_entry init_var_dict unqualified_x msg
@@ -867,8 +867,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let unqualified_t = get_unqualified_name (get_id tname) in
             (* Check for duplicate names - disambiguation won't work otherwise. *)
             let msg =
-              sprintf "Type %s imported from multiple sources"
-                (as_error_string tname)
+              sprintf "Type %s imported from multiple sources: libraries %s and"
+                (as_error_string tname) lib_address
             in
             let%bind () =
               check_duplicate_dict_entry typ_dict_acc unqualified_t msg
@@ -888,8 +888,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   in
                   (* Check for duplicate names - disambiguation won't work otherwise. *)
                   let msg =
-                    sprintf "Type constructor %s imported from multiple sources"
-                      (as_error_string ctr_def.cname)
+                    sprintf "Type constructor %s imported from multiple sources: libraries %s and"
+                      (as_error_string ctr_def.cname) lib_address
                   in
                   let%bind () =
                     check_duplicate_dict_entry dict_acc unqualified_ctr msg
