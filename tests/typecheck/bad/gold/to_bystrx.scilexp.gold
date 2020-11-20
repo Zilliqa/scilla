@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error: \"to_bystrX\" is not a builtin",
+      "start_location": {
+        "file": "typecheck/bad/to_bystrx.scilexp",
+        "line": 3,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

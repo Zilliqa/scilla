@@ -79,6 +79,8 @@ module type ScillaLiteral = sig
 
     val equal : t -> t -> bool
 
+    val sub : t -> pos:int -> len:int -> t
+
     val concat : t -> t -> t
   end
 
@@ -262,6 +264,8 @@ module MkLiteral (T : ScillaType) = struct
 
     val equal : t -> t -> bool
 
+    val sub : t -> pos:int -> len:int -> t
+
     val concat : t -> t -> t
   end
 
@@ -287,6 +291,8 @@ module MkLiteral (T : ScillaType) = struct
       Option.some_if (String.length raw = expected_width) raw
 
     let equal = String.equal
+
+    let sub = String.sub
 
     let concat = ( ^ )
   end
