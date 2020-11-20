@@ -869,16 +869,100 @@
       }
     },
     {
-      "vname": "res",
-      "type": "String",
+      "vname": "bs_rev",
+      "type": "ByStr3",
       "start_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 44,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-strings.scilexp",
         "line": 44,
+        "column": 11
+      }
+    },
+    {
+      "vname": "bs",
+      "type": "ByStr3",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 44,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 44,
+        "column": 31
+      }
+    },
+    {
+      "vname": "bsx_rev",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 45,
+        "column": 12
+      }
+    },
+    {
+      "vname": "bsx",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 45,
+        "column": 30
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 45,
+        "column": 33
+      }
+    },
+    {
+      "vname": "s1_rev",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 46,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 46,
+        "column": 11
+      }
+    },
+    {
+      "vname": "s1",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 46,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 46,
+        "column": 31
+      }
+    },
+    {
+      "vname": "res",
+      "type": "String",
+      "start_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 48,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-strings.scilexp",
+        "line": 48,
         "column": 4
       }
     }

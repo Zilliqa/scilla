@@ -181,6 +181,26 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         | _ -> builtin_fail (sprintf "String.to_string") ls
       in
       pure @@ StringLit s
+
+    let strrev_arity = 1
+
+    let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
+
+    let strrev_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | String_typ | Bystrx_typ _ | Bystr_typ ->
+              elab_tfun_with_args_no_gas strrev_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
+
+    let strrev ls _ =
+      match ls with
+      | [ StringLit x ] -> pure @@ StringLit (String.rev x)
+      | [ ByStr x ] -> pure @@ ByStr (Bystr.rev x)
+      | [ ByStrX x ] -> pure @@ ByStrX (Bystrx.rev x)
+      | _ -> builtin_fail (sprintf "String.strrev") ls
   end
 
   (* Instantiating the functors *)
@@ -1362,6 +1382,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                           ]
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
+      | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
     
       (* Block numbers *)
       | Builtin_blt -> [BNum.blt_arity, BNum.blt_type, elab_id, BNum.blt]

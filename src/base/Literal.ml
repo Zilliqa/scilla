@@ -84,6 +84,8 @@ module type ScillaLiteral = sig
     val length : t -> int
 
     val concat : t -> t -> t
+
+    val rev : t -> t
   end
 
   module Bystr : BYSTR
@@ -104,6 +106,8 @@ module type ScillaLiteral = sig
     val equal : t -> t -> bool
 
     val concat : t -> t -> t
+
+    val rev : t -> t
 
     val to_bystr : t -> Bystr.t
   end
@@ -261,6 +265,8 @@ module MkLiteral (T : ScillaType) = struct
     val length : t -> int
 
     val concat : t -> t -> t
+
+    val rev : t -> t
   end
 
   module Bystr : BYSTR = struct
@@ -291,6 +297,8 @@ module MkLiteral (T : ScillaType) = struct
     let length = String.length
 
     let concat = ( ^ )
+
+    let rev = String.rev
   end
 
   module type BYSTRX = sig
@@ -309,6 +317,8 @@ module MkLiteral (T : ScillaType) = struct
     val equal : t -> t -> bool
 
     val concat : t -> t -> t
+
+    val rev : t -> t
 
     val to_bystr : t -> Bystr.t
   end
