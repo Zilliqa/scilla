@@ -37,6 +37,7 @@ type builtin =
   | Builtin_concat
   | Builtin_substr
   | Builtin_strlen
+  | Builtin_strrev
   | Builtin_to_string
   | Builtin_blt
   | Builtin_badd
@@ -94,6 +95,7 @@ let pp_builtin b =
   | Builtin_concat -> "concat"
   | Builtin_substr -> "substr"
   | Builtin_strlen -> "strlen"
+  | Builtin_strrev -> "strrev"
   | Builtin_to_string -> "to_string"
   | Builtin_blt -> "blt"
   | Builtin_badd -> "badd"
@@ -141,6 +143,7 @@ let parse_builtin s loc =
   | "concat" -> Builtin_concat
   | "substr" -> Builtin_substr
   | "strlen" -> Builtin_strlen
+  | "strrev" -> Builtin_strrev
   | "to_string" -> Builtin_to_string
   | "blt" -> Builtin_blt
   | "badd" -> Builtin_badd
