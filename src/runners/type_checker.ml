@@ -41,7 +41,10 @@ module Parser = FEParser.Parser
 module Syn = FEParser.FESyntax
 module Dis = Disambiguate.ScillaDisambiguation (PSRep) (PERep)
 module GlobalSyntax = Dis.PostDisSyntax
-module TC = TypeChecker.ScillaTypechecker (PSRep) (PERep)
+module RC = Recursion.ScillaRecursion (PSRep) (PERep)
+module RCSRep = RC.OutputSRep
+module RCERep = RC.OutputERep
+module TC = TypeChecker.ScillaTypechecker (RCSRep) (RCERep)
 module TCSRep = TC.OutputSRep
 module TCERep = TC.OutputERep
 module PM_Checker = ScillaPatternchecker (TCSRep) (TCERep)
@@ -82,15 +85,37 @@ let disambiguate e (std_lib : GlobalSyntax.libtree list) =
       @@ sprintf "\n[Disambiguation]:\nExpression successfully disambiguated.\n";
       pure e
 
+let check_recursion e elibs =
+  let open TC in
+  let%bind rrlibs, relibs =
+    match RC.recursion_rprins_elibs recursion_principles elibs None with
+    | Error s -> fail s
+    | Ok (rlibs, elibs, _, emsgs) ->
+        if List.is_empty emsgs then pure (rlibs, elibs) else fail emsgs
+  in
+  let%bind re =
+    RC.recursion_exp
+      (fun n ->
+        Result.ignore_m
+        @@ Datatypes.DataTypeDictionary.lookup_name
+             ~sloc:(TCIdentifier.get_rep n) (TCIdentifier.get_id n))
+      (fun n ->
+        Result.ignore_m
+        @@ Datatypes.DataTypeDictionary.lookup_constructor
+             ~sloc:(PSRep.get_loc (TCIdentifier.get_rep n))
+             (TCIdentifier.get_id n))
+      e
+  in
+  pure (rrlibs, relibs, re)
+
 (* Type check the expression with external libraries *)
-let check_typing e elibs gas_limit =
+let check_typing e elibs rlibs gas_limit =
   let open TC in
   let open TC.TypeEnv in
   let rec_lib =
     {
-      GlobalSyntax.lname =
-        TCIdentifier.mk_loc_id (TCName.parse_simple_name "rec_lib");
-      GlobalSyntax.lentries = recursion_principles;
+      RC.lname = TCIdentifier.mk_loc_id (TCName.parse_simple_name "rec_lib");
+      RC.lentries = rlibs;
     }
   in
   let tenv0 = TEnv.mk () in
@@ -130,7 +155,12 @@ let run () =
       let std_lib = import_all_libs lib_dirs in
       match disambiguate e std_lib with
       | Ok dis_e -> (
-          match check_typing dis_e std_lib gas_limit with
+          let rlibs, elibs, e =
+            match check_recursion dis_e std_lib with
+            | Ok (rlibs, elibs, e) -> (rlibs, elibs, e)
+            | Error s -> fatal_error s
+          in
+          match check_typing e elibs rlibs gas_limit with
           | Ok
               ( (typed_rlibs, typed_elibs, ((_, (e_typ, _)) as typed_erep)),
                 _remaining_gas ) -> (

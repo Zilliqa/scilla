@@ -28,4 +28,10 @@ let res4 = andb res2 res3 in
 let res5 = builtin eq ab ab2 in
 let res6 = andb res4 res5 in
 
-res6
+let len1 = builtin strlen aa in
+let len2 = builtin strlen bb in
+let res7 = builtin eq len1 len2 in
+
+let res8 = andb res6 res7 in
+
+res8

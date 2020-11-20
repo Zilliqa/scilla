@@ -230,6 +230,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "to_byst.scilexp";
       "to_bystrx.scilexp";
       "to_bystr.scilexp";
+      "uint_conversion1.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1

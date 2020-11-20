@@ -139,12 +139,22 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let strlen_arity = 1
 
-    let strlen_type = fun_typ string_typ uint32_typ
+    let strlen_type = tfun_typ "'A" (fun_typ (tvar "'A") uint32_typ)
+
+    let strlen_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | String_typ | Bystr_typ -> elab_tfun_with_args_no_gas strlen_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
 
     let strlen ls _ =
       match ls with
       | [ StringLit x ] ->
           pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
+      | [ ByStr bs ] ->
+          pure @@ UintLit (Uint32L (Uint32.of_int (Bystr.length bs)))
       | _ -> builtin_fail "String.strlen" ls
 
     let to_string_arity = 1
@@ -170,6 +180,26 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         | _ -> builtin_fail (sprintf "String.to_string") ls
       in
       pure @@ StringLit s
+
+    let strrev_arity = 1
+
+    let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
+
+    let strrev_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | String_typ | Bystrx_typ _ | Bystr_typ ->
+              elab_tfun_with_args_no_gas strrev_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
+
+    let strrev ls _ =
+      match ls with
+      | [ StringLit x ] -> pure @@ StringLit (String.rev x)
+      | [ ByStr x ] -> pure @@ ByStr (Bystr.rev x)
+      | [ ByStrX x ] -> pure @@ ByStrX (Bystrx.rev x)
+      | _ -> builtin_fail (sprintf "String.strrev") ls
   end
 
   (* Instantiating the functors *)
@@ -863,26 +893,36 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         | _ -> builtin_fail "Crypto.substr" ls
       with Invalid_argument msg -> builtin_fail ("Crypto.substr: " ^ msg) ls
 
-    let to_uint256_type = tfun_typ "'A" @@ fun_typ (tvar "'A") uint256_typ
+    let to_uint_type x =
+      tfun_typ "'A" @@ fun_typ (tvar "'A") (PrimType (Uint_typ x))
 
-    let to_uint256_arity = 1
+    let to_uint_arity = 1
 
-    let to_uint256_elab sc ts =
+    let to_uint_elab x sc ts =
+      let open Type.PrimType in
       match ts with
-      | [ PrimType (Bystrx_typ w) ] when w <= 32 ->
+      | [ PrimType (Bystrx_typ w) ] when w <= int_bit_width_to_int x / 8 ->
           elab_tfun_with_args_no_gas sc ts
       | _ -> fail0 "Failed to elaborate"
 
-    let to_uint256 ls _ =
+    let to_uint x ls _ =
+      let open Type.PrimType in
+      let width_bytes = int_bit_width_to_int x / 8 in
       match ls with
-      | [ ByStrX bs ] when Bystrx.width bs <= 32 ->
+      | [ ByStrX bs ] when Bystrx.width bs <= width_bytes ->
           (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
-          let rem = 32 - Bystrx.width bs in
+          let rem = width_bytes - Bystrx.width bs in
           let pad = Core_kernel.String.make rem '\000' in
-          let bs_padded = pad ^ Bystrx.to_raw_bytes bs in
-          let u = Uint256.of_bytes_big_endian (Bytes.of_string bs_padded) 0 in
-          pure (UintLit (Uint256L u))
-      | _ -> builtin_fail "Crypto.to_uint256" ls
+          let bs_padded = Bytes.of_string (pad ^ Bystrx.to_raw_bytes bs) in
+          let l =
+            match x with
+            | Bits32 -> Uint32L (Uint32.of_bytes_big_endian bs_padded 0)
+            | Bits64 -> Uint64L (Uint64.of_bytes_big_endian bs_padded 0)
+            | Bits128 -> Uint128L (Uint128.of_bytes_big_endian bs_padded 0)
+            | Bits256 -> Uint256L (Uint256.of_bytes_big_endian bs_padded 0)
+          in
+          pure (UintLit l)
+      | _ -> builtin_fail ("Crypto.to_uint" ^ int_bit_width_to_string x) ls
 
     let bech32_to_bystr20_type =
       fun_typ string_typ
@@ -1336,13 +1376,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                        Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq]
       | Builtin_concat -> [String.concat_arity, String.concat_type, elab_id, String.concat;
                            Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat]
-      | Builtin_to_uint256 -> [Crypto.to_uint256_arity, Crypto.to_uint256_type, Crypto.to_uint256_elab, Crypto.to_uint256;
-                               Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256]
       | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr;
                            Crypto.substr_arity, Crypto.substr_type, elab_id, Crypto.substr
                           ]
-      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, elab_id, String.strlen]
+      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
+      | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
     
       (* Block numbers *)
       | Builtin_blt -> [BNum.blt_arity, BNum.blt_type, elab_id, BNum.blt]
@@ -1397,9 +1436,22 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_to_int256 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits256, Int.to_int256]
     
       (* Unsigned integers specific builtins *)
-      | Builtin_to_uint32 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32]
-      | Builtin_to_uint64 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64]
-      | Builtin_to_uint128 -> [Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128]
+      | Builtin_to_uint32 -> [
+          Crypto.to_uint_arity, Crypto.to_uint_type Bits32, Crypto.to_uint_elab Bits32, Crypto.to_uint Bits32;
+          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32
+        ]
+      | Builtin_to_uint64 -> [
+          Crypto.to_uint_arity, Crypto.to_uint_type Bits64, Crypto.to_uint_elab Bits64, Crypto.to_uint Bits64;
+          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64
+        ]
+      | Builtin_to_uint128 -> [
+          Crypto.to_uint_arity, Crypto.to_uint_type Bits128, Crypto.to_uint_elab Bits128, Crypto.to_uint Bits128;
+          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128
+        ]
+      | Builtin_to_uint256 -> [
+          Crypto.to_uint_arity, Crypto.to_uint_type Bits256, Crypto.to_uint_elab Bits256, Crypto.to_uint Bits256;
+          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256
+        ]
       | Builtin_to_nat -> [Uint.to_nat_arity, Uint.to_nat_type, elab_id, Uint.to_nat]
 
     [@@@ocamlformat "enable"]

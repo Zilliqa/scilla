@@ -1,5 +1,9 @@
 (True),
-{ [res6 -> (True)],
+{ [res8 -> (True)],
+  [res7 -> (True)],
+  [len2 -> (Uint32 2)],
+  [len1 -> (Uint32 2)],
+  [res6 -> (True)],
   [res5 -> (True)],
   [res4 -> (True)],
   [res3 -> (True)],
@@ -23,4 +27,4 @@
   [aa -> (ByStr 0x0f0f)],
   [c -> (ByStr2 0x0f0f)],
   [b -> (ByStr2 0xbfbf)] }
-Gas remaining: 4001674
+Gas remaining: 4001657

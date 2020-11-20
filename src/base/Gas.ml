@@ -311,6 +311,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                  ( GasGasCharge.ValueOf (GI.get_id i1),
                    GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_strlen, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
+    | Builtin_strrev, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
     | Builtin_to_string, [ l ] -> pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
@@ -337,6 +338,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       ->
         let width = Option.value_exn (bystrx_width a1) in
         pure @@ GasGasCharge.StaticCost width
+    | Builtin_to_uint32, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 4 ->
+        pure @@ GasGasCharge.StaticCost 4
+    | Builtin_to_uint64, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 8 ->
+        pure @@ GasGasCharge.StaticCost 8
+    | Builtin_to_uint128, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 16 ->
+        pure @@ GasGasCharge.StaticCost 16
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure @@ GasGasCharge.StaticCost 32
@@ -494,12 +504,10 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       ([string_typ;string_typ], string_coster);
       ([tvar "'A"; tvar "'A"], crypto_coster)
     ];
-    | Builtin_to_uint256 -> [
-      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
-    ];
+    | Builtin_strrev -> [ ([tvar "'A"], string_coster) ]
   
     (* Strings *)
-    | Builtin_strlen -> [([string_typ], string_coster)];
+    | Builtin_strlen -> [([string_typ], string_coster); ([bystr_typ], string_coster);];
     | Builtin_to_string -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)
@@ -544,9 +552,18 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_int64 -> [([tvar "'A"], int_conversion_coster 64)];
     | Builtin_to_int128 -> [([tvar "'A"], int_conversion_coster 128)];
     | Builtin_to_int256 -> [([tvar "'A"], int_conversion_coster 256)];
-    | Builtin_to_uint32 -> [([tvar "'A"], int_conversion_coster 32)];
-    | Builtin_to_uint64 -> [([tvar "'A"], int_conversion_coster 64)];
-    | Builtin_to_uint128 -> [([tvar "'A"], int_conversion_coster 128)];
+    | Builtin_to_uint32 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 32)
+    ];
+    | Builtin_to_uint64 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 64)
+    ];
+    | Builtin_to_uint128 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 128)
+    ];
+    | Builtin_to_uint256 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
+    ];
   
     | Builtin_to_nat -> [([uint32_typ], to_nat_coster)];
 
