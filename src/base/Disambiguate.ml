@@ -711,7 +711,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
            Then map simple names to the address of the current module. *)
         let%bind res_typ_dict =
           let msg =
-            sprintf "Multiple declarations of type %s in library" (as_error_string tname)
+            sprintf "Multiple declarations of type %s in library"
+              (as_error_string tname)
           in
           let%bind () =
             check_duplicate_ns_dict_entry dicts.typ_dict None (as_string tname)
@@ -850,7 +851,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                  Only check against previous imports -
                  duplicate names within the same library does not affect disambiguation *)
             let msg =
-              sprintf "Variable %s imported from multiple sources: libraries %s and"
+              sprintf
+                "Variable %s imported from multiple sources: libraries %s and"
                 (as_error_string x) lib_address
             in
             let%bind () =
@@ -888,8 +890,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   in
                   (* Check for duplicate names - disambiguation won't work otherwise. *)
                   let msg =
-                    sprintf "Type constructor %s imported from multiple sources: libraries %s and"
-                      (as_error_string ctr_def.cname) lib_address
+                    sprintf
+                      "Type constructor %s imported from multiple sources: \
+                       libraries %s and"
+                      (as_error_string ctr_def.cname)
+                      lib_address
                   in
                   let%bind () =
                     check_duplicate_dict_entry dict_acc unqualified_ctr msg
