@@ -21,6 +21,10 @@ import IntUtils
 
 library Conversions
 
+type IntegerEncoding =
+  | LittleEndian
+  | BigEndian
+
 (* Is the ByStr long enough for substr, starting at pos and len. *)
 let is_long_enough : ByStr -> Uint32 -> Uint32 -> Bool =
   fun (bs : ByStr) =>
@@ -59,41 +63,61 @@ let extract_scillaval : forall 'A. forall 'B. (ByStr -> Option 'B) -> ('B -> 'A)
     end
 
 (* Extracts Uint32 in bs from position pos and returns next position. *)
-let extract_uint32 : ByStr -> Uint32 -> Option (Pair Uint32 Uint32) =
+let extract_uint32 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint32 Uint32) =
+  fun (endian : IntegerEncoding) =>
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
     let to_bystrx = fun (a : ByStr) => builtin to_bystr4 a in
-    let to_uint = fun (a : ByStr4) => builtin to_uint32 a in
+    let to_uint =
+      fun (a : ByStr4) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint32 b
+    in
     let extractor = @extract_scillaval Uint32 ByStr4 in
     let uint32_bsize = Uint32 4 in
     extractor to_bystrx to_uint bs pos uint32_bsize
 
 (* Extracts Uint64 in bs from position pos and returns next position. *)
-let extract_uint64 : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
+let extract_uint64 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
+  fun (endian : IntegerEncoding) =>
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
     let to_bystrx = fun (a : ByStr) => builtin to_bystr8 a in
-    let to_uint = fun (a : ByStr8) => builtin to_uint64 a in
+    let to_uint =
+      fun (a : ByStr8) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint64 b
+    in
     let extractor = @extract_scillaval Uint64 ByStr8 in
     let uint64_bsize = Uint32 8 in
     extractor to_bystrx to_uint bs pos uint64_bsize
 
 (* Extracts Uint128 in bs from position pos and returns next position. *)
-let extract_uint128 : ByStr -> Uint32 -> Option (Pair Uint128 Uint32) =
+let extract_uint128 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint128 Uint32) =
+  fun (endian : IntegerEncoding) =>
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
     let to_bystrx = fun (a : ByStr) => builtin to_bystr16 a in
-    let to_uint = fun (a : ByStr16) => builtin to_uint128 a in
+    let to_uint =
+      fun (a : ByStr16) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint128 b
+    in
     let extractor = @extract_scillaval Uint128 ByStr16 in
     let uint128_bsize = Uint32 16 in
     extractor to_bystrx to_uint bs pos uint128_bsize
 
 (* Extracts Uint256 in bs from position pos and returns next position. *)
-let extract_uint256 : ByStr -> Uint32 -> Option (Pair Uint256 Uint32) =
+let extract_uint256 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint256 Uint32) =
+  fun (endian : IntegerEncoding) =>
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
     let to_bystrx = fun (a : ByStr) => builtin to_bystr32 a in
-    let to_uint = fun (a : ByStr32) => builtin to_uint256 a in
+    let to_uint =
+      fun (a : ByStr32) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint256 b
+    in
     let extractor = @extract_scillaval Uint256 ByStr32 in
     let uint256_bsize = Uint32 32 in
     extractor to_bystrx to_uint bs pos uint256_bsize

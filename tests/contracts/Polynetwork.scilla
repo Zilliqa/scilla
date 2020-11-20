@@ -1,0 +1,9 @@
+scilla_version 0
+
+import Polynetwork
+
+contract Polynetwork()
+
+transition initGenesisBlock (header : Header, pubkeys : List ByStr67)
+
+end

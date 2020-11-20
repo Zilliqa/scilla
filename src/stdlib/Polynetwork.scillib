@@ -51,6 +51,12 @@ type ToMerkleValue =
     Uint64                      (* fromChainID *)
     TxParam                     (* makeTxParam *)
 
+let little_endian = LittleEndian
+let extract_uint32 = extract_uint32 little_endian
+let extract_uint64 = extract_uint64 little_endian
+let extract_uint128 = extract_uint128 little_endian
+let extract_uint256 = extract_uint256 little_endian
+
 (* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
 (* ZeroCopySource.sol : NextVarUint *)
 let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
@@ -67,7 +73,8 @@ let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
         let b16_nextpos = extract_bystr2 bs nextpos in
         match b16_nextpos with
         | Some (Pair b16 nextpos) =>
-          let b16_u32 = builtin to_uint64 b16 in
+          let b16_little = builtin strrev b16 in
+          let b16_u32 = builtin to_uint64 b16_little in
           let res = Pair {Uint64 Uint32} b16_u32 nextpos in 
           Some {(Pair Uint64 Uint32)} res
         | None =>
