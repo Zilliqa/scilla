@@ -25,15 +25,15 @@ type Header =
   | Header of
     Uint32                        (* version *)
     Uint64                        (* chainID *)
-    Uint32                        (* timestamp *)
-    Uint32                        (* height *)
-    Uint32                        (* consensusData *)
     ByStr32                       (* prevBlockHash *)
     ByStr32                       (* transactionRoot *)
     ByStr32                       (* crossStatesRoot *)
     ByStr32                       (* blockRoot *)
+    Uint32                        (* timestamp *)
+    Uint32                        (* height *)
+    Uint64                        (* consensusData *)
     ByStr                         (* consensusPayload *)
-    ByStr32                       (* nextBookkeeper *)
+    ByStr20                       (* nextBookkeeper *)
 
 type TxParam =
   | TxParam of
@@ -146,37 +146,38 @@ let deserialize_Header : ByStr -> Option Header =
       let chainid_nextpos = extract_uint64 header nextpos in
       match chainid_nextpos with
       | Some (Pair chainid nextpos) =>
-        let timestamp_nextpos = extract_uint32 header nextpos in
-        match timestamp_nextpos with
-        | Some (Pair timestamp nextpos) =>
-          let height_nextpos = extract_uint32 header nextpos in
-          match height_nextpos with
-          | Some (Pair height nextpos) =>
-            let consensusData_nextpos = extract_uint32 header nextpos in
-            match consensusData_nextpos with
-            | Some (Pair consensusData nextpos) =>
-              let prevBlockHash_nextpos = extract_bystr32 header nextpos in
-              match prevBlockHash_nextpos with
-              | Some (Pair prevBlockHash nextpos) =>
-                let txnroot_nextpos = extract_bystr32 header nextpos in
-                match txnroot_nextpos with
-                | Some (Pair txnroot nextpos) =>
-                  let crossStatesRoot_nextpos = extract_bystr32 header nextpos in
-                  match crossStatesRoot_nextpos with
-                  | Some (Pair crossStatesRoot nextpos) =>
-                    let blockRoot_nextpos = extract_bystr32 header nextpos in
-                    match blockRoot_nextpos with
-                    | Some (Pair blockRoot nextpos) =>
+        let prevBlockHash_nextpos = extract_bystr32 header nextpos in
+        match prevBlockHash_nextpos with
+        | Some (Pair prevBlockHash nextpos) =>
+          let txnroot_nextpos = extract_bystr32 header nextpos in
+          match txnroot_nextpos with
+          | Some (Pair txnroot nextpos) =>
+            let crossStatesRoot_nextpos = extract_bystr32 header nextpos in
+            match crossStatesRoot_nextpos with
+            | Some (Pair crossStatesRoot nextpos) =>
+              let blockRoot_nextpos = extract_bystr32 header nextpos in
+              match blockRoot_nextpos with
+              | Some (Pair blockRoot nextpos) =>
+                let timestamp_nextpos = extract_uint32 header nextpos in
+                match timestamp_nextpos with
+                | Some (Pair timestamp nextpos) =>
+                  let height_nextpos = extract_uint32 header nextpos in
+                  match height_nextpos with
+                  | Some (Pair height nextpos) =>
+                    let consensusData_nextpos = extract_uint64 header nextpos in
+                    match consensusData_nextpos with
+                    | Some (Pair consensusData nextpos) =>
                       let consensusPayload_nextpos = extract_bystr header nextpos in
                       match consensusPayload_nextpos with
                       | Some (Pair consensusPayload nextpos) =>
-                        let nextBookkeeper_nextpos = extract_bystr32 header nextpos in
+                        let nextBookkeeper_nextpos = extract_bystr20 header nextpos in
                         match nextBookkeeper_nextpos with
                         | Some (Pair nextBoookkeeper nextpos) =>
                           let header =
-                            Header version chainid timestamp height consensusData
-                            prevBlockHash txnroot crossStatesRoot blockRoot consensusPayload
-                            nextBoookkeeper in
+                            Header version chainid prevBlockHash txnroot crossStatesRoot
+                            blockRoot timestamp height consensusData consensusPayload
+                            nextBoookkeeper
+                          in
                           Some {Header} header
                         | None => None {Header}
                         end

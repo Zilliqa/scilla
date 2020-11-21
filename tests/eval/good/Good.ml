@@ -134,6 +134,7 @@ let explist =
     "builtin-schnorr_get_address.scilexp";
     "str-char-1.scilexp";
     "builtin-alt-bn128.scilexp";
+    "polynetwork_header.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct

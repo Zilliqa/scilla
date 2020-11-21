@@ -152,6 +152,16 @@ let extract_bystr2 : ByStr -> Uint32 -> Option (Pair ByStr2 Uint32) =
     let bystr2_bsize = Uint32 2 in
     extractor to_bystrx unit bs pos bystr2_bsize
 
+(* Extracts ByStr20 in bs from position pos and returns next position *)
+let extract_bystr20 : ByStr -> Uint32 -> Option (Pair ByStr20 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr20 a in
+    let unit = fun (a : ByStr20) => a in
+    let extractor = @extract_scillaval ByStr20 ByStr20 in
+    let bystr20_bsize = Uint32 20 in
+    extractor to_bystrx unit bs pos bystr20_bsize
+
 (* Extracts ByStr32 in bs from position pos and returns next position *)
 let extract_bystr32 : ByStr -> Uint32 -> Option (Pair ByStr32 Uint32) =
   fun (bs : ByStr) =>
