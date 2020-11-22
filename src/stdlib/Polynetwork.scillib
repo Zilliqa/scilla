@@ -137,9 +137,10 @@ let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
     | None => None {(Pair ByStr Uint32)}
     end
 
-let deserialize_Header : ByStr -> Option Header =
+(* Deserialize a byte stream into a Header, starting at nextpos. *)
+let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
   fun (header : ByStr) =>
-    let nextpos = Uint32 0 in (* starting from position 0 *)
+  fun (nextpos : Uint32) =>
     let version_nextpos = extract_uint32 header nextpos in
     match version_nextpos with
     | Some (Pair version nextpos) =>
@@ -178,29 +179,96 @@ let deserialize_Header : ByStr -> Option Header =
                             blockRoot timestamp height consensusData consensusPayload
                             nextBoookkeeper
                           in
-                          Some {Header} header
-                        | None => None {Header}
+                          let res = Pair {Header Uint32} header nextpos in
+                          Some {(Pair Header Uint32)} res
+                        | None => None {(Pair Header Uint32)}
                         end
-                      | None => None {Header}
+                      | None => None {(Pair Header Uint32)}
                       end
-                    | None => None {Header}
+                    | None => None {(Pair Header Uint32)}
                     end
-                  | None => None {Header}
+                  | None => None {(Pair Header Uint32)}
                   end
-                | None => None {Header}
+                | None => None {(Pair Header Uint32)}
                 end
-              | None => None {Header}
+              | None => None {(Pair Header Uint32)}
               end
-            | None =>
-              None {Header}
+            | None => None {(Pair Header Uint32)}
             end
-          | None =>
-            None {Header}
+          | None => None {(Pair Header Uint32)}
           end
-        | None =>
-          None {Header}
+        | None => None {(Pair Header Uint32)}
         end
-      | None => None {Header}
+      | None => None {(Pair Header Uint32)}
       end
-    | None => None {Header}
+    | None => None {(Pair Header Uint32)}
+    end
+
+(* Deserialize a byte stream into a TxParam, starting at nextpos. *)
+let deserialize_TxParam : ByStr -> Uint32 -> Option (Pair TxParam Uint32) =
+  fun (txparam : ByStr) =>
+  fun (nextpos : Uint32) =>
+    let txhash_nextpos = extract_bystr txparam nextpos in
+    match txhash_nextpos with
+    | Some (Pair txhash nextpos) =>
+      let crossChainId_nextpos = extract_bystr txparam nextpos in
+      match crossChainId_nextpos with
+      | Some (Pair crossChainId nextpos) =>
+        let fromContract_nextpos = extract_bystr txparam nextpos in
+        match fromContract_nextpos with
+        | Some (Pair fromContract nextpos) =>
+          let toChainId_nextpos = extract_uint64 txparam nextpos in
+          match toChainId_nextpos with
+          | Some (Pair toChainId nextpos) =>
+            let toContract_nextpos = extract_bystr txparam nextpos in
+            match toContract_nextpos with
+            | Some (Pair toContract nextpos) =>
+              let method_nextpos = extract_bystr txparam nextpos in
+              match method_nextpos with
+              | Some (Pair method nextpos) =>
+                let args_nextpos = extract_bystr txparam nextpos in
+                match args_nextpos with
+                | Some (Pair args nextpos) =>
+                  let txparam =
+                    TxParam txhash crossChainId fromContract
+                    toChainId toContract method args
+                  in
+                  let res = Pair {TxParam Uint32} txparam nextpos in
+                  Some {(Pair TxParam Uint32)} res
+                | None => None {(Pair TxParam Uint32)}
+                end
+              | None => None {(Pair TxParam Uint32)}
+              end
+            | None => None {(Pair TxParam Uint32)}
+            end
+          | None => None {(Pair TxParam Uint32)}
+          end
+        | None => None {(Pair TxParam Uint32)}
+        end
+      | None => None {(Pair TxParam Uint32)}
+      end
+    | None => None {(Pair TxParam Uint32)}
+    end
+
+(* Deserialize a byte stream into a ToMerkleValue, starting at nextpos. *)
+let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Uint32) =
+  fun (tomerklevalue : ByStr) =>
+  fun (nextpos : Uint32) =>
+    let txhash_nextpos = extract_bystr tomerklevalue nextpos in
+    match txhash_nextpos with
+    | Some (Pair txhash nextpos) =>
+      let fromChainId_nextpos = extract_uint64 tomerklevalue nextpos in
+      match fromChainId_nextpos with
+      | Some (Pair fromChainId nextpos) =>
+        let txparam = deserialize_TxParam tomerklevalue nextpos in
+        match txparam with
+        | Some (Pair txparam nextpos) =>
+          let tmkv = ToMerkleValue txhash fromChainId txparam in
+          let res = Pair {ToMerkleValue Uint32} tmkv nextpos in
+          Some {(Pair ToMerkleValue Uint32)} res
+        | None => None {(Pair ToMerkleValue Uint32)}
+        end
+      | None => None {(Pair ToMerkleValue Uint32)}
+      end
+    | None => None {(Pair ToMerkleValue Uint32)}
     end
