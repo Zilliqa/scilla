@@ -27,4 +27,9 @@ let hex2 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff in
 (* expected output is Uint256.max *)
 let res15 = builtin to_uint256 hex2 in
 
-Uint32 0
+let zero_bystrx = builtin to_bystr32 zero in
+let one_bystrx = builtin to_bystr32 one in
+let big_bystrx = builtin to_bystr64 big_num in
+let big_bystrx_uint = builtin to_uint64 big_bystrx in
+builtin eq big_bystrx_uint big_num
+
