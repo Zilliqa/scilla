@@ -23,8 +23,11 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 - Install `libsecp256k1-devel` from
   https://software.opensuse.org/package/libsecp256k1-devel by clicking
   the wrench icon next to the Search button and selecting `Show
-  experimental packages`, and then performing the 1-click install from
-  the `network:cryptocurrencies` project.
+  development packages`, and then `OK` to apply the settings.
+  Then you should see the page reload and show the package in
+  question.  Click the `Show experimental packages` icon 
+  corresponding to your distribution in order to perform the
+  1-click install from the `network:cryptocurrencies` project.
 
 - Install `bubblewrap` from
   https://software.opensuse.org/package/bubblewrap by clicking on the
