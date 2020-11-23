@@ -669,10 +669,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_bystrx_type =
       tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
 
-    let to_bystrx_elab sc ts =
+    let to_bystrx_elab x sc ts =
       let open Type.PrimType in
       match ts with
-      | [ (PrimType (Uint_typ w) as t) ] ->
+      | [ (PrimType (Uint_typ w) as t) ] when (int_bit_width_to_int w) / 8 = x->
           elab_tfun_with_args_no_gas sc
             [ t; PrimType (Bystrx_typ (int_bit_width_to_int w / 8)) ]
       | _ -> fail0 "Failed to elaborate"
@@ -1410,7 +1410,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
       | Builtin_to_bystrx i -> [
         Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i;
-        Uint.to_bystrx_arity, Uint.to_bystrx_type, Uint.to_bystrx_elab, Uint.to_bystrx
+        Uint.to_bystrx_arity, Uint.to_bystrx_type, Uint.to_bystrx_elab i, Uint.to_bystrx
       ]
     
       (* Block numbers *)

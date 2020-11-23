@@ -342,12 +342,12 @@
       "start_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 26,
-        "column": 38
+        "column": 37
       },
       "end_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 26,
-        "column": 42
+        "column": 41
       }
     },
     {
@@ -370,12 +370,12 @@
       "start_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 27,
-        "column": 37
+        "column": 36
       },
       "end_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 27,
-        "column": 40
+        "column": 39
       }
     },
     {
@@ -398,12 +398,12 @@
       "start_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 28,
-        "column": 37
+        "column": 36
       },
       "end_location": {
         "file": "typecheck/good/to_bystr.scilexp",
         "line": 28,
-        "column": 44
+        "column": 43
       }
     },
     {
