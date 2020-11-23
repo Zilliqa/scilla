@@ -410,30 +410,30 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_rprins_elibs recursion_principles ext_libs libs =
     let rec recurser libl =
-      List.fold_left libl ~init:([], [])
-        ~f:(fun (rec_elibs_acc, emsgs_acc) ext_lib ->
-          let rec_elib, emsg =
-            let rec_dep_libs, dep_emsgs = recurser ext_lib.deps in
+      List.fold_left libl
+        ~init:(([], []), [])
+        ~f:(fun ((rec_elibs_acc, adts_acc), emsgs_acc) ext_lib ->
+          let (rec_elib, elib_adt), emsg =
+            let (rec_dep_libs, dep_adt), dep_emsgs = recurser ext_lib.deps in
             match recursion_library ext_lib.libn with
             | Ok (lib, adt) ->
-                (* Populate DataTypeDictionary with imported types *)
-                let emsgs_import =
-                  List.fold_left adt ~init:dep_emsgs
-                    ~f:(fun emsgs_acc (adt, loc) ->
-                      match DataTypeDictionary.add_adt adt loc with
-                      | Ok _ -> emsgs_acc
-                      | Error e -> emsgs_acc @ e)
-                in
                 let (libn' : RecursionSyntax.libtree) =
                   { libn = lib; deps = rec_dep_libs }
                 in
-                (rec_elibs_acc @ [ libn' ], emsgs_acc @ emsgs_import @ dep_emsgs)
-            | Error el -> (rec_elibs_acc, emsgs_acc @ dep_emsgs @ el)
+                ( (rec_elibs_acc @ [ libn' ], adts_acc @ dep_adt @ adt),
+                  emsgs_acc @ dep_emsgs )
+            | Error el -> ((rec_elibs_acc, adts_acc), emsgs_acc @ dep_emsgs @ el)
           in
-          (rec_elib, emsg))
+          ((rec_elib, elib_adt), emsg))
     in
 
-    let recursion_elibs, emsgs = recurser ext_libs in
+    let (recursion_elibs, elibs_adts), emsgs = recurser ext_libs in
+    let emsgs =
+      List.fold_left elibs_adts ~init:emsgs ~f:(fun emsgs_acc (adt, loc) ->
+          match DataTypeDictionary.add_adt adt loc with
+          | Ok _ -> emsgs_acc
+          | Error e -> emsgs_acc @ e)
+    in
 
     let%bind recursion_md_libs, emsgs =
       match libs with
