@@ -1,0 +1,7 @@
+(* next_var_uint value == 0xFD *)
+let num_hex = 0x64fdfd00 in
+
+let value = builtin to_bystr num_hex in
+let pos = Uint32 1 in
+
+next_var_uint value pos

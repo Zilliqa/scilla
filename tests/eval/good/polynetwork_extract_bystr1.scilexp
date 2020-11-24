@@ -1,0 +1,7 @@
+(* next_var_bytes length < 0xFD correctly *)
+let bytes = 0x0b2d230f552225a8cfa47efe in
+
+let value = builtin to_bystr bytes in
+let pos = Uint32 0 in
+
+extract_bystr value pos

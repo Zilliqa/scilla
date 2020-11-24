@@ -1,0 +1,12 @@
+(* next_var_uint value < 0xFD value == 100*)
+let uint_value = 0x64 in
+
+let value = builtin to_bystr uint_value in
+let pos = Uint32 0 in
+
+next_var_uint value pos
+
+
+
+
+

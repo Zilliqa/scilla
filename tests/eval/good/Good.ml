@@ -135,6 +135,16 @@ let explist =
     "str-char-1.scilexp";
     "builtin-alt-bn128.scilexp";
     "polynetwork_header.scilexp";
+    "polynetwork_next_var_uint1.scilexp";
+    "polynetwork_next_var_uint2.scilexp";
+    "polynetwork_next_var_uint3.scilexp";
+    "polynetwork_next_var_uint4.scilexp";
+    "polynetwork_next_var_uint5.scilexp";
+    "polynetwork_next_var_uint6.scilexp";
+    "polynetwork_next_var_uint7.scilexp";
+    "polynetwork_extract_bystr1.scilexp";
+    "polynetwork_extract_bystr2.scilexp";
+    "polynetwork_extract_bystr3.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
