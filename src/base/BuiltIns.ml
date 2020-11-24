@@ -672,7 +672,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_bystrx_elab x sc ts =
       let open Type.PrimType in
       match ts with
-      | [ (PrimType (Uint_typ w) as t) ] when (int_bit_width_to_int w) / 8 = x->
+      | [ (PrimType (Uint_typ w) as t) ] when int_bit_width_to_int w / 8 = x ->
           elab_tfun_with_args_no_gas sc
             [ t; PrimType (Bystrx_typ (int_bit_width_to_int w / 8)) ]
       | _ -> fail0 "Failed to elaborate"
