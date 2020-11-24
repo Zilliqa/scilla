@@ -279,9 +279,7 @@ module MkLiteral (T : ScillaType) = struct
         raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
       else
         let s_nopref = String.drop_prefix s 2 in
-        if String.length s_nopref = 0 then
-          raise @@ Invalid_argument "hex conversion: empty byte sequence"
-        else Hex.to_string (`Hex s_nopref)
+        Hex.to_string (`Hex s_nopref)
 
     let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
 
