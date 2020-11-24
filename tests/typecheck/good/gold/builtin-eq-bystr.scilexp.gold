@@ -883,16 +883,58 @@
       }
     },
     {
-      "vname": "res6",
-      "type": "Bool",
+      "vname": "empty_bystrx",
+      "type": "ByStr0",
       "start_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
         "line": 32,
-        "column": 1
+        "column": 5
       },
       "end_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
         "line": 32,
+        "column": 17
+      }
+    },
+    {
+      "vname": "empty_bystr",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 16
+      }
+    },
+    {
+      "vname": "empty_bystrx",
+      "type": "ByStr0",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 48
+      }
+    },
+    {
+      "vname": "res6",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 35,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 35,
         "column": 5
       }
     }
