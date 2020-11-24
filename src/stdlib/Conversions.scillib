@@ -171,3 +171,35 @@ let extract_bystr32 : ByStr -> Uint32 -> Option (Pair ByStr32 Uint32) =
     let extractor = @extract_scillaval ByStr32 ByStr32 in
     let bystr32_bsize = Uint32 32 in
     extractor to_bystrx unit bs pos bystr32_bsize
+
+(* Append serialized Uint32 value to given byte string *)
+let append_uint32 : ByStr -> Uint32 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint32) =>
+    let uibx = builtin to_bystr4 ui in
+    let uib = builtin to_bystr uibx in
+    builtin concat bs uib
+
+(* Append serialized Uint64 value to given byte string *)
+let append_uint64 : ByStr -> Uint64 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint64) =>
+    let uibx = builtin to_bystr8 ui in
+    let uib = builtin to_bystr uibx in
+    builtin concat bs uib
+
+(* Append serialized Uint128 value to given byte string *)
+let append_uint128 : ByStr -> Uint128 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint128) =>
+    let uibx = builtin to_bystr16 ui in
+    let uib = builtin to_bystr uibx in
+    builtin concat bs uib
+
+(* Append serialized Uint256 value to given byte string *)
+let append_uint256 : ByStr -> Uint256 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint256) =>
+    let uibx = builtin to_bystr32 ui in
+    let uib = builtin to_bystr uibx in
+    builtin concat bs uib

@@ -75,7 +75,7 @@ let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
         | Some (Pair b16 nextpos) =>
           let b16_little = builtin strrev b16 in
           let b16_u32 = builtin to_uint64 b16_little in
-          let res = Pair {Uint64 Uint32} b16_u32 nextpos in 
+          let res = Pair {Uint64 Uint32} b16_u32 nextpos in
           Some {(Pair Uint64 Uint32)} res
         | None =>
           None {(Pair Uint64 Uint32)}
@@ -117,6 +117,61 @@ let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
     | None =>
       None {(Pair Uint64 Uint32)}
     end
+
+(* Serialize and append to given byte string, a Uint64 as a VarInt value. *)
+let append_var_uint : ByStr -> Uint64 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint64) =>
+    let uibystrx = builtin to_bystr8 ui in
+    let uibystr = builtin to_bystr uibystrx in
+    let uint8_limit = Uint64 253 in (* 0xfd *)
+    let uint16_limit = Uint64 65536 in (* uint16_max + 1 *)
+    let uint32_limit =  Uint64 4294967296 in (* Uint32_max + 1 *)
+    let fits_in_byte1 = builtin lt ui uint8_limit in
+    let res =
+      match fits_in_byte1 with
+      | True =>
+        (* ui < 0xfd. Write just a byte and be done. *)
+        let pos = Uint32 7 in
+        let len = Uint32 1 in
+        (* Extract out the last byte; our integers are big-endian. *)
+        builtin substr uibystr pos len
+      | False =>
+        (* Does the value fit in Uint16? ui <= 0xffff *)
+        let fits_in_byte2 = builtin lt ui uint16_limit in
+        match fits_in_byte2 with
+        | True =>
+          let markerx = 0xfd in
+          let marker = builtin to_bystr markerx in
+          (* Extract out the last two bytes; our integers are big-endian. *)
+          let pos = Uint32 6 in
+          let len = Uint32 2 in
+          let ui16_bigendian = builtin substr uibystr pos len in
+          let ui16_littleendian = builtin strrev ui16_bigendian in
+          builtin concat marker ui16_littleendian
+        | False =>
+          (* Does the value fit in Uint32? ui <= 0xffffffff *)
+          let fits_in_byte4 = builtin lt ui uint32_limit in
+          match fits_in_byte4 with
+          | True =>
+            let markerx = 0xfe in
+            let marker = builtin to_bystr markerx in
+            (* Extract out the last four bytes; our integers are big-endian. *)
+            let pos = Uint32 4 in
+            let len = Uint32 4 in
+            let ui32_bigendian = builtin substr uibystr pos len in
+            let ui32_littleendian = builtin strrev ui32_bigendian in
+            builtin concat marker ui32_littleendian
+          | False =>
+            let markerx = 0xff in
+            let marker = builtin to_bystr markerx in
+            let ui64_littleendian = builtin strrev uibystr in
+            builtin concat marker ui64_littleendian
+          end
+        end
+      end
+    in
+    builtin concat bs res
 
 (* Extract a Bystr value start at pos. See ZeroCopySource.sol:NextVarBytes. *)
 let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
