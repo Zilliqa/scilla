@@ -1,0 +1,2 @@
+let zero = Uint32 1 in
+builtin to_bystr32 zero
