@@ -293,7 +293,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            let%bind () =
              match t with Some t' -> recursion_typ t' | None -> pure ()
            in
-           pure (RecursionSyntax.LibVar (n, t, new_e), None)
+           pure (RecursionSyntax.LibVar (n, t, new_e))
     | LibTyp (tname, ctr_defs) ->
         wrap_with_info
           ( sprintf "Type error in library type %s:\n" (as_error_string tname),
@@ -335,71 +335,55 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            let adt_loc = ER.get_loc (get_rep tname) in
            let%bind () = DataTypeDictionary.add_adt adt adt_loc in
            pure
-             ( RecursionSyntax.LibTyp (tname, checked_ctr_defs),
-               Some (adt, adt_loc) )
+             ( RecursionSyntax.LibTyp (tname, checked_ctr_defs))
 
   let recursion_library lib =
     let { lname; lentries } = lib in
     wrap_with_info
       ( sprintf "Type error in library %s:\n" (as_error_string lname),
         SR.get_loc (get_rep lname) )
-    @@ let%bind recursion_entries, adts =
-         foldM lentries ~init:([], []) ~f:(fun (rec_entries, datatypes) entry ->
-             let%bind new_entry, adt_opt = recursion_lib_entry entry in
+    @@ let%bind recursion_entries =
+         foldM lentries ~init:[] ~f:(fun rec_entries entry ->
+             let%bind new_entry = recursion_lib_entry entry in
              pure
-             @@ ( new_entry :: rec_entries,
-                  Option.value_map adt_opt ~default:datatypes (* LibVar *)
-                    ~f:(fun (adt, loc) -> (adt, loc) :: datatypes)
-                  (* LibTyp *) ))
+             @@ new_entry :: rec_entries)
        in
        pure
-         ( {
-             RecursionSyntax.lname;
-             RecursionSyntax.lentries = List.rev recursion_entries;
-           },
-           List.rev adts )
-
+         {
+           RecursionSyntax.lname;
+           RecursionSyntax.lentries = List.rev recursion_entries;
+         }
+         
   let recursion_rprins_elibs recursion_principles ext_libs libs =
-    let populate_dt_dictionary adts =
-      List.fold_left adts ~init:[] ~f:(fun emsgs_acc (adt, loc) ->
-          match DataTypeDictionary.add_adt adt loc with
-          | Ok _ -> emsgs_acc
-          | Error e -> emsgs_acc @ e)
-    in
     let rec recurser libl =
       List.fold_left libl
-        ~init:(([], []), [])
-        ~f:(fun ((rec_elibs_acc, adts_acc), emsgs_acc) ext_lib ->
-          let (rec_elib, elib_adt), emsg =
-            let (rec_dep_libs, dep_adt), dep_emsgs = recurser ext_lib.deps in
-            (* Imported adts are now in scope *)
-            let import_emsgs = populate_dt_dictionary dep_adt in
+        ~init:([], [])
+        ~f:(fun (rec_elibs_acc, emsgs_acc) ext_lib ->
+          let rec_elib, emsg =
+            let rec_dep_libs, dep_emsgs = recurser ext_lib.deps in
             let rec_lib = recursion_library ext_lib.libn in
-            (* Clear DataTypeDictionary for the importer, and return the defined ADTs *)
-            DataTypeDictionary.reinit ();
             match rec_lib with
-            | Ok (lib, adt) ->
+            | Ok lib ->
                 let (libn' : RecursionSyntax.libtree) =
                   { libn = lib; deps = rec_dep_libs }
                 in
-                ( (rec_elibs_acc @ [ libn' ], adts_acc @ dep_adt @ adt),
-                  emsgs_acc @ import_emsgs @ dep_emsgs )
+                ( rec_elibs_acc @ [ libn' ],
+                  emsgs_acc @ dep_emsgs )
             | Error el ->
-                ( (rec_elibs_acc, adts_acc),
-                  emsgs_acc @ import_emsgs @ dep_emsgs @ el )
+                ( rec_elibs_acc, 
+                  emsgs_acc @ dep_emsgs @ el )
           in
-          ((rec_elib, elib_adt), emsg))
+          (rec_elib, emsg))
     in
 
-    let (recursion_elibs, elibs_adts), emsgs = recurser ext_libs in
-    let emsgs = emsgs @ populate_dt_dictionary elibs_adts in
+    let recursion_elibs, emsgs = recurser ext_libs in
 
     let%bind recursion_md_libs, emsgs =
       Option.value_map libs
         ~default:(Ok (None, emsgs))
         ~f:(fun l ->
           match recursion_library l with
-          | Ok (recursion_l, _recursion_adts) -> Ok (Some recursion_l, emsgs)
+          | Ok recursion_l -> Ok (Some recursion_l, emsgs)
           | Error el -> Ok (None, emsgs @ el))
     in
 
@@ -408,7 +392,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       foldM recursion_principles ~init:([], emsgs)
         ~f:(fun (rec_rprins_acc, emsgs_acc) rprin ->
           match recursion_lib_entry rprin with
-          | Ok (rec_rprin, _) -> Ok (rec_rprin :: rec_rprins_acc, emsgs_acc)
+          | Ok rec_rprin -> Ok (rec_rprin :: rec_rprins_acc, emsgs_acc)
           | Error el -> Ok (rec_rprins_acc, emsgs_acc @ el))
     in
     let recursion_rprins = List.rev recursion_rprins_rev in
