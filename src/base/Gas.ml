@@ -383,7 +383,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                GasGasCharge.ProdOf (GasGasCharge.StaticCost 15, x) ))
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
         pure (GasGasCharge.StaticCost (Option.value_exn (bystrx_width a)))
-    | Builtin_to_bystrx i, [ PrimType Bystr_typ ], _ ->
+    | Builtin_to_bystrx i, [ PrimType Bystr_typ ], _
+    | Builtin_to_bystrx i, [ PrimType (Uint_typ _) ], _ ->
         pure (GasGasCharge.StaticCost i)
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
