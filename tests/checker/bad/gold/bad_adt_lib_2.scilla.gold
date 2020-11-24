@@ -11,6 +11,24 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
+      "error_message": "Type error in library BadADTLib2:\n",
+      "start_location": {
+        "file": "checker/bad/lib/BadADTLib2.scillib",
+        "line": 3,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Type error in library type TestType2:\n",
+      "start_location": {
+        "file": "checker/bad/lib/BadADTLib2.scillib",
+        "line": 9,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
       "error_message": "Multiple declarations of type constructor Item1",
       "start_location": {
         "file": "checker/bad/lib/BadADTLib2.scillib",

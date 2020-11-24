@@ -55,26 +55,13 @@ let check_parsing filename =
       pure e
 
 let check_recursion e elibs =
-  let open TC in
   let%bind rrlibs, relibs =
     match RC.recursion_rprins_elibs recursion_principles elibs None with
     | Error s -> fail s
     | Ok (rlibs, elibs, _, emsgs) ->
         if List.is_empty emsgs then pure (rlibs, elibs) else fail emsgs
   in
-  let%bind re =
-    RC.recursion_exp
-      (fun n ->
-        Result.ignore_m
-        @@ Datatypes.DataTypeDictionary.lookup_name
-             ~sloc:(TCIdentifier.get_rep n) (TCIdentifier.get_id n))
-      (fun n ->
-        Result.ignore_m
-        @@ Datatypes.DataTypeDictionary.lookup_constructor
-             ~sloc:(PSRep.get_loc (TCIdentifier.get_rep n))
-             (TCIdentifier.get_id n))
-      e
-  in
+  let%bind re = RC.recursion_exp e in
   pure (rrlibs, relibs, re)
 
 (* Type check the expression with external libraries *)
