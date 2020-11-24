@@ -381,7 +381,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 let (libn' : RecursionSyntax.libtree) =
                   { libn = lib; deps = rec_dep_libs }
                 in
-                ( (rec_elibs_acc @ [ libn' ], adts_acc @ adt),
+                ( (rec_elibs_acc @ [ libn' ], adts_acc @ dep_adt @ adt),
                   emsgs_acc @ import_emsgs @ dep_emsgs )
             | Error el ->
                 ( (rec_elibs_acc, adts_acc),
