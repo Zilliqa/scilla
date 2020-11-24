@@ -1,5 +1,9 @@
 (True),
-{ [res8 -> (True)],
+{ [res9 -> (True)],
+  [empty_bystr2 -> (ByStr 0x)],
+  [empty_bystr -> (ByStr 0x)],
+  [empty_bystrx -> (ByStr0 0x)],
+  [res8 -> (True)],
   [res7 -> (True)],
   [len2 -> (Uint32 2)],
   [len1 -> (Uint32 2)],
@@ -27,4 +31,4 @@
   [aa -> (ByStr 0x0f0f)],
   [c -> (ByStr2 0x0f0f)],
   [b -> (ByStr2 0xbfbf)] }
-Gas remaining: 4001657
+Gas remaining: 4001648
