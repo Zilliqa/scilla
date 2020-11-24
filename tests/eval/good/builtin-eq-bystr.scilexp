@@ -34,4 +34,10 @@ let res7 = builtin eq len1 len2 in
 
 let res8 = andb res6 res7 in
 
-res8
+let empty_bystrx = 0x in
+let empty_bystr = builtin to_bystr empty_bystrx in
+let empty_bystr2 = builtin substr aa zero zero in
+let res9 = builtin eq empty_bystr empty_bystr2 in
+
+andb res8 res9
+

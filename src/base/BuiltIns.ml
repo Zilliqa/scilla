@@ -661,6 +661,31 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           pure @@ nat_builder n zero_lit
       (* Other integer widths can be in the library, using integer conversions. *)
       | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls
+
+    let to_bystrx_arity = 1
+
+    let to_bystrx_type =
+      tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
+
+    let to_bystrx_elab x sc ts =
+      let open Type.PrimType in
+      match ts with
+      | [ (PrimType (Uint_typ w) as t) ] when int_bit_width_to_int w / 8 = x ->
+          elab_tfun_with_args_no_gas sc
+            [ t; PrimType (Bystrx_typ (int_bit_width_to_int w / 8)) ]
+      | _ -> fail0 "Failed to elaborate"
+
+    let to_bystrx ls _ =
+      match ls with
+      | [ UintLit nl ] -> (
+          match
+            Bystrx.of_raw_bytes
+              (uint_lit_width nl / 8)
+              (bstring_from_uint_lit nl)
+          with
+          | Some nlbs -> pure @@ ByStrX nlbs
+          | None -> fail0 "Internal error in converting UintLit to ByStrX" )
+      | _ -> builtin_fail "Uint.to_bystrx: unsupported type" ls
   end
 
   (***********************************************************)
@@ -1382,6 +1407,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
       | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
+      | Builtin_to_bystrx i -> [
+        Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i;
+        Uint.to_bystrx_arity, Uint.to_bystrx_type, Uint.to_bystrx_elab i, Uint.to_bystrx
+      ]
     
       (* Block numbers *)
       | Builtin_blt -> [BNum.blt_arity, BNum.blt_type, elab_id, BNum.blt]
@@ -1393,7 +1422,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
       | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
       | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
-      | Builtin_to_bystrx i -> [Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i]
       | Builtin_bech32_to_bystr20 -> [Crypto.bech32_to_bystr20_arity, Crypto.bech32_to_bystr20_type, elab_id, Crypto.bech32_to_bystr20]
       | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
