@@ -25,6 +25,7 @@ open TypeUtil
 open Datatypes
 module JSONTypeUtilities = TypeUtilities
 module JSONIdentifier = TypeUtil.TUIdentifier
+module JSONName = JSONIdentifier.Name
 module JSONType = TypeUtil.TUType
 module JSONLiteral = TypeUtil.TULiteral
 open JSONTypeUtilities
@@ -193,7 +194,11 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if String.(JSONIdentifier.get_id name <> "List") then
+                    if
+                      not
+                        (Datatypes.is_list_adt_name
+                           (JSONIdentifier.get_id name))
+                    then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")
@@ -211,11 +216,11 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                       List.fold_right vli
                         ~f:(fun vl acc ->
                           (* Apply eparser thunk, and then apply to argument *)
-                          ADTValue ("Cons", [ etyp ], [ eparser' vl; acc ]))
-                        ~init:(ADTValue ("Nil", [ etyp ], []))
+                          build_cons_lit (eparser' vl) etyp acc)
+                        ~init:(build_nil_lit etyp)
                 | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
               in
-              AssocDictionary.insert cn.cname parser maps)
+              AssocDictionary.insert (JSONName.as_string cn.cname) parser maps)
         in
         let adt_parser cn_parsers j =
           let cn =

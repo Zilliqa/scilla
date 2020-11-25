@@ -19,13 +19,17 @@
 open Core_kernel
 open OUnit2
 open Scilla_base
+open Literal
 open Syntax
 open ErrorUtils
+
+(* Use GlobalLiteral for compatibility with TypeUtil *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
 module TestTypeUtils = TypeUtil.TypeUtilities
 module TestTypeType = TypeUtil.TUType
 
 let make_type_equiv_test st1 st2 eq =
-  let open FrontEndParser in
+  let open FEParser in
   let t1, t2 =
     match (parse_type st1, parse_type st2) with
     | Ok t1, Ok t2 -> (t1, t2)
@@ -80,7 +84,7 @@ let type_equiv_tests =
   ]
 
 let make_ground_type_test ts exp_bool =
-  let open FrontEndParser in
+  let open FEParser in
   let open TestTypeUtils in
   let t =
     match parse_type ts with
@@ -110,7 +114,7 @@ let make_ground_type_tests tlist =
   List.map tlist ~f:(fun (st, eq) -> make_ground_type_test st eq)
 
 let make_map_access_type_test t at nindices =
-  let open FrontEndParser in
+  let open FEParser in
   let open TestTypeUtils in
   let t', at' =
     match (parse_type t, parse_type at) with

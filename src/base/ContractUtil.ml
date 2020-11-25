@@ -23,11 +23,10 @@ open MonadUtil
 open Stdint
 open Core_kernel.Result.Let_syntax
 open PrettyPrinters
-
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module CULiteral = FlattenedLiteral
+module CULiteral = GlobalLiteral
 module CUType = CULiteral.LType
 module CUIdentifier = CUType.TIdentifier
+module CUName = CUIdentifier.Name
 
 (*****************************************************)
 (*                Message payload                    *)
@@ -91,17 +90,19 @@ module MessagePayload = struct
     List.filter es ~f:(fun (l, _) -> String.(l <> tag_label))
 end
 
-let balance_label = "_balance"
+let label_name_of_string str = CUName.parse_simple_name str
 
-let creation_block_label = "_creation_block"
+let balance_label = label_name_of_string "_balance"
 
-let this_address_label = "_this_address"
+let creation_block_label = label_name_of_string "_creation_block"
 
-let scilla_version_label = "_scilla_version"
+let this_address_label = label_name_of_string "_this_address"
 
-let accepted_label = "_accepted"
+let scilla_version_label = label_name_of_string "_scilla_version"
 
-let extlibs_label = "_extlibs"
+let accepted_label = label_name_of_string "_accepted"
+
+let extlibs_label = label_name_of_string "_extlibs"
 
 let no_store_fields = [ balance_label ]
 
@@ -131,16 +132,20 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
     List.filter args ~f:(fun a ->
-        not (List.mem nonevalargs (fst a) ~equal:String.( = )))
+        not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
   let append_implict_comp_params cparams =
     let open CUType in
     let sender =
-      ( CUIdentifier.mk_id MessagePayload.sender_label ER.address_rep,
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.sender_label)
+          ER.address_rep,
         bystrx_typ address_length )
     in
     let amount =
-      ( CUIdentifier.mk_id MessagePayload.amount_label ER.uint128_rep,
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.amount_label)
+          ER.uint128_rep,
         uint128_typ )
     in
     amount :: sender :: cparams

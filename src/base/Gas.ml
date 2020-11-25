@@ -40,8 +40,7 @@ let finalize_remaining_gas initial_gas_limit remaining_gas =
 let version_mismatch_penalty = 97
 
 module ScillaGas (SR : Rep) (ER : Rep) = struct
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module GasLiteral = FlattenedLiteral
+  module GasLiteral = GlobalLiteral
   module GasSyntax = ScillaSyntax (SR) (ER) (GasLiteral)
   module GasType = GasSyntax.SType
   module GI = GasSyntax.SIdentifier
@@ -83,16 +82,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           m (pure 0)
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
+        let open Datatypes in
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if String.(GI.Name.as_string cn = "Cons") then
+        if is_cons_ctr_name cn then
           let rec walk elm acc_cost =
             match elm with
-            | ADTValue (c, _, [ l; ll ])
-              when String.(GI.Name.as_string c = "Cons") ->
+            | ADTValue (c, _, [ l; ll ]) when is_cons_ctr_name c ->
                 let%bind lcost = literal_cost l in
                 walk ll (acc_cost + lcost)
-            | ADTValue (c, _, _) when String.(GI.Name.as_string c = "Nil") ->
-                pure (acc_cost + 1)
+            | ADTValue (c, _, _) when is_nil_ctr_name c -> pure (acc_cost + 1)
             | _ -> fail0 "Malformed list while computing literal cost"
           in
           walk als 0

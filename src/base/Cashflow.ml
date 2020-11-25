@@ -22,6 +22,10 @@ open Syntax
 open Datatypes
 open TypeUtil
 open ContractUtil
+module CFLiteral = GlobalLiteral
+module CFType = CFLiteral.LType
+module CFIdentifier = CFType.TIdentifier
+module CFName = CFIdentifier.Name
 
 module CashflowRep (R : Rep) = struct
   type money_tag =
@@ -29,14 +33,14 @@ module CashflowRep (R : Rep) = struct
     | NotMoney
     | Money
     | Map of money_tag
-    | Adt of string * money_tag list (* name of adt paired with tags of type params *)
+    | Adt of CFName.t * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
   [@@deriving sexp, equal]
 
   let rec money_tag_to_string tag =
     match tag with
     | Adt (n, ts) ->
-        "(" ^ n ^ " "
+        "(" ^ CFName.as_error_string n ^ " "
         ^ String.concat ~sep:" " (List.map ~f:money_tag_to_string ts)
         ^ ")"
     | Map t -> "(Map " ^ money_tag_to_string t ^ ")"
@@ -74,11 +78,6 @@ module ScillaCashflowChecker
 struct
   module SCFR = SR
   module ECFR = CashflowRep (ER)
-
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module CFLiteral = FlattenedLiteral
-  module CFType = CFLiteral.LType
-  module CFIdentifier = CFType.TIdentifier
   module TypedSyntax = ScillaSyntax (SR) (ER) (CFLiteral)
   module CFSyntax = ScillaSyntax (SCFR) (ECFR) (CFLiteral)
   open TypedSyntax
@@ -237,7 +236,7 @@ struct
   let cf_init_tag_contract contract token_fields =
     let { cname; cparams; cconstraint; cfields; ccomps } = contract in
     let token_fields_contains x =
-      List.mem token_fields (CFIdentifier.get_id x) ~equal:String.( = )
+      List.mem token_fields (CFIdentifier.as_string x) ~equal:String.( = )
     in
     {
       CFSyntax.cname;
@@ -315,7 +314,7 @@ struct
     | x            , NoInfo        -> x
     | Map x        , Map y         -> Map (lub_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when String.(n1 = n2)        ->
+      when [%equal : CFName.t ] n1 n2 ->
         (match List.map2 ts1 ts2 ~f:lub_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -332,7 +331,7 @@ struct
     | _            , NoInfo        -> NoInfo
     | Map x        , Map y         -> Map (glb_tags x y)
     | Adt (n1, ts1), Adt (n2, ts2)
-      when String.(n1 = n2)        ->
+      when [%equal : CFName.t ] n1 n2 ->
         (match List.map2 ts1 ts2 ~f:glb_tags with
          | Ok res -> Adt (n1, res)
          | Unequal_lengths -> Inconsistent)
@@ -371,7 +370,9 @@ struct
               && List.exists adt.tmap ~f:(fun (_, arg_typs) ->
                      match arg_typs with
                      | [ ADT (arg_typ_name, _) ] ->
-                         String.(CFIdentifier.get_id arg_typ_name = adt.tname)
+                         [%equal: CFName.t]
+                           (CFIdentifier.get_id arg_typ_name)
+                           adt.tname
                      | _ -> false)
             then NoInfo
             else Adt (adt.tname, [])
@@ -454,7 +455,7 @@ struct
               let zipped_tvar_tags =
                 match expected_tag with
                 | Adt (exp_typ_name, arg_tags)
-                  when String.(exp_typ_name = adt.tname) ->
+                  when [%equal: CFName.t] exp_typ_name adt.tname ->
                     List.zip adt.tparams arg_tags
                 | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
                 (* Nat case *) ->
@@ -517,7 +518,9 @@ struct
                   if ctr_arg_filter t then Some NoInfo else None)
             in
             if List.exists tag_list ~f:Option.is_some then
-              (ctr.cname, tag_list) :: acc
+              List.Assoc.add acc ~equal:String.( = )
+                (CFName.as_string ctr.cname)
+                tag_list
             else acc)
 
   let update_ctr_tag_map ctr_tag_map ctr_name arg_tags =
@@ -538,6 +541,8 @@ struct
               (List.Assoc.add ctr_tag_map ~equal:String.( = ) ctr_name new_tags)
         | _ -> None )
 
+  let option_adt_tag t = Adt (CFName.parse_simple_name "Option", [ t ])
+
   (*******************************************************)
   (*      Helper functions for local variables           *)
   (*******************************************************)
@@ -550,21 +555,21 @@ struct
 
   let lookup_var_tag i env =
     let open CFIdentifier in
-    match AssocDictionary.lookup (get_id i) env with
+    match AssocDictionary.lookup (as_string i) env with
     | Some t -> t
     | None -> get_id_tag i
 
   let lookup_var_tag2 i env1 env2 =
     let open CFIdentifier in
-    match AssocDictionary.lookup (get_id i) env1 with
+    match AssocDictionary.lookup (as_string i) env1 with
     | Some t -> t
     | None -> lookup_var_tag i env2
 
   let update_var_tag i t env =
-    AssocDictionary.update (CFIdentifier.get_id i) t env
+    AssocDictionary.update (CFIdentifier.as_string i) t env
 
   let update_var_tag2 i t env1 env2 =
-    match AssocDictionary.lookup (CFIdentifier.get_id i) env1 with
+    match AssocDictionary.lookup (CFIdentifier.as_string i) env1 with
     | Some _ -> (update_var_tag i t env1, env2)
     | None -> (env1, update_var_tag i t env2)
 
@@ -689,22 +694,24 @@ struct
       | Builtin_get ->
           let c_r_sigs =
             match res_tag with
-            | Adt ("Option", [t]) -> [ ( Adt ("Option", [t]      ) , [ Map t      ; NotMoney ] ) ]
-            | NoInfo              -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney ] ) ]
-            | _                   -> [ ( Inconsistent  , [ Map NoInfo ; NotMoney ] ) ] in
+            | Adt (adt_name, [t])
+              when is_option_adt_name adt_name ->
+                                     [ (option_adt_tag t     , [ Map t      ; NotMoney ] ) ]
+            | NoInfo              -> [ (option_adt_tag NoInfo, [ Map NoInfo ; NotMoney ] ) ]
+            | _                   -> [ ( Inconsistent        , [ Map NoInfo ; NotMoney ] ) ] in
           let c_as_sigs =
             match args_tags with
             | [ m ; k ] ->
                 let m_sig =
                   match m with
-                  | Map t  -> [ ( Adt ("Option", [t     ] ) , [ Map t        ; NotMoney ] ) ] 
-                  | NoInfo -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo   ; NotMoney ] ) ] 
-                  | _      -> [ ( Adt ("Option", [NoInfo] ) , [ Inconsistent ; NotMoney ] ) ] in
+                  | Map t  -> [ ( option_adt_tag t     , [ Map t        ; NotMoney ] ) ] 
+                  | NoInfo -> [ ( option_adt_tag NoInfo, [ Map NoInfo   ; NotMoney ] ) ] 
+                  | _      -> [ ( option_adt_tag NoInfo, [ Inconsistent ; NotMoney ] ) ] in
                 let k_sig =
                   match k with
                   | NotMoney
-                  | NoInfo   -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; NotMoney     ] ) ]
-                  | _        -> [ ( Adt ("Option", [NoInfo] ) , [ Map NoInfo ; Inconsistent ] ) ] in
+                  | NoInfo   -> [ ( option_adt_tag NoInfo, [ Map NoInfo ; NotMoney     ] ) ]
+                  | _        -> [ ( option_adt_tag NoInfo, [ Map NoInfo ; Inconsistent ] ) ] in
                 [ m_sig ; k_sig ]
             | _             ->
                 (* Error *)
@@ -1077,7 +1084,7 @@ struct
           let new_x_tag = lookup_var_tag x local_env in
           let new_x = update_id_tag x new_x_tag in
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
           ( Binder new_x,
             new_x_tag,
@@ -1105,7 +1112,7 @@ struct
                   acc_changes || p_changes ))
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
-            update_ctr_tag_map ps_ctr_tag_map (CFIdentifier.get_id s)
+            update_ctr_tag_map ps_ctr_tag_map (CFIdentifier.as_string s)
               new_ps_tags
             |> Option.value_map ~default:(ps_ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
@@ -1154,7 +1161,7 @@ struct
   let insert_pattern_vars_into_env p local_env =
     let pattern_vars = get_pattern_vars p [] in
     List.fold_left pattern_vars ~init:local_env ~f:(fun l_env x ->
-        AssocDictionary.insert (CFIdentifier.get_id x) (get_id_tag x) l_env)
+        AssocDictionary.insert (CFIdentifier.as_string x) (get_id_tag x) l_env)
 
   (* Find least upper bound of scrutinee based on patterns and pattern tags *)
   let lub_pattern_tags ps =
@@ -1189,7 +1196,7 @@ struct
     | MLit l -> CFSyntax.MLit l
     | MVar v -> (
         let tag =
-          match AssocDictionary.lookup (CFIdentifier.get_id v) local_env with
+          match AssocDictionary.lookup (CFIdentifier.as_string v) local_env with
           | None -> Inconsistent (* Should not happen *)
           | Some t -> t
         in
@@ -1234,8 +1241,9 @@ struct
             | _ -> Inconsistent
           in
           let body_local_env =
-            AssocDictionary.insert (CFIdentifier.get_id arg) (get_id_tag arg)
-              local_env
+            AssocDictionary.insert
+              (CFIdentifier.as_string arg)
+              (get_id_tag arg) local_env
           in
           let ( ((_, (new_body_tag, _)) as new_body),
                 res_param_env,
@@ -1247,7 +1255,9 @@ struct
           in
           let res_arg_tag = lookup_var_tag arg res_body_local_env in
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id arg) res_body_local_env
+            AssocDictionary.remove
+              (CFIdentifier.as_string arg)
+              res_body_local_env
           in
           ( Fun (update_id_tag arg res_arg_tag, t, new_body),
             Map new_body_tag,
@@ -1340,7 +1350,7 @@ struct
             cf_tag_expr lhs (get_id_tag i) param_env local_env ctr_tag_map
           in
           let updated_lhs_local_env =
-            AssocDictionary.insert (CFIdentifier.get_id i) new_lhs_tag
+            AssocDictionary.insert (CFIdentifier.as_string i) new_lhs_tag
               lhs_local_env
           in
           let ( ((_, (new_rhs_tag, _)) as new_rhs),
@@ -1354,7 +1364,7 @@ struct
           let new_i_tag = lookup_var_tag i rhs_local_env in
           let new_i = update_id_tag i new_i_tag in
           let res_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id i) rhs_local_env
+            AssocDictionary.remove (CFIdentifier.as_string i) rhs_local_env
           in
           ( Let (new_i, topt, new_lhs, new_rhs),
             new_rhs_tag,
@@ -1384,7 +1394,7 @@ struct
           in
           let new_ctr_tag_map, ctr_tag_map_changes =
             update_ctr_tag_map ctr_tag_map
-              (CFIdentifier.get_id cname)
+              (CFIdentifier.as_string cname)
               (List.map new_args ~f:get_id_tag)
             |> Option.value_map ~default:(ctr_tag_map, false) ~f:(fun map ->
                    (map, true))
@@ -1586,7 +1596,7 @@ struct
           in
           (* x is no longer in scope, so remove from local_env *)
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id x) tmp_local_env
+            AssocDictionary.remove (CFIdentifier.as_string x) tmp_local_env
           in
           ( Load (new_x, new_f),
             new_param_env,
@@ -1611,7 +1621,7 @@ struct
       | Bind (x, e) ->
           let x_tag = lookup_var_tag x local_env in
           let e_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
           let ( ((_, (new_e_tag, _)) as new_e),
                 new_param_env,
@@ -1679,7 +1689,7 @@ struct
           let val_tag =
             if fetch then
               match x_tag with
-              | Adt ("Option", [ t ]) -> t
+              | Adt (tname, [ t ]) when is_option_adt_name tname -> t
               | NoInfo -> NoInfo
               | _ -> Inconsistent
             else NoInfo
@@ -1691,7 +1701,7 @@ struct
           let new_m = update_id_tag m m_tag in
           let new_field_env = update_var_tag m m_tag field_env in
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
           let new_ks =
             List.map ks ~f:(fun k ->
@@ -1709,7 +1719,7 @@ struct
           in
           let new_val_tag = lub_tags val_tag v_tag_usage in
           let new_x_tag =
-            if fetch then lub_tags x_tag (Adt ("Option", [ new_val_tag ]))
+            if fetch then lub_tags x_tag (option_adt_tag new_val_tag)
             else NotMoney
             (* Bool *)
           in
@@ -1792,7 +1802,7 @@ struct
           let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
           let new_x = update_id_tag x x_tag in
           let new_local_env =
-            AssocDictionary.remove (CFIdentifier.get_id x) local_env
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
           ( ReadFromBC (new_x, s),
             param_env,
@@ -1892,7 +1902,7 @@ struct
           match s with
           | Load (x, _) | Bind (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _)
             ->
-              AssocDictionary.insert (CFIdentifier.get_id x) (get_id_tag x)
+              AssocDictionary.insert (CFIdentifier.as_string x) (get_id_tag x)
                 acc_env
           | _ -> acc_env)
     in
@@ -1934,7 +1944,8 @@ struct
     let init_local_env =
       List.fold_left comp_params ~init:implicit_local_env
         ~f:(fun acc_env (p, _) ->
-          AssocDictionary.insert (CFIdentifier.get_id p) (get_id_tag p) acc_env)
+          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p)
+            acc_env)
     in
     let ( new_comp_body,
           new_param_env,
@@ -1968,10 +1979,11 @@ struct
     let empty_env = AssocDictionary.make_dict () in
     let init_param_env =
       List.fold_left cparams ~init:empty_env ~f:(fun acc_env (p, _) ->
-          AssocDictionary.insert (CFIdentifier.get_id p) (get_id_tag p) acc_env)
+          AssocDictionary.insert (CFIdentifier.as_string p) (get_id_tag p)
+            acc_env)
     in
     let implicit_field_env =
-      AssocDictionary.insert balance_label Money empty_env
+      AssocDictionary.insert (CFName.as_string balance_label) Money empty_env
     in
     let ctr_tag_map = init_ctr_tag_map () in
     let init_field_env =
@@ -1984,7 +1996,7 @@ struct
               (AssocDictionary.make_dict ())
               ctr_tag_map
           in
-          AssocDictionary.insert (CFIdentifier.get_id f) e_tag acc_env)
+          AssocDictionary.insert (CFIdentifier.as_string f) e_tag acc_env)
     in
     let rec tagger cconstraint components param_env field_env ctr_tag_map =
       let new_constraint, tmp_param_env, _, tmp_ctr_tag_map, constraint_changes
@@ -2060,10 +2072,10 @@ struct
     let new_mod, ctr_tag_map = cf_tag_module init_mod in
     let param_field_tags =
       List.map
-        ~f:(fun (p, _) -> (CFIdentifier.get_id p, get_id_tag p))
+        ~f:(fun (p, _) -> (CFIdentifier.as_string p, get_id_tag p))
         new_mod.contr.cparams
       @ List.map
-          ~f:(fun (f, _, _) -> (CFIdentifier.get_id f, get_id_tag f))
+          ~f:(fun (f, _, _) -> (CFIdentifier.as_string f, get_id_tag f))
           new_mod.contr.cfields
     in
     let ctr_tags =
@@ -2072,7 +2084,8 @@ struct
           match
             List.filter_map adt.tconstr ~f:(fun ctr ->
                 match
-                  List.Assoc.find ctr_tag_map ~equal:String.( = ) ctr.cname
+                  List.Assoc.find ctr_tag_map ~equal:String.( = )
+                    (CFName.as_string ctr.cname)
                 with
                 | Some arg_tag_opts -> Some (ctr.cname, arg_tag_opts)
                 | None -> None)

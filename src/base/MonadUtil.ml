@@ -147,6 +147,10 @@ let option_mapM ~f opt_val =
       let%map z = f v in
       Some z
 
+(* Monadic Option.value_map for error *)
+let option_value_mapM ~f ~default opt_val =
+  match opt_val with None -> pure default | Some v -> f v
+
 (* Monadic version of List.fold_map *)
 let fold_mapM ~f ~init l =
   let%map acc, l'_rev =

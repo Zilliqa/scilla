@@ -20,11 +20,10 @@ open Core_kernel
 open ErrorUtils
 open Literal
 open Syntax
-
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module TULiteral = FlattenedLiteral
+module TULiteral = GlobalLiteral
 module TUType = TULiteral.LType
 module TUIdentifier = TUType.TIdentifier
+module TUName = TUIdentifier.Name
 
 (* An inferred type with possible qualifiers *)
 type 'rep inferred_type = { tp : TUType.t; qual : 'rep } [@@deriving sexp]
@@ -93,14 +92,14 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
     val resolveT :
       ?lopt:R.rep option ->
       t ->
-      string ->
+      TUName.t ->
       (resolve_result, scilla_error list) result
 
     (* Is bound in environment? *)
-    val existsT : t -> string -> bool
+    val existsT : t -> TUName.t -> bool
 
     (* Is bound in tvars? *)
-    val existsV : t -> string -> bool
+    val existsV : t -> TUName.t -> bool
 
     (* Convert to list *)
     val to_list : t -> (string * resolve_result) list
@@ -198,7 +197,7 @@ module TypeUtilities : sig
   val elab_tfun_with_args_no_gas :
     TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result
 
-  val pp_typ_list : TUType.t list -> string
+  val pp_typ_list_error : TUType.t list -> string
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
@@ -210,7 +209,7 @@ module TypeUtilities : sig
   (*  Get elaborated type for a constructor and list of type arguments *)
   val elab_constr_type :
     lc:ErrorUtils.loc ->
-    string ->
+    TUName.t ->
     TUType.t list ->
     (TUType.t, scilla_error list) result
 
@@ -220,12 +219,12 @@ module TypeUtilities : sig
   val constr_pattern_arg_types :
     ?lc:ErrorUtils.loc ->
     TUType.t ->
-    string ->
+    TUName.t ->
     (TUType.t list, scilla_error list) result
 
   val validate_param_length :
     lc:ErrorUtils.loc ->
-    string ->
+    TUName.t ->
     int ->
     int ->
     (unit, scilla_error list) result

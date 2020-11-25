@@ -19,27 +19,36 @@
 open ErrorUtils
 open Core_kernel
 open Literal
-
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module DTLiteral = FlattenedLiteral
+module DTLiteral = GlobalLiteral
 module DTType = DTLiteral.LType
+module DTIdentifier = DTType.TIdentifier
+module DTName = DTIdentifier.Name
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
 (**********************************************************)
 
+(* A tagged constructor *)
 type constructor = {
-  cname : string;
+  cname : DTName.t;
   (* constructor name *)
   arity : int; (* How many arguments it takes *)
 }
 [@@deriving equal]
 
+(* An Algebraic Data Type *)
 type adt = {
-  tname : string;
+  tname : DTName.t;
+  (* type name *)
   tparams : string list;
+  (* type parameters *)
+
+  (* supported constructors *)
   tconstr : constructor list;
-  tmap : (string * DTType.t list) list;
+  (* Mapping for constructors' types
+     The arity of the constructor is the same as the length
+     of the list, so the types are mapped correspondingly. *)
+  tmap : (DTName.t * DTType.t list) list;
 }
 [@@deriving equal]
 
@@ -51,16 +60,16 @@ module DataTypeDictionary : sig
 
   (*  Get ADT by name  *)
   val lookup_name :
-    ?sloc:ErrorUtils.loc -> string -> (adt, scilla_error list) result
+    ?sloc:ErrorUtils.loc -> DTName.t -> (adt, scilla_error list) result
 
   (*  Get ADT by the constructor  *)
   val lookup_constructor :
     ?sloc:ErrorUtils.loc ->
-    string ->
+    DTName.t ->
     (adt * constructor, scilla_error list) result
 
   (* Get typing map for a constructor *)
-  val constr_tmap : adt -> string -> DTType.t list option
+  val constr_tmap : adt -> DTName.t -> DTType.t list option
 
   (* Get all known ADTs *)
   val get_all_adts : unit -> adt list
@@ -81,6 +90,30 @@ module DataTypeDictionary : sig
 
   val pair_typ : DTType.t -> DTType.t -> DTType.t
 end
+
+val is_true_ctr_name : DTName.t -> bool
+
+val is_false_ctr_name : DTName.t -> bool
+
+val is_nil_ctr_name : DTName.t -> bool
+
+val is_cons_ctr_name : DTName.t -> bool
+
+val is_list_adt_name : DTName.t -> bool
+
+val is_pair_ctr_name : DTName.t -> bool
+
+val is_pair_adt_name : DTName.t -> bool
+
+val is_zero_ctr_name : DTName.t -> bool
+
+val is_succ_ctr_name : DTName.t -> bool
+
+val is_none_ctr_name : DTName.t -> bool
+
+val is_some_ctr_name : DTName.t -> bool
+
+val is_option_adt_name : DTName.t -> bool
 
 val scilla_list_to_ocaml :
   DTLiteral.t -> (DTLiteral.t list, scilla_error list) result

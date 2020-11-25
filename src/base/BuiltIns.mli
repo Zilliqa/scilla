@@ -20,9 +20,7 @@ open Syntax
 open ErrorUtils
 open Core_kernel
 open Literal
-
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module BILiteral = FlattenedLiteral
+module BILiteral = GlobalLiteral
 module BIType = BILiteral.LType
 
 module UsefulLiterals : sig
