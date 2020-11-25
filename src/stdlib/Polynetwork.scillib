@@ -57,6 +57,11 @@ let extract_uint64 = extract_uint64 little_endian
 let extract_uint128 = extract_uint128 little_endian
 let extract_uint256 = extract_uint256 little_endian
 
+let append_uint32 = append_uint32 little_endian
+let append_uint64 = append_uint64 little_endian
+let append_uint128 = append_uint128 little_endian
+let append_uint256 = append_uint256 little_endian
+
 (* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
 (* ZeroCopySource.sol : NextVarUint *)
 let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
@@ -211,6 +216,18 @@ let append_varbytes : ByStr -> ByStr -> ByStr =
       builtin to_bystr emptyx
     end
 
+(* Downcast Uint32 to Uint16, serialize it and append to given byte string *)
+let append_uint16 : ByStr -> Uint32 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint32) =>
+    let uibx = builtin to_bystr4 ui in
+    let uib = builtin to_bystr uibx in
+    let pos = Uint32 2 in
+    let len = Uint32 2 in
+    let uib_sub2 = builtin substr uib pos len in
+    let uib_sub2_littleendian = builtin strrev uib_sub2 in
+    builtin concat bs uib_sub2_littleendian
+
 (* Deserialize a byte stream into a Header, starting at nextpos. *)
 let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
   fun (header : ByStr) =>
@@ -346,3 +363,4 @@ let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Ui
       end
     | None => None {(Pair ToMerkleValue Uint32)}
     end
+
