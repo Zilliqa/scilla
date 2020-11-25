@@ -334,8 +334,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
            in
            let adt_loc = ER.get_loc (get_rep tname) in
            let%bind () = DataTypeDictionary.add_adt adt adt_loc in
-           pure
-             ( RecursionSyntax.LibTyp (tname, checked_ctr_defs))
+           pure (RecursionSyntax.LibTyp (tname, checked_ctr_defs))
 
   let recursion_library lib =
     let { lname; lentries } = lib in
@@ -345,19 +344,17 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     @@ let%bind recursion_entries =
          foldM lentries ~init:[] ~f:(fun rec_entries entry ->
              let%bind new_entry = recursion_lib_entry entry in
-             pure
-             @@ new_entry :: rec_entries)
+             pure @@ (new_entry :: rec_entries))
        in
        pure
          {
            RecursionSyntax.lname;
            RecursionSyntax.lentries = List.rev recursion_entries;
          }
-         
+
   let recursion_rprins_elibs recursion_principles ext_libs libs =
     let rec recurser libl =
-      List.fold_left libl
-        ~init:([], [])
+      List.fold_left libl ~init:([], [])
         ~f:(fun (rec_elibs_acc, emsgs_acc) ext_lib ->
           let rec_elib, emsg =
             let rec_dep_libs, dep_emsgs = recurser ext_lib.deps in
@@ -367,11 +364,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 let (libn' : RecursionSyntax.libtree) =
                   { libn = lib; deps = rec_dep_libs }
                 in
-                ( rec_elibs_acc @ [ libn' ],
-                  emsgs_acc @ dep_emsgs )
-            | Error el ->
-                ( rec_elibs_acc, 
-                  emsgs_acc @ dep_emsgs @ el )
+                (rec_elibs_acc @ [ libn' ], emsgs_acc @ dep_emsgs)
+            | Error el -> (rec_elibs_acc, emsgs_acc @ dep_emsgs @ el)
           in
           (rec_elib, emsg))
     in
