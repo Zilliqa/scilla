@@ -192,6 +192,25 @@ let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
     | None => None {(Pair ByStr Uint32)}
     end
 
+(* Append to first byte string, serialized form of the second byte string. *)
+(* See ZeroCopySink.WriteVarBytes. *)
+let append_varbytes : ByStr -> ByStr -> ByStr =
+  fun (bs : ByStr) =>
+  fun (varby : ByStr) =>
+    let len_32b = builtin strlen varby in
+    let len_64b_opt = builtin to_uint64 len_32b in
+    match len_64b_opt with
+    | Some len =>
+      let varint_bs = append_var_uint bs len in
+      builtin concat varint_bs varby
+    | None =>
+      (* Can never happen. *)
+      let zero = Uint32 0 in
+      let ignore = builtin div zero zero in
+      let emptyx = 0x in
+      builtin to_bystr emptyx
+    end
+
 (* Deserialize a byte stream into a Header, starting at nextpos. *)
 let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
   fun (header : ByStr) =>
