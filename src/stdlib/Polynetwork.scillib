@@ -51,6 +51,12 @@ type ToMerkleValue =
     Uint64                      (* fromChainID *)
     TxParam                     (* makeTxParam *)
 
+type Pubkey = | Pubkey of ByStr67
+let pubkey_length = Uint32 67
+
+type Unit = | Unit
+let unit = Unit
+
 let little_endian = LittleEndian
 let extract_uint32 = extract_uint32 little_endian
 let extract_uint64 = extract_uint64 little_endian
@@ -364,3 +370,56 @@ let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Ui
     | None => None {(Pair ToMerkleValue Uint32)}
     end
 
+(* See Utils.col:compressMCPubKey *)
+let compress_pubkey : Pubkey -> ByStr35 =
+  fun (pk : Pubkey) =>
+    let zero = Uint32 0 in
+    let cannot_happen = fun (unit : Unit) =>
+      (* This cannot happen. *)
+      let ignore = builtin div zero zero in
+      let ret = 0x0000000000000000000000000000000000000000000000000000000000000000000000 in
+      ret
+    in
+    match pk with
+    | Pubkey pk =>
+      let pk = builtin to_bystr pk in
+      let pos = Uint32 66 in
+      let one = Uint32 1 in
+      let last_byte = builtin substr pk pos one in
+      let last_bytex_opt = builtin to_bystr1 last_byte in
+      match last_bytex_opt with
+      | Some last_bytex =>
+        let last_byte_uint = builtin to_uint32 last_bytex in
+        let two = Uint32 2 in
+        let is_even = let rem = builtin rem last_byte_uint two in builtin eq rem zero in
+        let flagx =
+          match is_even with
+          | True => 0x02
+          | False => 0x03
+          end
+        in
+        let flag = builtin to_bystr flagx in
+        let pos = Uint32 0 in
+        let len = Uint32 2 in   (* bytes 0 and 1. *)
+        let first = builtin substr pk pos len in
+        let pos = Uint32 3 in   (* bytes starting from 3 *)
+        let len = Uint32 32 in  (* 35 - 3 bytes *)
+        let third = builtin substr pk pos len in
+        let partial_res = builtin concat first flag in
+        let res = builtin concat partial_res third in
+        let resx_opt = builtin to_bystr35 res in
+        match resx_opt with
+        | Some resx => resx
+        | None => cannot_happen unit
+        end
+      | None =>
+        cannot_happen unit
+      end
+    end
+
+(*  @notice              calculate next book keeper according to public key list
+ *  @param _m            minimum signature number
+ *  @param _pubKeyList   consensus node public key list
+ *  @return              two element: next book keeper, consensus node signer addresses
+ *)
+(* let getBookKeeper : Uint32 -> List Pubkey = *)
