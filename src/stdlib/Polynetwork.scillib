@@ -17,7 +17,7 @@
 (* ******************************************************************************** *)
 scilla_version 0
 
-import Conversions
+import Conversions ListUtils
 
 library Polynetwork
 
@@ -56,6 +56,7 @@ let pubkey_length = Uint32 67
 
 type Unit = | Unit
 let unit = Unit
+let zero_uint32 = Uint32 0
 
 let little_endian = LittleEndian
 let extract_uint32 = extract_uint32 little_endian
@@ -67,6 +68,13 @@ let append_uint32 = append_uint32 little_endian
 let append_uint64 = append_uint64 little_endian
 let append_uint128 = append_uint128 little_endian
 let append_uint256 = append_uint256 little_endian
+
+(* Raise an exception and return a default value. *)
+let raise_exception =
+  tfun 'A =>
+  fun (default_val : 'A) =>
+  let ignore = builtin div zero_uint32 zero_uint32 in
+  default_val
 
 (* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
 (* ZeroCopySource.sol : NextVarUint *)
@@ -208,6 +216,7 @@ let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
 let append_varbytes : ByStr -> ByStr -> ByStr =
   fun (bs : ByStr) =>
   fun (varby : ByStr) =>
+    let exceptioner = @raise_exception ByStr in
     let len_32b = builtin strlen varby in
     let len_64b_opt = builtin to_uint64 len_32b in
     match len_64b_opt with
@@ -216,10 +225,9 @@ let append_varbytes : ByStr -> ByStr -> ByStr =
       builtin concat varint_bs varby
     | None =>
       (* Can never happen. *)
-      let zero = Uint32 0 in
-      let ignore = builtin div zero zero in
       let emptyx = 0x in
-      builtin to_bystr emptyx
+      let empty = builtin to_bystr emptyx in
+      exceptioner empty
     end
 
 (* Downcast Uint32 to Uint16, serialize it and append to given byte string *)
@@ -373,13 +381,8 @@ let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Ui
 (* See Utils.col:compressMCPubKey *)
 let compress_pubkey : Pubkey -> ByStr35 =
   fun (pk : Pubkey) =>
-    let zero = Uint32 0 in
-    let cannot_happen = fun (unit : Unit) =>
-      (* This cannot happen. *)
-      let ignore = builtin div zero zero in
-      let ret = 0x0000000000000000000000000000000000000000000000000000000000000000000000 in
-      ret
-    in
+    let exceptioner = @raise_exception ByStr35 in
+    let default_ret = 0x0000000000000000000000000000000000000000000000000000000000000000000000 in
     match pk with
     | Pubkey pk =>
       let pk = builtin to_bystr pk in
@@ -391,7 +394,7 @@ let compress_pubkey : Pubkey -> ByStr35 =
       | Some last_bytex =>
         let last_byte_uint = builtin to_uint32 last_bytex in
         let two = Uint32 2 in
-        let is_even = let rem = builtin rem last_byte_uint two in builtin eq rem zero in
+        let is_even = let rem = builtin rem last_byte_uint two in builtin eq rem zero_uint32 in
         let flagx =
           match is_even with
           | True => 0x02
@@ -410,10 +413,10 @@ let compress_pubkey : Pubkey -> ByStr35 =
         let resx_opt = builtin to_bystr35 res in
         match resx_opt with
         | Some resx => resx
-        | None => cannot_happen unit
+        | None => exceptioner default_ret
         end
       | None =>
-        cannot_happen unit
+        exceptioner default_ret
       end
     end
 
@@ -421,5 +424,69 @@ let compress_pubkey : Pubkey -> ByStr35 =
  *  @param _m            minimum signature number
  *  @param _pubKeyList   consensus node public key list
  *  @return              two element: next book keeper, consensus node signer addresses
+ *  See EthCrossChainUtils.sol:_getBookKeeper()
  *)
-(* let getBookKeeper : Uint32 -> List Pubkey = *)
+let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
+  fun (m : Uint32) =>
+  fun (pubKeys : List Pubkey) =>
+    let lengther = @list_length Pubkey in
+    let mapper = @list_map Pubkey ByStr20 in
+    let folder = @list_foldl Pubkey ByStr in
+
+    let keyLen = lengther pubKeys in
+
+    let mapf =
+      fun (pk : Pubkey) =>
+        let exceptioner = @raise_exception ByStr20 in
+        let default_ret = 0x0000000000000000000000000000000000000000 in
+        match pk with
+        | Pubkey pubKeyX =>
+          let pubKey = builtin to_bystr pubKeyX in
+          let pos = Uint32 3 in
+          let len = Uint32 64 in
+          let slice = builtin substr pubKey pos len in
+          let hashX = builtin keccak256hash slice in
+          (* Pick the lower 20 bytes *)
+          let hash = builtin to_bystr hashX in
+          let pos = Uint32 11 in
+          let len = Uint32 20 in
+          let keeperX = builtin substr hash pos len in
+          let keeper_opt = builtin to_bystr20 keeperX in
+          match keeper_opt with
+          | Some keeper => keeper
+          | None => (* This cannot happen *)
+            exceptioner default_ret
+          end
+        end
+    in
+    let keepers = mapper mapf pubKeys in
+
+    let foldf =
+      fun (acc : ByStr) =>
+      fun (pk : Pubkey) =>
+        let compressed_pkx = compress_pubkey pk in
+        let compressed_pk = builtin to_bystr compressed_pkx in
+        append_varbytes acc compressed_pk
+    in
+    let empty_bystrx = 0x in
+    let empty_bystr = builtin to_bystr empty_bystrx in
+    let initv = append_uint16 empty_bystr keyLen in
+    let buff = folder foldf initv pubKeys in
+    let buff = append_uint16 buff m in
+    let buff_sha256 = builtin sha256hash buff in
+    let nextBookKeeper = builtin ripemd160hash buff_sha256 in
+
+    Pair {ByStr20 (List ByStr20)} nextBookKeeper keepers
+
+(* See EthCrossChainUtils.sol:verifyPubKey *)
+let verifyPubKey : List Pubkey -> Pair ByStr20 (List ByStr20) =
+  fun (pubKeys : List Pubkey) =>
+    let lengther = @list_length Pubkey in
+    let n = lengther pubKeys in
+    let one = Uint32 1 in
+    let t1 = builtin sub n one in
+    let three = Uint32 3 in
+    let t2 = builtin div t1 three in
+    let m = builtin sub n t2 in
+    getBookKeeper m pubKeys
+
