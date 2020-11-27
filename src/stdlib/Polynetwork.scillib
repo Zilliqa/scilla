@@ -59,15 +59,15 @@ let unit = Unit
 let zero_uint32 = Uint32 0
 
 let little_endian = LittleEndian
-let extract_uint32 = extract_uint32 little_endian
-let extract_uint64 = extract_uint64 little_endian
-let extract_uint128 = extract_uint128 little_endian
-let extract_uint256 = extract_uint256 little_endian
+let extract_uint32_le = extract_uint32 little_endian
+let extract_uint64_le = extract_uint64 little_endian
+let extract_uint128_le = extract_uint128 little_endian
+let extract_uint256_le = extract_uint256 little_endian
 
-let append_uint32 = append_uint32 little_endian
-let append_uint64 = append_uint64 little_endian
-let append_uint128 = append_uint128 little_endian
-let append_uint256 = append_uint256 little_endian
+let append_uint32_le = append_uint32 little_endian
+let append_uint64_le = append_uint64 little_endian
+let append_uint128_le = append_uint128 little_endian
+let append_uint256_le = append_uint256 little_endian
 
 (* Raise an exception and return a default value. *)
 let raise_exception =
@@ -106,7 +106,7 @@ let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
         match is_32b with
         | True =>
           (* This is a 32b integer *)
-          let uint32val_nextpos = extract_uint32 bs nextpos in
+          let uint32val_nextpos = extract_uint32_le bs nextpos in
           match uint32val_nextpos with
           | Some (Pair uint32val nextpos) =>
             (* Upcast to a Uint64 value. *)
@@ -125,7 +125,7 @@ let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
           let is_64b = builtin eq first_byte b64_marker in
           match is_64b with
           | True =>
-            extract_uint64 bs nextpos
+            extract_uint64_le bs nextpos
           | False =>
             let u8_val = builtin to_uint64 first_byte in
             let res = Pair {Uint64 Uint32} u8_val nextpos in
@@ -246,10 +246,10 @@ let append_uint16 : ByStr -> Uint32 -> ByStr =
 let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
   fun (header : ByStr) =>
   fun (nextpos : Uint32) =>
-    let version_nextpos = extract_uint32 header nextpos in
+    let version_nextpos = extract_uint32_le header nextpos in
     match version_nextpos with
     | Some (Pair version nextpos) =>
-      let chainid_nextpos = extract_uint64 header nextpos in
+      let chainid_nextpos = extract_uint64_le header nextpos in
       match chainid_nextpos with
       | Some (Pair chainid nextpos) =>
         let prevBlockHash_nextpos = extract_bystr32 header nextpos in
@@ -264,13 +264,13 @@ let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
               let blockRoot_nextpos = extract_bystr32 header nextpos in
               match blockRoot_nextpos with
               | Some (Pair blockRoot nextpos) =>
-                let timestamp_nextpos = extract_uint32 header nextpos in
+                let timestamp_nextpos = extract_uint32_le header nextpos in
                 match timestamp_nextpos with
                 | Some (Pair timestamp nextpos) =>
-                  let height_nextpos = extract_uint32 header nextpos in
+                  let height_nextpos = extract_uint32_le header nextpos in
                   match height_nextpos with
                   | Some (Pair height nextpos) =>
-                    let consensusData_nextpos = extract_uint64 header nextpos in
+                    let consensusData_nextpos = extract_uint64_le header nextpos in
                     match consensusData_nextpos with
                     | Some (Pair consensusData nextpos) =>
                       let consensusPayload_nextpos = extract_bystr header nextpos in
@@ -322,7 +322,7 @@ let deserialize_TxParam : ByStr -> Uint32 -> Option (Pair TxParam Uint32) =
         let fromContract_nextpos = extract_bystr txparam nextpos in
         match fromContract_nextpos with
         | Some (Pair fromContract nextpos) =>
-          let toChainId_nextpos = extract_uint64 txparam nextpos in
+          let toChainId_nextpos = extract_uint64_le txparam nextpos in
           match toChainId_nextpos with
           | Some (Pair toChainId nextpos) =>
             let toContract_nextpos = extract_bystr txparam nextpos in
@@ -362,7 +362,7 @@ let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Ui
     let txhash_nextpos = extract_bystr tomerklevalue nextpos in
     match txhash_nextpos with
     | Some (Pair txhash nextpos) =>
-      let fromChainId_nextpos = extract_uint64 tomerklevalue nextpos in
+      let fromChainId_nextpos = extract_uint64_le tomerklevalue nextpos in
       match fromChainId_nextpos with
       | Some (Pair fromChainId nextpos) =>
         let txparam = deserialize_TxParam tomerklevalue nextpos in
@@ -489,4 +489,3 @@ let verifyPubKey : List Pubkey -> Pair ByStr20 (List ByStr20) =
     let t2 = builtin div t1 three in
     let m = builtin sub n t2 in
     getBookKeeper m pubKeys
-
