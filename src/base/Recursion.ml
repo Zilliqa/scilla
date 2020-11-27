@@ -361,9 +361,11 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let rec_lib_opt, all_libs, all_emsgs =
             match
               List.find all_libs_tmp ~f:(fun (l : RecursionSyntax.library) ->
+                  (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+                     TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname here *)
                   String.(
-                    RecursionSyntax.SIdentifier.as_string l.lname
-                    = as_string ext_lib.libn.lname))
+                    (SR.get_loc (get_rep l.lname)).fname
+                    = (SR.get_loc (get_rep ext_lib.libn.lname)).fname))
             with
             | None -> (
                 (* ext_lib not checked yet *)
