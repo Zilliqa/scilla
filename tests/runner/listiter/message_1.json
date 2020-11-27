@@ -5,11 +5,11 @@
     "params": [
         {
             "vname" : "entries",
-            "type" : "List LIAdt",
+            "type" : "List 0xabfeccdc9012345678901234567890f777567890.LIAdt",
             "value" :
             [
                 {
-                    "constructor" : "LIC",
+                    "constructor" : "0xabfeccdc9012345678901234567890f777567890.LIC",
                     "argtypes" : [],
                     "arguments" : [
                         "0x56785678901234567890123456789012345678cd",
@@ -18,7 +18,7 @@
                     ]
                 },
                 {
-                    "constructor" : "LIC",
+                    "constructor" : "0xabfeccdc9012345678901234567890f777567890.LIC",
                     "argtypes" : [],
                     "arguments" : [
                         "0x98765678901234567890123456789012345678de",

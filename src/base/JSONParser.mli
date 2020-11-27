@@ -20,6 +20,7 @@ open Core_kernel
 open Yojson
 module JSONTypeUtilities = TypeUtil.TypeUtilities
 module JSONIdentifier = TypeUtil.TUIdentifier
+module JSONName = JSONIdentifier.Name
 module JSONType = TypeUtil.TUType
 module JSONLiteral = TypeUtil.TULiteral
 
@@ -37,7 +38,7 @@ val member_exn : string -> Basic.t -> Basic.t
 val to_string_exn : Yojson.Basic.t -> string
 
 (* Wrapper for constr_pattern_arg_types. Throws Invalid_json exception instead of using result type *)
-val constr_pattern_arg_types_exn : JSONType.t -> string -> JSONType.t list
+val constr_pattern_arg_types_exn : JSONType.t -> JSONName.t -> JSONType.t list
 
 (*  Wrapper for DataTypeDictionary.lookup_name  *)
 val lookup_adt_name_exn : 'a JSONIdentifier.t -> Datatypes.adt

@@ -35,9 +35,7 @@ module ScillaPatternchecker
 struct
   module SPR = SR
   module EPR = ER
-
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module PCLiteral = FlattenedLiteral
+  module PCLiteral = GlobalLiteral
   module PCType = PCLiteral.LType
   module PCIdentifier = PCType.TIdentifier
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER) (PCLiteral)
@@ -125,7 +123,7 @@ struct
           let arity () = List.length sps_cons in
           let get_t_args () =
             constr_pattern_arg_types t
-              (PCIdentifier.as_string c_name)
+              (PCIdentifier.get_id c_name)
               ~lc:(SR.get_loc (PCIdentifier.get_rep c_name))
           in
           let get_dsc_args dsc =
@@ -148,7 +146,7 @@ struct
           let%bind adt, _ =
             DataTypeDictionary.lookup_constructor
               ~sloc:(SR.get_loc (PCIdentifier.get_rep c_name))
-              (PCIdentifier.as_string c_name)
+              (PCIdentifier.get_id c_name)
           in
           let span = List.length adt.tconstr in
           match static_match (PCIdentifier.as_string c_name) span dsc with

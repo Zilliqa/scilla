@@ -11,5 +11,8 @@
   [two -> (Uint128 2)],
   [one -> (Uint128 1)],
   [f -> <closure>],
-  [int_zip -> <closure>] }
+  [int_zip -> <closure>],
+  [list_reverse -> <type_closure>],
+  [list_tail -> <type_closure>],
+  [list_head -> <type_closure>] }
 Gas remaining: 4001129

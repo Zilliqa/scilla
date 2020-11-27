@@ -25,23 +25,6 @@
       ]
     },
     {
-      "vname": "transactions",
-      "type": "Map (Uint32) (Transaction)",
-      "value": [
-        {
-          "key": "1",
-          "val": {
-            "constructor": "Trans",
-            "argtypes": [],
-            "arguments": [
-              "0x1234567890123456789012345678906780000000", "100"
-            ]
-          }
-        }
-      ]
-    },
-    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
-    {
       "vname": "validity_checked",
       "type": "Bool",
       "value": { "constructor": "True", "argtypes": [], "arguments": [] }
@@ -66,6 +49,24 @@
         {
           "key": "0x1234567890123456789012345678906784567890",
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        }
+      ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
+    {
+      "vname": "transactions",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
+      "value": [
+        {
+          "key": "1",
+          "val": {
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Trans",
+            "argtypes": [],
+            "arguments": [
+              "0x1234567890123456789012345678906780000000", "100"
+            ]
+          }
         }
       ]
     },
