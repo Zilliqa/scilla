@@ -354,23 +354,39 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_rprins_elibs recursion_principles ext_libs libs =
     let rec recurser libl =
-      List.fold_left libl ~init:([], [])
-        ~f:(fun (rec_elibs_acc, emsgs_acc) ext_lib ->
-          let rec_elib, emsg =
-            let rec_dep_libs, dep_emsgs = recurser ext_lib.deps in
-            let rec_lib = recursion_library ext_lib.libn in
-            match rec_lib with
-            | Ok lib ->
-                let (libn' : RecursionSyntax.libtree) =
-                  { libn = lib; deps = rec_dep_libs }
-                in
-                (rec_elibs_acc @ [ libn' ], emsgs_acc @ dep_emsgs)
-            | Error el -> (rec_elibs_acc, emsgs_acc @ dep_emsgs @ el)
+      List.fold_left libl ~init:([], [], [])
+        ~f:(fun (rec_elibs_acc, rec_all_libs_acc, emsgs_acc) ext_lib ->
+          let rec_dep_libs, all_dep_libs, dep_emsgs = recurser ext_lib.deps in
+          let all_libs_tmp = all_dep_libs @ rec_all_libs_acc in
+          let rec_lib_opt, all_libs, all_emsgs =
+            match
+              List.find all_libs_tmp ~f:(fun (l : RecursionSyntax.library) ->
+                  String.(
+                    RecursionSyntax.SIdentifier.as_string l.lname
+                    = as_string ext_lib.libn.lname))
+            with
+            | None -> (
+                (* ext_lib not checked yet *)
+                match recursion_library ext_lib.libn with
+                | Ok lib ->
+                    (Some lib, lib :: all_libs_tmp, emsgs_acc @ dep_emsgs)
+                | Error e -> (None, all_libs_tmp, emsgs_acc @ dep_emsgs @ e) )
+            | Some l ->
+                (* ext_lib already checked *)
+                (Some l, all_libs_tmp, emsgs_acc @ dep_emsgs)
           in
-          (rec_elib, emsg))
+          match rec_lib_opt with
+          | Some lib ->
+              let (libn' : RecursionSyntax.libtree) =
+                { libn = lib; deps = rec_dep_libs }
+              in
+              (rec_elibs_acc @ [ libn' ], all_libs, all_emsgs)
+          | None ->
+              (* An error has occurred *)
+              (rec_elibs_acc, all_libs, all_emsgs))
     in
 
-    let recursion_elibs, emsgs = recurser ext_libs in
+    let recursion_elibs, _, emsgs = recurser ext_libs in
 
     let%bind recursion_md_libs, emsgs =
       Option.value_map libs
