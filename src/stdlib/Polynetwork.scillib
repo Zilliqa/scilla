@@ -278,11 +278,11 @@ let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
                       | Some (Pair consensusPayload nextpos) =>
                         let nextBookkeeper_nextpos = extract_bystr20 header nextpos in
                         match nextBookkeeper_nextpos with
-                        | Some (Pair nextBoookkeeper nextpos) =>
+                        | Some (Pair nextBookkeeper nextpos) =>
                           let header =
                             Header version chainid prevBlockHash txnroot crossStatesRoot
                             blockRoot timestamp height consensusData consensusPayload
-                            nextBoookkeeper
+                            nextBookkeeper
                           in
                           let res = Pair {Header Uint32} header nextpos in
                           Some {(Pair Header Uint32)} res
@@ -479,7 +479,7 @@ let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
     Pair {ByStr20 (List ByStr20)} nextBookKeeper keepers
 
 (* See EthCrossChainUtils.sol:verifyPubKey *)
-let verifyPubKey : List Pubkey -> Pair ByStr20 (List ByStr20) =
+let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
   fun (pubKeys : List Pubkey) =>
     let lengther = @list_length Pubkey in
     let n = lengther pubKeys in

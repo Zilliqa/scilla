@@ -4,6 +4,52 @@ import Polynetwork
 
 contract Polynetwork()
 
-transition initGenesisBlock (header : Header, pubkeys : List ByStr67)
+(*
+ * Scilla cross chain tx hash indexed by the automatically increased index.
+ * This map exists for the reason that Poly chain can verify the existence
+ * of cross chain request tx coming from Scilla
+ *)
+field f_ethToPolyTxHashMap : Map Uint256 ByStr32 = Emp Uint256 ByStr32
+field f_ethToPolyTxHashIndex : Uint256 = Uint256 0
 
+field f_curKeepers : List ByStr20 = Nil {ByStr20}
+field f_curStartHeight : Uint32 = Uint32 0
+
+transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
+  curKeepers <- f_curKeepers;
+  match curKeepers with
+  | Nil =>
+    header_o = deserialize_Header header_bs zero_uint32;
+    match header_o with
+    | Some
+      (Pair
+        (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
+                h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
+                h_nextBookkeeper)
+        nextpos)
+      =>
+      nextbookkeeper_keepers = verifyPubkey pubkeys;
+      match nextbookkeeper_keepers with
+      | Pair nextBookKeeper keepers =>
+        (* Esnure that Header's nextBookKeeper is same as the one from verifyPubkey *)
+        nbk_eq = builtin eq nextBookKeeper h_nextBookkeeper;
+        match nbk_eq with
+        | True =>
+          f_curStartHeight := h_height;
+          f_curKeepers := keepers;
+          e = { _eventname : "GenesisBlock"; height : h_height; header : header_bs };
+          event e
+        | False =>
+          e = { _exception : "NextBookers Illegal" };
+          throw e
+        end
+      end
+    | None =>
+      e = { _exception : "Error deserializing header" };
+      throw e
+    end
+  | Cons _ _ =>
+    e = { _exception : "Already Initialized" };
+    throw e
+  end
 end
