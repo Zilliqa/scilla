@@ -136,7 +136,7 @@ let t3' =
       List.iter signatures ~f:(fun s ->
           (* Recoverable signatures have an extra byte. *)
           let bs = Bystr.parse_hex s in
-          let rs = Bystr.sub ~pos:0 ~len:signature_len bs in
+          let rs = Bystr.to_raw_bytes @@ Bystr.sub ~pos:0 ~len:signature_len bs in
           let v = Bystr.sub ~pos:signature_len ~len:1 bs in
           let v_int =
             Uint8.to_int
@@ -144,10 +144,16 @@ let t3' =
                  (Bytes.of_string (Bystr.to_raw_bytes v))
                  0
           in
-          match recover_pk header (Bystr.to_raw_bytes rs) v_int with
-          | Ok pk -> printf "\n%d %s" v_int ("0x" ^ Hex.show @@ Hex.of_string pk)
+          match recover_pk header rs v_int with
+          | Ok pk ->
+            printf "\n%d %s" v_int ("0x" ^ Hex.show @@ Hex.of_string pk);
+            (match verify pk header rs with
+            | Ok res -> printf ". Verification: %b" res
+            | Error _ -> assert_failure ("Error verifying signature.")
+            )
           | Error _ ->
-              assert_failure ("Error recovering public key from signature " ^ s)))
+              assert_failure ("Error recovering public key from signature " ^ s)
+        ))
 
 let ecdsa_tests = "ecdsa_tests" >::: [ t1'; t2'; t3' ]
 
