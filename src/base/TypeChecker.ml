@@ -1076,30 +1076,49 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         foldM libl ~init:([], files_already_checked, [], remaining_gas)
           ~f:(fun (lib_acc, files_checked_acc, emsgs_acc, remaining_gas) elib ->
             let elib_fname = (SR.get_loc (get_rep elib.libn.lname)).fname in
-            let%bind tc_lib_opt, dep_libs, all_checked_files, all_emsgs, remaining_gas =
-              match 
-                (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
-                   TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
+            let%bind ( tc_lib_opt,
+                       dep_libs,
+                       all_checked_files,
+                       all_emsgs,
+                       remaining_gas ) =
+              (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+                 TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
+              match
                 List.find files_checked_acc ~f:(fun fname ->
                     String.(fname = elib_fname))
               with
               | Some _ ->
                   (* ext_lib already checked *)
                   pure (None, [], files_checked_acc, emsgs_acc, remaining_gas)
-              | None ->
+              | None -> (
                   (* ext_lib not checked yet *)
                   (* Check dependencies *)
-                  let%bind tc_dep_libs, dep_files, dep_emsgs, dep_remaining_gas = recurser elib.deps files_checked_acc remaining_gas in
-                  let all_files = elib_fname :: dep_files @ files_checked_acc in
+                  let%bind tc_dep_libs, dep_files, dep_emsgs, dep_remaining_gas
+                      =
+                    recurser elib.deps files_checked_acc remaining_gas
+                  in
+                  let all_files =
+                    (elib_fname :: dep_files) @ files_checked_acc
+                  in
                   match type_library tenv0 elib.libn dep_remaining_gas with
                   | Ok (t_lib, remaining_gas) ->
-                      pure (Some t_lib, tc_dep_libs, all_files, emsgs_acc @ dep_emsgs, remaining_gas)
+                      pure
+                        ( Some t_lib,
+                          tc_dep_libs,
+                          all_files,
+                          emsgs_acc @ dep_emsgs,
+                          remaining_gas )
                   | Error ((TypeError, el), remaining_gas) ->
                       (* Collect error, and continue typechecking. *)
-                      pure (None, tc_dep_libs, all_files, emsgs_acc @ dep_emsgs @ el, remaining_gas)
+                      pure
+                        ( None,
+                          tc_dep_libs,
+                          all_files,
+                          emsgs_acc @ dep_emsgs @ el,
+                          remaining_gas )
                   | Error ((GasError, el), remaining_gas) ->
                       (* Gas error - bail out *)
-                      Error ((GasError, el), remaining_gas)
+                      Error ((GasError, el), remaining_gas) )
             in
             match tc_lib_opt with
             | Some t_lib ->
@@ -1108,7 +1127,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 in
                 (* No reason to remove library entries. Their names are globally unique, and the disambiguator ensures that they are only accessed if they are in scope. *)
                 pure
-                  (lib_acc @ [ elib' ], all_checked_files, all_emsgs, remaining_gas)
+                  ( lib_acc @ [ elib' ],
+                    all_checked_files,
+                    all_emsgs,
+                    remaining_gas )
             | None ->
                 (* An error has occurred *)
                 Error ((TypeError, all_emsgs), remaining_gas))
