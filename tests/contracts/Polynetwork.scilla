@@ -53,3 +53,16 @@ transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
     throw e
   end
 end
+
+(*  @notice              Verify Poly chain header and proof, execute the cross chain tx from Poly chain to Zilliqa
+ *  @param proof         Poly chain tx merkle proof
+ *  @param rawHeader     The header containing crossStateRoot to verify the above tx merkle proof
+ *  @param headerProof   The header merkle proof used to verify rawHeader
+ *  @param curRawHeader  Any header in current epoch consensus of Poly chain
+ *  @param headerSig     The coverted signature veriable for solidity derived from Poly chain consensus nodes' signature
+ *                       used to verify the validity of curRawHeader
+ *  @return              true or false
+ *)
+transition verifyHeaderAndExecuteTx(proof : Proof, rawHeader : ByStr, headerProof : ByStr, curRawHeader : ByStr, headerSig : ByStr)
+  
+end

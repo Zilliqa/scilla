@@ -58,6 +58,9 @@ type Unit = | Unit
 let unit = Unit
 let zero_uint32 = Uint32 0
 
+type Proof =
+  | Proof of ByStr (List (Pair ByStr1 ByStr32))
+
 let little_endian = LittleEndian
 let extract_uint32_le = extract_uint32 little_endian
 let extract_uint64_le = extract_uint64 little_endian
@@ -489,3 +492,68 @@ let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
     let t2 = builtin div t1 three in
     let m = builtin sub n t2 in
     getBookKeeper m pubKeys
+
+(* Given a proof, trace the path and compare with root hash. Return the merkle value on success. *)
+let merkle_prove : Proof -> ByStr32 -> Option ByStr =
+  fun (proof : Proof) =>
+  fun (root : ByStr32) =>
+    let hash_leaf =
+      fun (data : ByStr) =>
+        let k = 0x00 in
+        let k_bs = builtin to_bystr k in
+        let r = builtin concat k_bs data in
+        builtin sha256hash r
+    in
+    let hash_children =
+      fun (l : ByStr32) =>
+      fun (r : ByStr32) =>
+        let k = 0x01 in
+        let t1 = builtin concat k l in
+        let r = builtin concat t1 r in
+        builtin sha256hash r
+    in
+    match proof with
+    | Proof value path =>
+      let succ = True in
+      let fail = False in
+      let hash = hash_leaf value in
+      let foldf =
+        fun (acc : Pair ByStr32 Bool) =>
+        fun (el : Pair ByStr1 ByStr32) =>
+          match acc with
+          | Pair hash False => Pair {ByStr32 Bool} hash fail
+          | Pair hash _ =>
+            let zerob = 0x00 in
+            let oneb = 0x01 in
+            match el with
+            | Pair pos nodeHash =>
+              let eqzero = builtin eq zerob pos in
+              match eqzero with
+              | True =>
+                let r = hash_children nodeHash hash in
+                Pair {ByStr32 Bool} r succ
+              | False =>
+                let eqone = builtin eq oneb pos in
+                match eqone with
+                | True =>
+                  let r = hash_children hash nodeHash in
+                  Pair {ByStr32 Bool} r succ
+                | False => Pair {ByStr32 Bool} hash fail
+                end
+              end
+            end
+          end
+      in
+      let folder = @list_foldl (Pair ByStr1 ByStr32) (Pair ByStr32 Bool) in
+      let init = Pair {ByStr32 Bool} hash succ in
+      let res = folder foldf init path in
+      match res with
+      | Pair _ False => None {ByStr}
+      | Pair hash _ =>
+        let eq = builtin eq hash root in
+        match eq with
+        | True => Some {ByStr} value
+        | False => None {ByStr}
+        end
+      end
+    end
