@@ -537,7 +537,7 @@ module TypeUtilities = struct
             (sprintf
                "Types don't match: pattern uses a constructor of type %s, but \
                 value of type %s is given."
-               (TUName.as_error_string adt.tname)
+               (TUName.as_string adt.tname)
                (as_string name))
             (get_rep name)
     | _ ->
