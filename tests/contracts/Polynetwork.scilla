@@ -1,10 +1,11 @@
 scilla_version 0
 
-import Polynetwork
+import Polynetwork BoolUtils
 
 library Polynetwork_local
 
 let thisChainID = Uint64 2111108
+let nullAddress = 0x0000000000000000000000000000000000000000
 
 let one_msg =
   fun (msg : Message) =>
@@ -25,19 +26,7 @@ field f_curKeepers : List ByStr20 = Nil {ByStr20}
 field f_curStartHeight : Uint32 = Uint32 0
 field f_fromChainTxExist : Map Uint64 (Map ByStr32 Unit) = Emp Uint64 (Map ByStr32 Unit)
 
-transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
-  curKeepers <- f_curKeepers;
-  match curKeepers with
-  | Nil =>
-    header_o = deserialize_Header header_bs zero_uint32;
-    match header_o with
-    | Some
-      (Pair
-        (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
-                h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
-                h_nextBookkeeper)
-        nextpos)
-      =>
+procedure verifyPubkeysAndUpdate(pubkeys : List Pubkey, h_nextBookkeeper : ByStr20, h_height : Uint32)
       nextbookkeeper_keepers = verifyPubkey pubkeys;
       match nextbookkeeper_keepers with
       | Pair nextBookKeeper keepers =>
@@ -46,14 +35,31 @@ transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
         match nbk_eq with
         | True =>
           f_curStartHeight := h_height;
-          f_curKeepers := keepers;
-          e = { _eventname : "GenesisBlock"; height : h_height; header : header_bs };
-          event e
+          f_curKeepers := keepers
         | False =>
           e = { _exception : "NextBookers Illegal" };
           throw e
         end
       end
+
+end
+
+transition initGenesisBlock (rawHeader : ByStr, pubkeys : List Pubkey)
+  curKeepers <- f_curKeepers;
+  match curKeepers with
+  | Nil =>
+    header_o = deserialize_Header rawHeader zero_uint32;
+    match header_o with
+    | Some
+      (Pair
+        (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
+                h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
+                h_nextBookkeeper)
+        nextpos)
+      =>
+        verifyPubkeysAndUpdate pubkeys h_nextBookkeeper h_height;
+        e = { _eventname : "GenesisBlock"; height : h_height; header : rawHeader };
+        event e
     | None =>
       e = { _exception : "Error deserializing header" };
       throw e
@@ -203,3 +209,49 @@ transition verifyHeaderAndExecuteTx(proof : Proof, rawHeader : ByStr, headerProo
      throw e
   end
 end
+
+(*  @notice              change Poly chain consensus book keeper
+ *  @param rawHeader     Poly chain change book keeper block raw header
+ *  @param pubKeyList    Poly chain consensus nodes public key list
+ *  @param sigList       Poly chain consensus nodes signature list
+ *  @return              true or false
+ *)
+transition changeBookKeeper(rawHeader : ByStr, pubkeys : List Pubkey, sigList : List Signature)
+  header_o = deserialize_Header rawHeader zero_uint32;
+  curStartHeight <- f_curStartHeight;
+  match header_o with
+  | Some
+      (Pair
+        (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
+                h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
+                h_nextBookkeeper)
+        nextpos)
+    =>
+      heightOk = builtin lt curStartHeight h_height;
+      nextBookKeeperOk = let b = builtin eq h_nextBookkeeper nullAddress in negb b;
+      both_ok = andb heightOk nextBookKeeperOk;
+      match both_ok with
+      | True =>
+        curKeepers <- f_curKeepers;
+        n = lengther_address curKeepers;
+        m = compute_m n;
+        signed = verifySig rawHeader sigList curKeepers m;
+        match signed with
+        | True =>
+          verifyPubkeysAndUpdate pubkeys h_nextBookkeeper h_height;
+          e = { _eventname : "ChangeBookKeeper"; height : h_height; header : rawHeader };
+          event e
+        | False =>
+          e = { _exception : "Signature verification failed" };
+          throw e
+        end
+      | False =>
+        e = { _exception : "Header height lower than cur epoch heigh / Next bookkeeper empty" };
+        throw e
+      end
+   | None =>
+     e = { _exception : "Error deserializing header" };
+     throw e
+  end
+end
+
