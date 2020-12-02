@@ -54,6 +54,9 @@ type ToMerkleValue =
 type Pubkey = | Pubkey of ByStr67
 let pubkey_length = Uint32 67
 
+type Signature = | Signature of ByStr65
+let signature_length = Uint32 65
+
 type Unit = | Unit
 let unit = Unit
 let zero_uint32 = Uint32 0
@@ -481,17 +484,38 @@ let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
 
     Pair {ByStr20 (List ByStr20)} nextBookKeeper keepers
 
-(* See EthCrossChainUtils.sol:verifyPubKey *)
-let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
-  fun (pubKeys : List Pubkey) =>
-    let lengther = @list_length Pubkey in
-    let n = lengther pubKeys in
+let lengther_pubkey = @list_length Pubkey
+let lengther_address = @list_length ByStr20
+
+let compute_m : Uint32 -> Uint32 =
+  fun (n : Uint32) =>
     let one = Uint32 1 in
     let t1 = builtin sub n one in
     let three = Uint32 3 in
     let t2 = builtin div t1 three in
     let m = builtin sub n t2 in
+    m
+
+(* See EthCrossChainUtils.sol:verifyPubKey *)
+let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
+  fun (pubKeys : List Pubkey) =>
+    let n = lengther_pubkey pubKeys in
+    let m = compute_m n in
     getBookKeeper m pubKeys
+
+(* See EthCrossChainUtils.sol:verifySig *)
+let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
+  fun (rawHeader : ByStr) =>
+  fun (siglist : List Signature) =>
+  fun (keepers : List ByStr20) =>
+  fun ( m : Uint32) =>
+    True
+
+(* See EthCrossChainUtils.sol:getHeaderHash *)
+let get_header_hash : ByStr -> ByStr32 =
+  fun (header : ByStr) =>
+    let h = builtin sha256hash header in
+    builtin sha256hash h
 
 (* Given a proof, trace the path and compare with root hash. Return the merkle value on success. *)
 let merkle_prove : Proof -> ByStr32 -> Option ByStr =

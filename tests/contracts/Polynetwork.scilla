@@ -2,6 +2,15 @@ scilla_version 0
 
 import Polynetwork
 
+library Polynetwork_local
+
+let thisChainID = Uint64 2111108
+
+let one_msg =
+  fun (msg : Message) =>
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
 contract Polynetwork()
 
 (*
@@ -14,6 +23,7 @@ field f_ethToPolyTxHashIndex : Uint256 = Uint256 0
 
 field f_curKeepers : List ByStr20 = Nil {ByStr20}
 field f_curStartHeight : Uint32 = Uint32 0
+field f_fromChainTxExist : Map Uint64 (Map ByStr32 Unit) = Emp Uint64 (Map ByStr32 Unit)
 
 transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
   curKeepers <- f_curKeepers;
@@ -31,7 +41,7 @@ transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
       nextbookkeeper_keepers = verifyPubkey pubkeys;
       match nextbookkeeper_keepers with
       | Pair nextBookKeeper keepers =>
-        (* Esnure that Header's nextBookKeeper is same as the one from verifyPubkey *)
+        (* Ensure that Header's nextBookKeeper is same as the one from verifyPubkey *)
         nbk_eq = builtin eq nextBookKeeper h_nextBookkeeper;
         match nbk_eq with
         | True =>
@@ -54,6 +64,50 @@ transition initGenesisBlock (header_bs : ByStr, pubkeys : List Pubkey)
   end
 end
 
+procedure checkAndMarkFromChainTxn(chainID : Uint64, txHash : ByStr)
+  txHash32_o = builtin to_bystr32 txHash;
+  match txHash32_o with
+  | Some txHash32 =>
+    already_exists <- exists f_fromChainTxExist[chainID][txHash32];
+    match already_exists with
+    | True =>
+      e = { _exception : "Txn already executed" };
+      throw e
+    | False =>
+      f_fromChainTxExist[chainID][txHash32] := unit
+    end
+  | None =>
+    e = { _exception : "Txn hash invalid" };
+    throw e
+  end
+end
+
+procedure executeCrossChainTxn (txparam : TxParam)
+  match txparam with
+  | TxParam txHash crossChainID fromContract toChainID toContract method args =>
+    toChainIDOk = builtin eq toChainID thisChainID;
+    match toChainIDOk with
+    | True =>
+      toContractAddr_o = builtin to_bystr20 toContract;
+      match toContractAddr_o with
+      | Some toContractAddr =>
+        method_name = builtin to_string method;
+        m = { _tag : method_name; args : args; _amount : Uint128 0; _recipient : toContractAddr };
+        mo = one_msg m;
+        send mo;
+        e = { _eventname : "VerifyHeaderAndExecuteTxEvent"; txn : txparam };
+        event e
+      | None =>
+        e = { _exception : "Address format mismatch" };
+        throw e
+      end
+    | False =>
+      e = { _exception : "This txn is not for Zilliqa network" };
+      throw e
+    end
+  end
+end
+
 (*  @notice              Verify Poly chain header and proof, execute the cross chain tx from Poly chain to Zilliqa
  *  @param proof         Poly chain tx merkle proof
  *  @param rawHeader     The header containing crossStateRoot to verify the above tx merkle proof
@@ -63,6 +117,89 @@ end
  *                       used to verify the validity of curRawHeader
  *  @return              true or false
  *)
-transition verifyHeaderAndExecuteTx(proof : Proof, rawHeader : ByStr, headerProof : ByStr, curRawHeader : ByStr, headerSig : ByStr)
-  
+transition verifyHeaderAndExecuteTx(proof : Proof, rawHeader : ByStr, headerProof : Proof, curRawHeader : ByStr, headerSig : List Signature)
+  header_o = deserialize_Header rawHeader zero_uint32;
+  curKeepers <- f_curKeepers;
+  curStartHeight <- f_curStartHeight;
+  n = lengther_address curKeepers;
+  m = compute_m n;
+  match header_o with
+  | Some
+      (Pair
+        (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
+                h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
+                h_nextBookkeeper)
+        nextpos)
+    =>
+      is_lt = builtin lt h_height curStartHeight;
+      match is_lt with
+      | True =>
+        signed = verifySig curRawHeader headerSig curKeepers m;
+        match signed with
+        | True =>
+          curHeader_o = deserialize_Header curRawHeader zero_uint32;
+          match curHeader_o with
+          | Some (Pair
+                    (Header h_version h_chainid h_prevBlockHash h_txnroot h_crossStatesRoot
+                    h_blockRoot h_timestamp h_height h_consensusData h_consensusPayload
+                    h_nextBookkeeper)
+                    nextpos)
+            =>
+              proof_o = merkle_prove headerProof h_blockRoot;
+              match proof_o with
+              | Some proveValue =>
+                proveValue32_o = builtin to_bystr32 proveValue;
+                match proveValue32_o with
+                | Some proveValue32 =>
+                  headerHash = get_header_hash rawHeader;
+                  proof_ok = builtin eq headerHash proveValue32;
+                  match proof_ok with
+                  | True =>     (* Do nothing *)
+                  | False =>
+                    e = { _exception : "Merkle proof invalid" };
+                    throw e
+                  end
+                | None =>
+                  e = { _exception : "merkle_prove result incorrect" };
+                  throw e
+                end
+              | None =>
+              end
+          | None =>
+            e = { _exception : "Error deserializing header" };
+            throw e
+          end
+        | False =>
+          e = { _exception : "Signature verification failed" };
+          throw e
+        end
+      | False =>
+        signed = verifySig rawHeader headerSig curKeepers m;
+        match signed with
+        | True =>               (* Do nothing *)
+        | False =>
+          e = { _exception : "Signature verification failed" };
+          throw e
+        end
+      end;
+      toMerkleValueBs_o = merkle_prove proof h_crossStatesRoot;
+      match toMerkleValueBs_o with
+      | Some toMerkleValueBs =>
+        toMerkleValue_o = deserialize_ToMerkleValue toMerkleValueBs zero_uint32;
+        match toMerkleValue_o with
+        | Some (Pair (ToMerkleValue txhash fromChainId txparam) _) =>
+          checkAndMarkFromChainTxn fromChainId txhash;
+          executeCrossChainTxn txparam
+        | None =>
+          e = { _exception : "Merkle value deserialization failed" };
+          throw e
+        end
+      | None =>
+        e = { _exception : "Merkle proof invalid" };
+        throw e
+      end
+   | None =>
+     e = { _exception : "Error deserializing header" };
+     throw e
+  end
 end
