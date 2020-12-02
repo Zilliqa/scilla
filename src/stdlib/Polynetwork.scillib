@@ -248,6 +248,24 @@ let append_uint16 : ByStr -> Uint32 -> ByStr =
     let uib_sub2_littleendian = builtin strrev uib_sub2 in
     builtin concat bs uib_sub2_littleendian
 
+(* Serialize TxParam and append to given byte string. *)
+let append_TxParam : ByStr -> TxParam -> ByStr =
+  fun (bs : ByStr) =>
+  fun (txp : TxParam) =>
+    match txp with
+    | TxParam txHash crossChainId fromContract toChainId toContract method args =>
+      let t1 = append_varbytes bs txHash in
+      let t2 = append_varbytes t1 crossChainId in
+      let t3 = append_varbytes t2 fromContract in
+      let t4 = builtin to_bystr8 toChainId in
+      let t5 = builtin to_bystr t4 in
+      let t6 = builtin concat t3 t5 in
+      let t7 = append_varbytes t6 toContract in
+      let t8 = append_varbytes t7 method in
+      let t9 = append_varbytes t8 args in
+      t9
+    end
+
 (* Deserialize a byte stream into a Header, starting at nextpos. *)
 let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
   fun (header : ByStr) =>

@@ -19,8 +19,8 @@ contract Polynetwork()
  * This map exists for the reason that Poly chain can verify the existence
  * of cross chain request tx coming from Scilla
  *)
-field f_ethToPolyTxHashMap : Map Uint256 ByStr32 = Emp Uint256 ByStr32
-field f_ethToPolyTxHashIndex : Uint256 = Uint256 0
+field f_zilToPolyTxHashMap : Map Uint256 ByStr32 = Emp Uint256 ByStr32
+field f_zilToPolyTxHashIndex : Uint256 = Uint256 0
 
 field f_curKeepers : List ByStr20 = Nil {ByStr20}
 field f_curStartHeight : Uint32 = Uint32 0
@@ -255,3 +255,42 @@ transition changeBookKeeper(rawHeader : ByStr, pubkeys : List Pubkey, sigList : 
   end
 end
 
+procedure updateZilTxHash(txHashIndex : Uint256, rawParamHash : ByStr32)
+  f_zilToPolyTxHashMap[txHashIndex] := rawParamHash;
+  one_uint256 = Uint256 1;
+  newTxHashIndex = builtin add txHashIndex one_uint256;
+  f_zilToPolyTxHashIndex := newTxHashIndex
+end
+
+(*  @notice              ERC20 token cross chain to other blockchain.
+ *                       this function push tx event to blockchain
+ *  @param toChainId     Target chain id
+ *  @param toContract    Target smart contract address in target block chain
+ *  @param txData        Transaction data for target chain, include to_address, amount
+ *  @return              true or false
+ *)
+transition crossChain(toChainId : Uint64, toContract : ByStr, method : ByStr, txData : ByStr)
+  txHashIndex <- f_zilToPolyTxHashIndex;
+  paramTxHash = let b = builtin to_bystr32 txHashIndex in builtin to_bystr b;
+  crossChainId =
+    let this_bs = builtin to_bystr _this_address in
+    let s = builtin concat this_bs paramTxHash in
+    let h = builtin sha256hash s in
+    builtin to_bystr h;
+  fromContract = builtin to_bystr _sender;
+  txp = TxParam paramTxHash crossChainId fromContract toChainId toContract method txData;
+  (* Serialize the TxParam object *)
+  empty_bystr = let b = 0x in builtin to_bystr b;
+  rawParam = append_TxParam empty_bystr txp;
+  rawParamHash = builtin keccak256hash rawParam;
+  updateZilTxHash txHashIndex rawParamHash;
+  (* Create an event: TODO: What is equivalent of tx.origin? *)
+  e = { _eventname : "CrossChainEvent";
+       origin : _sender;
+       paramTxHash : paramTxHash;
+       sender : _sender;
+       toChainId : toChainId;
+       toContract : toContract;
+       rawParam : rawParam };
+  event e
+end
