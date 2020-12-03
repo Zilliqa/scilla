@@ -235,6 +235,8 @@ let is_true_ctr_name = match_simple_names DataTypeDictionary.c_true.cname
 
 let is_false_ctr_name = match_simple_names DataTypeDictionary.c_false.cname
 
+let is_bool_adt_name = match_simple_names DataTypeDictionary.t_bool.tname
+
 let is_nil_ctr_name = match_simple_names DataTypeDictionary.c_nil.cname
 
 let is_cons_ctr_name = match_simple_names DataTypeDictionary.c_cons.cname
@@ -248,6 +250,8 @@ let is_pair_adt_name = match_simple_names DataTypeDictionary.t_product.tname
 let is_zero_ctr_name = match_simple_names DataTypeDictionary.c_zero.cname
 
 let is_succ_ctr_name = match_simple_names DataTypeDictionary.c_succ.cname
+
+let is_nat_adt_name = match_simple_names DataTypeDictionary.t_nat.tname
 
 let is_none_ctr_name = match_simple_names DataTypeDictionary.c_none.cname
 
