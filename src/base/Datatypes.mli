@@ -95,6 +95,8 @@ val is_true_ctr_name : DTName.t -> bool
 
 val is_false_ctr_name : DTName.t -> bool
 
+val is_bool_adt_name : DTName.t -> bool
+
 val is_nil_ctr_name : DTName.t -> bool
 
 val is_cons_ctr_name : DTName.t -> bool
@@ -108,6 +110,8 @@ val is_pair_adt_name : DTName.t -> bool
 val is_zero_ctr_name : DTName.t -> bool
 
 val is_succ_ctr_name : DTName.t -> bool
+
+val is_nat_adt_name : DTName.t -> bool
 
 val is_none_ctr_name : DTName.t -> bool
 
