@@ -81,5 +81,5 @@ let recover_pk msg' signature' recid =
   let msg'' = buffer_of_raw (prepare_message msg') in
   let%bind msg = resopt @@ Sign.msg_of_bytes msg'' in
   let%bind pk = resconv @@ Sign.recover ctx ~signature ~msg in
-  let pk' = Key.to_bytes ctx pk in
+  let pk' = Key.to_bytes ~compress:false ctx pk in
   pure @@ raw_of_buffer pk'
