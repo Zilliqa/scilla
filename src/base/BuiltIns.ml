@@ -1145,28 +1145,29 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let ecdsa_recover_pk_arity = 3
 
-    let ecdsa_recover_pk_type = 
+    let ecdsa_recover_pk_type =
       (* signed message *)
-      fun_typ bystr_typ @@
+      fun_typ bystr_typ
       (* signature *)
-      fun_typ (bystrx_typ Secp256k1Wrapper.signature_len) @@
-      (* recovery id *)
+      @@ fun_typ (bystrx_typ Secp256k1Wrapper.signature_len)
+      @@ (* recovery id *)
       fun_typ uint32_typ
-      (* public key *)
-      (bystrx_typ Secp256k1Wrapper.uncompressed_pubkey_len)
+        (* public key *)
+        (bystrx_typ Secp256k1Wrapper.uncompressed_pubkey_len)
 
     let ecdsa_recover_pk ls _ =
       let open Secp256k1Wrapper in
       match ls with
       | [ ByStr msg; ByStrX signature; UintLit (Uint32L recid) ]
-        when Bystrx.width signature = signature_len ->
-        let%bind pk = recover_pk (Bystr.to_raw_bytes msg)
-            (Bystrx.to_raw_bytes signature)
-            (Stdint.Uint32.to_int recid)
-        in
-        (match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
-        | Some pk' -> pure (ByStrX pk')
-        | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls)
+        when Bystrx.width signature = signature_len -> (
+          let%bind pk =
+            recover_pk (Bystr.to_raw_bytes msg)
+              (Bystrx.to_raw_bytes signature)
+              (Stdint.Uint32.to_int recid)
+          in
+          match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
+          | Some pk' -> pure (ByStrX pk')
+          | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls )
       | _ -> builtin_fail "ecdsa_recover_pk" ls
 
     let schnorr_get_address_type =

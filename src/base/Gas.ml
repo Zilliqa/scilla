@@ -350,7 +350,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure @@ GasGasCharge.StaticCost 32
-    | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ]
+    | Builtin_sha256hash, _, [ a ]
+    | Builtin_schnorr_get_address, _, [ a ]
     | Builtin_ecdsa_recover_pk, _, a :: _ ->
         (* Block size of sha256hash is 512 *)
         let s = GasGasCharge.SizeOf (GI.get_id a) in
