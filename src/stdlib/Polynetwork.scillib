@@ -472,7 +472,7 @@ let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
           let hashX = builtin keccak256hash slice in
           (* Pick the lower 20 bytes *)
           let hash = builtin to_bystr hashX in
-          let pos = Uint32 11 in
+          let pos = Uint32 12 in
           let len = Uint32 20 in
           let keeperX = builtin substr hash pos len in
           let keeper_opt = builtin to_bystr20 keeperX in
