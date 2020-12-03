@@ -28,6 +28,8 @@ let privkey_len = 32
 
 let pubkey_len = 33
 
+let uncompressed_pubkey_len = 65
+
 let signature_len = 64
 
 (* Hash the message and return result raw string *)

@@ -52,6 +52,7 @@ type builtin =
   | Builtin_bystr20_to_bech32
   | Builtin_schnorr_verify
   | Builtin_ecdsa_verify
+  | Builtin_ecdsa_recover_pk
   | Builtin_alt_bn128_G1_add
   | Builtin_alt_bn128_G1_mul
   | Builtin_alt_bn128_pairing_product
@@ -110,6 +111,7 @@ let pp_builtin b =
   | Builtin_bystr20_to_bech32 -> "bystr20_to_bech32"
   | Builtin_schnorr_verify -> "schnorr_verify"
   | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_ecdsa_recover_pk -> "ecdsa_recover_pk"
   | Builtin_schnorr_get_address -> "schnorr_get_address"
   | Builtin_alt_bn128_G1_add -> "alt_bn128_G1_add"
   | Builtin_alt_bn128_G1_mul -> "alt_bn128_G1_mul"
@@ -157,6 +159,7 @@ let parse_builtin s loc =
   | "bystr20_to_bech32" -> Builtin_bystr20_to_bech32
   | "schnorr_verify" -> Builtin_schnorr_verify
   | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "ecdsa_recover_pk" -> Builtin_ecdsa_recover_pk
   | "schnorr_get_address" -> Builtin_schnorr_get_address
   | "alt_bn128_G1_add" -> Builtin_alt_bn128_G1_add
   | "alt_bn128_G1_mul" -> Builtin_alt_bn128_G1_mul
