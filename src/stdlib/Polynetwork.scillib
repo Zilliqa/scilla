@@ -17,7 +17,7 @@
 (* ******************************************************************************** *)
 scilla_version 0
 
-import Conversions ListUtils
+import Conversions ListUtils BoolUtils
 
 library Polynetwork
 
@@ -81,6 +81,18 @@ let raise_exception =
   fun (default_val : 'A) =>
   let ignore = builtin div zero_uint32 zero_uint32 in
   default_val
+
+let some_exn =
+  tfun 'A =>
+  fun (option_val : Option 'A) =>
+  fun (default_val : 'A) =>
+    match option_val with
+    | Some val => val
+    | None =>
+      let exceptioner = @raise_exception 'A in
+      let ignore = exceptioner default_val in
+      default_val
+    end
 
 (* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
 (* ZeroCopySource.sol : NextVarUint *)
@@ -222,19 +234,13 @@ let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
 let append_varbytes : ByStr -> ByStr -> ByStr =
   fun (bs : ByStr) =>
   fun (varby : ByStr) =>
-    let exceptioner = @raise_exception ByStr in
+    let sommer = @some_exn Uint64 in
+    let exnobj = Uint64 0 in
     let len_32b = builtin strlen varby in
     let len_64b_opt = builtin to_uint64 len_32b in
-    match len_64b_opt with
-    | Some len =>
-      let varint_bs = append_var_uint bs len in
-      builtin concat varint_bs varby
-    | None =>
-      (* Can never happen. *)
-      let emptyx = 0x in
-      let empty = builtin to_bystr emptyx in
-      exceptioner empty
-    end
+    let len = sommer len_64b_opt exnobj in
+    let varint_bs = append_var_uint bs len in
+    builtin concat varint_bs varby
 
 (* Downcast Uint32 to Uint16, serialize it and append to given byte string *)
 let append_uint16 : ByStr -> Uint32 -> ByStr =
@@ -461,8 +467,8 @@ let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
 
     let mapf =
       fun (pk : Pubkey) =>
-        let exceptioner = @raise_exception ByStr20 in
-        let default_ret = 0x0000000000000000000000000000000000000000 in
+        let sommer = @some_exn ByStr20 in
+        let exnobj = 0x0000000000000000000000000000000000000000 in
         match pk with
         | Pubkey pubKeyX =>
           let pubKey = builtin to_bystr pubKeyX in
@@ -476,11 +482,7 @@ let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
           let len = Uint32 20 in
           let keeperX = builtin substr hash pos len in
           let keeper_opt = builtin to_bystr20 keeperX in
-          match keeper_opt with
-          | Some keeper => keeper
-          | None => (* This cannot happen *)
-            exceptioner default_ret
-          end
+          sommer keeper_opt exnobj
         end
     in
     let keepers = mapper mapf pubKeys in
@@ -521,13 +523,84 @@ let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
     let m = compute_m n in
     getBookKeeper m pubKeys
 
+(* Mimics ethereum's recovery of address from message and a signature. *)
+let ecrecover : ByStr -> ByStr64 -> Uint32 -> ByStr20 =
+  fun (msg : ByStr) =>
+  fun (sig : ByStr64) =>
+  fun (recid : Uint32) =>
+    let pk = builtin ecdsa_recover_pk msg sig recid in
+    let pos = Uint32 1 in
+    let len = Uint32 64 in
+    let pk_bs = builtin to_bystr pk in
+    let pk_ = builtin substr pk_bs pos len in
+    let pkHash = builtin keccak256hash pk_ in
+    let pkHash_bs = builtin to_bystr pkHash in
+    let pos = Uint32 12 in
+    let len = Uint32 20 in
+    let addr_bs = builtin substr pkHash_bs pos len in
+    let addr_opt = builtin to_bystr20 addr_bs in
+    let sommer = @some_exn ByStr20 in
+    let exnobj = 0x0000000000000000000000000000000000000000 in
+    sommer addr_opt exnobj
+
 (* See EthCrossChainUtils.sol:verifySig *)
+
 let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
   fun (rawHeader : ByStr) =>
   fun (siglist : List Signature) =>
   fun (keepers : List ByStr20) =>
   fun ( m : Uint32) =>
-    True
+    let header_hash =
+      fun (header : ByStr) =>
+        let h1 = builtin sha256hash header in
+        let h2 = builtin sha256hash h1 in
+        builtin to_bystr h2
+    in
+    let hashedHeader = header_hash rawHeader in
+    let mapf =
+      fun (s : Signature) =>
+        match s with
+        | Signature rs_v =>
+          let rs_v = builtin to_bystr rs_v in
+          let pos = Uint32 65 in
+          let len = Uint32 1 in
+          let v_bs = builtin substr rs_v pos len in
+          let v_bsx_opt = builtin to_bystr1 v_bs in
+          let exnobj_bystr1 = 0x00 in
+          let sommer_bystr1 = @some_exn ByStr1 in
+          let v_bsx = sommer_bystr1 v_bsx_opt exnobj_bystr1 in
+          let v = builtin to_uint32 v_bsx in
+          let pos = Uint32 0 in
+          let len = Uint32 64 in
+          let rs_bs = builtin substr rs_v pos len in
+          let rs_bs64_opt = builtin to_bystr64 rs_bs in
+          let exnobj_bystr64 = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 in
+          let sommer_bystr64 = @some_exn ByStr64 in
+          let rs = sommer_bystr64 rs_bs64_opt exnobj_bystr64 in
+          ecrecover hashedHeader rs v
+        end
+    in
+    let mapper = @list_map Signature ByStr20 in
+    let signers = mapper mapf siglist in
+    (* Now check that at least "m" signers are in keepers list. *)
+    let eqquer = fun (a : ByStr20) => fun (b : ByStr20) => builtin eq a b in
+    let memmer = @list_mem ByStr20 in
+    let folder = @list_foldl ByStr20 Uint32 in
+    let foldf =
+      fun (n : Uint32) =>
+      fun (s : ByStr20) =>
+        let is_s_in_keepers = memmer eqquer s keepers in
+        match is_s_in_keepers with
+        | True =>
+          let one = Uint32 1 in
+          builtin add n one
+        | False =>
+          n
+        end
+     in
+     let n = folder foldf zero_uint32 signers in
+     let is_not_sufficient = builtin lt n m in
+     negb is_not_sufficient
 
 (* See EthCrossChainUtils.sol:getHeaderHash *)
 let get_header_hash : ByStr -> ByStr32 =
