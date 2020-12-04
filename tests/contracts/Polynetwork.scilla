@@ -88,7 +88,7 @@ procedure checkAndMarkFromChainTxn(chainID : Uint64, txHash : ByStr)
   end
 end
 
-procedure executeCrossChainTxn (txparam : TxParam)
+procedure executeCrossChainTxn (txparam : TxParam, fromChainId : Uint64)
   match txparam with
   | TxParam txHash crossChainID fromContract toChainID toContract method args =>
     toChainIDOk = builtin eq toChainID thisChainID;
@@ -98,7 +98,11 @@ procedure executeCrossChainTxn (txparam : TxParam)
       match toContractAddr_o with
       | Some toContractAddr =>
         method_name = builtin to_string method;
-        m = { _tag : method_name; args : args; _amount : Uint128 0; _recipient : toContractAddr };
+        m = { _tag : method_name; args : args;
+             fromContractAddr : fromContract;
+             fromChainId : fromChainId;
+             _amount : Uint128 0;
+             _recipient : toContractAddr };
         mo = one_msg m;
         send mo;
         e = { _eventname : "VerifyHeaderAndExecuteTxEvent"; txn : txparam };
@@ -195,7 +199,7 @@ transition verifyHeaderAndExecuteTx(proof : Proof, rawHeader : ByStr, headerProo
         match toMerkleValue_o with
         | Some (Pair (ToMerkleValue txhash fromChainId txparam) _) =>
           checkAndMarkFromChainTxn fromChainId txhash;
-          executeCrossChainTxn txparam
+          executeCrossChainTxn txparam fromChainId
         | None =>
           e = { _exception : "Merkle value deserialization failed" };
           throw e
