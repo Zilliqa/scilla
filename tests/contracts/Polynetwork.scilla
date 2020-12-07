@@ -4,7 +4,6 @@ import Polynetwork BoolUtils
 
 library Polynetwork_local
 
-let thisChainID = Uint64 2111108
 let nullAddress = 0x0000000000000000000000000000000000000000
 
 let one_msg =
@@ -12,7 +11,7 @@ let one_msg =
     let nil_msg = Nil {Message} in
     Cons {Message} msg nil_msg
 
-contract Polynetwork()
+contract Polynetwork(thisChainID : Uint64)
 
 (*
  * Scilla cross chain tx hash indexed by the automatically increased index.
