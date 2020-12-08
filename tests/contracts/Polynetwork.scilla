@@ -96,7 +96,7 @@ procedure executeCrossChainTxn (txparam : TxParam, fromChainId : Uint64, crossCh
       toContractAddr_o = builtin to_bystr20 toContract;
       match toContractAddr_o with
       | Some toContractAddr =>
-        method_name = builtin to_string method;
+        method_name = builtin to_ascii method;
         m = { _tag : method_name; args : args;
              fromContractAddr : fromContract;
              fromChainId : fromChainId;

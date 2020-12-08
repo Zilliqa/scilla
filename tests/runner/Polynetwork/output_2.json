@@ -4,7 +4,7 @@
   "_accepted": "false",
   "messages": [
     {
-      "_tag": "0x756e6c6f636b",
+      "_tag": "unlock",
       "_amount": "0",
       "_recipient": "0x4ddcf539d13e92d4151b7f5e607d4a09f725c47d",
       "params": [
