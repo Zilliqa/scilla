@@ -39,6 +39,7 @@ type builtin =
   | Builtin_strlen
   | Builtin_strrev
   | Builtin_to_string
+  | Builtin_to_ascii
   | Builtin_blt
   | Builtin_badd
   | Builtin_bsub
@@ -98,6 +99,7 @@ let pp_builtin b =
   | Builtin_strlen -> "strlen"
   | Builtin_strrev -> "strrev"
   | Builtin_to_string -> "to_string"
+  | Builtin_to_ascii -> "to_ascii"
   | Builtin_blt -> "blt"
   | Builtin_badd -> "badd"
   | Builtin_bsub -> "bsub"
@@ -147,6 +149,7 @@ let parse_builtin s loc =
   | "strlen" -> Builtin_strlen
   | "strrev" -> Builtin_strrev
   | "to_string" -> Builtin_to_string
+  | "to_ascii" -> Builtin_to_ascii
   | "blt" -> Builtin_blt
   | "badd" -> Builtin_badd
   | "bsub" -> Builtin_bsub
