@@ -312,7 +312,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                    GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_strlen, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
     | Builtin_strrev, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
-    | Builtin_to_string, [ l ] -> pure @@ GasGasCharge.SizeOf (GI.get_id l)
+    | Builtin_to_string, [ l ] | Builtin_to_ascii, [ l ] -> pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args types =
@@ -512,6 +512,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* Strings *)
     | Builtin_strlen -> [([string_typ], string_coster); ([bystr_typ], string_coster);];
     | Builtin_to_string -> [([tvar "'A"], string_coster)];
+    | Builtin_to_ascii -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)
     | Builtin_blt -> [([bnum_typ;bnum_typ], bnum_coster)];
