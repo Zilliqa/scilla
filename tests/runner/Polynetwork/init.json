@@ -7,7 +7,7 @@
     {
         "vname" : "thisChainID",
         "type" : "Uint64", 
-        "value" : "2111108"
+        "value" : "2"
     },
     {
         "vname" : "_this_address",

@@ -54,7 +54,10 @@ let deserialize_proof : ByStr -> Uint32 -> Option Proof =
       let res = folder foldf init nelm_nat in
       match res with
       | Pair _ (Some ls) =>
-        let p = Proof value ls in
+        (* Our fold builds the list in reverse, so we reverse it back now. *)
+        let revver = @list_reverse (Pair ByStr1 ByStr32) in
+        let ls_rev = revver ls in
+        let p = Proof value ls_rev in
         Some {Proof} p
       | _ => None {Proof}
       end

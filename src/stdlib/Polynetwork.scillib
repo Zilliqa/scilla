@@ -562,7 +562,7 @@ let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
         match s with
         | Signature rs_v =>
           let rs_v = builtin to_bystr rs_v in
-          let pos = Uint32 65 in
+          let pos = Uint32 64 in
           let len = Uint32 1 in
           let v_bs = builtin substr rs_v pos len in
           let v_bsx_opt = builtin to_bystr1 v_bs in
