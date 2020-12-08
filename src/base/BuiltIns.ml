@@ -181,6 +181,29 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       in
       pure @@ StringLit s
 
+    let to_ascii_arity = 1
+
+    let to_ascii_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
+
+    let to_ascii_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | Bystrx_typ _ | Bystr_typ ->
+              elab_tfun_with_args_no_gas to_ascii_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
+
+    let to_ascii ls _ =
+      let%bind s =
+        match ls with
+        | [ ByStr x ] -> pure @@ Bystr.to_raw_bytes x
+        | [ ByStrX x ] -> pure @@ Bystrx.to_raw_bytes x
+        | _ -> builtin_fail (sprintf "String.to_ascii") ls
+      in
+      if validate_string_literal s then pure @@ StringLit s
+      else fail0 "String.to_ascii: Not printable"
+
     let strrev_arity = 1
 
     let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
@@ -1433,6 +1456,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                           ]
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
+      | Builtin_to_ascii -> [String.to_ascii_arity, String.to_ascii_type, String.to_ascii_elab, String.to_ascii]
       | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
       | Builtin_to_bystrx i -> [
         Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i;
