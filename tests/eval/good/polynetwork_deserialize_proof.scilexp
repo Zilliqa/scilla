@@ -1,0 +1,67 @@
+let proof = 0xd72000ca93f8738111a063d8ab7221f47c70a4cade0ca4a2829df494cd4b5e231bd60300000000000000204caa77a3d2ddfaa318c550f1f38dd09d610dcff827d1f2ccd4ddcafaa6c553cc081b0000000000000014b7041bc96b15da728fdfc1c47cbfc687b845adeb0200000000000000144ddcf539d13e92d4151b7f5e607d4a09f725c47d06756e6c6f636b4a14406d31a9291bdaed4f4bc31b97dc468f88256ded14344cfc3b8635f72f14200aaf2168d9f75df86fd353000000000000000000000000000000000000000000000000000000000000000177d99c0f0857535155071d49ded129993a5b98575761985e90e2d26c7a569a0d in
+
+(* Starting at pos, deserialize the byte string into a Proof.  *)
+let deserialize_proof : ByStr -> Uint32 -> Option Proof =
+  fun (proof : ByStr) =>
+  fun (pos : Uint32) =>
+    let value_pos = extract_bystr proof pos in
+    match value_pos with
+    | Some (Pair value pos) =>
+      (* Compute the number of list elements *)
+      let full_len = builtin strlen proof in
+      let llen = builtin sub full_len pos in
+      let comp_size = Uint32 33 in (* ByStr1 + ByStr32 *)
+      let nelm = builtin div llen comp_size in
+      let nelm_nat = builtin to_nat nelm in
+      let foldf =
+        fun(i_acc : Pair Uint32 (Option (List (Pair ByStr1 ByStr32)))) =>
+        fun (n_ : Nat) =>
+          match i_acc with
+          | Pair pos (Some acc) =>
+            let len = Uint32 1 in
+            let a = builtin substr proof pos len in
+            let pos_1 = builtin add pos len in
+            let len = Uint32 32 in
+            let b = builtin substr proof pos_1 len in
+            let ax_opt = builtin to_bystr1 a in
+            match ax_opt with
+            | Some ax =>
+              let bx_opt = builtin to_bystr32 b in
+              match bx_opt with
+              | Some bx =>
+                let axbx = Pair {ByStr1 ByStr32} ax bx in
+                let acc_new = Cons {(Pair ByStr1 ByStr32)} axbx acc in
+                let acc_new_opt = Some {(List (Pair ByStr1 ByStr32))} acc_new in
+                let pos_new = builtin add pos comp_size in
+                Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos_new acc_new_opt
+              | None =>
+                let none = None {(List (Pair ByStr1 ByStr32))} in
+                Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+              end
+            | None =>
+              let none = None {(List (Pair ByStr1 ByStr32))} in
+              Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+            end
+          | Pair _ None =>
+            let none = None {(List (Pair ByStr1 ByStr32))} in
+            Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+          end
+      in
+      let folder = @nat_fold (Pair Uint32 (Option (List (Pair ByStr1 ByStr32)))) in
+      let nil = Nil {(Pair ByStr1 ByStr32)} in
+      let some = Some {(List (Pair ByStr1 ByStr32))} nil in
+      let init = Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos some in
+      let res = folder foldf init nelm_nat in
+      match res with
+      | Pair _ (Some ls) =>
+        let p = Proof value ls in
+        Some {Proof} p
+      | _ => None {Proof}
+      end
+    | None => None {Proof}
+    end
+in
+
+let proof_bs = builtin to_bystr proof in
+let pos = Uint32 0 in
+deserialize_proof proof_bs pos
