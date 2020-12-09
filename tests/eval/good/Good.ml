@@ -136,6 +136,7 @@ let explist =
     "builtin-alt-bn128.scilexp";
     "builtin-ecdsa_recover.scilexp";
     "polynetwork_header.scilexp";
+    "polynetwork_deserialize_proof.scilexp";
     "polynetwork_next_var_uint1.scilexp";
     "polynetwork_next_var_uint2.scilexp";
     "polynetwork_next_var_uint3.scilexp";
