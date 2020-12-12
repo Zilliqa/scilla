@@ -77,6 +77,34 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
+(* These tests differ from the regular contract tests by having an init file and additonal libdirs. *)
+module TestsWithInit = Scilla_test.Util.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+
+  let test_path f = [ "contracts"; f ]
+
+  let runner = "scilla-checker"
+
+  let ignore_predef_args = false
+
+  let json_errors = true
+
+  let gas_limit = Stdint.Uint64.of_int 8000
+
+  let custom_args = [ "-cf"; "-contractinfo" ]
+
+  let additional_libdirs = [ ["contracts"] ]
+
+  let provide_init_arg = true
+
+  let tests =
+    [
+      "import-test-lib.scilla";
+    ]
+
+  let exit_code : UnixLabels.process_status = WEXITED 0
+end)
+
 (* These differ from "Tests" because of an additional libdir argument. *)
 module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
@@ -156,9 +184,9 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = true
 
-  let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
+  let additional_libdirs = [ [ "checker"; "good"; "lib" ]; ]
 
-  let tests = [ "blockchain_import.scilla" ]
+  let tests = [ "blockchain_import.scilla"; ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
