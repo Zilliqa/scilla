@@ -181,6 +181,29 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       in
       pure @@ StringLit s
 
+    let to_ascii_arity = 1
+
+    let to_ascii_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
+
+    let to_ascii_elab _ ts =
+      match ts with
+      | [ PrimType pt ] -> (
+          match pt with
+          | Bystrx_typ _ | Bystr_typ ->
+              elab_tfun_with_args_no_gas to_ascii_type ts
+          | _ -> fail0 "Failed to elaborate" )
+      | _ -> fail0 "Failed to elaborate"
+
+    let to_ascii ls _ =
+      let%bind s =
+        match ls with
+        | [ ByStr x ] -> pure @@ Bystr.to_raw_bytes x
+        | [ ByStrX x ] -> pure @@ Bystrx.to_raw_bytes x
+        | _ -> builtin_fail (sprintf "String.to_ascii") ls
+      in
+      if validate_string_literal s then pure @@ StringLit s
+      else fail0 "String.to_ascii: Not printable"
+
     let strrev_arity = 1
 
     let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
@@ -1143,6 +1166,33 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           pure @@ build_bool_lit v
       | _ -> builtin_fail "ecdsa_verify" ls
 
+    let ecdsa_recover_pk_arity = 3
+
+    let ecdsa_recover_pk_type =
+      (* signed message *)
+      fun_typ bystr_typ
+      (* signature *)
+      @@ fun_typ (bystrx_typ Secp256k1Wrapper.signature_len)
+      @@ (* recovery id *)
+      fun_typ uint32_typ
+        (* public key *)
+        (bystrx_typ Secp256k1Wrapper.uncompressed_pubkey_len)
+
+    let ecdsa_recover_pk ls _ =
+      let open Secp256k1Wrapper in
+      match ls with
+      | [ ByStr msg; ByStrX signature; UintLit (Uint32L recid) ]
+        when Bystrx.width signature = signature_len -> (
+          let%bind pk =
+            recover_pk (Bystr.to_raw_bytes msg)
+              (Bystrx.to_raw_bytes signature)
+              (Stdint.Uint32.to_int recid)
+          in
+          match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
+          | Some pk' -> pure (ByStrX pk')
+          | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls )
+      | _ -> builtin_fail "ecdsa_recover_pk" ls
+
     let schnorr_get_address_type =
       fun_typ (bystrx_typ pubkey_len) (bystrx_typ address_length)
 
@@ -1406,6 +1456,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                           ]
       | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
       | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
+      | Builtin_to_ascii -> [String.to_ascii_arity, String.to_ascii_type, String.to_ascii_elab, String.to_ascii]
       | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
       | Builtin_to_bystrx i -> [
         Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i;
@@ -1426,6 +1477,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
       | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
       | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
+      | Builtin_ecdsa_recover_pk -> [Crypto.ecdsa_recover_pk_arity, Crypto.ecdsa_recover_pk_type, elab_id, Crypto.ecdsa_recover_pk]
       | Builtin_schnorr_get_address -> [Crypto.schnorr_get_address_arity, Crypto.schnorr_get_address_type, elab_id, Crypto.schnorr_get_address]
       | Builtin_alt_bn128_G1_add -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
       | Builtin_alt_bn128_G1_mul -> [Crypto.alt_bn128_G1_mul_arity, Crypto.alt_bn128_G1_mul_type, elab_id, Crypto.alt_bn128_G1_mul]

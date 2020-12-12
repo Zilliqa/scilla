@@ -312,7 +312,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                    GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_strlen, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
     | Builtin_strrev, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
-    | Builtin_to_string, [ l ] -> pure @@ GasGasCharge.SizeOf (GI.get_id l)
+    | Builtin_to_string, [ l ] | Builtin_to_ascii, [ l ] ->
+        pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
   let crypto_coster op args types =
@@ -350,7 +351,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
         pure @@ GasGasCharge.StaticCost 32
-    | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
+    | Builtin_sha256hash, _, [ a ]
+    | Builtin_schnorr_get_address, _, [ a ]
+    | Builtin_ecdsa_recover_pk, _, a :: _ ->
         (* Block size of sha256hash is 512 *)
         let s = GasGasCharge.SizeOf (GI.get_id a) in
         let n = GasGasCharge.StaticCost (64 * 15) in
@@ -510,6 +513,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* Strings *)
     | Builtin_strlen -> [([string_typ], string_coster); ([bystr_typ], string_coster);];
     | Builtin_to_string -> [([tvar "'A"], string_coster)];
+    | Builtin_to_ascii -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)
     | Builtin_blt -> [([bnum_typ;bnum_typ], bnum_coster)];
@@ -526,6 +530,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_ripemd160hash -> [([tvar "'A"], crypto_coster)];
     | Builtin_schnorr_verify -> [([bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster)];
     | Builtin_ecdsa_verify -> [([bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster)];
+    | Builtin_ecdsa_recover_pk -> [([bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len; uint32_typ], crypto_coster)];
     | Builtin_schnorr_get_address -> [([bystrx_typ pubkey_len], crypto_coster)];
     | Builtin_alt_bn128_G1_add -> [([g1point_type; g1point_type], crypto_coster)];
     | Builtin_alt_bn128_G1_mul -> [([g1point_type; scalar_type], crypto_coster)];

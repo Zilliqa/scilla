@@ -1,5 +1,7 @@
 (String "scilla is awesome"),
-{ [s1_rev -> (String "emosewa si allics")],
+{ [ascii -> (String "unlock")],
+  [ascii_bs -> (ByStr6 0x756e6c6f636b)],
+  [s1_rev -> (String "emosewa si allics")],
   [bsx_rev -> (ByStr 0xab1212)],
   [bs_rev -> (ByStr3 0xab1212)],
   [len2 -> (Uint32 14)],
@@ -31,4 +33,4 @@
   [fsubstr -> <closure>],
   [fconcat -> <closure>],
   [feq -> <closure>] }
-Gas remaining: 4001457
+Gas remaining: 4001448
