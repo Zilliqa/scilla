@@ -35,9 +35,7 @@ module ScillaPatternchecker
 struct
   module SPR = SR
   module EPR = ER
-
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module PCLiteral = FlattenedLiteral
+  module PCLiteral = GlobalLiteral
   module PCType = PCLiteral.LType
   module PCIdentifier = PCType.TIdentifier
   module UncheckedPatternSyntax = ScillaSyntax (SR) (ER) (PCLiteral)
@@ -49,6 +47,36 @@ struct
   let wrap_pmcheck_err e ?(opt = "") = wrap_err e "patternmatch checking" ~opt
 
   let wrap_pmcheck_serr s ?(opt = "") = wrap_serr s "patternmatch checking" ~opt
+
+  (**************************************************************)
+  (*               Typing explict gas charges                   *)
+  (**************************************************************)
+
+  (* No actual checking required - we just need to translate
+     gas_charge constructors to the new syntax *)
+
+  let rec pm_check_gas_charge gc =
+    let open UncheckedPatternSyntax.SGasCharge in
+    match gc with
+    | StaticCost i -> CheckedPatternSyntax.SGasCharge.StaticCost i
+    | SizeOf v -> CheckedPatternSyntax.SGasCharge.SizeOf v
+    | ValueOf v -> CheckedPatternSyntax.SGasCharge.ValueOf v
+    | LengthOf v -> CheckedPatternSyntax.SGasCharge.LengthOf v
+    | MapSortCost m -> CheckedPatternSyntax.SGasCharge.MapSortCost m
+    | SumOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.SumOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | ProdOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.ProdOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | MinOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.MinOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | DivCeil (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.DivCeil
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | LogOf v -> CheckedPatternSyntax.SGasCharge.LogOf v
+    [@@deriving sexp]
 
   let pm_check_clauses t clauses =
     let reachable = Array.create ~len:(List.length clauses) false in
@@ -95,7 +123,7 @@ struct
           let arity () = List.length sps_cons in
           let get_t_args () =
             constr_pattern_arg_types t
-              (PCIdentifier.as_string c_name)
+              (PCIdentifier.get_id c_name)
               ~lc:(SR.get_loc (PCIdentifier.get_rep c_name))
           in
           let get_dsc_args dsc =
@@ -118,7 +146,7 @@ struct
           let%bind adt, _ =
             DataTypeDictionary.lookup_constructor
               ~sloc:(SR.get_loc (PCIdentifier.get_rep c_name))
-              (PCIdentifier.as_string c_name)
+              (PCIdentifier.get_id c_name)
           in
           let span = List.length adt.tconstr in
           match static_match (PCIdentifier.as_string c_name) span dsc with
@@ -198,6 +226,9 @@ struct
         wrap_pmcheck_err erep
         @@ let%bind checked_body = pm_check_expr body in
            pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
+    | GasExpr (g, e) ->
+        let%bind e' = pm_check_expr e in
+        pure (CheckedPatternSyntax.GasExpr (pm_check_gas_charge g, e'), rep)
 
   let rec pm_check_stmts stmts =
     match stmts with
@@ -237,6 +268,8 @@ struct
           | CallProc (p, args) ->
               pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
+          | GasStmt g ->
+              pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
         pure @@ (checked_s :: checked_stmts)

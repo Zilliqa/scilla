@@ -38,8 +38,7 @@ module ScillaAcceptChecker
       val get_type : rep -> PlainTypes.t inferred_type [@@warning "-32"]
     end) =
 struct
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module ACLiteral = FlattenedLiteral
+  module ACLiteral = GlobalLiteral
   module ACType = ACLiteral.LType
   module ACIdentifier = ACType.TIdentifier
   module ACSyntax = ScillaSyntax (SR) (ER) (ACLiteral)

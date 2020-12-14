@@ -20,11 +20,12 @@ open Core_kernel
 open Sexplib.Std
 open ErrorUtils
 open Literal
+open GasCharge
 
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 9, 0)
+let scilla_version = (0, 9, 1)
 
 let address_length = 20
 
@@ -36,7 +37,9 @@ type builtin =
   | Builtin_concat
   | Builtin_substr
   | Builtin_strlen
+  | Builtin_strrev
   | Builtin_to_string
+  | Builtin_to_ascii
   | Builtin_blt
   | Builtin_badd
   | Builtin_bsub
@@ -45,10 +48,12 @@ type builtin =
   | Builtin_keccak256hash
   | Builtin_ripemd160hash
   | Builtin_to_bystr
+  | Builtin_to_bystrx of int
   | Builtin_bech32_to_bystr20
   | Builtin_bystr20_to_bech32
   | Builtin_schnorr_verify
   | Builtin_ecdsa_verify
+  | Builtin_ecdsa_recover_pk
   | Builtin_alt_bn128_G1_add
   | Builtin_alt_bn128_G1_mul
   | Builtin_alt_bn128_pairing_product
@@ -92,7 +97,9 @@ let pp_builtin b =
   | Builtin_concat -> "concat"
   | Builtin_substr -> "substr"
   | Builtin_strlen -> "strlen"
+  | Builtin_strrev -> "strrev"
   | Builtin_to_string -> "to_string"
+  | Builtin_to_ascii -> "to_ascii"
   | Builtin_blt -> "blt"
   | Builtin_badd -> "badd"
   | Builtin_bsub -> "bsub"
@@ -101,10 +108,12 @@ let pp_builtin b =
   | Builtin_keccak256hash -> "keccak256hash"
   | Builtin_ripemd160hash -> "ripemd160hash"
   | Builtin_to_bystr -> "to_bystr"
+  | Builtin_to_bystrx i -> "to_bystr" ^ Int.to_string i
   | Builtin_bech32_to_bystr20 -> "bech32_to_bystr20"
   | Builtin_bystr20_to_bech32 -> "bystr20_to_bech32"
   | Builtin_schnorr_verify -> "schnorr_verify"
   | Builtin_ecdsa_verify -> "ecdsa_verify"
+  | Builtin_ecdsa_recover_pk -> "ecdsa_recover_pk"
   | Builtin_schnorr_get_address -> "schnorr_get_address"
   | Builtin_alt_bn128_G1_add -> "alt_bn128_G1_add"
   | Builtin_alt_bn128_G1_mul -> "alt_bn128_G1_mul"
@@ -138,7 +147,9 @@ let parse_builtin s loc =
   | "concat" -> Builtin_concat
   | "substr" -> Builtin_substr
   | "strlen" -> Builtin_strlen
+  | "strrev" -> Builtin_strrev
   | "to_string" -> Builtin_to_string
+  | "to_ascii" -> Builtin_to_ascii
   | "blt" -> Builtin_blt
   | "badd" -> Builtin_badd
   | "bsub" -> Builtin_bsub
@@ -151,6 +162,7 @@ let parse_builtin s loc =
   | "bystr20_to_bech32" -> Builtin_bystr20_to_bech32
   | "schnorr_verify" -> Builtin_schnorr_verify
   | "ecdsa_verify" -> Builtin_ecdsa_verify
+  | "ecdsa_recover_pk" -> Builtin_ecdsa_recover_pk
   | "schnorr_get_address" -> Builtin_schnorr_get_address
   | "alt_bn128_G1_add" -> Builtin_alt_bn128_G1_add
   | "alt_bn128_G1_mul" -> Builtin_alt_bn128_G1_mul
@@ -177,7 +189,12 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
-  | _ -> raise (SyntaxError (sprintf "\"%s\" is not a builtin" s, loc))
+  | _ -> (
+      try
+        let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
+        Builtin_to_bystrx (Int.of_string size)
+      with Invalid_argument _ | Failure _ ->
+        raise @@ SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) )
 
 (*******************************************************)
 (*               Types of components                   *)
@@ -228,6 +245,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   module SLiteral = Literal
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
+  module SGasCharge = ScillaGasCharge (SIdentifier.Name)
 
   (*******************************************************)
   (*                   Expressions                       *)
@@ -258,6 +276,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
+    | GasExpr of SGasCharge.gas_charge * expr_annot
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -303,6 +322,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | CreateEvnt of ER.rep SIdentifier.t
     | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
     | Throw of ER.rep SIdentifier.t option
+    | GasStmt of SGasCharge.gas_charge
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -312,28 +332,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   let spp_stmt s = sexp_of_stmt s |> Sexplib.Sexp.to_string
 
   let pp_stmt s = spp_stmt s
-
-  (**************************************************)
-  (*          Statement evaluation info             *)
-  (**************************************************)
-  type stmt_eval_context =
-    (* literal being loaded *)
-    | G_Load of SLiteral.t
-    (* literal being stored *)
-    | G_Store of SLiteral.t
-    (* none *)
-    | G_Bind
-    (* nesting depth, new value *)
-    | G_MapUpdate of int * SLiteral.t option
-    (* nesting depth, literal retrieved *)
-    | G_MapGet of int * SLiteral.t option
-    (* number of clauses *)
-    | G_MatchStmt of int
-    | G_ReadFromBC
-    | G_AcceptPayment
-    | G_SendMsgs of SLiteral.t list
-    | G_CreateEvnt of SLiteral.t
-    | G_CallProc
 
   (*******************************************************)
   (*                    Contracts                        *)
@@ -439,6 +437,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         let t' = subst_type_in_type' tvar tp t in
         let body' = subst_type_in_expr tvar tp body in
         (Fixpoint (f, t', body'), rep)
+    | GasExpr (g, e) -> (GasExpr (g, subst_type_in_expr tvar tp e), rep)
 
   (* get variables that get bound in pattern. *)
   let get_pattern_bounds p =
@@ -488,6 +487,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
               (* bind variables in pattern and recurse for expression. *)
               let bound_vars' = get_pattern_bounds p @ bound_vars in
               recurser e bound_vars' acc)
+      | GasExpr (_, sube) -> recurser sube bound_vars acc
     in
     let fvs = recurser erep [] [] in
     SIdentifier.dedup_id_list fvs
@@ -534,6 +534,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             (as_error_string tf)
       | TFun (tf, _) ->
           sprintf "Type error in type function `%s`:\n" (as_error_string tf)
+      | GasExpr _ -> "Type error in charging gas :-O, this can't occur.\n"
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
             (as_error_string f) ),
@@ -580,6 +581,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Error in create event `%s`:\n" (as_error_string i)
       | CallProc (p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
+      | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->
           let is =
             match i with

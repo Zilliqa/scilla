@@ -1,19 +1,21 @@
 [
-    { "vname": "_balance", "type": "Uint128", "value": "100" },
-    {
-      "vname": "earmarked_coins",
-      "type": "Map (ByStr20) (EarmarkedCoin)",
-      "value": [
-        {
-          "key": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          "val": {
-            "constructor": "EarmarkedCoin",
-            "argtypes": [],
-            "arguments": [
-              "100", "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-            ]
-          }
+  { "vname": "_balance", "type": "Uint128", "value": "100" },
+  {
+    "vname": "earmarked_coins",
+    "type":
+      "Map (ByStr20) (0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin)",
+    "value": [
+      {
+        "key": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "val": {
+          "constructor":
+            "0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin",
+          "argtypes": [],
+          "arguments": [
+            "100", "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          ]
         }
-      ]
-    }
+      }
+    ]
+  }
 ]

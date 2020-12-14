@@ -23,23 +23,35 @@ open ErrorUtils
 open PrettyPrinters
 open DebugMessage
 open ScillaUtil.FilePathInfix
+open Literal
+open Disambiguate
+open ParserUtil
 
-(* TODO: Parameterise this. *)
-module RUSyntax = ParserUtil.ParserSyntax
-module RUType = RUSyntax.SType
-module RUIdentifier = RUSyntax.SIdentifier
-module Parser = ScillaParser.Make (RUSyntax)
-open RUIdentifier
-open RUType
-open RUSyntax
+(* Parser for contracts and libraries *)
+module RULocalFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+module RULocalParser = RULocalFEParser.Parser
+module RULocalSyntax = RULocalFEParser.FESyntax
+module RULocalType = RULocalSyntax.SType
+module RULocalIdentifier = RULocalSyntax.SIdentifier
+module RULocalName = RULocalIdentifier.Name
+module RUDisambiguation = ScillaDisambiguation (ParserRep) (ParserRep)
 
-let get_init_extlibs filename =
+(* Parser for jsons *)
+module RUGlobalFEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
+module RUGlobalParser = RUGlobalFEParser.Parser
+module RUGlobalSyntax = RUGlobalFEParser.FESyntax
+module RUGlobalIdentifier = RUGlobalSyntax.SIdentifier
+module RUGlobalName = RUGlobalIdentifier.Name
+
+let get_init_this_address_and_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
-    plog (sprintf "Invalid init json %s file" filename);
-    [] )
+    plog (sprintf "Invalid init json file %s\n" filename);
+    (None, []) )
   else
     try
-      let name_addr_pairs = JSON.ContractState.get_init_extlibs filename in
+      let this_address, name_addr_pairs =
+        JSON.ContractState.get_init_this_address_and_extlibs filename
+      in
       if
         List.contains_dup
           ~compare:(fun a b -> String.compare (fst a) (fst b))
@@ -49,258 +61,92 @@ let get_init_extlibs filename =
         @@ mk_error0
              (sprintf "Duplicate extlib map entries in init JSON file %s."
                 filename)
-      else name_addr_pairs
+      else (this_address, name_addr_pairs)
     with Invalid_json s ->
       fatal_error
         (s @ mk_error0 (sprintf "Unable to parse JSON file %s. " filename))
 
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
-let import_lib id =
-  let name = get_id id in
+let import_lib name sloc =
   let errmsg = sprintf "Failed to import library %s. " name in
-  let sloc = get_rep id in
-  let fname, initf =
+  let fname, this_address, initf =
     match StdlibTracker.find_lib_dir name with
     | None -> fatal_error @@ mk_error1 (errmsg ^ "Not found.\n") sloc
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
-        (libf, get_init_extlibs initf)
+        let init_this_address, extlibs =
+          get_init_this_address_and_extlibs initf
+        in
+        (* If this_address is unspecified in the init file, then use the base filename without extension as the address *)
+        let this_address = Option.value init_this_address ~default:name in
+        (libf, this_address, extlibs)
   in
-  match FrontEndParser.parse_file Parser.Incremental.lmodule fname with
+  match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
   | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
-      (lmod, initf)
+      (lmod, this_address, initf)
 
-(* An auxiliary data structure that is homomorphic to libtree, but for namespaces.
-   Think of this as a field "namespace" in the "Syntax.libtree". It isn't added
-   to the type itself because we want to eliminate the idea of namespaces right here. *)
-type 'a nspace_tree = {
-  nspace : 'a SIdentifier.t option;
-  dep_ns : 'a nspace_tree list;
-}
-
-(* light-weight namespaces. prefix all entries in lib with their namespace. *)
-let eliminate_namespaces lib_tree ns_tree =
-  (* Prefix definitions in lib with namespace (and rewrite their uses).
-     Also, rewrite uses in lib that are in env. This is for names imported by lib.
-     Returns renamed library and a list of names that are defined in this library. *)
-  let rename_in_library env lib namespace =
-    let rev_entries, _, def_names =
-      List.fold lib.lentries ~init:([], env, [])
-        ~f:(fun (accentries, accenv, accnames) entry ->
-          (* check if id is in env and prefix it with a namespace. *)
-          let check_and_prefix_id env id =
-            match List.Assoc.find env (get_id id) ~equal:String.( = ) with
-            | Some ns when not @@ String.is_empty ns ->
-                let nname = ns ^ "." ^ get_id id in
-                plog
-                @@ Printf.sprintf "Prefixing namespace %s to name %s = %s\n" ns
-                     (get_id id) nname;
-                mk_id nname (get_rep id)
-            | _ -> id
-          in
-          let rename_in_type t env =
-            let rec recurser t =
-              match t with
-              | PrimType _ | TypeVar _ | Unit -> t
-              | MapType (kt, vt) -> MapType (recurser kt, recurser vt)
-              | FunType (t1, t2) -> FunType (recurser t1, recurser t2)
-              | PolyFun (tvar, t) -> PolyFun (tvar, recurser t)
-              | ADT (tname, tlist) ->
-                  let tname' = check_and_prefix_id env tname in
-                  let tlist' = List.map tlist ~f:(fun t -> recurser t) in
-                  ADT (tname', tlist')
+let import_libs names_and_namespaces init_address_map =
+  let rec importer names_and_namespaces address_map stack =
+    let imported_libs_rev =
+      List.fold_left names_and_namespaces ~init:[]
+        ~f:(fun libacc_rev (libname, _) ->
+          let open RULocalIdentifier in
+          if List.mem stack (get_id libname) ~equal:[%equal: RULocalName.t] then
+            let errmsg =
+              match
+                List.Assoc.find init_address_map (as_string libname)
+                  ~equal:String.( = )
+              with
+              | Some filename ->
+                  sprintf
+                    "Cyclic dependence found when importing %s (mapped to %s)."
+                    (as_error_string libname) filename
+              | None ->
+                  sprintf "Cyclic dependence found when importing %s."
+                    (as_error_string libname)
             in
-            recurser t
-          in
-          let rec rename_in_expr (e, eloc) env =
-            match e with
-            | Literal _ -> (e, eloc)
-            | Var v -> (Var (check_and_prefix_id env v), eloc)
-            | Let (i, t, elhs, erhs) ->
-                let elhs' = rename_in_expr elhs env in
-                (* "i" get's a local binding now, don't rename it in rhs. *)
-                let env' =
-                  List.Assoc.remove env (get_id i) ~equal:String.( = )
+            fatal_error @@ mk_error1 errmsg (get_rep libname)
+          else
+            let ilib_address =
+              Option.value
+                (List.Assoc.find address_map (as_string libname)
+                   ~equal:String.( = ))
+                ~default:(as_string libname)
+            in
+            let ilib, this_address, ilib_import_map =
+              import_lib ilib_address (get_rep libname)
+            in
+            let import_ilibs =
+              importer ilib.elibs ilib_import_map (get_id libname :: stack)
+            in
+            (* Transform local names to global names *)
+            match
+              RUDisambiguation.disambiguate_lmodule ilib import_ilibs
+                ilib_import_map this_address
+            with
+            | Error s ->
+                fatal_error
+                  ( s
+                  @ mk_error1
+                      (sprintf "Failed to disambiguate imported library %s.\n"
+                         (as_string libname))
+                      (get_rep libname) )
+            | Ok dis_lib ->
+                let libnode =
+                  {
+                    RUGlobalSyntax.libn = dis_lib.libs;
+                    RUGlobalSyntax.deps = import_ilibs;
+                  }
                 in
-                let t' = Option.map t ~f:(fun t -> rename_in_type t env) in
-                let erhs' = rename_in_expr erhs env' in
-                (Let (i, t', elhs', erhs'), eloc)
-            | Message spl ->
-                let rename_in_payload pl =
-                  match pl with
-                  | MLit _ -> pl
-                  | MVar v -> MVar (check_and_prefix_id env v)
-                in
-                let spl' =
-                  List.map spl ~f:(fun (s, pl) -> (s, rename_in_payload pl))
-                in
-                (Message spl', eloc)
-            | Fun (i, t, exp) ->
-                let env' =
-                  List.Assoc.remove env (get_id i) ~equal:String.( = )
-                in
-                let t' = rename_in_type t env' in
-                let exp' = rename_in_expr exp env' in
-                (Fun (i, t', exp'), eloc)
-            | App (i, ils) ->
-                let i' = check_and_prefix_id env i in
-                let ils' = List.map ils ~f:(check_and_prefix_id env) in
-                (App (i', ils'), eloc)
-            | Constr (cname, tl, idl) ->
-                let cname' = check_and_prefix_id env cname in
-                let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
-                let idl' = List.map idl ~f:(check_and_prefix_id env) in
-                (Constr (cname', tl', idl'), eloc)
-            | MatchExpr (pv, pelist) ->
-                (* Update pattern and returns a list of newly bounds. *)
-                let rec rename_in_pattern env pat =
-                  match pat with
-                  | Wildcard -> (pat, [])
-                  | Binder i -> (pat, [ get_id i ])
-                  | Constructor (c, plist) ->
-                      let c' = check_and_prefix_id env c in
-                      let plist', blist =
-                        List.unzip @@ List.map plist ~f:(rename_in_pattern env)
-                      in
-                      let blist' = List.concat blist in
-                      (Constructor (c', plist'), blist')
-                in
-                (* Update id being matched *)
-                let pv' = check_and_prefix_id env pv in
-                (* Get updated pattern and their branches *)
-                let pelist' =
-                  List.map pelist ~f:(fun (pat, expr) ->
-                      let pat', binds = rename_in_pattern env pat in
-                      (* remove all binds from env *)
-                      let env' =
-                        List.fold_left binds ~init:env ~f:(fun accenv b ->
-                            List.Assoc.remove accenv b ~equal:String.( = ))
-                      in
-                      (pat', rename_in_expr expr env'))
-                in
-                (MatchExpr (pv', pelist'), eloc)
-            | Builtin (b, idl) ->
-                let idl' = List.map idl ~f:(check_and_prefix_id env) in
-                (Builtin (b, idl'), eloc)
-            | TFun (ti, exp) -> (TFun (ti, rename_in_expr exp env), eloc)
-            | TApp (i, tl) ->
-                let tl' = List.map tl ~f:(fun t -> rename_in_type t env) in
-                (TApp (check_and_prefix_id env i, tl'), eloc)
-            | Fixpoint (i, t, e) ->
-                let env' =
-                  List.Assoc.remove env (get_id i) ~equal:String.( = )
-                in
-                let exp' = rename_in_expr e env' in
-                (Fixpoint (i, t, exp'), eloc)
-          in
-          match entry with
-          | LibTyp (i, ctrs) ->
-              (* from this point, env has "i" and all constructors, to be renamed. *)
-              let env' = (get_id i, namespace) :: accenv in
-              let env'' =
-                List.fold ctrs ~init:env' ~f:(fun envacc ctr ->
-                    (get_id ctr.cname, namespace) :: envacc)
-              in
-              let ctrs' =
-                List.map ctrs ~f:(fun ctr ->
-                    let cname' = check_and_prefix_id env'' ctr.cname in
-                    let c_arg_types' =
-                      List.map ctr.c_arg_types ~f:(fun t ->
-                          rename_in_type t env'')
-                    in
-                    { cname = cname'; c_arg_types = c_arg_types' })
-              in
-              let entry' = LibTyp (check_and_prefix_id env'' i, ctrs') in
-              let names =
-                get_id i :: List.map ctrs' ~f:(fun ctr -> get_id ctr.cname)
-              in
-              (entry' :: accentries, env'', accnames @ names)
-          | LibVar (i, t, exp) ->
-              (* from this point, env has "i", to be renamed. *)
-              let env' = (get_id i, namespace) :: accenv in
-              let t' = Option.map t ~f:(fun t -> rename_in_type t accenv) in
-              let entry' =
-                LibVar (check_and_prefix_id env' i, t', rename_in_expr exp env')
-              in
-              (* we're appending entries in the reverse order. *)
-              (entry' :: accentries, env', accnames @ [ get_id i ]))
+                libnode :: libacc_rev)
     in
-    ({ lib with lentries = List.rev rev_entries }, def_names)
+    List.rev imported_libs_rev
   in
-
-  (* end of rename_in_library *)
-  let rec rename_in_libtree ltnode nsnode outerns =
-    let this_lib = ltnode.libn in
-    let this_namespace = nsnode.nspace in
-    let fullns =
-      match this_namespace with
-      | Some i ->
-          if String.is_empty outerns then get_id i else outerns ^ "." ^ get_id i
-      | None -> outerns
-    in
-    (* rename deps first *)
-    let deps', env' =
-      List.fold2_exn ltnode.deps nsnode.dep_ns ~init:([], [])
-        ~f:(fun (depacc, envacc) ln nsn ->
-          let dep, env = rename_in_libtree ln nsn fullns in
-          (depacc @ [ dep ], envacc @ env))
-    in
-    let ltnode', entries = rename_in_library env' this_lib fullns in
-    (* An entry "n" in ltnode will be used as "this_namespace.n" in the libraries
-       that import ltnode. Hence rename these uses "this_namespace.n" to "fullns.n" *)
-    let env =
-      let this_namespace_s =
-        match this_namespace with Some i -> get_id i ^ "." | None -> ""
-      in
-      List.map entries ~f:(fun n -> (this_namespace_s ^ n, outerns))
-    in
-    ({ libn = ltnode'; deps = deps' }, env)
-  in
-  List.map2_exn lib_tree ns_tree ~f:(fun ltnode nsnode ->
-      fst @@ rename_in_libtree ltnode nsnode "")
-
-(* Import all libraries in "names" (and their dependences). *)
-let import_libs names init_file =
-  let rec importer names name_map stack =
-    let mapped_names =
-      List.map names ~f:(fun (n, namespace) ->
-          match List.Assoc.find name_map (get_id n) ~equal:String.( = ) with
-          | Some n' ->
-              (* Use a known source location for the mapped id. *)
-              (mk_id n' (get_rep n), n, namespace)
-          | None -> (n, n, namespace))
-    in
-    List.fold_left
-      ~f:(fun (libacc, nacc) (name, mapped_name, namespace) ->
-        if List.mem stack (get_id name) ~equal:String.( = ) then
-          let errmsg =
-            if RUIdentifier.equal mapped_name name then
-              sprintf "Cyclic dependence found when importing %s." (get_id name)
-            else
-              sprintf
-                "Cyclic dependence found when importing %s (mapped to %s)."
-                (get_id mapped_name) (get_id name)
-          in
-          fatal_error @@ mk_error1 errmsg (get_rep name)
-        else
-          let ilib, ilib_import_map = import_lib name in
-          let ilibs', nst =
-            importer ilib.elibs ilib_import_map (get_id name :: stack)
-          in
-          let nsnode = { nspace = namespace; dep_ns = nst } in
-          let libnode = { libn = ilib.libs; deps = ilibs' } in
-          (libacc @ [ libnode ], nacc @ [ nsnode ]))
-      ~init:([], []) mapped_names
-  in
-  let name_map =
-    match init_file with Some f -> get_init_extlibs f | None -> []
-  in
-  let ltree, nstree = importer names name_map [] in
-  eliminate_namespaces ltree nstree
+  importer names_and_namespaces init_address_map []
 
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
@@ -325,12 +171,15 @@ let import_all_libs ldirs =
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
             let lib_name = chop_extension (basename file) in
-            Some (mk_loc_id lib_name, None (* no import-as *))
+            Some
+              ( RULocalIdentifier.mk_loc_id
+                  (RULocalName.parse_simple_name lib_name),
+                None (* no import-as *) )
           else None)
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
   let names = List.concat_map ldirs ~f:get_lib_list in
-  import_libs names None
+  import_libs names []
 
 type runner_cli = {
   input_file : string;
@@ -402,6 +251,16 @@ let parse_cli args ~exe_name =
       ( "-typeinfo",
         Arg.Unit (fun () -> r_type_info := true),
         "Print types of variables with location" );
+      ( "-debuglevel",
+        Arg.Symbol
+          ( [ "none"; "normal"; "verbose" ],
+            fun s ->
+              match s with
+              | "none" -> GlobalConfig.set_debug_level Debug_None
+              | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+              | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+              | _ -> raise (ErrorUtils.FatalError "Invalid debug log level") ),
+        "Set debug logging level" );
       ( "-disable-validate-json",
         Arg.Unit (fun () -> r_validate_json := false),
         "Disable validation of input JSONs" );

@@ -15,10 +15,10 @@
         },
         {
             "vname" : "direction",
-            "type"  : "Direction",
+            "type"  : "ShogiLib.Direction",
             "value" :
             {
-                "constructor" : "North",
+                "constructor" : "ShogiLib.North",
                 "argtypes"    : [],
                 "arguments"   : []
             }

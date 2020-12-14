@@ -143,10 +143,14 @@ module MakeServer () = struct
       | head :: tail -> (
           let vopt = Hashtbl.find_opt map head in
           match vopt with
-          | None ->
-              let m = Hashtbl.create 8 in
-              let () = Hashtbl.replace map head (MapVal m) in
-              recurser_update ~new_val m tail
+          | None -> (
+              (* Index does not exist. If we are deleting a value, then we can ignore this and all remaining indices *)
+              match new_val with
+              | None -> pure ()
+              | Some _ ->
+                  let m = Hashtbl.create 8 in
+                  let () = Hashtbl.replace map head (MapVal m) in
+                  recurser_update ~new_val m tail )
           | Some v -> (
               match v with
               | NonMapVal _ ->

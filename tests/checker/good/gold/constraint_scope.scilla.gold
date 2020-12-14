@@ -5,7 +5,11 @@
       { "field": "f", "tag": "NotMoney" }
     ],
     "ADT constructors": [
-      { "MyTyp": [ { "constructor": "Val2", "tags": [ "NoInfo" ] } ] }
+      {
+        "constraint_scope.MyTyp": [
+          { "constructor": "constraint_scope.Val2", "tags": [ "NoInfo" ] }
+        ]
+      }
     ]
   },
   "contract_info": {
@@ -18,19 +22,19 @@
     "events": [],
     "ADTs": [
       {
+        "tname": "constraint_scope.MyTyp",
+        "tparams": [],
+        "tmap": [
+          { "cname": "constraint_scope.Val1", "argtypes": [ "Bool" ] },
+          { "cname": "constraint_scope.Val2", "argtypes": [ "Uint128" ] }
+        ]
+      },
+      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "MyTyp",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Val1", "argtypes": [ "Bool" ] },
-          { "cname": "Val2", "argtypes": [ "Uint128" ] }
         ]
       },
       {

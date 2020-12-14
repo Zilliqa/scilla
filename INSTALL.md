@@ -22,7 +22,11 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 - Install `libsecp256k1-devel` from
   https://software.opensuse.org/package/libsecp256k1-devel by clicking
-  on the `Show experimental packages` button and then performing the
+  the wrench icon next to the Search button and selecting `Show
+  development packages`, and then `OK` to apply the settings.
+  Then you should see the page reload and show the package in
+  question.  Click the `Show experimental packages` icon 
+  corresponding to your distribution in order to perform the
   1-click install from the `network:cryptocurrencies` project.
 
 - Install `bubblewrap` from
@@ -58,6 +62,8 @@ sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev cmake
 ```
+
+On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
 
 </details>
 

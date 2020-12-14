@@ -79,7 +79,13 @@ module type ScillaLiteral = sig
 
     val equal : t -> t -> bool
 
+    val sub : t -> pos:int -> len:int -> t
+
+    val length : t -> int
+
     val concat : t -> t -> t
+
+    val rev : t -> t
   end
 
   module Bystr : BYSTR
@@ -100,6 +106,8 @@ module type ScillaLiteral = sig
     val equal : t -> t -> bool
 
     val concat : t -> t -> t
+
+    val rev : t -> t
 
     val to_bystr : t -> Bystr.t
   end
@@ -128,8 +136,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
@@ -137,8 +146,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
   [@@deriving sexp]
 
@@ -175,11 +185,19 @@ module type ScillaLiteral = sig
 
   val build_bool_lit : bool -> t
 
+  val zero_lit : t
+
+  val build_succ_lit : t -> t
+
   val build_some_lit : t -> LType.t -> t
 
   val build_none_lit : LType.t -> t
 
   val build_pair_lit : t -> LType.t -> t -> LType.t -> t
+
+  val build_nil_lit : LType.t -> t
+
+  val build_cons_lit : t -> LType.t -> t -> t
 end
 
 module MkLiteral (T : ScillaType) = struct
@@ -252,7 +270,13 @@ module MkLiteral (T : ScillaType) = struct
 
     val equal : t -> t -> bool
 
+    val sub : t -> pos:int -> len:int -> t
+
+    val length : t -> int
+
     val concat : t -> t -> t
+
+    val rev : t -> t
   end
 
   module Bystr : BYSTR = struct
@@ -265,9 +289,7 @@ module MkLiteral (T : ScillaType) = struct
         raise @@ Invalid_argument "hex conversion: 0x prefix is missing"
       else
         let s_nopref = String.drop_prefix s 2 in
-        if String.length s_nopref = 0 then
-          raise @@ Invalid_argument "hex conversion: empty byte sequence"
-        else Hex.to_string (`Hex s_nopref)
+        Hex.to_string (`Hex s_nopref)
 
     let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
 
@@ -278,7 +300,13 @@ module MkLiteral (T : ScillaType) = struct
 
     let equal = String.equal
 
+    let sub = String.sub
+
+    let length = String.length
+
     let concat = ( ^ )
+
+    let rev = String.rev
   end
 
   module type BYSTRX = sig
@@ -297,6 +325,8 @@ module MkLiteral (T : ScillaType) = struct
     val equal : t -> t -> bool
 
     val concat : t -> t -> t
+
+    val rev : t -> t
 
     val to_bystr : t -> Bystr.t
   end
@@ -329,8 +359,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
     (* A type abstraction *)
     | TAbs of
@@ -338,8 +369,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ((t * (string * t) list) * uint64, scilla_error list * uint64) result
-        )
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
+            scilla_error list * uint64 )
+          result )
         CPSMonad.t)
   [@@deriving sexp]
 
@@ -476,6 +508,12 @@ module MkLiteral (T : ScillaType) = struct
 
   let build_bool_lit b = if b then true_lit else false_lit
 
+  let zero_lit =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Zero", [], [])
+
+  let build_succ_lit nat =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Succ", [], [ nat ])
+
   let build_some_lit l t =
     ADTValue (LType.TIdentifier.Name.parse_simple_name "Some", [ t ], [ l ])
 
@@ -485,8 +523,13 @@ module MkLiteral (T : ScillaType) = struct
   let build_pair_lit l1 t1 l2 t2 =
     ADTValue
       (LType.TIdentifier.Name.parse_simple_name "Pair", [ t1; t2 ], [ l1; l2 ])
+
+  let build_nil_lit t =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Nil", [ t ], [])
+
+  let build_cons_lit hd t tl =
+    ADTValue (LType.TIdentifier.Name.parse_simple_name "Cons", [ t ], [ hd; tl ])
 end
 
-module FlattenedLiteral = MkLiteral (MkType (MkIdentifier (FlattenedName)))
 module LocalLiteral = MkLiteral (MkType (MkIdentifier (LocalName)))
 module GlobalLiteral = MkLiteral (MkType (MkIdentifier (GlobalName)))

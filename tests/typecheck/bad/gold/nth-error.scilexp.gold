@@ -1,11 +1,11 @@
 {
   "errors": [
     {
-      "error_message": "ADT type Pair expects 2 arguments but got 1.\n",
+      "error_message": "ADT Int32 not found",
       "start_location": {
         "file": "typecheck/bad/nth-error.scilexp",
         "line": 13,
-        "column": 20
+        "column": 26
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

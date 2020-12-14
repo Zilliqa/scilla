@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7819",
+  "gas_remaining": "7824",
   "_accepted": "false",
   "messages": [
     {
@@ -26,13 +26,14 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "orderbook",
-      "type": "Map (ByStr32) (Order)",
+      "type":
+        "Map (ByStr32) (0xabfeccdc9012345678901234567890f777567890.Order)",
       "value": [
         {
           "key":
-            "0x4db3856b48e6ad10f11381efa428aff91c54138c3e7e321d1499c3439524a76e",
+            "0xcb2c524124b6f9ddaffe64f95222261c328c86fe0c0de1ef7413167a0f1d6812",
           "val": {
-            "constructor": "Order",
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Order",
             "argtypes": [],
             "arguments": [
               "0x1234567890123456789012345678901234567001", "100",
@@ -48,7 +49,7 @@
       "value": [
         {
           "key":
-            "0x4db3856b48e6ad10f11381efa428aff91c54138c3e7e321d1499c3439524a76e",
+            "0xcb2c524124b6f9ddaffe64f95222261c328c86fe0c0de1ef7413167a0f1d6812",
           "val": {
             "constructor": "Pair",
             "argtypes": [ "ByStr20", "BNum" ],
@@ -73,7 +74,7 @@
           "vname": "hash",
           "type": "ByStr32",
           "value":
-            "0x4db3856b48e6ad10f11381efa428aff91c54138c3e7e321d1499c3439524a76e"
+            "0xcb2c524124b6f9ddaffe64f95222261c328c86fe0c0de1ef7413167a0f1d6812"
         }
       ]
     }

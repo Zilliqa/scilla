@@ -57,6 +57,7 @@ let explist =
     "let-error.scilexp";
     "list_to_map.scilexp";
     "string_error1.scilexp";
+    "string_error2.scilexp";
     "substr_err1.scilexp";
   ]
 

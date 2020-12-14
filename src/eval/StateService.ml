@@ -27,17 +27,15 @@ open Syntax
 module ER = ParserRep
 module SR = ParserRep
 module SSTypeUtil = TypeUtilities
-
-(* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-module SSLiteral = FlattenedLiteral
+module SSLiteral = GlobalLiteral
 module SSType = SSLiteral.LType
 module SSIdentifier = SSType.TIdentifier
+module SSName = SSIdentifier.Name
 module EvalSyntax = ScillaSyntax (SR) (ER) (SSLiteral)
 open SSIdentifier
-open EvalSyntax
 
 type ss_field = {
-  fname : string;
+  fname : SSName.t;
   ftyp : SSType.t;
   fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
@@ -65,17 +63,21 @@ module MakeStateService () = struct
     | SS (sm, fields) -> pure (sm, fields)
 
   let field_type fields fname =
-    match List.find fields ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match
+      List.find fields ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
           (sprintf "StateService: Unable to determine the type of field %s."
-             (get_id fname))
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let fetch_local ~fname ~keys fields =
     let s = fields in
-    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
@@ -91,40 +93,42 @@ module MakeStateService () = struct
                   (sprintf
                      "StateService: Failed indexing into map %s. Internal \
                       error."
-                     (get_id fname))
+                     (as_error_string fname))
                   (ER.get_loc (get_rep fname))
               else
                 let res = Caml.Hashtbl.find_opt mlit' k in
-                pure @@ (res, G_MapGet (List.length keys, res))
+                pure @@ res
           | k :: krest -> (
               (* we have more nested maps *)
               match Caml.Hashtbl.find_opt mlit' k with
-              | Some (Map ((_, vt''), mlit'')) -> recurser mlit'' krest vt''
+              | Some (SSLiteral.Map ((_, vt''), mlit'')) ->
+                  recurser mlit'' krest vt''
               | None ->
                   (* No element found. Return none. *)
-                  pure @@ (None, G_MapGet (List.length keys, None))
+                  pure @@ None
               (* The remaining keys cannot be used for indexing as
                  we ran out of nested maps. *)
               | _ ->
                   fail1
                     (sprintf
-                       "StateService: Cannot index into map %s. Too many index \
-                        keys."
-                       (get_id fname))
+                       "StateService: Cannot index into map %s. Too many \
+                        index  keys."
+                       (as_error_string fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
                 (sprintf
                    "StateService: Internal error in retriving from map %s."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
-    | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ (Some l, G_Load l)
+    | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ Some l
     | _ ->
         fail1
-          (sprintf "StateService: field \"%s\" not found.\n" (get_id fname))
+          (sprintf "StateService: field \"%s\" not found.\n"
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let fetch ~fname ~keys =
@@ -133,21 +137,22 @@ module MakeStateService () = struct
     | IPC socket_addr -> (
         let%bind tp = field_type fields fname in
         let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
-        if not @@ List.is_empty keys then
-          pure @@ (res, G_MapGet (List.length keys, res))
+        if not @@ List.is_empty keys then pure @@ res
         else
           match res with
           | None ->
               fail1
                 (sprintf "StateService: Field %s not found on IPC server."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
-          | Some res' -> pure @@ (res, G_Load res') )
+          | Some _res' -> pure @@ res )
     | Local -> fetch_local ~fname ~keys fields
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
-    match List.find s ~f:(fun z -> String.(z.fname = get_id fname)) with
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
     | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
@@ -157,14 +162,15 @@ module MakeStateService () = struct
               match vopt with
               | Some v ->
                   Caml.Hashtbl.replace mlit' k v;
-                  pure @@ (s, G_MapUpdate (List.length keys, Some v))
+                  pure @@ s
               | None ->
                   Caml.Hashtbl.remove mlit' k;
-                  pure @@ (s, G_MapUpdate (List.length keys, None)) )
+                  pure @@ s )
           | k :: krest -> (
               (* we have more nested maps *)
               match Caml.Hashtbl.find_opt mlit' k with
-              | Some (Map ((_, vt''), mlit'')) -> recurser mlit'' krest vt''
+              | Some (SSLiteral.Map ((_, vt''), mlit'')) ->
+                  recurser mlit'' krest vt''
               | None ->
                   if is_some vopt then (
                     (* not a delete operation. *)
@@ -179,14 +185,14 @@ module MakeStateService () = struct
                             (sprintf
                                "StateService: Cannot index into map %s due to \
                                 non-map type"
-                               (get_id fname))
+                               (as_error_string fname))
                             (ER.get_loc (get_rep fname))
                     in
                     Caml.Hashtbl.replace mlit' k (Map ((kt'', vt''), mlit''));
                     recurser mlit'' krest vt'' )
                   else
                     (* No point removing a key that doesn't exist. *)
-                    pure @@ (s, G_MapUpdate (List.length keys, None))
+                    pure @@ s
               (* The remaining keys cannot be used for indexing as
                  we ran out of nested maps. *)
               | _ ->
@@ -194,13 +200,13 @@ module MakeStateService () = struct
                     (sprintf
                        "StateService: Cannot index into map %s. Too many index \
                         keys."
-                       (get_id fname))
+                       (as_error_string fname))
                     (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
                 (sprintf "StateService: Internal error in updating map %s."
-                   (get_id fname))
+                   (as_error_string fname))
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
@@ -208,19 +214,19 @@ module MakeStateService () = struct
         match vopt with
         | Some fval' ->
             let fields' =
-              List.filter fields ~f:(fun f -> String.(f.fname <> get_id fname))
+              List.filter fields ~f:(fun f ->
+                  not ([%equal: SSName.t] f.fname (get_id fname)))
             in
-            pure
-              ( { fname = f; ftyp = t; fval = Some fval' } :: fields',
-                G_Store fval' )
+            pure ({ fname = f; ftyp = t; fval = Some fval' } :: fields')
         | None ->
             fail1
               (sprintf "StateService: Cannot remove non-map value %s from state"
-                 (get_id fname))
+                 (as_error_string fname))
               (ER.get_loc (get_rep fname)) )
     | _ ->
         fail1
-          (sprintf "StateService: Field \"%s\" not found.\n" (get_id fname))
+          (sprintf "StateService: Field \"%s\" not found.\n"
+             (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
   let update ~fname ~keys ~value =
@@ -228,16 +234,11 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
-        let%bind () =
-          StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
-        in
-        if not @@ List.is_empty keys then
-          pure @@ G_MapUpdate (List.length keys, Some value)
-        else pure @@ G_Store value
+        StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
     | Local ->
-        let%bind fields', g = update_local ~fname ~keys (Some value) fields in
+        let%bind fields' = update_local ~fname ~keys (Some value) fields in
         let _ = ss_cur_state := SS (sm, fields') in
-        pure g
+        pure ()
 
   (* Is a key in a map. keys must be non-empty. *)
   let is_member ~fname ~keys =
@@ -246,10 +247,10 @@ module MakeStateService () = struct
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
         let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
-        pure @@ (res, G_MapGet (List.length keys, None))
+        pure @@ res
     | Local ->
-        let%bind v, _ = fetch_local ~fname ~keys fields in
-        pure @@ (Option.is_some v, G_MapGet (List.length keys, None))
+        let%bind v = fetch_local ~fname ~keys fields in
+        pure @@ Option.is_some v
 
   (* Remove a key from a map. keys must be non-empty. *)
   let remove ~fname ~keys =
@@ -257,12 +258,11 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
-        let%bind () = StateIPCClient.remove ~socket_addr ~fname ~keys ~tp in
-        pure @@ G_MapUpdate (List.length keys, None)
+        StateIPCClient.remove ~socket_addr ~fname ~keys ~tp
     | Local ->
-        let%bind _, g = update_local ~fname ~keys None fields in
+        let%bind _ = update_local ~fname ~keys None fields in
         (* We don't need to update ss_cur_state because only map keys can be removed, and that's stateful. *)
-        pure g
+        pure ()
 
   (* Expensive operation, use with care. *)
   let get_full_state () =
@@ -274,19 +274,19 @@ module MakeStateService () = struct
             | None ->
                 fail0
                   (sprintf "StateService: Field %s's value is not known"
-                     f.fname)
+                     (SSName.as_error_string f.fname))
             | Some l -> pure (f.fname, l))
     | SS (IPC _, fl) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
-              let%bind vopt, _ = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
+              let%bind vopt = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
               match vopt with
               | Some v -> pure (f.fname, v)
               | None ->
                   fail0
                     (sprintf
                        "StateService: Field %s's value not found on server"
-                       f.fname))
+                       (SSName.as_error_string f.fname)))
         in
         pure sl
 end

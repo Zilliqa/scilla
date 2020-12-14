@@ -28,6 +28,8 @@ let privkey_len = 32
 
 let pubkey_len = 33
 
+let uncompressed_pubkey_len = 65
+
 let signature_len = 64
 
 (* Hash the message and return result raw string *)
@@ -74,3 +76,14 @@ let verify pk msg signature =
   let signature' = buffer_of_raw signature in
   let%bind signature'' = resconv @@ Sign.read ctx signature' in
   resconv @@ Sign.verify ctx ~pk:pk'' ~msg:msg'' ~signature:signature''
+
+let recover_pk msg' signature' recid =
+  let signature'' = buffer_of_raw signature' in
+  let%bind signature =
+    resconv @@ Sign.read_recoverable ctx ~recid signature''
+  in
+  let msg'' = buffer_of_raw (prepare_message msg') in
+  let%bind msg = resopt @@ Sign.msg_of_bytes msg'' in
+  let%bind pk = resconv @@ Sign.recover ctx ~signature ~msg in
+  let pk' = Key.to_bytes ~compress:false ctx pk in
+  pure @@ raw_of_buffer pk'

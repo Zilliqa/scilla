@@ -43,28 +43,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
-        "line": 58,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/bad/mappair2.scilla",
         "line": 53,
         "column": 17
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/bad/mappair2.scilla",
-        "line": 50,
-        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

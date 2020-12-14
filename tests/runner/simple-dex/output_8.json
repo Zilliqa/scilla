@@ -7,13 +7,14 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "orderbook",
-      "type": "Map (ByStr32) (Order)",
+      "type":
+        "Map (ByStr32) (0xabfeccdc9012345678901234567890f777567890.Order)",
       "value": [
         {
           "key":
             "0xcb478abde2c28d1808655f39a97d68bec72e7cd29240a0c5e78cfa76590891f1",
           "val": {
-            "constructor": "Order",
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Order",
             "argtypes": [],
             "arguments": [
               "0x1234567890123456789012345678901234567001", "100",

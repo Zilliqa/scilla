@@ -8080,26 +8080,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 606,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
-        "line": 541,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
         "line": 479,
         "column": 9
       },
@@ -8110,28 +8090,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 470,
-        "column": 2
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
         "line": 458,
         "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
-        "line": 449,
-        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -8170,16 +8130,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 393,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
         "line": 381,
         "column": 9
       },
@@ -8200,28 +8150,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 344,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
         "line": 330,
         "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/map_corners_test.scilla",
-        "line": 321,
-        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

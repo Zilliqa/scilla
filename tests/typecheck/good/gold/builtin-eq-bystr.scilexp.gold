@@ -253,17 +253,31 @@
       }
     },
     {
+      "vname": "res1",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 11,
+        "column": 9
+      }
+    },
+    {
       "vname": "andb",
       "type": "Bool -> Bool -> Bool",
       "start_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
-        "column": 1
+        "line": 11,
+        "column": 12
       },
       "end_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
-        "column": 5
+        "line": 11,
+        "column": 16
       }
     },
     {
@@ -271,13 +285,13 @@
       "type": "Bool",
       "start_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
-        "column": 6
+        "line": 11,
+        "column": 17
       },
       "end_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
-        "column": 9
+        "line": 11,
+        "column": 20
       }
     },
     {
@@ -285,13 +299,643 @@
       "type": "Bool",
       "start_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
-        "column": 10
+        "line": 11,
+        "column": 21
       },
       "end_location": {
         "file": "typecheck/good/builtin-eq-bystr.scilexp",
-        "line": 10,
+        "line": 11,
+        "column": 23
+      }
+    },
+    {
+      "vname": "ab",
+      "type": "ByStr4",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 7
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 26
+      }
+    },
+    {
+      "vname": "b",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 13,
+        "column": 28
+      }
+    },
+    {
+      "vname": "ab2",
+      "type": "ByStr4",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 14,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 14,
+        "column": 8
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 16,
+        "column": 9
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 17,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 17,
+        "column": 8
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 18,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 18,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 20,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 20,
+        "column": 6
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr2",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 20,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 20,
+        "column": 27
+      }
+    },
+    {
+      "vname": "a1",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 7
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 26
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 31
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 32
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 21,
+        "column": 35
+      }
+    },
+    {
+      "vname": "a2",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 7
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 25
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 26
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 30
+      }
+    },
+    {
+      "vname": "one",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 31
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 22,
+        "column": 34
+      }
+    },
+    {
+      "vname": "aa1",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 27
+      }
+    },
+    {
+      "vname": "zero",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 28
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 32
+      }
+    },
+    {
+      "vname": "two",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 23,
+        "column": 36
+      }
+    },
+    {
+      "vname": "aa2",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 8
+      }
+    },
+    {
+      "vname": "a1",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 28
+      }
+    },
+    {
+      "vname": "a2",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 29
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 24,
+        "column": 31
+      }
+    },
+    {
+      "vname": "res2",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 9
+      }
+    },
+    {
+      "vname": "aa1",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 26
+      }
+    },
+    {
+      "vname": "aa2",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 25,
+        "column": 30
+      }
+    },
+    {
+      "vname": "res3",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 9
+      }
+    },
+    {
+      "vname": "aa1",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 26
+      }
+    },
+    {
+      "vname": "a",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 27
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 26,
+        "column": 28
+      }
+    },
+    {
+      "vname": "res4",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 9
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
         "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 16
+      }
+    },
+    {
+      "vname": "res2",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 21
+      }
+    },
+    {
+      "vname": "res3",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 27,
+        "column": 26
+      }
+    },
+    {
+      "vname": "res5",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 9
+      }
+    },
+    {
+      "vname": "ab",
+      "type": "ByStr4",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 23
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 25
+      }
+    },
+    {
+      "vname": "ab2",
+      "type": "ByStr4",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 26
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 29,
+        "column": 29
+      }
+    },
+    {
+      "vname": "res6",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 9
+      }
+    },
+    {
+      "vname": "andb",
+      "type": "Bool -> Bool -> Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 12
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 16
+      }
+    },
+    {
+      "vname": "res4",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 21
+      }
+    },
+    {
+      "vname": "res5",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 22
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 30,
+        "column": 26
+      }
+    },
+    {
+      "vname": "empty_bystrx",
+      "type": "ByStr0",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 32,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 32,
+        "column": 17
+      }
+    },
+    {
+      "vname": "empty_bystr",
+      "type": "ByStr",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 16
+      }
+    },
+    {
+      "vname": "empty_bystrx",
+      "type": "ByStr0",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 33,
+        "column": 48
+      }
+    },
+    {
+      "vname": "res6",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 35,
+        "column": 1
+      },
+      "end_location": {
+        "file": "typecheck/good/builtin-eq-bystr.scilexp",
+        "line": 35,
+        "column": 5
       }
     }
   ],

@@ -5,8 +5,11 @@
     ],
     "ADT constructors": [
       {
-        "EarmarkedCoin": [
-          { "constructor": "EarmarkedCoin", "tags": [ "Money", "NotMoney" ] }
+        "earmarked-coin.EarmarkedCoin": [
+          {
+            "constructor": "earmarked-coin.EarmarkedCoin",
+            "tags": [ "Money", "NotMoney" ]
+          }
         ]
       }
     ]
@@ -18,7 +21,7 @@
     "fields": [
       {
         "vname": "earmarked_coins",
-        "type": "Map (ByStr20) (EarmarkedCoin)",
+        "type": "Map (ByStr20) (earmarked-coin.EarmarkedCoin)",
         "depth": 1
       }
     ],
@@ -116,10 +119,13 @@
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
       {
-        "tname": "EarmarkedCoin",
+        "tname": "earmarked-coin.EarmarkedCoin",
         "tparams": [],
         "tmap": [
-          { "cname": "EarmarkedCoin", "argtypes": [ "Uint128", "ByStr20" ] }
+          {
+            "cname": "earmarked-coin.EarmarkedCoin",
+            "argtypes": [ "Uint128", "ByStr20" ]
+          }
         ]
       }
     ]

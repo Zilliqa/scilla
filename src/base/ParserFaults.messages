@@ -1830,19 +1830,6 @@ exp_term: MATCH SPID WITH BAR CID UNDERSCORE WITH
 
 In this match expression, following the pattern the parser expects an arrow (e.g. '=>').
 
-exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW HEXLIT WITH
-##
-## Ends in an error in state: 177.
-##
-## list(exp_pm_clause) -> exp_pm_clause . list(exp_pm_clause) [ END ]
-##
-## The known suffix of the stack is as follows:
-## exp_pm_clause
-##
-# see tests/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-hexlit-with.scilexp
-
-After a pattern matching clause the parser expects another pattern matching clause or the end ('end').
-
 exp_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
 ##
 ## Ends in an error in state: 103.
@@ -2082,19 +2069,6 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN ID WITH
 # see tests/parser/bad/cmodule-contract-cid-lparen-id-with.scilla
 
 In an immutable field declaration, the parser expects a colon following the name to precede the type.
-
-cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON CID EQ HEXLIT WITH
-##
-## Ends in an error in state: 285.
-##
-## list(field) -> field . list(field) [ TRANSITION PROCEDURE EOF ]
-##
-## The known suffix of the stack is as follows:
-## field
-##
-# see tests/parser/bad/cmodule-field-id-colon-cid-eq-hexlit-with.scilla
-
-Following a field definition, the parser expects another field definition, transition, procedure or end of file.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ WITH
 ##

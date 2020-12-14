@@ -62,6 +62,12 @@ module PrimType = struct
     | Bits128 -> "128"
     | Bits256 -> "256"
 
+  let int_bit_width_to_int = function
+    | Bits32 -> 32
+    | Bits64 -> 64
+    | Bits128 -> 128
+    | Bits256 -> 256
+
   let pp_prim_typ = function
     | Int_typ bw -> "Int" ^ int_bit_width_to_string bw
     | Uint_typ bw -> "Uint" ^ int_bit_width_to_string bw
@@ -88,6 +94,8 @@ module type ScillaType = sig
   [@@deriving sexp]
 
   val pp_typ : t -> string
+
+  val pp_typ_error : t -> string
 
   (****************************************************************)
   (*                     Type substitutions                       *)
@@ -174,24 +182,31 @@ module MkType (I : ScillaIdentifier) = struct
     | Unit
   [@@deriving sexp]
 
-  let rec pp_typ = function
-    | PrimType t -> PrimType.pp_prim_typ t
-    | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (pp_typ kt) (pp_typ vt)
-    | ADT (name, targs) ->
-        let elems =
-          TIdentifier.as_string name
-          :: List.map targs ~f:(fun t -> sprintf "(%s)" (pp_typ t))
-        in
-        String.concat ~sep:" " elems
-    | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (pp_typ vt)
-    | TypeVar tv -> tv
-    | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (pp_typ bt)
-    | Unit -> sprintf "()"
+  let pp_typ_helper is_error t =
+    let rec recurser = function
+      | PrimType t -> PrimType.pp_prim_typ t
+      | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (recurser kt) (recurser vt)
+      | ADT (name, targs) ->
+          let elems =
+            ( if is_error then TIdentifier.as_error_string name
+            else TIdentifier.as_string name )
+            :: List.map targs ~f:(fun t -> sprintf "(%s)" (recurser t))
+          in
+          String.concat ~sep:" " elems
+      | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (recurser vt)
+      | TypeVar tv -> tv
+      | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
+      | Unit -> sprintf "()"
+    and with_paren t =
+      match t with
+      | FunType _ | PolyFun _ -> sprintf "(%s)" (recurser t)
+      | _ -> recurser t
+    in
+    recurser t
 
-  and with_paren t =
-    match t with
-    | FunType _ | PolyFun _ -> sprintf "(%s)" (pp_typ t)
-    | _ -> pp_typ t
+  let pp_typ = pp_typ_helper false
+
+  let pp_typ_error = pp_typ_helper true
 
   (****************************************************************)
   (*                     Type substitutions                       *)
@@ -337,10 +352,8 @@ module MkType (I : ScillaIdentifier) = struct
   let bystrx_typ b = PrimType (Bystrx_typ b)
 
   let int_width = function
-    | PrimType (Int_typ Bits32) | PrimType (Uint_typ Bits32) -> Some 32
-    | PrimType (Int_typ Bits64) | PrimType (Uint_typ Bits64) -> Some 64
-    | PrimType (Int_typ Bits128) | PrimType (Uint_typ Bits128) -> Some 128
-    | PrimType (Int_typ Bits256) | PrimType (Uint_typ Bits256) -> Some 256
+    | PrimType (Int_typ bits) | PrimType (Uint_typ bits) ->
+        Some (PrimType.int_bit_width_to_int bits)
     | _ -> None
 
   (* Given a ByStrX string, return integer X *)

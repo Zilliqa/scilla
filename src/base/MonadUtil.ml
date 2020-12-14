@@ -147,6 +147,10 @@ let option_mapM ~f opt_val =
       let%map z = f v in
       Some z
 
+(* Monadic Option.value_map for error *)
+let option_value_mapM ~f ~default opt_val =
+  match opt_val with None -> pure default | Some v -> f v
+
 (* Monadic version of List.fold_map *)
 let fold_mapM ~f ~init l =
   let%map acc, l'_rev =
@@ -167,6 +171,25 @@ let partition_mapM ~f l =
         match fi with `Fst i' -> (i' :: fst, snd) | `Snd i' -> (fst, i' :: snd))
   in
   (List.rev fst_rev, List.rev snd_rev)
+
+(* Monadic version of List.filter_map *)
+let filter_mapM ~f alist =
+  let rec recurser alist =
+    match alist with
+    | [] -> pure []
+    | a :: rem -> (
+        match%bind f a with
+        | Some a' ->
+            let%bind rem' = recurser rem in
+            pure (a' :: rem')
+        | None -> recurser rem )
+  in
+  recurser alist
+
+(* Monadic version of List.filter *)
+let filter f alist =
+  let f' a = match%bind f a with true -> pure (Some a) | false -> pure None in
+  filter_mapM ~f:f' alist
 
 (* Monadic wrapper around any container's fold (Set, Map etc). *)
 (* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)

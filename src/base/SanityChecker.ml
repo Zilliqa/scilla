@@ -33,11 +33,10 @@ module ScillaSanityChecker
 struct
   module SER = SR
   module EER = ER
-
-  (* TODO: Change this to CanonicalLiteral = Literals based on canonical names. *)
-  module SCLiteral = FlattenedLiteral
+  module SCLiteral = GlobalLiteral
   module SCType = SCLiteral.LType
   module SCIdentifier = SCType.TIdentifier
+  module SCName = SCIdentifier.Name
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
@@ -68,7 +67,8 @@ struct
               if is_mem_id i rem then
                 e
                 @ mk_error1
-                    (sprintf "Identifier %s used more than once\n" (get_id i))
+                    (sprintf "Identifier %s used more than once\n"
+                       (as_error_string i))
                     (gloc @@ get_rep i)
               else e
             in
@@ -110,7 +110,8 @@ struct
         e
         @ check_duplicate_ident
             (fun _ -> eloc)
-            (List.map msg ~f:(fun (s, _) -> mk_id s SR.string_rep))
+            (List.map msg ~f:(fun (s, _) ->
+                 mk_id (SCName.parse_simple_name s) SR.string_rep))
       in
 
       (* Either "_tag" or "_eventname" must be present. *)
@@ -144,15 +145,16 @@ struct
       List.fold_left contr.ccomps ~init:e ~f:(fun e c ->
           match
             List.find c.comp_params ~f:(fun (s, _) ->
-                String.(get_id s = amount_label || get_id s = sender_label))
+                String.(
+                  as_string s = amount_label || as_string s = sender_label))
           with
           | Some (s, _) ->
               e
               @ mk_error1
                   (sprintf "Parameter %s in %s %s cannot be explicit.\n"
-                     (get_id s)
+                     (as_error_string s)
                      (component_type_to_string c.comp_type)
-                     (get_id c.comp_name))
+                     (as_error_string c.comp_name))
                   (SR.get_loc @@ get_rep c.comp_name)
           | None -> e)
     in
@@ -162,15 +164,15 @@ struct
       match
         List.find contr.cparams ~f:(fun (s, _) ->
             let open ContractUtil in
-            let open String in
-            get_id s = creation_block_label
-            || get_id s = scilla_version_label
-            || get_id s = this_address_label)
+            [%equal: SCName.t] (get_id s) creation_block_label
+            || [%equal: SCName.t] (get_id s) scilla_version_label
+            || [%equal: SCName.t] (get_id s) this_address_label)
       with
       | Some (s, _) ->
           e
           @ mk_error1
-              (sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
+              (sprintf "Contract parameter %s cannot be explicit.\n"
+                 (as_error_string s))
               (ER.get_loc @@ get_rep s)
       | None -> e
     in
@@ -179,12 +181,16 @@ struct
     let check_typ_warn s =
       let t = (ER.get_type (get_rep s)).tp in
       let lc = ER.get_loc (get_rep s) in
+      let warn () =
+        warn1 "Consider using in-place Map access" warning_level_map_load_store
+          lc
+      in
       match t with
-      | MapType _
+      | MapType _ -> warn ()
       (* The result of a <- a[][], i.e., "a" is an Option type. *)
-      | ADT (Ident ("Option", _), [ MapType _ ]) ->
-          warn1 "Consider using in-place Map access"
-            warning_level_map_load_store lc
+      | ADT (adt_name, [ MapType _ ])
+        when Datatypes.is_option_adt_name (get_id adt_name) ->
+          warn ()
       | _ -> ()
     in
     List.iter cmod.contr.ccomps ~f:(fun comp ->
@@ -192,8 +198,7 @@ struct
           List.iter stmts ~f:(fun (stmt, _) ->
               match stmt with
               (* Recursion basis. *)
-              | Load (_, s) | Store (s, _) | MapGet (s, _, _, _) ->
-                  check_typ_warn s
+              | Load (_, s) | MapGet (s, _, _, _) -> check_typ_warn s
               | MapUpdate (_, _, vopt) -> (
                   match vopt with Some s -> check_typ_warn s | None -> () )
               (* Recurse through match statements. *)
@@ -211,27 +216,30 @@ struct
   module CheckShadowing = struct
     (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
     let check_warn_redef cparams cfields pnames stmts_defs id =
-      if List.mem cparams (get_id id) ~equal:String.( = ) then
+      if List.mem cparams (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a contract parameter." (get_id id))
+          (Printf.sprintf "Name %s shadows a contract parameter."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem cfields (get_id id) ~equal:String.( = ) then
+      else if List.mem cfields (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a field declaration." (get_id id))
+          (Printf.sprintf "Name %s shadows a field declaration."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem pnames (get_id id) ~equal:String.( = ) then
+      else if List.mem pnames (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a transition parameter." (get_id id))
+          (Printf.sprintf "Name %s shadows a transition parameter."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem stmts_defs (get_id id) ~equal:String.( = ) then
+      else if List.mem stmts_defs (get_id id) ~equal:[%equal: SCName.t] then
         warn1
           (Printf.sprintf
              "%s is a new variable. It does not reassign the previously \
               defined variable."
-             (get_id id))
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
 
@@ -255,7 +263,7 @@ struct
             (Printf.sprintf
                "Deprecated: variable %s shadows a previous binding in the same \
                 pattern."
-               (get_id v))
+               (as_error_string v))
             warning_level_name_shadowing
             (ER.get_loc (get_rep v));
           pure ()
@@ -266,6 +274,7 @@ struct
       match e with
       | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ ->
           pure ()
+      | GasExpr (_, e) -> expr_iter e cparams cfields pnames
       | Let (i, _, e_lhs, e_rhs) ->
           check_warn_redef cparams cfields pnames [] i;
           let%bind () = expr_iter e_lhs cparams cfields pnames in
@@ -334,7 +343,7 @@ struct
                 | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
-                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
+                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->
