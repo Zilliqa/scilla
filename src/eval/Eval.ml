@@ -459,7 +459,7 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
-      ( sender :: amount
+      ( origin :: sender :: amount
       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)) )
       (origin_value :: sender_value :: amount_value :: actuals)
   in
