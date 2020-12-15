@@ -1,13 +1,34 @@
 {
-  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "0x986556789012345678901234567890123456abcd.TestType1": [
+          {
+            "constructor":
+              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "tags": [ "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Hello",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "Hi", "params": [] } ],
+    "transitions": [
+      { "vname": "Hi", "params": [] },
+      { "vname": "TestNestedImport1", "params": [] },
+      { "vname": "TestNestedImport2", "params": [] }
+    ],
     "procedures": [],
     "events": [
+      {
+        "vname": "Nested_import_value",
+        "params": [ { "vname": "res", "type": "Uint128" } ]
+      },
       {
         "vname": "sorted",
         "params": [ { "vname": "sorted", "type": "List (Uint32)" } ]
@@ -18,6 +39,22 @@
       }
     ],
     "ADTs": [
+      {
+        "tname": "0x986556789012345678901234567890123456abcd.TestType1",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "argtypes": [ "Uint128" ]
+          },
+          {
+            "cname":
+              "0x986556789012345678901234567890123456abcd.TestConstructor2",
+            "argtypes": [ "Bool" ]
+          }
+        ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -54,6 +91,19 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "0x111256789012345678901234567890123456abef.TestTypeWrapper",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x111256789012345678901234567890123456abef.WrapperConstructor",
+            "argtypes": [
+              "0x986556789012345678901234567890123456abcd.TestType1"
+            ]
+          }
+        ]
       }
     ]
   },

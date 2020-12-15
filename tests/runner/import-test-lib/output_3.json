@@ -1,0 +1,33 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7894",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0x123456789abcdef123456789abcdef123456789a",
+      "params": [
+        {
+          "vname": "param",
+          "type": "0x986556789012345678901234567890123456abcd.TestType1",
+          "value": {
+            "constructor":
+              "0x986556789012345678901234567890123456abcd.TestConstructor2",
+            "argtypes": [],
+            "arguments": [
+              { "constructor": "True", "argtypes": [], "arguments": [] }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": [
+    {
+      "_eventname": "Nested_import_value",
+      "params": [ { "vname": "res", "type": "Uint128", "value": "1" } ]
+    }
+  ]
+}
