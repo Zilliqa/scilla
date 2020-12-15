@@ -1,8 +1,8 @@
 {
-  "gas_remaining": "7965",
+  "gas_remaining": "7957",
   "errors": [
     {
-      "error_message": "Member '_origin' not found in json",
+      "error_message": "Invalid String value Hello\u0016World in JSON",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

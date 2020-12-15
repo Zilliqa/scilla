@@ -1,0 +1,36 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "gpair",
+    "type": "Pair (List (Int64)) (Option (Bool))",
+    "value": {
+      "constructor": "Pair",
+      "argtypes": [ "List (Int64)", "Option (Bool)" ],
+      "arguments": [
+        [],
+        { "constructor": "None", "argtypes": [ "Bool" ], "arguments": [] }
+      ]
+    }
+  },
+  { "vname": "llist", "type": "List (List (Int64))", "value": [] },
+  { "vname": "plist", "type": "List (Option (Int32))", "value": [] },
+  {
+    "vname": "gnat",
+    "type": "Nat",
+    "value": { "constructor": "Zero", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "gmap",
+    "type": "Map (ByStr20) (Pair (Int32) (Int32))",
+    "value": [
+      {
+        "key": "0x12345678901234567890123456789012345678ab",
+        "val": {
+          "constructor": "Pair",
+          "argtypes": [ "Int32", "Int32" ],
+          "arguments": [ "1", "2" ]
+        }
+      }
+    ]
+  }
+]

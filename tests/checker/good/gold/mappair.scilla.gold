@@ -41,10 +41,18 @@
       {
         "vname": "redef_warn",
         "params": [ { "vname": "b", "type": "Bool" } ]
-      }
+      },
+      { "vname": "print_sender_origin", "params": [] }
     ],
     "procedures": [],
     "events": [
+      {
+        "vname": "Source",
+        "params": [
+          { "vname": "_sender", "type": "ByStr20" },
+          { "vname": "_origin", "type": "ByStr20" }
+        ]
+      },
       { "vname": "Foo", "params": [ { "vname": "x", "type": "Uint32" } ] }
     ],
     "ADTs": [
