@@ -266,6 +266,8 @@ let contract_tests env =
                      "0x111256789012345678901234567890123456abef" "init" true;
                 "import-test-lib"
                 >::: build_contract_tests env "import-test-lib" succ_code 1 3 [];
+                "import-test-lib2"
+                >::: build_contract_tests env "import-test-lib2" succ_code 1 1 [];
                 "cfinvoke"
                 >::: build_contract_tests env "cfinvoke" succ_code 1 4 [];
                 "ping" >::: build_contract_tests env "ping" succ_code 0 3 [];
