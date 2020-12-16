@@ -1938,8 +1938,9 @@ struct
     let empty_local_env = AssocDictionary.make_dict () in
     let implicit_local_env =
       AssocDictionary.insert MessagePayload.amount_label Money
-        (AssocDictionary.insert MessagePayload.sender_label NotMoney
-           empty_local_env)
+        (AssocDictionary.insert MessagePayload.origin_label NotMoney
+           (AssocDictionary.insert MessagePayload.sender_label NotMoney
+              empty_local_env))
     in
     let init_local_env =
       List.fold_left comp_params ~init:implicit_local_env

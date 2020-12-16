@@ -445,9 +445,13 @@ let rec stmt_eval conf stmts =
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
   let sender = GlobalName.parse_simple_name MessagePayload.sender_label in
+  let origin = GlobalName.parse_simple_name MessagePayload.origin_label in
   let amount = GlobalName.parse_simple_name MessagePayload.amount_label in
   let%bind sender_value =
     fromR @@ Configuration.lookup conf (mk_loc_id sender)
+  in
+  let%bind origin_value =
+    fromR @@ Configuration.lookup conf (mk_loc_id origin)
   in
   let%bind amount_value =
     fromR @@ Configuration.lookup conf (mk_loc_id amount)
@@ -455,9 +459,9 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
-      ( sender :: amount
+      ( origin :: sender :: amount
       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)) )
-      (sender_value :: amount_value :: actuals)
+      (origin_value :: sender_value :: amount_value :: actuals)
   in
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
   (* Reset configuration *)

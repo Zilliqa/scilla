@@ -1,7 +1,7 @@
 {
     "_tag": "setApprovalForAll",
     "_amount": "0",
-    "_sender" : "0x1234567890123456789012345678901234567892",
+    "_sender": "0x1234567890123456789012345678901234567892",
     "params": [
         {
             "vname": "to",
@@ -12,10 +12,11 @@
             "vname": "approved",
             "type": "Bool",
             "value": {
-              "constructor": "True",
-              "argtypes": [],
-              "arguments": []
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
             }
-          }
-   ]
+        }
+    ],
+    "_origin": "0x1234567890123456789012345678901234567892"
 }
