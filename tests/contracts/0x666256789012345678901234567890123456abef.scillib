@@ -1,0 +1,12 @@
+scilla_version 0
+
+(* This library is used in import-test-lib3.scilla. *)
+import TestLib7
+
+library TestLib8
+
+let lift_base_type : BaseType -> Uint128 =
+  fun (input : BaseType) =>
+    match input with
+    | BaseConstructor x => x
+    end

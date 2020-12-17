@@ -1,0 +1,40 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   0x555256789012345678901234567890123456abef (TestLib7) _
+ *                         |                                \
+ *                         |                                 \
+ *   0x666256789012345678901234567890123456abef (TestLib8)   |
+ *                         |                                 |
+ *                         |                                 |
+ *                         |      0x777256789012345678901234567890123456abef (TestLib9)
+ *                         |                                /
+ *                         |     __________________________/
+ *                      contract
+*)
+
+import TestLib8 TestLib9
+
+library ContractLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+contract ImportTestLib3()
+
+transition TestNestedImport ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* TestLib8 exposes a BaseType value 0. *)
+  (* TestLib9 exposes a BaseType lifter function. *)
+  v = lift_base_type base_value;
+  (* Check that we can send both base_value and v *)
+  (* Also check that v = 0 *)
+  msg = { _tag : "" ; _recipient : recipient ; _amount : Uint128 0 ;
+         int_param : v ;
+         base_param : base_value };
+  msgs = one_msg msg;
+  send msgs
+end
