@@ -146,7 +146,9 @@ struct
           match
             List.find c.comp_params ~f:(fun (s, _) ->
                 String.(
-                  as_string s = amount_label || as_string s = sender_label))
+                  as_string s = amount_label
+                  || as_string s = sender_label
+                  || as_string s = origin_label))
           with
           | Some (s, _) ->
               e

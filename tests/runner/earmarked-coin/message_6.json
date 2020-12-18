@@ -1,6 +1,7 @@
 {
     "_tag": "ClaimForCreator",
     "_amount": "0",
-    "_sender" : "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "params": []
+    "_sender": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "params": [],
+    "_origin": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 }

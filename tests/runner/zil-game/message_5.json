@@ -1,8 +1,13 @@
 {
-  "_tag": "ClaimReward",
-  "_amount": "0",
-  "_sender": "0xffcdeabcde123456789012345678901234567890",
-  "params": [
-    { "vname": "solution", "type": "Int128", "value": "43" }
-  ]
+    "_tag": "ClaimReward",
+    "_amount": "0",
+    "_sender": "0xffcdeabcde123456789012345678901234567890",
+    "params": [
+        {
+            "vname": "solution",
+            "type": "Int128",
+            "value": "43"
+        }
+    ],
+    "_origin": "0xffcdeabcde123456789012345678901234567890"
 }

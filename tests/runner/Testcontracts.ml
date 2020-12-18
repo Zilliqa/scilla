@@ -280,6 +280,8 @@ let contract_tests env =
                 >::: build_contract_tests env "auction" succ_code 1 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" succ_code 1 7 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" succ_code 9 9 [];
                 "bookstore"
                 >::: build_contract_tests env "bookstore" succ_code 1 12 [];
                 "nonfungible-token"

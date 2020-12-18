@@ -39,6 +39,8 @@ module MessagePayload = struct
 
   let sender_label = "_sender"
 
+  let origin_label = "_origin"
+
   let recipient_label = "_recipient"
 
   let eventname_label = "_eventname"
@@ -65,6 +67,12 @@ module MessagePayload = struct
 
   let get_sender =
     get_value_for_entry sender_label (function
+      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
+          Some (pure a)
+      | _ -> None)
+
+  let get_origin =
+    get_value_for_entry origin_label (function
       | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
           Some (pure a)
       | _ -> None)
@@ -142,13 +150,19 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
           ER.address_rep,
         bystrx_typ address_length )
     in
+    let origin =
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.origin_label)
+          ER.address_rep,
+        bystrx_typ address_length )
+    in
     let amount =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.amount_label)
           ER.uint128_rep,
         uint128_typ )
     in
-    amount :: sender :: cparams
+    amount :: origin :: sender :: cparams
 
   let msg_mandatory_field_types =
     [
