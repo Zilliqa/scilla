@@ -93,7 +93,7 @@ module TestsWithInit = Scilla_test.Util.DiffBasedTests (struct
 
   let custom_args = [ "-cf"; "-contractinfo" ]
 
-  let additional_libdirs = [ ["contracts"] ]
+  let additional_libdirs = [ [ "contracts" ] ]
 
   let provide_init_arg = true
 
@@ -186,9 +186,9 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = true
 
-  let additional_libdirs = [ [ "checker"; "good"; "lib" ]; ]
+  let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
 
-  let tests = [ "blockchain_import.scilla"; ]
+  let tests = [ "blockchain_import.scilla" ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
