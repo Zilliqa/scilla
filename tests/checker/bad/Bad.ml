@@ -138,6 +138,8 @@ module LibTests = Scilla_test.Util.DiffBasedTests (struct
       "bad_lib_type2.scilla";
       "bad_lib_type3.scilla";
       "bad_lib_pm_import.scilla";
+      "import-test-lib-bad_1.scilla";
+      "import-test-lib-bad_2.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1
