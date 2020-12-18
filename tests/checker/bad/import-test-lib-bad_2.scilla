@@ -15,11 +15,6 @@ import NestedTestLib2
 
 library ContractLib
 
-let one_msg = 
-  fun (msg : Message) => 
-    let nil_msg = Nil {Message} in
-      Cons {Message} msg nil_msg
-
 contract ImportNestedTestLibBad2()
 
 (* BaseType1 is not in scope *)

@@ -2,20 +2,20 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ImportNestedTestLibBad2:\n",
+      "error_message": "Type error(s) in contract ImportNestedTestLibBad3:\n",
       "start_location": {
-        "file": "checker/bad/import-test-lib-bad_2.scilla",
+        "file": "checker/bad/import-test-lib-bad_3.scilla",
         "line": 18,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "ADT BaseType1 not found",
+      "error_message": "No data type with constructor BaseConstructor1 found",
       "start_location": {
-        "file": "checker/bad/import-test-lib-bad_2.scilla",
-        "line": 21,
-        "column": 42
+        "file": "checker/bad/import-test-lib-bad_3.scilla",
+        "line": 23,
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
