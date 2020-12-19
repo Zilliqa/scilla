@@ -3,30 +3,34 @@
     "State variables": [],
     "ADT constructors": [
       {
-        "TestLib1.TestType2": [
-          { "constructor": "TestLib1.Constructor4", "tags": [ "NoInfo" ] }
+        "0x555256789012345678901234567890123456abef.BaseType": [
+          {
+            "constructor":
+              "0x555256789012345678901234567890123456abef.BaseConstructor",
+            "tags": [ "NoInfo" ]
+          }
         ]
       }
     ]
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "TestContr2",
+    "vname": "ImportTestLib3",
     "params": [],
     "fields": [],
-    "transitions": [],
+    "transitions": [ { "vname": "TestNestedImport", "params": [] } ],
     "procedures": [],
     "events": [],
     "ADTs": [
       {
-        "tname": "TestLib1.TestType2",
+        "tname": "0x555256789012345678901234567890123456abef.BaseType",
         "tparams": [],
         "tmap": [
           {
-            "cname": "TestLib1.Constructor3",
-            "argtypes": [ "TestLib1.TestType" ]
-          },
-          { "cname": "TestLib1.Constructor4", "argtypes": [ "Uint32" ] }
+            "cname":
+              "0x555256789012345678901234567890123456abef.BaseConstructor",
+            "argtypes": [ "Uint128" ]
+          }
         ]
       },
       {
@@ -35,14 +39,6 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "TestLib1.TestType",
-        "tparams": [],
-        "tmap": [
-          { "cname": "TestLib1.Constructor1", "argtypes": [] },
-          { "cname": "TestLib1.Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -79,12 +75,12 @@
   "warnings": [
     {
       "warning_message":
-        "No transition in contract TestContr2 contains an accept statement\n",
+        "No transition in contract ImportTestLib3 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7916"
+  "gas_remaining": "7999"
 }
 

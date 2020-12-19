@@ -1,0 +1,14 @@
+scilla_version 0
+
+(* This library is used in import-test-lib2.scilla. *)
+import TestLib4
+
+library TestLib5
+
+type Level1WrapperType =
+| Level1WrapperConstructor of BaseType
+
+let base_constructor_42 : BaseType =
+  let x = Uint128 42 in
+  BaseConstructor x
+

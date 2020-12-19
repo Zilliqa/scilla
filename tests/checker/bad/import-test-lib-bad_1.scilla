@@ -1,0 +1,55 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   NestedTestLib1
+ *         |
+ *         |
+ *   NestedTestLib2
+ *         |
+ *         |
+ *     contract
+*)
+
+import NestedTestLib2
+
+library ContractLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+contract ImportNestedTestLibBad1()
+
+(* WrapperType1 is in scope and a legal parameter type *)
+transition TestNestedImport1 (x_tparam : WrapperType1)
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* Sending a message containing an unknown type is allowed, if the type is serializable *)
+  msg = { _tag : "Dummy"; _recipient : recipient ; _amount : Uint128 0 ;
+         param : base_val_1_from_lib_2 };
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition TestNestedImport2 ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* Sending a message containing a map is not allowed *)
+  msg = { _tag : "Dummy"; _recipient : recipient ; _amount : Uint128 0 ;
+         param : base_val_2_from_lib_2 };
+  msgs = one_msg msg;
+  send msgs
+end
+
+(* WrapperType2 is in scope, but is not serializable because BaseType2 is not  *)
+transition TestNestedImport3 (x_tparam : WrapperType2)
+end
+
+transition TestNestedImport1 ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* variable base_val_1_from_lib_1 is not in scope *)
+  msg = { _tag : "Dummy"; _recipient : recipient ; _amount : Uint128 0 ;
+         param : base_val_1_from_lib_1 };
+  msgs = one_msg msg;
+  send msgs
+end

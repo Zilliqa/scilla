@@ -1,0 +1,70 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7938",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0x123456789abcdef123456789abcdef123456789a",
+      "params": [
+        { "vname": "int_param", "type": "Uint128", "value": "42" },
+        {
+          "vname": "base_param",
+          "type": "0x222256789012345678901234567890123456abef.BaseType",
+          "value": {
+            "constructor":
+              "0x222256789012345678901234567890123456abef.BaseConstructor",
+            "argtypes": [],
+            "arguments": [ "42" ]
+          }
+        },
+        {
+          "vname": "level_1_param",
+          "type":
+            "0x333256789012345678901234567890123456abef.Level1WrapperType",
+          "value": {
+            "constructor":
+              "0x333256789012345678901234567890123456abef.Level1WrapperConstructor",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x222256789012345678901234567890123456abef.BaseConstructor",
+                "argtypes": [],
+                "arguments": [ "42" ]
+              }
+            ]
+          }
+        },
+        {
+          "vname": "level_2_param",
+          "type":
+            "0x444256789012345678901234567890123456abef.Level2WrapperType",
+          "value": {
+            "constructor":
+              "0x444256789012345678901234567890123456abef.Level2WrapperConstructor",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x333256789012345678901234567890123456abef.Level1WrapperConstructor",
+                "argtypes": [],
+                "arguments": [
+                  {
+                    "constructor":
+                      "0x222256789012345678901234567890123456abef.BaseConstructor",
+                    "argtypes": [],
+                    "arguments": [ "42" ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": []
+}
