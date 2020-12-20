@@ -1,0 +1,13 @@
+(True),
+{ [value_sub -> (ByStr 0x0b2d230f552225a8cfa47efe)],
+  [len -> (Uint32 12)],
+  [full_len -> (Uint32 12)],
+  [value_reserialized -> (ByStr 0x0b2d230f552225a8cfa47efe)],
+  [empty -> (ByStr 0x)],
+  [emptyx -> (ByStr0 0x)],
+  [bs -> (ByStr 0x2d230f552225a8cfa47efe)],
+  [bs_opt -> (Some (Pair (ByStr 0x2d230f552225a8cfa47efe) (Uint32 12)))],
+  [pos -> (Uint32 0)],
+  [value -> (ByStr 0x0b2d230f552225a8cfa47efe)],
+  [bytes -> (ByStr12 0x0b2d230f552225a8cfa47efe)] }
+Gas remaining: 4000843

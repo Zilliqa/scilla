@@ -1,4 +1,4 @@
 (Int256 1002233),
 { [b -> (BNum 22222222)],
   [a -> (BNum 23224455)] }
-Gas remaining: 4001721
+Gas remaining: 4001203

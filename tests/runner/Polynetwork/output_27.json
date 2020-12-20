@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "3642",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Header height lower than cur epoch heigh / Next bookkeeper empty\"))])",
+      "start_location": {
+        "file": "tests/contracts/Polynetwork.scilla",
+        "line": 258,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from changeBookKeeper",
+      "start_location": {
+        "file": "tests/contracts/Polynetwork.scilla",
+        "line": 227,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

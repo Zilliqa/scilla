@@ -4,4 +4,4 @@
   [msg -> (Message [(tag : (String "Main")) ; (value : (Int32 5))])],
   [one_msg -> <closure>],
   [nil_msg -> (Nil)] }
-Gas remaining: 4001745
+Gas remaining: 4001227

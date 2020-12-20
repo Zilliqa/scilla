@@ -147,7 +147,7 @@ let explist =
     "polynetwork_extract_bystr1.scilexp";
     "polynetwork_extract_bystr2.scilexp";
     "polynetwork_extract_bystr3.scilexp";
-    "polynetwork_getBookKeepers.scilexp";
+    "polynetwork_getBookKeeper.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct

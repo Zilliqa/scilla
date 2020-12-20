@@ -292,9 +292,8 @@ transition crossChain(toChainId : Uint64, toContract : ByStr, method : ByStr, tx
   rawParam = append_TxParam empty_bystr txp;
   rawParamHash = builtin keccak256hash rawParam;
   updateZilTxHash txHashIndex rawParamHash;
-  (* Create an event: TODO: What is equivalent of tx.origin? *)
   e = { _eventname : "CrossChainEvent";
-       origin : _sender;
+       origin : _origin;
        paramTxHash : paramTxHash;
        sender : _sender;
        toChainId : toChainId;

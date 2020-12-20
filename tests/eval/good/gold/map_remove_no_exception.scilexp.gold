@@ -1,4 +1,4 @@
 (Map Int32 Int32 []),
 { [m -> (Map Int32 Int32 [])],
   [k -> (Int32 1)] }
-Gas remaining: 4001752
+Gas remaining: 4001234
