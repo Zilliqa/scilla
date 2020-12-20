@@ -1,0 +1,114 @@
+{
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "0x222256789012345678901234567890123456abef.BaseType": [
+          {
+            "constructor":
+              "0x222256789012345678901234567890123456abef.BaseConstructor",
+            "tags": [ "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ImportTestLib2",
+    "params": [],
+    "fields": [],
+    "transitions": [ { "vname": "TestNestedImport", "params": [] } ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname":
+          "0x333256789012345678901234567890123456abef.Level1WrapperType",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x333256789012345678901234567890123456abef.Level1WrapperConstructor",
+            "argtypes": [
+              "0x222256789012345678901234567890123456abef.BaseType"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname":
+          "0x444256789012345678901234567890123456abef.Level2WrapperType",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x444256789012345678901234567890123456abef.Level2WrapperConstructor",
+            "argtypes": [
+              "0x333256789012345678901234567890123456abef.Level1WrapperType"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "0x222256789012345678901234567890123456abef.BaseType",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x222256789012345678901234567890123456abef.BaseConstructor",
+            "argtypes": [ "Uint128" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract ImportTestLib2 contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

@@ -265,7 +265,13 @@ let contract_tests env =
                 >: build_contract_init_test env succ_code
                      "0x111256789012345678901234567890123456abef" "init" true;
                 "import-test-lib"
-                >::: build_contract_tests env "import-test-lib" succ_code 1 1 [];
+                >::: build_contract_tests env "import-test-lib" succ_code 1 3 [];
+                "import-test-lib2"
+                >::: build_contract_tests env "import-test-lib2" succ_code 1 1
+                       [];
+                "import-test-lib3"
+                >::: build_contract_tests env "import-test-lib3" succ_code 1 1
+                       [];
                 "cfinvoke"
                 >::: build_contract_tests env "cfinvoke" succ_code 1 4 [];
                 "ping" >::: build_contract_tests env "ping" succ_code 0 3 [];
@@ -276,6 +282,8 @@ let contract_tests env =
                 >::: build_contract_tests env "auction" succ_code 1 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" succ_code 1 7 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" succ_code 9 9 [];
                 "bookstore"
                 >::: build_contract_tests env "bookstore" succ_code 1 12 [];
                 "nonfungible-token"

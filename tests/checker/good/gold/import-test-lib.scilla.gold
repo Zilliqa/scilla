@@ -1,0 +1,121 @@
+{
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "0x986556789012345678901234567890123456abcd.TestType1": [
+          {
+            "constructor":
+              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "tags": [ "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Hello",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "Hi", "params": [] },
+      { "vname": "TestNestedImport1", "params": [] },
+      { "vname": "TestNestedImport2", "params": [] }
+    ],
+    "procedures": [],
+    "events": [
+      {
+        "vname": "Nested_import_value",
+        "params": [ { "vname": "res", "type": "Uint128" } ]
+      },
+      {
+        "vname": "sorted",
+        "params": [ { "vname": "sorted", "type": "List (Uint32)" } ]
+      },
+      {
+        "vname": "unsorted",
+        "params": [ { "vname": "unsorted", "type": "List (Uint32)" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "0x986556789012345678901234567890123456abcd.TestType1",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "argtypes": [ "Uint128" ]
+          },
+          {
+            "cname":
+              "0x986556789012345678901234567890123456abcd.TestConstructor2",
+            "argtypes": [ "Bool" ]
+          }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "0x111256789012345678901234567890123456abef.TestTypeWrapper",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname":
+              "0x111256789012345678901234567890123456abef.WrapperConstructor",
+            "argtypes": [
+              "0x986556789012345678901234567890123456abcd.TestType1"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract Hello contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7859"
+}
+

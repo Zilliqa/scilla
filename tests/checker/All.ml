@@ -24,6 +24,7 @@ let tests env =
          "good"
          >::: [
                 Good.Tests.tests env;
+                Good.TestsWithInit.tests env;
                 Good.CheckerTests.tests env;
                 Good.ShogiTests.tests env;
                 Good.TypeInfoTests.tests env;

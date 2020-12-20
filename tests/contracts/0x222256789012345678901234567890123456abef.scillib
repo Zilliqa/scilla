@@ -1,0 +1,7 @@
+scilla_version 0
+
+(* This library is used in import-test-lib2.scilla. *)
+library TestLib4
+
+type BaseType =
+| BaseConstructor of Uint128

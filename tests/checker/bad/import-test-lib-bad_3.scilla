@@ -1,0 +1,26 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   NestedTestLib1
+ *         |
+ *         |
+ *   NestedTestLib2
+ *         |
+ *         |
+ *     contract
+*)
+
+import NestedTestLib2
+
+library ContractLib
+
+contract ImportNestedTestLibBad3()
+
+transition TestNestedImport1 ()
+  match base_val_1_from_lib_2 with
+  (* BaseConstructor1 is not in scope *)
+  | BaseConstructor1 x =>
+  end
+end
+

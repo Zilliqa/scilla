@@ -1,36 +1,37 @@
 {
     "_tag": "PlayerAction",
     "_amount": "0",
-    "_sender" : "0x1234567890123456789012345678906784567890",
+    "_sender": "0x1234567890123456789012345678906784567890",
     "params": [
         {
-            "vname" : "action",
-            "type"  : "ShogiLib.Action",
-            "value" : {
-                "constructor" : "ShogiLib.Move",
-                "argtypes"    : [],
-                "arguments"   : [
+            "vname": "action",
+            "type": "ShogiLib.Action",
+            "value": {
+                "constructor": "ShogiLib.Move",
+                "argtypes": [],
+                "arguments": [
                     {
-                        "constructor" : "ShogiLib.Square",
-                        "argtypes" : [],
-                        "arguments" : [
+                        "constructor": "ShogiLib.Square",
+                        "argtypes": [],
+                        "arguments": [
                             "1",
                             "1"
                         ]
                     },
                     {
-                        "constructor" : "ShogiLib.North",
-                        "argtypes"    : [],
-                        "arguments"   : []
+                        "constructor": "ShogiLib.North",
+                        "argtypes": [],
+                        "arguments": []
                     },
                     "3",
                     {
-                        "constructor" : "False",
-                        "argtypes"    : [],
-                        "arguments"   : []
+                        "constructor": "False",
+                        "argtypes": [],
+                        "arguments": []
                     }
                 ]
             }
         }
-    ]
+    ],
+    "_origin": "0x1234567890123456789012345678906784567890"
 }
