@@ -14,6 +14,6 @@ match ui_opt with
   builtin eq value value_reserialized
 | None =>
   (* division by zero to create an error *)
-  let dummy = builtin div pos pos in
+  let dummy = builtin div zero_uint32 zero_uint32 in
   False
 end
