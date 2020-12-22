@@ -221,9 +221,8 @@ let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
       match bystr_len_32_opt with
       | Some bystr_len_32 =>
         let some = fun (a : ByStr) => Some {ByStr} a in
-        let unit = fun (a : ByStr) => a in
-        let extractor = @extract_scillaval ByStr ByStr in
-        extractor some unit bs nextpos bystr_len_32
+        let extractor = @extract_scillaval ByStr in
+        extractor some bs nextpos bystr_len_32
       | None => None {(Pair ByStr Uint32)}
       end
     | None => None {(Pair ByStr Uint32)}

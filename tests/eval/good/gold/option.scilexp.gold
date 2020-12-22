@@ -3,4 +3,4 @@
   [t -> (True)],
   [x -> (Int32 12)],
   [a -> (Int32 12)] }
-Gas remaining: 4001230
+Gas remaining: 4001224

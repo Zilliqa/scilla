@@ -22,4 +22,4 @@
   [zero -> (Uint64 0)],
   [flt -> <closure>],
   [int_sort -> <closure>] }
-Gas remaining: 4000250
+Gas remaining: 4000244

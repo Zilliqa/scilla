@@ -8,4 +8,4 @@
   [v1 -> (Int32 42)],
   [k2 -> (Int32 2)],
   [k1 -> (Int32 1)] }
-Gas remaining: 4001217
+Gas remaining: 4001211
