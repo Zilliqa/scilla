@@ -353,24 +353,47 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          }
 
   let recursion_rprins_elibs recursion_principles ext_libs libs =
-    let rec recurser libl =
-      List.fold_left libl ~init:([], [])
-        ~f:(fun (rec_elibs_acc, emsgs_acc) ext_lib ->
-          let rec_elib, emsg =
-            let rec_dep_libs, dep_emsgs = recurser ext_lib.deps in
-            let rec_lib = recursion_library ext_lib.libn in
-            match rec_lib with
-            | Ok lib ->
-                let (libn' : RecursionSyntax.libtree) =
-                  { libn = lib; deps = rec_dep_libs }
+    let rec recurser libl filenames_already_checked =
+      List.fold_left libl ~init:([], filenames_already_checked, [])
+        ~f:(fun (rec_elibs_acc, files_checked_acc, emsgs_acc) ext_lib ->
+          let ext_lib_fname = (SR.get_loc (get_rep ext_lib.libn.lname)).fname in
+          let rec_lib_opt, dep_libs, all_checked_files, all_emsgs =
+            (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+               TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
+            match
+              List.find files_checked_acc ~f:(fun fname ->
+                  String.(fname = ext_lib_fname))
+            with
+            | Some _ ->
+                (* ext_lib already checked *)
+                (None, [], files_checked_acc, emsgs_acc)
+            | None -> (
+                (* ext_lib not checked yet *)
+                (* Check dependencies *)
+                let rec_dep_libs, dep_files, dep_emsgs =
+                  recurser ext_lib.deps files_checked_acc
                 in
-                (rec_elibs_acc @ [ libn' ], emsgs_acc @ dep_emsgs)
-            | Error el -> (rec_elibs_acc, emsgs_acc @ dep_emsgs @ el)
+                let all_files =
+                  (ext_lib_fname :: dep_files) @ files_checked_acc
+                in
+                match recursion_library ext_lib.libn with
+                | Ok lib ->
+                    (Some lib, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs)
+                | Error e ->
+                    (None, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs @ e) )
           in
-          (rec_elib, emsg))
+          match rec_lib_opt with
+          | Some lib ->
+              let (libn' : RecursionSyntax.libtree) =
+                { libn = lib; deps = dep_libs }
+              in
+              (rec_elibs_acc @ [ libn' ], all_checked_files, all_emsgs)
+          | None ->
+              (* An error has occurred *)
+              (rec_elibs_acc, all_checked_files, all_emsgs))
     in
 
-    let recursion_elibs, emsgs = recurser ext_libs in
+    let recursion_elibs, _, emsgs = recurser ext_libs [] in
 
     let%bind recursion_md_libs, emsgs =
       Option.value_map libs

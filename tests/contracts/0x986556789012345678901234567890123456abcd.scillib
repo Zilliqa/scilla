@@ -6,3 +6,16 @@ import ListUtils
 library TestLib1
 
 let sort_uint32 = @list_sort Uint32
+
+type TestType1 =
+| TestConstructor1 of Uint128
+| TestConstructor2 of Bool
+
+let lift_TestType1 : TestType1 -> Uint128 =
+  fun (input : TestType1) =>
+    match input with
+    | TestConstructor1 x => x
+    | TestConstructor2 True => Uint128 1
+    | TestConstructor2 False => Uint128 0
+    end
+

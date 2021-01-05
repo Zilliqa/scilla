@@ -1,0 +1,35 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Cannot serialize values of type BaseType2.",
+      "start_location": {
+        "file": "checker/bad/import-test-lib-bad_1.scilla",
+        "line": 39,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type WrapperType2 cannot be used as transition parameter",
+      "start_location": {
+        "file": "checker/bad/import-test-lib-bad_1.scilla",
+        "line": 45,
+        "column": 31
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Couldn't resolve the identifier \"base_val_1_from_lib_1\".\n",
+      "start_location": {
+        "file": "checker/bad/import-test-lib-bad_1.scilla",
+        "line": 52,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

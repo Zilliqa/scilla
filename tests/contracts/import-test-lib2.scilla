@@ -1,0 +1,48 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   0x222256789012345678901234567890123456abef (TestLib4) _
+ *                         |                                \
+ *                         |                                 \
+ *   0x333256789012345678901234567890123456abef (TestLib5)   |
+ *                         |                                 |
+ *                         |                                 |
+ *   0x444256789012345678901234567890123456abef (TestLib6)   |
+ *                         |                                /
+ *                         |     __________________________/
+ *                      contract
+*)
+
+import TestLib4 TestLib6
+
+library ContractLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+contract ImportTestLib2()
+
+transition TestNestedImport ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* TestLib6 exposes a Level1WrapperConstructor containing the value 42. *)
+  (* Construct a Level2WrapperConstructor *)
+  wrap_level_2 = Level2WrapperConstructor wrap_level_1_base_constructor_42;
+  (* Lift to BaseType using lifter function from TestLib6 *)
+  base_val = lift_level_2_wrapper_type wrap_level_2;
+  (* base_val is of type BaseType, which is in scope because we import TestLib4 *)
+  match base_val with
+  | BaseConstructor x =>
+    (* Check that we can send both wrap_level_1_base_constructor_42, wrap_level_2 and base_val *)
+    (* Also check that x = 42 *)
+    msg = { _tag : "" ; _recipient : recipient ; _amount : Uint128 0 ;
+           int_param : x ;
+           base_param : base_val ;
+           level_1_param : wrap_level_1_base_constructor_42 ;
+           level_2_param : wrap_level_2 };
+    msgs = one_msg msg;
+    send msgs
+  end
+end

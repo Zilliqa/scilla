@@ -1,0 +1,18 @@
+[
+    {
+        "vname" : "_extlibs",
+        "type" : "List(Pair String ByStr20)",
+        "value" : [
+            {
+                "constructor" : "Pair",
+                "argtypes" : ["String", "ByStr20"],
+                "arguments" : ["TestLib8", "0x666256789012345678901234567890123456abef"]
+            },
+            {
+                "constructor" : "Pair",
+                "argtypes" : ["String", "ByStr20"],
+                "arguments" : ["TestLib9", "0x777256789012345678901234567890123456abef"]
+            }
+        ]
+    }
+]

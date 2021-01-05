@@ -384,6 +384,7 @@ module Message = struct
     let tags = member_exn tag_label json |> to_string_exn in
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in
+    let origins = member_exn origin_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
     let tag = (tag_label, build_prim_lit_exn JSONType.string_typ tags) in
     let amount =
@@ -393,9 +394,13 @@ module Message = struct
       ( sender_label,
         build_prim_lit_exn (JSONType.bystrx_typ address_length) senders )
     in
+    let origin =
+      ( origin_label,
+        build_prim_lit_exn (JSONType.bystrx_typ address_length) origins )
+    in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params = List.map pjlist ~f:jobj_to_statevar in
-    tag :: amount :: sender :: params
+    tag :: amount :: origin :: sender :: params
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =

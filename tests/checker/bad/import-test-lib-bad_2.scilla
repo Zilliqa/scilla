@@ -1,0 +1,27 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   NestedTestLib1
+ *         |
+ *         |
+ *   NestedTestLib2
+ *         |
+ *         |
+ *     contract
+*)
+
+import NestedTestLib2
+
+library ContractLib
+
+contract ImportNestedTestLibBad2()
+
+(* BaseType1 is not in scope *)
+transition TestNestedImport1 (x_tparam : BaseType1)
+end
+
+(* WrapperType1 is in scope and a legal parameter type *)
+transition TestNestedImport2 (x_tparam : BaseType1)
+end
+

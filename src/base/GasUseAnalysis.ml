@@ -1242,6 +1242,8 @@ struct
     let si a t = mk_typed_id a t in
     let all_params =
       [
+        ( si ContractUtil.MessagePayload.origin_label (bystrx_typ 20),
+          bystrx_typ 20 );
         ( si ContractUtil.MessagePayload.sender_label (bystrx_typ 20),
           bystrx_typ 20 );
         (si ContractUtil.MessagePayload.amount_label uint128_typ, uint128_typ);

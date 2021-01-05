@@ -1,0 +1,20 @@
+scilla_version 0
+
+import NestedTestLib1
+
+(* This library is used by import-test-lib-bad.scilla *)
+library NestedTestLib2
+
+type WrapperType1 =
+| WrapperConstructor1 of BaseType1
+
+type WrapperType2 =
+| WrapperConstructor2 of BaseType2
+
+let base_val_1_from_lib_2 : BaseType1 =
+  let x = Uint128 98 in
+  BaseConstructor1 x
+
+let base_val_2_from_lib_2 : BaseType2 =
+  let x = Emp Uint128 Uint128 in
+  BaseConstructor2 x

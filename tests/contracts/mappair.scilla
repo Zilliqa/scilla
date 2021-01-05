@@ -116,3 +116,8 @@ transition redef_warn(b : Bool)
   e = {_eventname : "Foo"; x : x};
   event e
 end
+
+transition print_sender_origin()
+  e = { _eventname : "Source"; _sender : _sender; _origin : _origin };
+  event e
+end
