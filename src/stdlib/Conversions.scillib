@@ -26,7 +26,7 @@ type IntegerEncoding =
   | BigEndian
 
 (* does not throw exceptions *)
-let osubstr : ByStr -> Uint32 -> Uint32 -> Option ByStr =
+let substr_safe : ByStr -> Uint32 -> Uint32 -> Option ByStr =
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
   fun (len : Uint32) =>
@@ -55,7 +55,7 @@ let extract_scillaval : forall 'A. forall 'B. (ByStr -> Option 'B) -> ('B -> 'A)
   fun (bs : ByStr) =>
   fun (pos : Uint32) =>
   fun (len : Uint32) =>         (* Byte size of the Uint value. *)
-    let subbs_opt =  osubstr bs pos len in
+    let subbs_opt =  substr_safe bs pos len in
     match subbs_opt with
     | Some subbs =>
       let subbs_x_opt = to_bystrx subbs in
