@@ -524,6 +524,7 @@ let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
     getBookKeeper m pubKeys
 
 (* Mimics ethereum's recovery of address from message and a signature. *)
+(* https://ethereum.stackexchange.com/questions/13778/get-public-key-of-any-ethereum-account *)
 let ecrecover : ByStr -> ByStr64 -> Uint32 -> ByStr20 =
   fun (msg : ByStr) =>
   fun (sig : ByStr64) =>
@@ -544,7 +545,6 @@ let ecrecover : ByStr -> ByStr64 -> Uint32 -> ByStr20 =
     sommer addr_opt exnobj
 
 (* See EthCrossChainUtils.sol:verifySig *)
-
 let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
   fun (rawHeader : ByStr) =>
   fun (siglist : List Signature) =>
