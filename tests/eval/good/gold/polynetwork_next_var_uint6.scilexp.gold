@@ -1,0 +1,13 @@
+(True),
+{ [value_sub -> (ByStr 0xfeffffffff)],
+  [len -> (Uint32 5)],
+  [full_len -> (Uint32 20)],
+  [value_reserialized -> (ByStr 0xfeffffffff)],
+  [empty -> (ByStr 0x)],
+  [emptyx -> (ByStr0 0x)],
+  [ui -> (Uint64 4294967295)],
+  [ui_opt -> (Some (Pair (Uint64 4294967295) (Uint32 20)))],
+  [pos -> (Uint32 15)],
+  [value -> (ByStr 0x64fdfd00fde803fdfffffe9f860200feffffffff)],
+  [num_hex -> (ByStr20 0x64fdfd00fde803fdfffffe9f860200feffffffff)] }
+Gas remaining: 4000797

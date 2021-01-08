@@ -18,4 +18,4 @@
   [int_sort_t -> <closure>],
   [list_int_eq -> <closure>],
   [list_int_eq_t -> <closure>] }
-Gas remaining: 4001384
+Gas remaining: 4000866

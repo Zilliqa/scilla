@@ -1,4 +1,4 @@
 (False),
 { [b -> (ByStr20 0xafcdeabcde123456789012345678901234567890)],
   [a -> (ByStr20 0xffcdeabcde123456789012345678901234567890)] }
-Gas remaining: 4001733
+Gas remaining: 4001215
