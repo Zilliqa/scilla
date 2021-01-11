@@ -1,0 +1,22 @@
+(* next_var_uint value == 0xFFFF *)
+let num_hex = 0x64fdfd00fde803fdffff in
+
+let value = builtin to_bystr num_hex in
+let pos = Uint32 7 in
+
+let ui_opt = next_var_uint value pos in
+
+match ui_opt with
+| Some (Pair ui _) =>
+  let emptyx = 0x in
+  let empty = builtin to_bystr emptyx in
+  let value_reserialized = append_var_uint empty ui in
+  let full_len = builtin strlen value in
+  let len = builtin sub full_len pos in
+  let value_sub = builtin substr value pos len in
+  builtin eq value_sub value_reserialized
+| None =>
+  (* division by zero to create an error *)
+  let dummy = builtin div zero_uint32 zero_uint32 in
+  False
+end

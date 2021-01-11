@@ -15,4 +15,4 @@
   [one -> (Uint32 1)],
   [zero -> (Uint32 0)],
   [int_nth -> <closure>] }
-Gas remaining: 4001278
+Gas remaining: 4000760

@@ -1,0 +1,29 @@
+let p1 = 0x1205041e0779f5c5ccb2612352fe4a200f99d3e7758e70ba53f607c59ff22a30f678ff757519efff911efc7ed326890a2752b9456cc0054f9b63215f1d616e574d6197 in
+let p2 = 0x120504468dd1899ed2d1cc2b829882a165a0ecb6a745af0c72eb2982d66b4311b4ef73cff28a6492b076445337d8037c6c7be4d3ec9c4dbe8d7dc65d458181de7b5250 in
+let p3 = 0x120504482acb6564b19b90653f6e9c806292e8aa83f78e7a9382a24a6efe41c0c06f39ef0a95ee60ad9213eb0be343b703dd32b12db32f098350cf3f4fc3bad6db23ce in
+let p4 = 0x120504679930a42aaf3c69798ca8a3f12e134c019405818d783d11748e039de8515988754f348293c65055f0f1a9a5e895e4e7269739e243a661fff801941352c38712 in
+let p5 = 0x1205048172918540b2b512eae1872a2a2e3a28d989c60d95dab8829ada7d7dd706d658df044eb93bbe698eff62156fc14d6d07b7aebfbc1a98ec4180b4346e67cc3fb0 in
+let p6 = 0x1205048b8af6210ecfdcbcab22552ef8d8cf41c6f86f9cf9ab53d865741cfdb833f06b72fcc7e7d8b9e738b565edf42d8769fd161178432eadb2e446dd0a8785ba088f in
+let p7 = 0x120504eb1baab602c5899282561cdaaa7aabbcdd0ccfcbc3e79793ac24acf90778f35a059fca7f73aeb60666178db8f704b58452b7a0b86219402c0770fcb52ac9828c in
+
+let n = Uint32 7 in
+let m = compute_m n in
+
+let t1 = Pubkey p1 in
+let t2 = Pubkey p2 in
+let t3 = Pubkey p3 in
+let t4 = Pubkey p4 in
+let t5 = Pubkey p5 in
+let t6 = Pubkey p6 in
+let t7 = Pubkey p7 in
+
+let l0 = Nil {Pubkey} in
+let l1 = Cons {Pubkey} t1 l0 in
+let l2 = Cons {Pubkey} t2 l1 in
+let l3 = Cons {Pubkey} t3 l2 in
+let l4 = Cons {Pubkey} t4 l3 in
+let l5 = Cons {Pubkey} t5 l4 in
+let l6 = Cons {Pubkey} t6 l5 in
+let l7 = Cons {Pubkey} t7 l6 in
+
+getBookKeeper m l7

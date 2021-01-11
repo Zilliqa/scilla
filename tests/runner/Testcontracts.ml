@@ -342,6 +342,8 @@ let contract_tests env =
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
                 "listiter"
                 >::: build_contract_tests env "listiter" succ_code 1 1 [];
+                "polynetwork"
+                >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -351,6 +353,8 @@ let contract_tests env =
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 12 14 [];
+                "polynetwork"
+                >::: build_contract_tests env "Polynetwork" fail_code 25 28 [];
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];
