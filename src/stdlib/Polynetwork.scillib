@@ -75,6 +75,17 @@ let append_uint64_le = append_uint64 little_endian
 let append_uint128_le = append_uint128 little_endian
 let append_uint256_le = append_uint256 little_endian
 
+let big_endian = BigEndian
+let extract_uint32_be = extract_uint32 big_endian
+let extract_uint64_be = extract_uint64 big_endian
+let extract_uint128_be = extract_uint128 big_endian
+let extract_uint256_be = extract_uint256 big_endian
+
+let append_uint32_be = append_uint32 big_endian
+let append_uint64_be = append_uint64 big_endian
+let append_uint128_be = append_uint128 big_endian
+let append_uint256_be = append_uint256 big_endian
+
 (* Raise an exception and return a default value. *)
 let raise_exception =
   tfun 'A =>
