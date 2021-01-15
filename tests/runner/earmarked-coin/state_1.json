@@ -1,8 +1,9 @@
 [
-  { "vname": "earmarked_coins", "type": "Map (ByStr20) (EarmarkedCoin)", "value": [] },
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
   {
-    "vname": "_balance",
-    "type": "Uint128",
-    "value": "0"
+    "vname": "earmarked_coins",
+    "type":
+      "Map (ByStr20) (0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin)",
+    "value": []
   }
 ]

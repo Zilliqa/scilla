@@ -16,11 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-type scalar = string (* TODO: Replace this with something like ByStr32 *)
+type scalar = string [@@deriving equal]
 
-type g1point = { g1x : scalar; g1y : scalar }
+(* TODO: Replace this with something like ByStr32 *)
 
-type g2point = { g2x : string; g2y : string }
+type g1point = { g1x : scalar; g1y : scalar } [@@deriving equal]
+
+type g2point = { g2x : string; g2y : string } [@@deriving equal]
 
 (* TODO: Replace with (ByStr64,ByStr64) *)
 
@@ -48,9 +50,3 @@ val decode_g1point_bytes : string -> g1point option
 val encode_g2point_bytes : g2point -> string
 
 val encode_g1g2pair_bytes : g1point -> g2point -> string
-
-val eq_scalar : scalar -> scalar -> bool
-
-val eq_g1 : g1point -> g1point -> bool
-
-val eq_g2 : g2point -> g2point -> bool

@@ -17,11 +17,13 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
-open FrontEndParser
+open Scilla_base
+open Literal
 open GlobalConfig
 open ErrorUtils
 open PrettyPrinters
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+open FEParser
 
 let raise_if_error = function Ok _ -> () | Error e -> fatal_error e
 

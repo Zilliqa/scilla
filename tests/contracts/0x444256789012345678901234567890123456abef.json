@@ -1,0 +1,18 @@
+[
+    {
+        "vname" : "_library",
+        "type" : "Bool",
+        "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+        "vname" : "_extlibs",
+        "type" : "List(Pair String ByStr20)",
+        "value" : [
+            {
+                "constructor" : "Pair",
+                "argtypes" : ["String", "ByStr20"],
+                "arguments" : ["TestLib5", "0x333256789012345678901234567890123456abef"]
+            }
+        ]
+    }
+]

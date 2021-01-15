@@ -20,9 +20,11 @@ Zilliqa - the underlying blockchain platform on which Scilla contracts are run, 
 
 A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
 
-## Building and Running
+## Building Scilla
 
-### Source code
+If you don't want to setup and build Scilla from source, skip this section to follow the opam installation instructions.
+
+### 1. Cloning source code
 
 We suggest users to use the latest release of Scilla available [here](https://github.com/Zilliqa/scilla/releases).
 
@@ -31,14 +33,63 @@ If you'd like to hack on Scilla, clone it with all of its submodules:
 git clone --jobs 4 --recurse-submodules https://github.com/Zilliqa/scilla/
 ```
 
-### Build requirements
+### 2. Build prerequisites
 
 Platform specific instructions for setting up your system for building Scilla can be
 found in [INSTALL.md](./INSTALL.md).
 
-### Compiling and Running
+### 3. Compiling
 
-To build the project, run `make clean; make` from the root folder.
+To build the project from the root folder:
+```
+make
+```
+
+### Installation
+
+Scilla can be installed into your opam switch as
+
+```
+make install
+```
+
+and can similarly be uninstalled as
+
+```
+make uninstall
+```
+
+## Installing Scilla with opam
+Scilla can be installed using OCaml's package manager `opam`.
+
+### Installing Scilla from GitHub
+
+To install the development version of Scilla package make sure you are using
+the correct opam switch and execute the following
+
+```shell
+opam pin add scilla git+https://github.com/Zilliqa/scilla#master --yes
+```
+
+### Installing Scilla from your local repo
+
+```shell
+cd <scilla-repo>
+# It is important to pick the right git branch because opam pins the package to the current branch
+git checkout master
+opam install ./scilla.opam
+```
+
+If you are using a local opam switch (see [here](https://github.com/Zilliqa/scilla/blob/master/INSTALL.md#installing-opam-packages))
+in you local Scilla repo (`~/path/to/scilla`), then most likely you will want to reuse the same local switch for your Scilla-based project.
+To do that create a symlink `_opam` as follows:
+
+```shell
+cd <scilla-based-project-repo>
+ln -s ~/path/to/scilla/_opam _opam
+```
+
+## Running the binary
 
 Once the project is built you can try the following things:
 
@@ -113,6 +164,21 @@ within the server process itself.
 
 More details on the protocol can be found [here](https://github.com/Zilliqa/scilla/wiki/scilla-server-API).
 
+For local testing and experiments, a `scilla-client` is also provided on development
+builds (`make dev`). This can interact with `scilla-server`, achieving the same effect
+as `scilla-runner` and `scilla-client`.
+
+Start `scilla-server` without any arguments. Examples for checking a contract
+and running a transition via `scilla-server` are provided below. They are to be
+run on a separate shell (while `scilla-server` continues to run).
+
+```shell
+scilla-client run -argv " -init tests/runner/crowdfunding/init.json -istate tests/runner/crowdfunding/state_4.json -iblockchain tests/runner/crowdfunding/blockchain_4.json -imessage tests/runner/crowdfunding/message_4.json -o tests/runner/crowdfunding/output_4.json -i tests/contracts/crowdfunding.scilla -libdir src/stdlib -gaslimit 8000"
+
+scilla-client check -argv " -libdir src/stdlib -gaslimit 8000 tests/contracts/helloWorld.scilla"
+```
+
+
 ### Where to find binaries
 
 * The runnables are put into the folder
@@ -124,9 +190,9 @@ $PROJECT_DIR/bin
 ### Running the testsuite
 
 The testsuite is based on the `OUnit2` framework and is driven by the
-main module in `tests/Testsuite.ml`. Currently there are two types of
-tests run in the testsuite. `contracts` tests run a full transition on
-a contract with all input data provided. `eval` tests only test
+main module in `tests/Testsuite.ml`. There are several types of
+tests run in the testsuite. For instance, `contracts` tests run a full transition on
+a contract with all input data provided, and `eval` tests only test
 expression evaluation. To add more tests of either of these kinds,
 look for the corresponding `.ml` files in their tests/directory and add
 accordingly.
@@ -146,7 +212,7 @@ the `tests/` directory containing the tests.
 Relative paths may not work.
 Parameters to `testsuite` executable can be passed like so:
 ```shell
-dune exec tests/testsuite.exe -- <space-separate-parameters>
+dune exec tests/testsuite.exe -- <space-separated-parameters>
 ```
 
 To obtain a list of tests available:
@@ -155,16 +221,63 @@ To obtain a list of tests available:
 dune exec tests/testsuite.exe -- -list-test
 ```
 
+#### Running an individual test
 To run an individual test(s), for example
-`all_tests:1:exptests:14:let.scilla`
-(one of the tests from the list obtained via `dune exec -- tests/testsuite -list-test`):
+`tests:4:checker:0:good:1:exptests:5:one-accept.scilla`,
+(it's one of the tests from the list obtained via `dune exec -- tests/testsuite.exe -list-test`,
+this needs to be run from the project's root):
 
 ```shell
-dune exec tests/testsuite.exe -- -only-test all_tests:1:exptests:14:let.scilla -print-cli true
+dune exec tests/testsuite.exe -- -only-test tests:4:checker:0:good:1:exptests:5:one-accept.scilla -print-cli true
 ```
 
 The optional `-print-cli true` argument is to produce the command line
 that has been used to run the test.
+
+#### Running a group of tests
+If you'd like to run a group of tests, for instance, the typechecking tests
+which are assigned the name `checker`, execute the following from the project's
+root:
+
+```shell
+dune exec -- tests/testsuite.exe -only-test tests:4:checker
+```
+
+If you need to update the so-called `gold`-files which keep the expected output
+for the `checker` tests, run the following command:
+
+```shell
+dune exec -- tests/testsuite.exe -only-test tests:4:checker -update-gold true
+```
+
+### Formatting and linting the codebase
+Our CI checks that the source code is formatted properly. Use
+```shell
+make fmt
+```
+to ensure your code adheres to the style guide.
+Note that the command will automatically change ("promote") your source code.
+You will need the `ocamlformat` opam package for the command above to work.
+
+To make sure you are good to go, before sending PR run
+```shell
+make lint
+```
+to check if there are any issues with your contribution.
+In addition to the `ocamlformat` package, `make lint` uses `opam` and
+[`shellcheck`](https://www.shellcheck.net).
+
+#### Debugging
+To debug scilla-checker or scilla-runner, you must build `make debug`, which will generate
+the OCaml bytecode versions of the binaries. These can be debugged using `ocamldebug`.
+Executing a bytecode executable also requires the environment variable `LD_LIBRARY_PATH` to
+be set to `_build/default/src/base/cpp`. An example debug command line is provided below.
+
+
+```shell
+LD_LIBRARY_PATH=${PWD}/_build/default/src/base/cpp ocamldebug _build/default/src/runners/scilla_checker.bc -libdir src/stdlib -gaslimit 10000 tests/contracts/helloworld.scilla
+
+```
 
 ## Developer Tools
 ### Emacs mode

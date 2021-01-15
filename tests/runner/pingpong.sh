@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ../../
+cd ../../ || exit
 
 echo "SetPongAddr"
 scilla-runner -init tests/runner/ping/init.json -i tests/runner/ping/contract.scilla -o /tmp/ping_output.json -imessage tests/runner/ping/message_0.json -istate tests/runner/ping/state_0.json -iblockchain tests/runner/ping/blockchain_0.json

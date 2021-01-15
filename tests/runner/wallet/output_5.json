@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6848",
+  "gas_remaining": "7848",
   "_accepted": "false",
   "messages": [
     {
@@ -19,10 +19,10 @@
     },
     {
       "vname": "transactions",
-      "type": "Map (Uint32) (wallet.scilla.Transaction)",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
       "value": []
     },
-    { "vname": "transactionCount", "type": "Uint32", "value": "1" },
     {
       "vname": "validity_checked",
       "type": "Bool",
@@ -51,6 +51,7 @@
         }
       ]
     },
+    { "vname": "transactionCount", "type": "Uint32", "value": "1" },
     {
       "vname": "owner_signatures",
       "type": "Map (ByStr20) (Map (ByStr20) (Bool))",

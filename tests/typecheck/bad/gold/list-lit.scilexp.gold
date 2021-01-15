@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `l3`:\nType unassignable: List (Int32) expected, but List (Int64) provided.",
+        "Type unassignable: List (Int32) expected, but List (Int64) provided.",
       "start_location": {
         "file": "typecheck/bad/list-lit.scilexp",
         "line": 6,

@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
@@ -46,7 +45,7 @@ let rec get_highest_numbered_log files =
  * scilla-runner-[0-9]+.log and return the next in sequence *)
 let create_log_filename dir =
   if (not (Caml.Sys.file_exists dir)) || not (Caml.Sys.is_directory dir) then
-    Unix.mkdir dir 0o766;
+    Core.Unix.mkdir dir ~perm:0o766;
   (* Arbitrary *)
   let files = Sys.readdir dir in
   let num = get_highest_numbered_log (Array.to_list files) in

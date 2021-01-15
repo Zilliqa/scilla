@@ -1,8 +1,8 @@
 {
-  "gas_remaining": "7845",
+  "gas_remaining": "7973",
   "errors": [
     {
-      "error_message": "_balance missing or invalid",
+      "error_message": "_balance field missing",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

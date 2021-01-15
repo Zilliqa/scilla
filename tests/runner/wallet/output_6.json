@@ -1,21 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7387",
+  "gas_remaining": "7915",
   "_accepted": "true",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "10" },
-    {
-      "vname": "signatures",
-      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": []
-    },
-    {
-      "vname": "transactions",
-      "type": "Map (Uint32) (wallet.scilla.Transaction)",
-      "value": []
-    },
-    { "vname": "transactionCount", "type": "Uint32", "value": "4" },
     {
       "vname": "validity_checked",
       "type": "Bool",
@@ -43,6 +32,18 @@
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
         }
       ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "4" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": []
+    },
+    {
+      "vname": "transactions",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
+      "value": []
     },
     {
       "vname": "owner_signatures",

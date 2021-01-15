@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "5386",
+  "gas_remaining": "7665",
   "_accepted": "false",
   "messages": [],
   "states": [
@@ -16,7 +16,7 @@
     },
     {
       "vname": "board",
-      "type": "Map (Uint32) (Map (Uint32) (ShogiLib.scillib.SquareContents))",
+      "type": "Map (Uint32) (Map (Uint32) (ShogiLib.SquareContents))",
       "value": [
         {
           "key": "1",
@@ -24,12 +24,16 @@
             {
               "key": "1",
               "val": {
-                "constructor": "Occupied",
+                "constructor": "ShogiLib.Occupied",
                 "argtypes": [],
                 "arguments": [
-                  { "constructor": "Rook", "argtypes": [], "arguments": [] },
                   {
-                    "constructor": "NotPromoted",
+                    "constructor": "ShogiLib.Rook",
+                    "argtypes": [],
+                    "arguments": []
+                  },
+                  {
+                    "constructor": "ShogiLib.NotPromoted",
                     "argtypes": [],
                     "arguments": []
                   },
@@ -45,12 +49,16 @@
             {
               "key": "1",
               "val": {
-                "constructor": "Occupied",
+                "constructor": "ShogiLib.Occupied",
                 "argtypes": [],
                 "arguments": [
-                  { "constructor": "Pawn", "argtypes": [], "arguments": [] },
                   {
-                    "constructor": "NotPromoted",
+                    "constructor": "ShogiLib.Pawn",
+                    "argtypes": [],
+                    "arguments": []
+                  },
+                  {
+                    "constructor": "ShogiLib.NotPromoted",
                     "argtypes": [],
                     "arguments": []
                   },
@@ -66,7 +74,7 @@
             {
               "key": "1",
               "val": {
-                "constructor": "Free",
+                "constructor": "ShogiLib.Free",
                 "argtypes": [],
                 "arguments": []
               }
@@ -79,7 +87,7 @@
             {
               "key": "1",
               "val": {
-                "constructor": "Free",
+                "constructor": "ShogiLib.Free",
                 "argtypes": [],
                 "arguments": []
               }

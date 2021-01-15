@@ -1,0 +1,7 @@
+let one_4 = 0x00000001 in
+let one_8 = 0x0000000000000001 in
+
+let res1 = builtin to_uint32 one_4 in
+let res2 = builtin to_uint32 one_8 in
+
+Int32 1

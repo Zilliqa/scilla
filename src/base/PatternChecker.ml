@@ -14,9 +14,9 @@
  * Reference: ML pattern match compilation and partial evaluation - Peter Sestoft
  *)
 
+open Literal
 open Syntax
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -35,8 +35,11 @@ module ScillaPatternchecker
 struct
   module SPR = SR
   module EPR = ER
-  module UncheckedPatternSyntax = ScillaSyntax (SR) (ER)
-  module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR)
+  module PCLiteral = GlobalLiteral
+  module PCType = PCLiteral.LType
+  module PCIdentifier = PCType.TIdentifier
+  module UncheckedPatternSyntax = ScillaSyntax (SR) (ER) (PCLiteral)
+  module CheckedPatternSyntax = ScillaSyntax (SPR) (EPR) (PCLiteral)
   module TU = TypeUtilities
   open UncheckedPatternSyntax
   open TU
@@ -44,6 +47,36 @@ struct
   let wrap_pmcheck_err e ?(opt = "") = wrap_err e "patternmatch checking" ~opt
 
   let wrap_pmcheck_serr s ?(opt = "") = wrap_serr s "patternmatch checking" ~opt
+
+  (**************************************************************)
+  (*               Typing explict gas charges                   *)
+  (**************************************************************)
+
+  (* No actual checking required - we just need to translate
+     gas_charge constructors to the new syntax *)
+
+  let rec pm_check_gas_charge gc =
+    let open UncheckedPatternSyntax.SGasCharge in
+    match gc with
+    | StaticCost i -> CheckedPatternSyntax.SGasCharge.StaticCost i
+    | SizeOf v -> CheckedPatternSyntax.SGasCharge.SizeOf v
+    | ValueOf v -> CheckedPatternSyntax.SGasCharge.ValueOf v
+    | LengthOf v -> CheckedPatternSyntax.SGasCharge.LengthOf v
+    | MapSortCost m -> CheckedPatternSyntax.SGasCharge.MapSortCost m
+    | SumOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.SumOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | ProdOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.ProdOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | MinOf (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.MinOf
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | DivCeil (g1, g2) ->
+        CheckedPatternSyntax.SGasCharge.DivCeil
+          (pm_check_gas_charge g1, pm_check_gas_charge g2)
+    | LogOf v -> CheckedPatternSyntax.SGasCharge.LogOf v
+    [@@deriving sexp]
 
   let pm_check_clauses t clauses =
     let reachable = Array.create ~len:(List.length clauses) false in
@@ -88,7 +121,11 @@ struct
           traverse_pattern (augment_ctx ctx dsc) sps_rest i rest_clauses
       | Constructor (c_name, sps_cons) -> (
           let arity () = List.length sps_cons in
-          let get_t_args () = constr_pattern_arg_types t (get_id c_name) in
+          let get_t_args () =
+            constr_pattern_arg_types t
+              (PCIdentifier.get_id c_name)
+              ~lc:(SR.get_loc (PCIdentifier.get_rep c_name))
+          in
           let get_dsc_args dsc =
             match dsc with
             | Pos (_, args) -> args
@@ -97,7 +134,7 @@ struct
           let success () =
             let%bind t_args = get_t_args () in
             traverse_pattern
-              ((get_id c_name, []) :: ctx)
+              ((PCIdentifier.as_string c_name, []) :: ctx)
               ((sps_cons, t_args, get_dsc_args dsc) :: sps_rest)
               i rest_clauses
           in
@@ -108,16 +145,18 @@ struct
           in
           let%bind adt, _ =
             DataTypeDictionary.lookup_constructor
-              ~sloc:(SR.get_loc (get_rep c_name))
-              (get_id c_name)
+              ~sloc:(SR.get_loc (PCIdentifier.get_rep c_name))
+              (PCIdentifier.get_id c_name)
           in
           let span = List.length adt.tconstr in
-          match static_match (get_id c_name) span dsc with
+          match static_match (PCIdentifier.as_string c_name) span dsc with
           | Yes -> success ()
           | No -> failure dsc
           | Maybe ->
               let%bind s_tree = success () in
-              let%bind f_tree = failure (add_neg dsc (get_id c_name)) in
+              let%bind f_tree =
+                failure (add_neg dsc (PCIdentifier.as_string c_name))
+              in
               pure @@ IfEq (t, c_name, s_tree, f_tree) )
     in
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
@@ -132,14 +171,16 @@ struct
         let lifted_p =
           match p with
           | MLit l -> CheckedPatternSyntax.MLit l
-          | MVar (Ident (vs, r)) -> CheckedPatternSyntax.MVar (Ident (vs, r))
+          | MVar (Ident (vs, r)) ->
+              CheckedPatternSyntax.MVar (PCIdentifier.mk_id vs r)
         in
         (s, lifted_p))
 
   let rec lift_pattern p =
     match p with
     | Wildcard -> CheckedPatternSyntax.Wildcard
-    | Binder (Ident (s, r)) -> CheckedPatternSyntax.Binder (Ident (s, r))
+    | Binder (Ident (s, r)) ->
+        CheckedPatternSyntax.Binder (PCIdentifier.mk_id s r)
     | Constructor (s, sps) ->
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))
@@ -163,9 +204,9 @@ struct
         pure @@ (CheckedPatternSyntax.Constr (c, t, args), rep)
     | MatchExpr ((Ident (_, r) as x), clauses) ->
         let t = ER.get_type r in
-        let msg = sprintf " of type %s" (pp_typ t.tp) in
+        let msg = sprintf " of type %s" (PCType.pp_typ t.tp) in
         wrap_pmcheck_err erep ~opt:msg
-        @@ let%bind _ = pm_check_clauses t.tp clauses in
+        @@ let%bind () = Result.ignore_m @@ pm_check_clauses t.tp clauses in
            let%bind checked_clauses =
              mapM
                ~f:(fun (p, e) ->
@@ -185,6 +226,9 @@ struct
         wrap_pmcheck_err erep
         @@ let%bind checked_body = pm_check_expr body in
            pure @@ (CheckedPatternSyntax.Fixpoint (i, t, checked_body), rep)
+    | GasExpr (g, e) ->
+        let%bind e' = pm_check_expr e in
+        pure (CheckedPatternSyntax.GasExpr (pm_check_gas_charge g, e'), rep)
 
   let rec pm_check_stmts stmts =
     match stmts with
@@ -210,7 +254,7 @@ struct
               wrap_pmcheck_serr srep
               @@
               let t = ER.get_type r in
-              let%bind _ = pm_check_clauses t.tp clauses in
+              let%bind () = Result.ignore_m @@ pm_check_clauses t.tp clauses in
               let%bind checked_clauses =
                 mapM
                   ~f:(fun (p, ss) ->
@@ -222,11 +266,14 @@ struct
           | ReadFromBC (i, s) ->
               pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
+          | Iterate (l, p) -> pure @@ (CheckedPatternSyntax.Iterate (l, p), rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)
           | CallProc (p, args) ->
               pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
+          | GasStmt g ->
+              pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
         pure @@ (checked_s :: checked_stmts)
@@ -236,10 +283,10 @@ struct
     let msg =
       sprintf "Error during pattern-match checking of %s %s:\n"
         (component_type_to_string comp_type)
-        (get_id comp_name)
+        (PCIdentifier.as_error_string comp_name)
     in
     let%bind checked_body =
-      wrap_with_info (msg, SR.get_loc (get_rep comp_name))
+      wrap_with_info (msg, SR.get_loc (PCIdentifier.get_rep comp_name))
       @@ pm_check_stmts comp_body
     in
     pure
@@ -267,10 +314,10 @@ struct
           | LibVar (entryname, t, lexp) ->
               let msg =
                 sprintf "Error during pattern-match checking of library %s:\n"
-                  (get_id entryname)
+                  (PCIdentifier.as_error_string entryname)
               in
               let%bind checked_lexp =
-                wrap_with_info (msg, ER.get_loc (get_rep entryname))
+                wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep entryname))
                 @@ pm_check_expr lexp
               in
               pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp))
@@ -297,10 +344,11 @@ struct
       ~f:(fun (i, t, e) ->
         let msg =
           sprintf "Error during pattern-match checking of field %s:\n"
-            (get_id i)
+            (PCIdentifier.as_error_string i)
         in
         let%bind checked_e =
-          wrap_with_info (msg, ER.get_loc (get_rep i)) @@ pm_check_expr e
+          wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep i))
+          @@ pm_check_expr e
         in
         pure @@ (i, t, checked_e))
       fs
@@ -335,13 +383,11 @@ struct
         checked_elibs )
 
   let pm_check_module md rlibs elibs =
-    let { smver = mod_smver; cname = mod_cname; libs; elibs = mod_elibs; contr }
-        =
-      md
-    in
+    let { smver = mod_smver; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let init_msg =
-      sprintf "Type error(s) in contract %s:\n" (get_id ctr_cname)
+      sprintf "Type error(s) in contract %s:\n"
+        (PCIdentifier.as_error_string ctr_cname)
     in
     wrap_with_info (init_msg, dummy_loc)
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in
@@ -361,7 +407,7 @@ struct
          | Ok ckd_constraint -> Ok (ckd_constraint, emsgs)
          | Error msg ->
              Ok
-               ( ( CheckedPatternSyntax.Literal BuiltIns.UsefulLiterals.false_lit,
+               ( ( CheckedPatternSyntax.Literal PCLiteral.false_lit,
                    EPR.dummy_rep ),
                  emsgs @ msg )
        in
@@ -384,7 +430,6 @@ struct
          pure
            ( {
                CheckedPatternSyntax.smver = mod_smver;
-               CheckedPatternSyntax.cname = mod_cname;
                CheckedPatternSyntax.libs = checked_lib;
                CheckedPatternSyntax.elibs = mod_elibs;
                CheckedPatternSyntax.contr =

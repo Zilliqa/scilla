@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.\n",
+        "This is an invalid map type, the map value is likely incorrect. The map value expects a list of valid ADT constructor arguments for the ADT, possibly.\n",
       "start_location": {
         "file": "checker/bad/map_value_function.scilla",
         "line": 7,

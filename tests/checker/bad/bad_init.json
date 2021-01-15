@@ -1,0 +1,13 @@
+[
+  {
+    "vname": "some_uint",
+    "value": 2,
+    "type": "Uint32"
+  },
+  {
+    "vname": "_scilla_version",
+    "type": "Uint32",
+    "value": "0"
+  }
+]
+

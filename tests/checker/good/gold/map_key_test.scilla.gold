@@ -2,7 +2,11 @@
   "cashflow_tags": {
     "State variables": [],
     "ADT constructors": [
-      { "TestType": [ { "constructor": "T", "tags": [ "NoInfo" ] } ] }
+      {
+        "map_key_test.TestType": [
+          { "constructor": "map_key_test.T", "tags": [ "NoInfo" ] }
+        ]
+      }
     ]
   },
   "contract_info": {
@@ -23,9 +27,9 @@
         ]
       },
       {
-        "tname": "map_key_test.scilla.TestType",
+        "tname": "map_key_test.TestType",
         "tparams": [],
-        "tmap": [ { "cname": "T", "argtypes": [ "Uint128" ] } ]
+        "tmap": [ { "cname": "map_key_test.T", "argtypes": [ "Uint128" ] } ]
       },
       {
         "tname": "Bool",
@@ -67,6 +71,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "8000"
+  "gas_remaining": "7999"
 }
 

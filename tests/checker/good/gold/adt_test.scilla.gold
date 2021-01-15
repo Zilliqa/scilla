@@ -2,7 +2,11 @@
   "cashflow_tags": {
     "State variables": [],
     "ADT constructors": [
-      { "TestType1": [ { "constructor": "Item1", "tags": [ "NoInfo" ] } ] }
+      {
+        "adt_test.TestType1": [
+          { "constructor": "adt_test.Item1", "tags": [ "NoInfo" ] }
+        ]
+      }
     ]
   },
   "contract_info": {
@@ -15,20 +19,26 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "adt_test.scilla.TestType1",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Item1", "argtypes": [ "Uint32" ] },
-          { "cname": "Item2", "argtypes": [] }
-        ]
-      },
-      { "tname": "adt_test.scilla.TestType3", "tparams": [], "tmap": [] },
-      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "adt_test.TestType2",
+        "tparams": [],
+        "tmap": [
+          { "cname": "adt_test.Item3", "argtypes": [ "adt_test.TestType1" ] }
+        ]
+      },
+      {
+        "tname": "adt_test.TestType1",
+        "tparams": [],
+        "tmap": [
+          { "cname": "adt_test.Item1", "argtypes": [ "Uint32" ] },
+          { "cname": "adt_test.Item2", "argtypes": [] }
         ]
       },
       {
@@ -60,13 +70,7 @@
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
-      {
-        "tname": "adt_test.scilla.TestType2",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Item3", "argtypes": [ "adt_test.scilla.TestType1" ] }
-        ]
-      }
+      { "tname": "adt_test.TestType3", "tparams": [], "tmap": [] }
     ]
   },
   "warnings": [
@@ -78,6 +82,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "8000"
+  "gas_remaining": "7999"
 }
 

@@ -2,27 +2,13 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract UnstorableADT:\n",
-      "start_location": {
-        "file": "checker/bad/unstorable_adt.scilla",
-        "line": 15,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in field last_input:\n",
+      "error_message":
+        "Values of the type \"Option (Test)\" cannot be stored.",
       "start_location": {
         "file": "checker/bad/unstorable_adt.scilla",
         "line": 19,
         "column": 7
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Values of the type \"Option (unstorable_adt.scilla.Test)\" cannot be stored.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

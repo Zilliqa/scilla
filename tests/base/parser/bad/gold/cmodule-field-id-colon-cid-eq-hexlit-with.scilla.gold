@@ -1,8 +1,7 @@
 {
   "errors": [
     {
-      "error_message":
-        "Following a field definition, the parser expects another field definition, transition, procedure or end of file.\n",
+      "error_message": "Syntax error, state number 310",
       "start_location": {
         "file":
           "base/parser/bad/cmodule-field-id-colon-cid-eq-hexlit-with.scilla",

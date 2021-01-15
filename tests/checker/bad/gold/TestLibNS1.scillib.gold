@@ -2,21 +2,12 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract TestLibNS1:\n",
+      "error_message":
+        "Variable foo imported from multiple sources: libraries TestLibNS1 and TestLibNS1",
       "start_location": {
         "file": "checker/bad/TestLibNS1.scillib",
-        "line": 7,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Entry Foo.foo in library TestLibNS1 conflicts with entry in library TestLibNS1",
-      "start_location": {
-        "file": "checker/bad/lib/TestLibNS1.scillib",
         "line": 5,
-        "column": 5
+        "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

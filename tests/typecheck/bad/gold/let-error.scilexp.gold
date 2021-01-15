@@ -3,7 +3,11 @@
     {
       "error_message":
         "Type unassignable: Int32 expected, but Uint32 provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "typecheck/bad/let-error.scilexp",
+        "line": 1,
+        "column": 17
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

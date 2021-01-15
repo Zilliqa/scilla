@@ -7,3 +7,19 @@ import TestLib1
 library TestLib3
 
 let foo_uint32 = sort_uint32
+
+type TestTypeWrapper =
+| WrapperConstructor of TestType1
+
+let wrapped_c1 : TestTypeWrapper =
+  let x = Uint128 42 in
+  let y = TestConstructor1 x in
+  WrapperConstructor y
+
+let wrapped_c2 : TestTypeWrapper =
+  let x = True in
+  let y = TestConstructor2 x in
+  WrapperConstructor y
+
+let expose_lift_TestType1 : TestType1 -> Uint128 =
+  lift_TestType1

@@ -2,36 +2,13 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ProcedureCallBadType:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_type.scilla",
-        "line": 5,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition Trans1:\n",
-      "start_location": {
-        "file": "checker/bad/procedure_bad_type.scilla",
-        "line": 13,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in procedure call Proc1:\n",
+      "error_message":
+        "Type unassignable: Int32 expected, but List (Bool) provided.",
       "start_location": {
         "file": "checker/bad/procedure_bad_type.scilla",
         "line": 17,
         "column": 3
       },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type unassignable: Int32 expected, but List (Bool) provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

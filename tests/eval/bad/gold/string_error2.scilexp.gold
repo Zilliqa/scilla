@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "4001236",
+  "errors": [
+    {
+      "error_message": "String.to_ascii: Not printable",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

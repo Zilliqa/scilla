@@ -11,9 +11,9 @@
     ],
     "ADT constructors": [
       {
-        "Transaction": [
+        "wallet_2.Transaction": [
           {
-            "constructor": "Trans",
+            "constructor": "wallet_2.Trans",
             "tags": [ "NotMoney", "Money", "NoInfo" ]
           }
         ]
@@ -42,7 +42,7 @@
       },
       {
         "vname": "transactions",
-        "type": "Map (Uint32) (wallet_2.scilla.Transaction)",
+        "type": "Map (Uint32) (wallet_2.Transaction)",
         "depth": 1
       }
     ],
@@ -72,7 +72,7 @@
     "procedures": [
       {
         "vname": "MakeError",
-        "params": [ { "vname": "err", "type": "wallet_2.scilla.Error" } ]
+        "params": [ { "vname": "err", "type": "wallet_2.Error" } ]
       },
       {
         "vname": "AddSignature",
@@ -121,21 +121,13 @@
     ],
     "ADTs": [
       {
-        "tname": "wallet_2.scilla.Error",
+        "tname": "wallet_2.Transaction",
         "tparams": [],
         "tmap": [
-          { "cname": "NonOwnerCannotSign", "argtypes": [] },
-          { "cname": "UnknownTransactionId", "argtypes": [] },
-          { "cname": "InsufficientFunds", "argtypes": [] },
-          { "cname": "NoSignatureListFound", "argtypes": [] },
-          { "cname": "AlreadySigned", "argtypes": [] },
-          { "cname": "NotAlreadySigned", "argtypes": [] },
-          { "cname": "InvalidContract", "argtypes": [] },
-          { "cname": "InvalidAmount", "argtypes": [] },
-          { "cname": "NotEnoughSignatures", "argtypes": [] },
-          { "cname": "SenderMayNotExecute", "argtypes": [] },
-          { "cname": "NonOwnerCannotSubmit", "argtypes": [] },
-          { "cname": "IncorrectSignatureCount", "argtypes": [] }
+          {
+            "cname": "wallet_2.Trans",
+            "argtypes": [ "ByStr20", "Uint128", "String" ]
+          }
         ]
       },
       {
@@ -147,13 +139,21 @@
         ]
       },
       {
-        "tname": "wallet_2.scilla.Transaction",
+        "tname": "wallet_2.Error",
         "tparams": [],
         "tmap": [
-          {
-            "cname": "Trans",
-            "argtypes": [ "ByStr20", "Uint128", "String" ]
-          }
+          { "cname": "wallet_2.NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "wallet_2.UnknownTransactionId", "argtypes": [] },
+          { "cname": "wallet_2.InsufficientFunds", "argtypes": [] },
+          { "cname": "wallet_2.NoSignatureListFound", "argtypes": [] },
+          { "cname": "wallet_2.AlreadySigned", "argtypes": [] },
+          { "cname": "wallet_2.NotAlreadySigned", "argtypes": [] },
+          { "cname": "wallet_2.InvalidContract", "argtypes": [] },
+          { "cname": "wallet_2.InvalidAmount", "argtypes": [] },
+          { "cname": "wallet_2.NotEnoughSignatures", "argtypes": [] },
+          { "cname": "wallet_2.SenderMayNotExecute", "argtypes": [] },
+          { "cname": "wallet_2.NonOwnerCannotSubmit", "argtypes": [] },
+          { "cname": "wallet_2.IncorrectSignatureCount", "argtypes": [] }
         ]
       },
       {
@@ -188,6 +188,6 @@
     ]
   },
   "warnings": [],
-  "gas_remaining": "6848"
+  "gas_remaining": "7856"
 }
 

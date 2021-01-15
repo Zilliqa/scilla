@@ -1,18 +1,20 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7503",
+  "gas_remaining": "7923",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
     {
       "vname": "earmarked_coins",
-      "type": "Map (ByStr20) (earmarked-coin.scilla.EarmarkedCoin)",
+      "type":
+        "Map (ByStr20) (0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin)",
       "value": [
         {
           "key": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "val": {
-            "constructor": "EarmarkedCoin",
+            "constructor":
+              "0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin",
             "argtypes": [],
             "arguments": [
               "100", "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"

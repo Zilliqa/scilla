@@ -8,9 +8,9 @@
     ],
     "ADT constructors": [
       {
-        "Order": [
+        "simple-dex.Order": [
           {
-            "constructor": "Order",
+            "constructor": "simple-dex.Order",
             "tags": [ "NotMoney", "NoInfo", "NotMoney", "NoInfo" ]
           }
         ]
@@ -24,7 +24,7 @@
     "fields": [
       {
         "vname": "orderbook",
-        "type": "Map (ByStr32) (simple-dex.scilla.Order)",
+        "type": "Map (ByStr32) (simple-dex.Order)",
         "depth": 1
       },
       {
@@ -94,11 +94,11 @@
     ],
     "ADTs": [
       {
-        "tname": "simple-dex.scilla.Order",
+        "tname": "simple-dex.Order",
         "tparams": [],
         "tmap": [
           {
-            "cname": "Order",
+            "cname": "simple-dex.Order",
             "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
           }
         ]
@@ -151,6 +151,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7945"
+  "gas_remaining": "7993"
 }
 

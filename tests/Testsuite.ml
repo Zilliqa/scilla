@@ -16,9 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
-open! Int.Replace_polymorphic_compare
-open TestUtil
+open Scilla_test.Util
 
 let () =
   run_tests
@@ -29,12 +27,10 @@ let () =
          * these tests will change, resulting in the tests not being run.
          * See the Makefile target "test_extipcserver". *)
       Testcontracts.contract_tests;
-      TestExps.all_tests;
-      TestExpsFail.all_tests;
-      Testtypes.all_tests;
-      TestTypeFail.all_tests;
-      TestPMFail.all_tests;
-      TestChecker.all_tests;
-      (* TestGasExpr.all_tests;
-         TestGasContracts.all_tests; *)
+      Testexps.All.tests;
+      Testtypes.All.tests;
+      Testpm.All.tests;
+      Testchecker.All.tests;
+      (* TestGasExpr.All.tests;
+         TestGasContracts.All.tests; *)
     ]

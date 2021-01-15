@@ -3,8 +3,8 @@
     "State variables": [],
     "ADT constructors": [
       {
-        "Bar.TestType2": [
-          { "constructor": "Bar.Constructor4", "tags": [ "NoInfo" ] }
+        "TestLib1.TestType2": [
+          { "constructor": "TestLib1.Constructor4", "tags": [ "NoInfo" ] }
         ]
       }
     ]
@@ -19,14 +19,14 @@
     "events": [],
     "ADTs": [
       {
-        "tname": "TestLib1.scillib.TestType2",
+        "tname": "TestLib1.TestType2",
         "tparams": [],
         "tmap": [
           {
-            "cname": "Bar.Constructor3",
-            "argtypes": [ "TestLib1.scillib.TestType" ]
+            "cname": "TestLib1.Constructor3",
+            "argtypes": [ "TestLib1.TestType" ]
           },
-          { "cname": "Bar.Constructor4", "argtypes": [ "Uint32" ] }
+          { "cname": "TestLib1.Constructor4", "argtypes": [ "Uint32" ] }
         ]
       },
       {
@@ -35,6 +35,14 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "TestLib1.TestType",
+        "tparams": [],
+        "tmap": [
+          { "cname": "TestLib1.Constructor1", "argtypes": [] },
+          { "cname": "TestLib1.Constructor2", "argtypes": [] }
         ]
       },
       {
@@ -65,14 +73,6 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
-      },
-      {
-        "tname": "TestLib1.scillib.TestType",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Bar.Constructor1", "argtypes": [] },
-          { "cname": "Bar.Constructor2", "argtypes": [] }
-        ]
       }
     ]
   },
@@ -85,6 +85,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7339"
+  "gas_remaining": "7917"
 }
 

@@ -1,0 +1,21 @@
+scilla_version 0
+
+library Listiter
+
+type LIAdt =
+| LIC of ByStr20 Int32
+
+contract ListIter()
+
+field limap : Map ByStr20 Int32 = Emp ByStr20 Int32
+
+procedure updateEntry (entry : LIAdt)
+  match entry with
+  | LIC addr val =>
+    limap[addr] := val
+  end
+end
+
+transition updateEntries (entries : List LIAdt)
+  forall entries updateEntry
+end

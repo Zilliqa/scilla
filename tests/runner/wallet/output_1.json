@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7241",
+  "gas_remaining": "7898",
   "_accepted": "true",
   "messages": [],
   "states": [
@@ -41,7 +41,8 @@
     },
     {
       "vname": "transactions",
-      "type": "Map (Uint32) (wallet.scilla.Transaction)",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
       "value": []
     },
     {

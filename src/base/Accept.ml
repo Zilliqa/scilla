@@ -26,7 +26,7 @@
    so again we only generate warnings not errors. *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open Literal
 open TypeUtil
 open ErrorUtils
 open Syntax
@@ -38,8 +38,11 @@ module ScillaAcceptChecker
       val get_type : rep -> PlainTypes.t inferred_type [@@warning "-32"]
     end) =
 struct
-  module EISyntax = ScillaSyntax (SR) (ER)
-  open EISyntax
+  module ACLiteral = GlobalLiteral
+  module ACType = ACLiteral.LType
+  module ACIdentifier = ACType.TIdentifier
+  module ACSyntax = ScillaSyntax (SR) (ER) (ACLiteral)
+  open ACSyntax
 
   (* Warning level to use when contract has code paths with potentially
    * no accept statement. *)
@@ -70,11 +73,11 @@ struct
          we don't know what will happen on each in advance. *)
       List.fold_left stmts ~init:seen
         ~f:(fun (seen2 : loc list list) (stmt : stmt_annot) ->
-          let loc = stmt_loc stmt in
           match fst stmt with
           | AcceptPayment ->
               (* Add this accept statement to the list of accepts
                * already seen on each code path reaching this point. *)
+              let loc = stmt_loc stmt in
               List.map seen2 ~f:(fun accepts -> loc :: accepts)
           | MatchStmt (_ident, branches) ->
               (* For each branch in the match statement we have a
@@ -94,16 +97,14 @@ struct
         List.map (find_accept_groups transition.comp_body) ~f:List.rev
       in
 
-      let accept_loc_end (l : loc) =
-        match l with { fname; lnum; cnum } -> { fname; lnum; cnum = cnum + 6 }
-      in
+      let accept_loc_end (l : loc) = { l with cnum = l.cnum + 6 } in
 
       let dup_accept_warning (group : loc list) : unit =
         warn2
           ( sprintf
-              "transition %s had a potential code path with duplicate accept \
+              "transition %s has a potential code path with duplicate accept \
                statements:\n"
-              (get_id transition.comp_name)
+              (ACIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
               (List.map group ~f:(fun loc ->
                    sprintf "  Accept at %s\n" (get_loc_str loc))) )
@@ -124,7 +125,7 @@ struct
     if List.for_all all_accept_groups ~f:List.is_empty then
       warn0
         (sprintf "No transition in contract %s contains an accept statement\n"
-           (get_id contr.cname))
+           (ACIdentifier.as_error_string contr.cname))
         warning_level_missing_accept
 
   (* ************************************** *)

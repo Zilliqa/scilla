@@ -1,0 +1,19 @@
+(* next_var_uint value < 0xFD value == 100*)
+let uint_value = 0x64 in
+
+let value = builtin to_bystr uint_value in
+let pos = Uint32 0 in
+
+let ui_opt = next_var_uint value pos in
+
+match ui_opt with
+| Some (Pair ui _) =>
+  let emptyx = 0x in
+  let empty = builtin to_bystr emptyx in
+  let value_reserialized = append_var_uint empty ui in
+  builtin eq value value_reserialized
+| None =>
+  (* division by zero to create an error *)
+  let dummy = builtin div zero_uint32 zero_uint32 in
+  False
+end

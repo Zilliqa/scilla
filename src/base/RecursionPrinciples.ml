@@ -16,34 +16,44 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Syntax
+open ParserUtil
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open FrontEndParser
+open Literal
 
 (***********************************************************)
 (*    Recursion principles for built-in ADTs               *)
 (***********************************************************)
-
-open ParsedSyntax
+module RPLiteral = GlobalLiteral
+module RPParser = ScillaFrontEndParser (RPLiteral)
+module RPSyntax = ParserSyntax (RPLiteral)
+module RPType = RPSyntax.SType
+module RPIdentifier = RPSyntax.SIdentifier
+module RPName = RPIdentifier.Name
+open RPType
+open RPSyntax
 
 let parse_expr_wrapper expr =
-  match parse_expr expr with
+  match RPParser.parse_expr expr with
   | Error s -> PrettyPrinters.fatal_error s
   | Ok e -> e
 
 let parse_type_wrapper expr =
-  match parse_type expr with
+  match RPParser.parse_type expr with
   | Error s -> PrettyPrinters.fatal_error s
   | Ok e -> e
 
+let rpname_of_string str = RPName.parse_simple_name str
+
+let rpid_of_string str = RPIdentifier.mk_loc_id @@ rpname_of_string str
+
 (* Folding over natural numbers *)
 module NatRec = struct
-  let g = mk_ident "g"
+  let g = rpid_of_string "g"
 
-  let fn = mk_ident "fn"
+  let fn = rpid_of_string "fn"
 
-  let tvar = mk_ident "'T"
+  let tvar = "'T"
 
   (* Adopted one, as fold_left and fold_right are equivalent for
    * natural numbers *)
@@ -55,7 +65,7 @@ module NatRec = struct
 
     let fold_type = parse_type_wrapper "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
 
-    let fold_type_opt = Some (PolyFun (get_id tvar, fold_type))
+    let fold_type_opt = Some (PolyFun (tvar, fold_type))
 
     [@@@ocamlformat "disable"]
 
@@ -70,13 +80,13 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "nat_fold"
+    let id = rpid_of_string "nat_fold"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
     let fold_fixed = (Fun (fn, fn_type, fold_fix), loc)
 
-    let fold = (TFun (tvar, fold_fixed), loc)
+    let fold = (TFun (rpid_of_string tvar, fold_fixed), loc)
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -90,7 +100,7 @@ module NatRec = struct
     let fold_type =
       parse_type_wrapper "('T -> Nat -> ('T -> 'T) -> 'T) -> 'T -> Nat -> 'T"
 
-    let fold_type_opt = Some (PolyFun (get_id tvar, fold_type))
+    let fold_type_opt = Some (PolyFun (tvar, fold_type))
 
     [@@@ocamlformat "disable"]
 
@@ -104,13 +114,13 @@ module NatRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "nat_foldk"
+    let id = rpid_of_string "nat_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
     let fold_fixed = (Fun (fn, comb_type, fold_fix), loc)
 
-    let fold = (TFun (tvar, fold_fixed), loc)
+    let fold = (TFun (rpid_of_string tvar, fold_fixed), loc)
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -118,13 +128,13 @@ end
 
 (* Folding over lists *)
 module ListRec = struct
-  let f = mk_ident "f"
+  let f = rpid_of_string "f"
 
-  let g = mk_ident "g"
+  let g = rpid_of_string "g"
 
-  let avar = mk_ident "'A"
+  let avar = "'A"
 
-  let bvar = mk_ident "'B"
+  let bvar = "'B"
 
   module Foldl = struct
     let f_type = parse_type_wrapper "'B -> 'A -> 'B"
@@ -132,8 +142,7 @@ module ListRec = struct
     let fold_type =
       parse_type_wrapper "('B -> 'A -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -150,13 +159,15 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldl"
+    let id = rpid_of_string "list_foldl"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
-    let fold = (TFun (avar, (TFun (bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -167,8 +178,7 @@ module ListRec = struct
     let fold_type =
       parse_type_wrapper "('A -> 'B -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -185,13 +195,15 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldr"
+    let id = rpid_of_string "list_foldr"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
-    let fold = (TFun (avar, (TFun (bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end
@@ -203,8 +215,7 @@ module ListRec = struct
       parse_type_wrapper
         "('B -> 'A -> ('B -> 'B) -> 'B) -> 'B -> (List 'A) -> 'B"
 
-    let fold_type_opt =
-      Some (PolyFun (get_id avar, PolyFun (get_id bvar, fold_type)))
+    let fold_type_opt = Some (PolyFun (avar, PolyFun (bvar, fold_type)))
 
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'B -> (List 'A) -> 'B"
@@ -222,13 +233,15 @@ module ListRec = struct
 
     [@@@ocamlformat "enable"]
 
-    let id = mk_ident "list_foldk"
+    let id = rpid_of_string "list_foldk"
 
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
 
     let fold_fixed = (Fun (f, comb_type, fold_fix), loc)
 
-    let fold = (TFun (avar, (TFun (bvar, fold_fixed), loc)), loc)
+    let fold =
+      ( TFun (rpid_of_string avar, (TFun (rpid_of_string bvar, fold_fixed), loc)),
+        loc )
 
     let entry = LibVar (id, fold_type_opt, fold)
   end

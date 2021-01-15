@@ -1,19 +1,45 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
-open Syntax
-open ParsedSyntax
-open PrimTypes
+open Scilla_base
+open Literal
 open PrettyPrinters
+module TestSyntaxLiteral = GlobalLiteral
+module FEParser = FrontEndParser.ScillaFrontEndParser (TestSyntaxLiteral)
+module TestSyntax = FEParser.FESyntax
+module TestSyntaxType = TestSyntaxLiteral.LType
+module TestSyntaxIdentifier = TestSyntaxType.TIdentifier
+module TestSyntaxName = TestSyntaxIdentifier.Name
+open TestSyntaxName
+open TestSyntaxIdentifier
+open TestSyntaxType
+open TestSyntaxLiteral
+open TestSyntax
 
 let parse_expr_wrapper exprstr =
-  match FrontEndParser.parse_expr exprstr with
+  match FEParser.parse_expr exprstr with
   | Ok expr -> expr
   | Error _ ->
       assert_failure ("Error parsing test expression:\n" ^ exprstr ^ "\n")
 
-let ident_list_printer ls = String.concat ~sep:";" (List.map ~f:get_id ls)
+let ident_list_printer ls = String.concat ~sep:";" (List.map ~f:as_string ls)
 
 let unannotated_syntax_tests =
   "test suite for unannotated syntax"
@@ -72,32 +98,39 @@ let unannotated_syntax_tests =
            ( "subst_type_in_literal-1",
              assert_equal ~printer:pp_literal
                (IntLit (Int32L (Int32.of_int 42)))
-               (subst_type_in_literal (asId "'X")
+               (subst_type_in_literal
+                  (mk_loc_id (parse_simple_name "'X"))
                   (FunType (int32_typ, int32_typ))
                   (IntLit (Int32L (Int32.of_int 42)))) );
            ( "subst_type_in_literal-2",
              assert_equal ~printer:pp_literal
                (Map ((int32_typ, int32_typ), Caml.Hashtbl.create 4))
-               (subst_type_in_literal (asId "'X") int32_typ
+               (subst_type_in_literal
+                  (mk_loc_id (parse_simple_name "'X"))
+                  int32_typ
                   (Map ((TypeVar "'X", TypeVar "'X"), Caml.Hashtbl.create 4)))
            );
            ( "free_tvars-1",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "a") ]
                (free_vars_in_expr (parse_expr_wrapper "a")) );
            ( "free_tvars-2",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "a") ]
                (let expr = "fun (b : Uint32) => a" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-3",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "b" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "b") ]
                (let expr = "fun (a : Uint32) => b a" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-4",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "a") ]
                (let expr =
                   "match a with \n\
                   \                   | Pair a b => a \n\
@@ -105,8 +138,9 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-5",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "a") ]
                (let expr =
                   "match a with \n\
                   \                   | Pair a b => \n\
@@ -116,8 +150,12 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-6",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a"; asId "d" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [
+                 mk_loc_id (parse_simple_name "a");
+                 mk_loc_id (parse_simple_name "d");
+               ]
                (let expr =
                   "match a with \n\
                   \                   | Pair a b => \n\
@@ -127,10 +165,13 @@ let unannotated_syntax_tests =
                 in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
            ( "free_tvars-7",
-             assert_equal ~printer:ident_list_printer ~cmp:(List.equal equal_id)
-               [ asId "a" ]
+             assert_equal ~printer:ident_list_printer
+               ~cmp:(List.equal TestSyntaxIdentifier.equal)
+               [ mk_loc_id (parse_simple_name "a") ]
                (let expr = "let b = a in\n                   Int32 0" in
                 free_vars_in_expr (parse_expr_wrapper expr)) );
          ]
 
-let all_tests _ = "syntax_tests" >::: [ unannotated_syntax_tests ]
+module All = struct
+  let tests _ = "syntax_tests" >::: [ unannotated_syntax_tests ]
+end

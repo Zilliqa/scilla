@@ -17,8 +17,8 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open TypeUtil
+open Literal
 open Syntax
 open ErrorUtils
 
@@ -48,12 +48,17 @@ module ScillaTypeInfo
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
-  open EISyntax
+  module TILiteral = GlobalLiteral
+  module TIType = TILiteral.LType
+  module TIIdentifier = TIType.TIdentifier
+  module TISyntax = ScillaSyntax (SR) (ER) (TILiteral)
+  open TIIdentifier
+  open TISyntax
 
   (* Given an identifier, compute its type info. *)
   let calc_ident_locs i =
-    let name = get_id i in
+    (* Use error string in order to not change the IDE interface *)
+    let name = as_error_string i in
     let sloc = ER.get_loc (get_rep i) in
     (* Once Issue #134 is solved, this calculation can be avoided. *)
     let eloc = { sloc with cnum = sloc.cnum + String.length name } in
@@ -89,6 +94,7 @@ struct
         ots :: List.concat clausets
     | Builtin (_, il) -> List.map il ~f:calc_ident_locs
     | TFun (i, e) -> calc_ident_locs i :: type_info_expr e
+    | GasExpr (_, e) -> type_info_expr e
 
   let rec type_info_stmts stmts =
     List.fold_right stmts ~init:[] ~f:(fun (stmt, _srep) acc ->
@@ -119,8 +125,9 @@ struct
             in
             ots :: List.concat clausets
         | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
-        | AcceptPayment -> []
+        | AcceptPayment | GasStmt _ -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
+        | Iterate (l, _) -> [ calc_ident_locs l ]
         | Throw iopt -> (
             match iopt with Some i -> [ calc_ident_locs i ] | None -> [] ) )
         @ acc)

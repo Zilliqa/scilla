@@ -15,17 +15,22 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Syntax
+
+open Scilla_base
 open ErrorUtils
+open Literal
+module IPCCLiteral = GlobalLiteral
+module IPCCType = IPCCLiteral.LType
+module IPCCIdentifier = IPCCType.TIdentifier
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
 val fetch :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
-  (literal option, scilla_error list) result
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
+  (IPCCLiteral.t option, scilla_error list) result
 
 (* Fetch from another contract's field. "keys" is empty when fetching non-map fields
  * or an entire Map field. If a map key is not found, then None is returned, otherwise
@@ -33,41 +38,41 @@ val fetch :
 val external_fetch :
   socket_addr:string ->
   caddr:string ->
-  fname:'a ident ->
-  keys:literal list ->
-  tp:typ ->
-  (literal option * typ, scilla_error list) result
+  fname:'a IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
+  (IPCCLiteral.t option * IPCCType.t, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  value:literal ->
-  tp:typ ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  value:IPCCLiteral.t ->
+  tp:IPCCType.t ->
   (unit, scilla_error list) result
 
 (* Is a key in a map. keys must be non-empty. *)
 val is_member :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
   (bool, scilla_error list) result
 
 (* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
 val external_is_member :
   socket_addr:string ->
   caddr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
   (bool * string, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :
   socket_addr:string ->
-  fname:loc ident ->
-  keys:literal list ->
-  tp:typ ->
+  fname:loc IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  tp:IPCCType.t ->
   (unit, scilla_error list) result

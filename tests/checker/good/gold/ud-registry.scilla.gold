@@ -11,8 +11,11 @@
     ],
     "ADT constructors": [
       {
-        "Record": [
-          { "constructor": "Record", "tags": [ "NotMoney", "NotMoney" ] }
+        "ud-registry.Record": [
+          {
+            "constructor": "ud-registry.Record",
+            "tags": [ "NotMoney", "NotMoney" ]
+          }
         ]
       }
     ]
@@ -27,7 +30,7 @@
     "fields": [
       {
         "vname": "records",
-        "type": "Map (ByStr32) (ud-registry.scilla.Record)",
+        "type": "Map (ByStr32) (ud-registry.Record)",
         "depth": 1
       },
       { "vname": "registrar", "type": "ByStr20", "depth": 0 },
@@ -162,10 +165,13 @@
     ],
     "ADTs": [
       {
-        "tname": "ud-registry.scilla.Record",
+        "tname": "ud-registry.Record",
         "tparams": [],
         "tmap": [
-          { "cname": "Record", "argtypes": [ "ByStr20", "ByStr20" ] }
+          {
+            "cname": "ud-registry.Record",
+            "argtypes": [ "ByStr20", "ByStr20" ]
+          }
         ]
       },
       {
@@ -208,6 +214,6 @@
     ]
   },
   "warnings": [],
-  "gas_remaining": "7329"
+  "gas_remaining": "7916"
 }
 

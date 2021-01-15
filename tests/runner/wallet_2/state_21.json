@@ -1,26 +1,21 @@
 [
-    { "vname": "_balance",
-      "type": "Uint128",
-      "value": "0" },
-    { "vname": "owners",
-      "type": "Map ByStr20 Bool",
-      "value": []
-    },
-    { "vname": "transactionCount",
-      "type": "Uint32",
-      "value": "0"
-    },
-    { "vname": "signatures",
-      "type": "Map Uint32 (Map ByStr20 Bool)",
-      "value": []
-    },
-    {
-      "vname": "signature_counts",
-      "type": "Map (Uint32) (Uint32)",
-      "value": []
-    },
-    { "vname": "transactions",
-      "type": "Map Uint32 Transaction",
-      "value": []
-    }
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  { "vname": "owners", "type": "Map (ByStr20) (Bool)", "value": [] },
+  { "vname": "transactionCount", "type": "Uint32", "value": "0" },
+  {
+    "vname": "signatures",
+    "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+    "value": []
+  },
+  {
+    "vname": "signature_counts",
+    "type": "Map (Uint32) (Uint32)",
+    "value": []
+  },
+  {
+    "vname": "transactions",
+    "type":
+      "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
+    "value": []
+  }
 ]

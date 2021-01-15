@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "4001747",
+  "gas_remaining": "4001229",
   "errors": [
     {
       "error_message": "Cannot type runtime closure.",

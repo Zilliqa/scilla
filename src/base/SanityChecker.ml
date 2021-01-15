@@ -16,9 +16,9 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open TypeUtil
+open Literal
 open Syntax
 open ErrorUtils
 open MonadUtil
@@ -33,10 +33,15 @@ module ScillaSanityChecker
 struct
   module SER = SR
   module EER = ER
-  module EISyntax = ScillaSyntax (SR) (ER)
+  module SCLiteral = GlobalLiteral
+  module SCType = SCLiteral.LType
+  module SCIdentifier = SCType.TIdentifier
+  module SCName = SCIdentifier.Name
+  module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
-  open EISyntax
+  open SCIdentifier
+  open SCSyntax
   open SCU
 
   (* Warning level to use when contract loads/stores entire Maps. *)
@@ -62,7 +67,8 @@ struct
               if is_mem_id i rem then
                 e
                 @ mk_error1
-                    (sprintf "Identifier %s used more than once\n" (get_id i))
+                    (sprintf "Identifier %s used more than once\n"
+                       (as_error_string i))
                     (gloc @@ get_rep i)
               else e
             in
@@ -104,7 +110,8 @@ struct
         e
         @ check_duplicate_ident
             (fun _ -> eloc)
-            (List.map msg ~f:(fun (s, _) -> SR.mk_id_string s))
+            (List.map msg ~f:(fun (s, _) ->
+                 mk_id (SCName.parse_simple_name s) SR.string_rep))
       in
 
       (* Either "_tag" or "_eventname" must be present. *)
@@ -138,15 +145,18 @@ struct
       List.fold_left contr.ccomps ~init:e ~f:(fun e c ->
           match
             List.find c.comp_params ~f:(fun (s, _) ->
-                String.(get_id s = amount_label || get_id s = sender_label))
+                String.(
+                  as_string s = amount_label
+                  || as_string s = sender_label
+                  || as_string s = origin_label))
           with
           | Some (s, _) ->
               e
               @ mk_error1
                   (sprintf "Parameter %s in %s %s cannot be explicit.\n"
-                     (get_id s)
+                     (as_error_string s)
                      (component_type_to_string c.comp_type)
-                     (get_id c.comp_name))
+                     (as_error_string c.comp_name))
                   (SR.get_loc @@ get_rep c.comp_name)
           | None -> e)
     in
@@ -156,15 +166,15 @@ struct
       match
         List.find contr.cparams ~f:(fun (s, _) ->
             let open ContractUtil in
-            let open String in
-            get_id s = creation_block_label
-            || get_id s = scilla_version_label
-            || get_id s = this_address_label)
+            [%equal: SCName.t] (get_id s) creation_block_label
+            || [%equal: SCName.t] (get_id s) scilla_version_label
+            || [%equal: SCName.t] (get_id s) this_address_label)
       with
       | Some (s, _) ->
           e
           @ mk_error1
-              (sprintf "Contract parameter %s cannot be explicit.\n" (get_id s))
+              (sprintf "Contract parameter %s cannot be explicit.\n"
+                 (as_error_string s))
               (ER.get_loc @@ get_rep s)
       | None -> e
     in
@@ -173,12 +183,16 @@ struct
     let check_typ_warn s =
       let t = (ER.get_type (get_rep s)).tp in
       let lc = ER.get_loc (get_rep s) in
+      let warn () =
+        warn1 "Consider using in-place Map access" warning_level_map_load_store
+          lc
+      in
       match t with
-      | MapType _
+      | MapType _ -> warn ()
       (* The result of a <- a[][], i.e., "a" is an Option type. *)
-      | ADT (Ident ("Option", _), [ MapType _ ]) ->
-          warn1 "Consider using in-place Map access"
-            warning_level_map_load_store lc
+      | ADT (adt_name, [ MapType _ ])
+        when Datatypes.is_option_adt_name (get_id adt_name) ->
+          warn ()
       | _ -> ()
     in
     List.iter cmod.contr.ccomps ~f:(fun comp ->
@@ -186,8 +200,7 @@ struct
           List.iter stmts ~f:(fun (stmt, _) ->
               match stmt with
               (* Recursion basis. *)
-              | Load (_, s) | Store (s, _) | MapGet (s, _, _, _) ->
-                  check_typ_warn s
+              | Load (_, s) | MapGet (s, _, _, _) -> check_typ_warn s
               | MapUpdate (_, _, vopt) -> (
                   match vopt with Some s -> check_typ_warn s | None -> () )
               (* Recurse through match statements. *)
@@ -204,20 +217,31 @@ struct
 
   module CheckShadowing = struct
     (* A utility function that checks if "id" is shadowing cparams, cfields or pnames. *)
-    let check_warn_redef cparams cfields pnames id =
-      if List.mem cparams (get_id id) ~equal:String.( = ) then
+    let check_warn_redef cparams cfields pnames stmts_defs id =
+      if List.mem cparams (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a contract parameter." (get_id id))
+          (Printf.sprintf "Name %s shadows a contract parameter."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem cfields (get_id id) ~equal:String.( = ) then
+      else if List.mem cfields (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a field declaration." (get_id id))
+          (Printf.sprintf "Name %s shadows a field declaration."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
-      else if List.mem pnames (get_id id) ~equal:String.( = ) then
+      else if List.mem pnames (get_id id) ~equal:[%equal: SCName.t] then
         warn1
-          (Printf.sprintf "Name %s shadows a transition parameter." (get_id id))
+          (Printf.sprintf "Name %s shadows a transition parameter."
+             (as_error_string id))
+          warning_level_name_shadowing
+          (ER.get_loc (get_rep id))
+      else if List.mem stmts_defs (get_id id) ~equal:[%equal: SCName.t] then
+        warn1
+          (Printf.sprintf
+             "%s is a new variable. It does not reassign the previously \
+              defined variable."
+             (as_error_string id))
           warning_level_name_shadowing
           (ER.get_loc (get_rep id))
 
@@ -226,7 +250,7 @@ struct
       (* Check if any variable bound in this pattern shadows cparams/cfields/pnames *)
       let rec outer_scope_iter = function
         | Wildcard -> ()
-        | Binder i -> check_warn_redef cparams cfields pnames i
+        | Binder i -> check_warn_redef cparams cfields pnames [] i
         | Constructor (_, plist) -> List.iter plist ~f:outer_scope_iter
       in
       outer_scope_iter pat;
@@ -235,13 +259,13 @@ struct
        * https://github.com/Zilliqa/scilla/issues/687. To close this Issue:
        * Make this an error by just using fail1 below instead of warn1. *)
       let bounds = get_pattern_bounds pat in
-      match List.find_a_dup ~compare:compare_id bounds with
+      match List.find_a_dup ~compare:SCIdentifier.compare bounds with
       | Some v ->
           warn1
             (Printf.sprintf
                "Deprecated: variable %s shadows a previous binding in the same \
                 pattern."
-               (get_id v))
+               (as_error_string v))
             warning_level_name_shadowing
             (ER.get_loc (get_rep v));
           pure ()
@@ -252,24 +276,25 @@ struct
       match e with
       | Literal _ | Builtin _ | Constr _ | App _ | Message _ | Var _ | TApp _ ->
           pure ()
+      | GasExpr (_, e) -> expr_iter e cparams cfields pnames
       | Let (i, _, e_lhs, e_rhs) ->
-          check_warn_redef cparams cfields pnames i;
-          let%bind _ = expr_iter e_lhs cparams cfields pnames in
+          check_warn_redef cparams cfields pnames [] i;
+          let%bind () = expr_iter e_lhs cparams cfields pnames in
           expr_iter e_rhs cparams cfields pnames
       | Fun (i, _, e_body) | Fixpoint (i, _, e_body) | TFun (i, e_body) ->
           (* "i" being a type variable shouldn't be shadowing contract parameters,
              fields or component parameters. This is just a conservative check. *)
-          check_warn_redef cparams cfields pnames i;
+          check_warn_redef cparams cfields pnames [] i;
           expr_iter e_body cparams cfields pnames
       | MatchExpr (_, clauses) ->
-          iterM
+          forallM
             ~f:(fun (pat, mbody) ->
-              let%bind _ = pattern_iter pat cparams cfields pnames in
+              let%bind () = pattern_iter pat cparams cfields pnames in
               expr_iter mbody cparams cfields pnames)
             clauses
 
     let shadowing_libentries lentries =
-      iterM
+      forallM
         ~f:(fun lentry ->
           match lentry with
           | LibTyp _ -> pure ()
@@ -277,12 +302,12 @@ struct
         lentries
 
     let rec shadowing_libtree ltree =
-      let%bind _ = iterM ~f:(fun dep -> shadowing_libtree dep) ltree.deps in
+      let%bind () = forallM ~f:(fun dep -> shadowing_libtree dep) ltree.deps in
       shadowing_libentries ltree.libn.lentries
 
     let shadowing_cmod (cmod : cmodule) =
       (* Check for match pattern shadowing in library functions. *)
-      let%bind _ =
+      let%bind () =
         match cmod.libs with
         | Some lib -> shadowing_libentries lib.lentries
         | None -> pure ()
@@ -291,13 +316,13 @@ struct
       let cparams = List.map cmod.contr.cparams ~f:(fun (p, _) -> get_id p) in
 
       (* Check for shadowing in contract constraint *)
-      let%bind _ = expr_iter cmod.contr.cconstraint cparams [] [] in
+      let%bind () = expr_iter cmod.contr.cconstraint cparams [] [] in
 
       (* Check if a field shadows any contract parameter. *)
-      let%bind _ =
-        iterM
+      let%bind () =
+        forallM
           ~f:(fun (f, _, finit_expr) ->
-            check_warn_redef cparams [] [] f;
+            check_warn_redef cparams [] [] [] f;
             expr_iter finit_expr cparams [] [])
           cmod.contr.cfields
       in
@@ -307,38 +332,42 @@ struct
       in
 
       (* Go through each component. *)
-      iterM
+      forallM
         ~f:(fun c ->
           (* 1. If a parameter name shadows one of cparams or cfields, warn. *)
           List.iter c.comp_params ~f:(fun (p, _) ->
-              check_warn_redef cparams cfields [] p);
+              check_warn_redef cparams cfields [] [] p);
           let pnames = List.map c.comp_params ~f:(fun (p, _) -> get_id p) in
           (* Check for shadowing in statements. *)
-          let rec stmt_iter stmts =
-            iterM
-              ~f:(fun (s, _) ->
+          let rec stmt_iter stmts stmt_defs =
+            foldM stmts ~init:stmt_defs ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
                   | Load (x, _) | RemoteLoad (x, _, _)
                   | MapGet (x, _, _, _) | RemoteMapGet (x, _, _, _, _)
                   | ReadFromBC (x, _) ->
-                    check_warn_redef cparams cfields pnames x;
-                    pure ()
-                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment
-                | CreateEvnt _ | Throw _ | CallProc _ ->
-                    pure ()
+                    check_warn_redef cparams cfields pnames stmt_defs x;
+                    pure (get_id x :: acc_stmt_defs)
+                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _
+                | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
+                    pure acc_stmt_defs
                 | Bind (x, e) ->
-                    check_warn_redef cparams cfields pnames x;
-                    expr_iter e cparams cfields pnames
+                    check_warn_redef cparams cfields pnames stmt_defs x;
+                    let%bind () = expr_iter e cparams cfields pnames in
+                    pure (get_id x :: acc_stmt_defs)
                 | MatchStmt (_, clauses) ->
-                    iterM
-                      ~f:(fun (pat, mbody) ->
-                        let%bind _ = pattern_iter pat cparams cfields pnames in
-                        stmt_iter mbody)
-                      clauses)
-              stmts
+                    let%bind () =
+                      forallM
+                        ~f:(fun (pat, mbody) ->
+                          let%bind () =
+                            pattern_iter pat cparams cfields pnames
+                          in
+                          Result.ignore_m @@ stmt_iter mbody acc_stmt_defs)
+                        clauses
+                    in
+                    pure acc_stmt_defs)
           in
           (* Go through all statements and see if any of cparams, cfields or pnames are redefined. *)
-          stmt_iter c.comp_body)
+          Result.ignore_m @@ stmt_iter c.comp_body [])
         cmod.contr.ccomps
 
     let shadowing_lmod (lmod : lmodule) =
@@ -352,16 +381,16 @@ struct
 
   let contr_sanity (cmod : cmodule) (rlibs : lib_entry list)
       (elibs : libtree list) =
-    let%bind _ = basic_sanity cmod in
-    let%bind _ = CheckShadowing.shadowing_libentries rlibs in
-    let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
-    let%bind _ = CheckShadowing.shadowing_cmod cmod in
+    let%bind () = basic_sanity cmod in
+    let%bind () = CheckShadowing.shadowing_libentries rlibs in
+    let%bind () = forallM ~f:CheckShadowing.shadowing_libtree elibs in
+    let%bind () = CheckShadowing.shadowing_cmod cmod in
     pure ()
 
   let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list)
       (elibs : libtree list) =
-    let%bind _ = CheckShadowing.shadowing_libentries rlibs in
-    let%bind _ = iterM ~f:CheckShadowing.shadowing_libtree elibs in
-    let%bind _ = CheckShadowing.shadowing_lmod lmod in
+    let%bind () = CheckShadowing.shadowing_libentries rlibs in
+    let%bind () = forallM ~f:CheckShadowing.shadowing_libtree elibs in
+    let%bind () = CheckShadowing.shadowing_lmod lmod in
     pure ()
 end

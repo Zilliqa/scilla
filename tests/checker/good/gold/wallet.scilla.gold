@@ -13,8 +13,8 @@
     ],
     "ADT constructors": [
       {
-        "Transaction": [
-          { "constructor": "Trans", "tags": [ "NotMoney", "Money" ] }
+        "wallet.Transaction": [
+          { "constructor": "wallet.Trans", "tags": [ "NotMoney", "Money" ] }
         ]
       }
     ]
@@ -38,7 +38,7 @@
       },
       {
         "vname": "transactions",
-        "type": "Map (Uint32) (wallet.scilla.Transaction)",
+        "type": "Map (Uint32) (wallet.Transaction)",
         "depth": 1
       },
       {
@@ -108,22 +108,29 @@
     ],
     "ADTs": [
       {
-        "tname": "wallet.scilla.Error",
+        "tname": "wallet.Error",
         "tparams": [],
         "tmap": [
-          { "cname": "NonOwnerCannotSign", "argtypes": [] },
-          { "cname": "UnknownTransactionId", "argtypes": [] },
-          { "cname": "InsufficientFunds", "argtypes": [] },
-          { "cname": "NoSignatureListFound", "argtypes": [] },
-          { "cname": "AlreadySigned", "argtypes": [] },
-          { "cname": "NotAlreadySigned", "argtypes": [] },
-          { "cname": "InvalidContract", "argtypes": [] },
-          { "cname": "InvalidAmount", "argtypes": [] },
-          { "cname": "NotEnoughSignatures", "argtypes": [] },
-          { "cname": "SenderIsNotRecipient", "argtypes": [] },
-          { "cname": "CandidateAlreadyAdded", "argtypes": [] },
-          { "cname": "UnknownCandidate", "argtypes": [] },
-          { "cname": "CandidateAlreadyOwner", "argtypes": [] }
+          { "cname": "wallet.NonOwnerCannotSign", "argtypes": [] },
+          { "cname": "wallet.UnknownTransactionId", "argtypes": [] },
+          { "cname": "wallet.InsufficientFunds", "argtypes": [] },
+          { "cname": "wallet.NoSignatureListFound", "argtypes": [] },
+          { "cname": "wallet.AlreadySigned", "argtypes": [] },
+          { "cname": "wallet.NotAlreadySigned", "argtypes": [] },
+          { "cname": "wallet.InvalidContract", "argtypes": [] },
+          { "cname": "wallet.InvalidAmount", "argtypes": [] },
+          { "cname": "wallet.NotEnoughSignatures", "argtypes": [] },
+          { "cname": "wallet.SenderIsNotRecipient", "argtypes": [] },
+          { "cname": "wallet.CandidateAlreadyAdded", "argtypes": [] },
+          { "cname": "wallet.UnknownCandidate", "argtypes": [] },
+          { "cname": "wallet.CandidateAlreadyOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "wallet.Transaction",
+        "tparams": [],
+        "tmap": [
+          { "cname": "wallet.Trans", "argtypes": [ "ByStr20", "Uint128" ] }
         ]
       },
       {
@@ -132,13 +139,6 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
-        ]
-      },
-      {
-        "tname": "wallet.scilla.Transaction",
-        "tparams": [],
-        "tmap": [
-          { "cname": "Trans", "argtypes": [ "ByStr20", "Uint128" ] }
         ]
       },
       {
@@ -177,36 +177,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 534,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 519,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 516,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
         "line": 502,
         "column": 23
       },
@@ -219,16 +189,6 @@
         "file": "contracts/wallet.scilla",
         "line": 492,
         "column": 27
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 480,
-        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -257,16 +217,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 440,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
         "line": 428,
         "column": 21
       },
@@ -287,26 +237,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 404,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 391,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
         "line": 373,
         "column": 15
       },
@@ -317,38 +247,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 365,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
         "line": 347,
         "column": 15
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 334,
-        "column": 13
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 332,
-        "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -369,16 +269,6 @@
         "file": "contracts/wallet.scilla",
         "line": 285,
         "column": 23
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 276,
-        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -417,26 +307,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 224,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 223,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
         "line": 215,
         "column": 17
       },
@@ -454,6 +324,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "6852"
+  "gas_remaining": "7856"
 }
 

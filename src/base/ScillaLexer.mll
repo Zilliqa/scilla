@@ -18,11 +18,16 @@
 
 {
 open Lexing
-open ScillaParser
 open Big_int
 open Base
 
-exception Error of string
+(* Must be instantiated using the same syntax struct as the parser *)
+module MkLexer (S : ParserUtil.Syn) = struct
+
+  module Parser = ScillaParser.Make (S)
+  open Parser
+
+  exception Error of string
 
 }
 
@@ -41,7 +46,7 @@ let spid = ['_'] alphanum*
 let cid =   ['A'-'Z'] alphanum*
 let tid =   '\'' ['A'-'Z'] alphanum*
 let hexdigit = ['a'-'f' 'A'-'F' '0'-'9']
-let hex = '0' 'x' (hexdigit hexdigit)+
+let hex = '0' 'x' (hexdigit hexdigit)*
 let intty = "Int32" | "Int64" | "Int128" | "Int256" | "Uint32" |
             "Uint64" | "Uint128" | "Uint256"
 
@@ -153,3 +158,7 @@ and comment braces =
   | newline   { new_line lexbuf; comment braces lexbuf}
   | _         { comment braces lexbuf}
   | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
+
+{
+end
+}

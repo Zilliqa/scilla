@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open Scilla_base
 
 type args = {
   input_init : string;
@@ -102,7 +102,7 @@ let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
 
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
 
-let process_json_validation () = GlobalConfig.set_validate_json !b_validate_json
+let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
@@ -235,12 +235,19 @@ let parse args ~exe_name =
       ( "-jsonerrors",
         Arg.Unit (fun () -> b_json_errors := true),
         "Print errors in JSON format" );
+      ( "-debuglevel",
+        Arg.Symbol
+          ( [ "none"; "normal"; "verbose" ],
+            fun s ->
+              match s with
+              | "none" -> GlobalConfig.set_debug_level Debug_None
+              | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+              | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+              | _ -> raise (ErrorUtils.FatalError "Invalid debug log level") ),
+        ": Set debug logging level" );
       ( "-disable-pp-json",
         Arg.Unit (fun () -> b_pp_json := false),
         "Disable pretty printing of JSONs" );
-      ( "-disable-validate-json",
-        Arg.Unit (fun () -> b_validate_json := false),
-        "Disable validation of input JSONs" );
     ]
   in
 

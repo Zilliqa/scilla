@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7035",
+  "gas_remaining": "7872",
   "_accepted": "false",
   "messages": [
     {
@@ -26,7 +26,8 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "orderbook",
-      "type": "Map (ByStr32) (simple-dex.scilla.Order)",
+      "type":
+        "Map (ByStr32) (0xabfeccdc9012345678901234567890f777567890.Order)",
       "value": []
     },
     {

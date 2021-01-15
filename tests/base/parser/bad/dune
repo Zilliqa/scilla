@@ -1,4 +1,0 @@
-(library
- (name testparserfail)
- (wrapped false)
- (libraries core oUnit testutil))

@@ -1,18 +1,20 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7313",
+  "gas_remaining": "7906",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "members",
-      "type": "Map (ByStr20) (bookstore.scilla.Member)",
+      "type":
+        "Map (ByStr20) (0xabfeccdc9012345678901234567890f777567890.Member)",
       "value": [
         {
           "key": "0x1234567890123456789012345678901234567892",
           "val": {
-            "constructor": "Member",
+            "constructor":
+              "0xabfeccdc9012345678901234567890f777567890.Member",
             "argtypes": [],
             "arguments": [ "Bob", "2" ]
           }
@@ -26,12 +28,13 @@
     },
     {
       "vname": "bookInventory",
-      "type": "Map (Uint32) (bookstore.scilla.Book)",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Book)",
       "value": [
         {
           "key": "1",
           "val": {
-            "constructor": "Book",
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Book",
             "argtypes": [],
             "arguments": [ "1984", "George Orwell" ]
           }
@@ -39,7 +42,7 @@
         {
           "key": "2",
           "val": {
-            "constructor": "Book",
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Book",
             "argtypes": [],
             "arguments": [ "IQ84", "Haruki Murakami" ]
           }

@@ -8,9 +8,9 @@
     ],
     "ADT constructors": [
       {
-        "Order": [
+        "simple-dex-shadowwarn.Order": [
           {
-            "constructor": "Order",
+            "constructor": "simple-dex-shadowwarn.Order",
             "tags": [ "NotMoney", "NoInfo", "NotMoney", "NoInfo" ]
           }
         ]
@@ -24,7 +24,7 @@
     "fields": [
       {
         "vname": "orderbook",
-        "type": "Map (ByStr32) (simple-dex-shadowwarn.scilla.Order)",
+        "type": "Map (ByStr32) (simple-dex-shadowwarn.Order)",
         "depth": 1
       },
       {
@@ -94,21 +94,21 @@
     ],
     "ADTs": [
       {
-        "tname": "simple-dex-shadowwarn.scilla.Order",
-        "tparams": [],
-        "tmap": [
-          {
-            "cname": "Order",
-            "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
-          }
-        ]
-      },
-      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "simple-dex-shadowwarn.Order",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "simple-dex-shadowwarn.Order",
+            "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
+          }
         ]
       },
       {
@@ -161,6 +161,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7945"
+  "gas_remaining": "7993"
 }
 

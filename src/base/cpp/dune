@@ -1,9 +1,11 @@
 (library
- (name scilla_cpp_deps)
- (wrapped false)
+ (name scilla_crypto)
+ (public_name scilla.crypto)
+ (wrapped true)
  (libraries ctypes ctypes.foreign cryptokit)
  (preprocess
   (pps ppx_compare))
+ (modes byte native)
  (foreign_stubs
   (language c)
   (names generate_dsa_nonce)
@@ -17,11 +19,13 @@
   (flags
    -std=c++11
    -fPIC
-   (:include c_flags.sexp)))
+   (:include c_flags.sexp))
+  (include_dirs %{project_root}/deps/libff/install/include))
+ ; foreign_archives does not support %{vars} hence the relative path to deps/
+ (foreign_archives ../../../deps/libff/install/lib/ff)
  (c_library_flags
   -lstdc++
-  (:include c_library_flags.sexp)
-  -lff)
+  (:include c_library_flags.sexp))
  (library_flags
   (:include library_flags.sexp)))
 

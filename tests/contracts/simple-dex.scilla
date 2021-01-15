@@ -141,8 +141,8 @@ transition fillOrder(orderId: ByStr32)
         takerAmt = computePendingReturnsVal prevVal valueA;
         pendingReturns[_sender][tokenA] := takerAmt;
 
-        prevVal <- pendingReturns[makerAddr][tokenB];
-        makerAmt = computePendingReturnsVal prevVal valueB;
+        prevVal_1 <- pendingReturns[makerAddr][tokenB];
+        makerAmt = computePendingReturnsVal prevVal_1 valueB;
         pendingReturns[makerAddr][tokenB] := makerAmt;
         
         (* Delete orders from the orderbook and orderinfo *)

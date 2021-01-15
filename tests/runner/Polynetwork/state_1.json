@@ -1,0 +1,32 @@
+[
+  {
+    "vname": "_balance",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "f_curKeepers",
+    "type": "List (ByStr20)",
+    "value": []
+  },
+  {
+    "vname": "f_curStartHeight",
+    "type": "Uint32",
+    "value": "0"
+  },
+  {
+    "vname": "f_zilToPolyTxHashMap",
+    "type": "Map (Uint256) (ByStr32)",
+    "value": []
+  },
+  {
+    "vname": "f_zilToPolyTxHashIndex",
+    "type": "Uint256",
+    "value": "0"
+  },
+  {
+    "vname": "f_fromChainTxExist",
+    "type": "Map (Uint64) (Map (ByStr32) (Polynetwork.Unit))",
+    "value": []
+  }
+]

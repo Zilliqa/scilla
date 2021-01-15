@@ -17,6 +17,8 @@
 *)
 
 open Core
+open Scilla_base
+open Scilla_eval
 open ErrorUtils
 open RunnerCLI
 
@@ -26,7 +28,7 @@ let output_to_string output ~args =
 
 let () =
   try
-    let output, args = Runner.run None ~exe_name:Sys.argv.(0) in
+    let output, args = Runner.run None ~exe_name:(Sys.get_argv ()).(0) in
     let str = output_to_string output ~args in
     if String.is_empty args.output then DebugMessage.pout str
     else
