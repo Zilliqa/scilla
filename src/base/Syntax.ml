@@ -296,7 +296,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
 
   and stmt =
     | Load of ER.rep SIdentifier.t * ER.rep SIdentifier.t
-    | RemoteLoad of ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t
+    | RemoteLoad of
+        ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t
     | Store of ER.rep SIdentifier.t * ER.rep SIdentifier.t
     | Bind of ER.rep SIdentifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
@@ -316,7 +317,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     (* If the bool is set, then we interpret this as value retrieve,
        otherwise as an "exists" query. *)
     | RemoteMapGet of
-        ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t list * bool
+        ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        * bool
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep SIdentifier.t * string
     | AcceptPayment
@@ -569,7 +574,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | RemoteMapGet (_, adr, m, keys, _) ->
           sprintf "Type error in getting map value %s.%s" (as_error_string adr)
             (as_error_string m)
-          ^ List.fold keys ~init:"" ~f:(fun acc k -> acc ^ "[" ^ as_error_string k ^ "]")
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"
       | MapUpdate (m, keys, _) ->
           sprintf "Type error in updating map %s" (as_error_string m)

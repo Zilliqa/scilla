@@ -368,8 +368,7 @@ let rec stmt_eval conf stmts =
           let%bind klist' =
             mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
           in
-          let%bind l = Configuration.remote_map_get conf a m klist' fetchval
-          in
+          let%bind l = Configuration.remote_map_get conf a m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
       | ReadFromBC (x, bf) ->

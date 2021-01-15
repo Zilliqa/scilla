@@ -186,8 +186,8 @@ module Configuration = struct
   let remote_load _st _adr k =
     (* TODO - maybe useful to refactor load to avoid code duplicateion *)
     (* Note that adr has already been typechecked, so we know the field k is there. *)
-    fail1 ("Remote load not implemented.") (ER.get_loc (get_rep k))
-    
+    fail1 "Remote load not implemented." (ER.get_loc (get_rep k))
+
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
     match vopt with
@@ -225,8 +225,8 @@ module Configuration = struct
   let remote_map_get _st _adr m _klist _fetchval =
     (* TODO - probably useful to refactor map_get to avoid code duplicateion *)
     (* Note that adr has already been typechecked, so we know the map m is there. *)
-    fail1 ("Remote map get not implemented.") (ER.get_loc (get_rep m))
-  
+    fail1 "Remote map get not implemented." (ER.get_loc (get_rep m))
+
   let bind st k v =
     let e = st.env in
     { st with env = List.Assoc.add e k v ~equal:[%equal: EvalName.t] }
