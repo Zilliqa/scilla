@@ -90,6 +90,8 @@ module GlobalName = struct
      will be different from the error string where the name is used *)
   let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
 
+  let compare ((an, _) : t) ((bn, _) : t) : int = [%compare : t_name] an bn
+  
   let as_string = function
     | SimpleGlobal n, _ -> n
     | QualifiedGlobal (ns, n), _ -> flatten_name ns n
