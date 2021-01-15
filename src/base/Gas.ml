@@ -169,7 +169,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | (s, srep) :: rem_stmts ->
         let%bind s' =
           match s with
-          | Load (x, _) ->
+          | Load (x, _)
+          | RemoteLoad (x, _, _) ->
               let g =
                 GasStmt
                   (GasGasCharge.SumOf
@@ -198,7 +199,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 | None -> n
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
-          | MapGet (x, _, klist, _) ->
+          | MapGet (x, _, klist, _)
+          | RemoteMapGet (x, _, _, klist, _) ->
               let n = GasGasCharge.StaticCost (List.length klist) in
               let g =
                 GasGasCharge.SumOf
@@ -231,9 +233,6 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
           | GasStmt _ -> fail0 "Unexpected gas charge"
-          | RemoteLoad _
-          | RemoteMapGet _ ->
-              fail0 "Gas charge for remote reads not yet implemented"
         in
 
         let%bind rem_stmts' = stmts_cost rem_stmts in

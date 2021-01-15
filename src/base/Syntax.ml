@@ -312,6 +312,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t list
         * bool
+    (* v <-- adr.m[k1][k2][...] OR b <- exists adr.m[k1][k2][...] *)
+    (* If the bool is set, then we interpret this as value retrieve,
+       otherwise as an "exists" query. *)
     | RemoteMapGet of
         ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t list * bool
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list

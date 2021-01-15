@@ -167,19 +167,24 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-      | Address _ -> 1 (* TODO *)
+      | Address fts ->
+          List.fold_left fts ~init:0 ~f:(fun acc (_, t) -> acc + type_size t)
     in
 
     let subst_type_cost tvar tm tp_size =
-      match tm with
-      | PrimType _ | Unit
-      | MapType (_, _)
-      | FunType (_, _)
-      | ADT (_, _)
-      | PolyFun (_, _) ->
-          1
-      | TypeVar n -> if String.(n = tvar) then tp_size else 1
-      | Address _ -> 1 (* TODO *)
+      let rec cost tm =
+        match tm with
+        | PrimType _ | Unit
+        | MapType (_, _)
+        | FunType (_, _)
+        | ADT (_, _)
+        | PolyFun (_, _) ->
+            1
+        | TypeVar n -> if String.(n = tvar) then tp_size else 1
+        | Address fts ->
+            max 1 (List.fold_left fts ~init:0 ~f:(fun acc (_, t) -> acc + cost t))
+      in
+      cost tm
     in
 
     let tp_size = type_size tp in
@@ -201,18 +206,19 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let res = if String.(tvar = n) then tp else t in
             pure res
         | ADT (s, ts) ->
-            let%bind ts'_rev =
-              foldM ts ~init:[] ~f:(fun ts'_rev_acc t' ->
-                  let%bind res = recurser t' in
-                  pure (res :: ts'_rev_acc))
-            in
-            pure (ADT (s, List.rev ts'_rev))
+            let%bind ts_res = mapM ts ~f:recurser in
+            pure (ADT (s, ts_res))
         | PolyFun (arg, t') ->
             if String.(tvar = arg) then pure t'
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
-        | Address _ -> pure t (* TODO *)
+        | Address fts ->
+            let%bind fts_res = mapM fts ~f:(fun (x, t') ->
+                let%bind t'_res = recurser t' in
+                pure (x, t'_res))
+            in
+            pure (Address fts_res)
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
