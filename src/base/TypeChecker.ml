@@ -898,7 +898,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 let%bind () =
                   fromR_TE
                   (* The procedure accepts an element of l. *)
-                  @@ assert_type_equiv (list_typ arg_typ) l_type.tp
+                  @@ assert_type_assignable (list_typ arg_typ) l_type.tp
                        ~lc:(ER.get_loc (get_rep l))
                 in
                 let%bind checked_stmts = type_stmts sts get_loc env in

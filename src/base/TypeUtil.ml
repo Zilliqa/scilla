@@ -356,15 +356,6 @@ module TypeUtilities = struct
            (pp_typ expected) (pp_typ given))
         lc
 
-  (* TODO: make this charge gas *)
-  let assert_type_equiv ?(lc = dummy_loc) expected given =
-    if [%equal: TUType.t] expected given then pure ()
-    else
-      fail1
-        (sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ_error expected) (pp_typ_error given))
-        lc
-
   let rec is_ground_type t =
     match t with
     | FunType (a, r) -> is_ground_type a && is_ground_type r

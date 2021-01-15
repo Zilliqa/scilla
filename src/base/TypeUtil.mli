@@ -186,12 +186,6 @@ module TypeUtilities : sig
     TUType.t ->
     (unit, scilla_error list) result
 
-  val assert_type_equiv :
-    ?lc:ErrorUtils.loc ->
-    TUType.t ->
-    TUType.t ->
-    (unit, scilla_error list) result
-
   (* Applying a function type *)
   val fun_type_applies :
     ?lc:ErrorUtils.loc ->
