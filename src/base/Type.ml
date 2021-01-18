@@ -173,7 +173,6 @@ module type ScillaType = sig
 
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
-
 end
 
 module MkType (I : ScillaIdentifier) = struct
