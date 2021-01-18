@@ -247,9 +247,7 @@ functor
           | Address fts ->
               match List.find_a_dup fts
                       ~compare:(fun (f1, _) (f2, _) ->
-                          Bytes.compare
-                            (Bytes.of_string (as_string f1))
-                            (Bytes.of_string (as_string f2))) with
+                          TIdentifier.compare f1 f2) with
               | Some (dup_f, _) ->
                   (* No duplicate fields allowed *)
                   fail1
