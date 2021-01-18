@@ -170,7 +170,6 @@ module MakeServer () = struct
 
   let fetch_ext_state_value _caddr _query =
     fail RPCError.{ code = 0; message = "Unimplimented" }
-
 end
 
 let start_server ~sock_addr =

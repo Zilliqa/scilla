@@ -245,7 +245,9 @@ struct
           | MapGet (v, m, klist, valfetch) ->
               pure @@ (CheckedPatternSyntax.MapGet (v, m, klist, valfetch), rep)
           | RemoteMapGet (v, adr, m, klist, valfetch) ->
-              pure @@ (CheckedPatternSyntax.RemoteMapGet (v, adr, m, klist, valfetch), rep)
+              pure
+              @@ ( CheckedPatternSyntax.RemoteMapGet (v, adr, m, klist, valfetch),
+                   rep )
           | Bind (i, e) ->
               wrap_pmcheck_serr srep
               @@ let%bind checked_e = pm_check_expr e in

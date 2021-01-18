@@ -212,7 +212,8 @@ module MkType (I : ScillaIdentifier) = struct
           let elems =
             List.map fts ~f:(fun (f, t) ->
                 sprintf "%s : %s"
-                  (if is_error then TIdentifier.as_error_string f else TIdentifier.as_string f)
+                  ( if is_error then TIdentifier.as_error_string f
+                  else TIdentifier.as_string f )
                   (recurser t))
             |> String.concat ~sep:", "
           in
@@ -434,7 +435,7 @@ module MkType (I : ScillaIdentifier) = struct
   let is_prim_type = function PrimType _ -> true | _ -> false
 
   let is_address_type = function Address _ -> true | _ -> false
-    
+
   let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
 
   let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false

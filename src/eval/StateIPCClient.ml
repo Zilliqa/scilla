@@ -35,7 +35,6 @@ module IPCClient = IPCIdl (IDL.GenClient ())
 module IPCCLiteral = GlobalLiteral
 module IPCCType = IPCCLiteral.LType
 module IPCCIdentifier = IPCCType.TIdentifier
-
 module FEParser = FrontEndParser.ScillaFrontEndParser (IPCCLiteral)
 
 (* Translate JRPC result to our result. *)
@@ -191,7 +190,8 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
   let%bind q' = encode_serialized_query q in
   let%bind res =
     let thunk () =
-      translate_res @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+      translate_res
+      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
     in
     ipcclient_exn_wrapper thunk
   in
@@ -203,8 +203,8 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
       let%bind stored_typ = FEParser.parse_type field_typ in
       pure @@ (Some res'', stored_typ)
   | false, _, field_typ ->
-    let%bind stored_typ = FEParser.parse_type field_typ in
-    pure (None, stored_typ)
+      let%bind stored_typ = FEParser.parse_type field_typ in
+      pure (None, stored_typ)
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
@@ -260,9 +260,10 @@ let external_is_member ~socket_addr ~caddr ~fname ~keys ~tp =
     }
   in
   let%bind q' = encode_serialized_query q in
-  let%bind (found, _, field_type) =
+  let%bind found, _, field_type =
     let thunk () =
-      translate_res @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+      translate_res
+      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
     in
     ipcclient_exn_wrapper thunk
   in

@@ -295,8 +295,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | PolyFun _ ->
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
-      | Address fts ->
-          forallM fts ~f:(fun (_, t) -> walk t)
+      | Address fts -> forallM fts ~f:(fun (_, t) -> walk t)
     in
     walk t
 

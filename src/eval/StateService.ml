@@ -161,8 +161,7 @@ module MakeStateService () = struct
         let%bind res, stored_tp =
           StateIPCClient.external_fetch ~socket_addr ~caddr ~fname ~keys ~tp
         in
-        if not @@ List.is_empty keys then
-          pure @@ (res, stored_tp)
+        if not @@ List.is_empty keys then pure @@ (res, stored_tp)
         else
           match res with
           | None ->

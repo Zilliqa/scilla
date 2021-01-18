@@ -186,9 +186,10 @@ struct
       | Load (x, y) ->
           CFSyntax.Load (add_noinfo_to_ident x, add_noinfo_to_ident y)
       | RemoteLoad (x, adr, y) ->
-          CFSyntax.RemoteLoad (add_noinfo_to_ident x,
-                               add_noinfo_to_ident adr,
-                               add_noinfo_to_ident y)
+          CFSyntax.RemoteLoad
+            ( add_noinfo_to_ident x,
+              add_noinfo_to_ident adr,
+              add_noinfo_to_ident y )
       | Store (x, y) ->
           CFSyntax.Store (add_noinfo_to_ident x, add_noinfo_to_ident y)
       | Bind (x, e) -> CFSyntax.Bind (add_noinfo_to_ident x, cf_init_tag_expr e)
@@ -1622,13 +1623,15 @@ struct
       | RemoteLoad (x, adr, f) ->
           (* TODO - see Load case for inspiration *)
           (* x is no longer in scope, so remove from local_env *)
-          let new_local_env = AssocDictionary.remove (CFIdentifier.as_string x) local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
+          in
           ( RemoteLoad (x, adr, f),
             param_env,
             field_env,
             new_local_env,
             ctr_tag_map,
-            false)
+            false )
       | Store (f, x) ->
           let new_f, new_x, new_param_env, new_field_env, new_local_env =
             cf_update_tag_for_field_assignment f x param_env field_env local_env
@@ -1758,7 +1761,9 @@ struct
       | RemoteMapGet (x, adr, m, ks, fetch) ->
           (* TODO - see MapGet case for inspiration *)
           (* x is no longer in scope, so remove from local_env *)
-          let new_local_env = AssocDictionary.remove (CFIdentifier.as_string x) local_env in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
+          in
           ( RemoteMapGet (x, adr, m, ks, fetch),
             param_env,
             field_env,

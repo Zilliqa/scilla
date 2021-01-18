@@ -206,14 +206,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ PostDisType.PolyFun (tvar, dis_t)
       | Unit -> pure @@ PostDisType.Unit
       | Address fts ->
-          let%bind dis_fts = mapM fts ~f:(fun (id, t) ->
-              let%bind dis_id = name_def_as_simple_global id in
-              let%bind dis_t = recurse t in
-              pure @@ (dis_id, dis_t))
+          let%bind dis_fts =
+            mapM fts ~f:(fun (id, t) ->
+                let%bind dis_id = name_def_as_simple_global id in
+                let%bind dis_t = recurse t in
+                pure @@ (dis_id, dis_t))
           in
           pure @@ PostDisType.Address dis_fts
-          
     in
+
     recurse t
 
   (**************************************************************)
@@ -520,7 +521,20 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               remove_local_id_from_dict var_dict_acc (as_string x)
             in
             pure @@ (PostDisSyntax.Load (dis_x, dis_f), new_var_dict)
-        | RemoteLoad (_, _, _) -> fail0 "Not yet implemented"
+        | RemoteLoad (x, adr, f) ->
+            let%bind dis_x = name_def_as_simple_global x in
+            (* adr may be defined anywhere, so must be disambiguated *)
+            let%bind dis_adr =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) adr
+            in
+            (* f must be a field *)
+            let%bind dis_f = name_def_as_simple_global f in
+            (* x is now in scope as a local, so remove from var dictionary *)
+            let new_var_dict =
+              remove_local_id_from_dict var_dict_acc (as_string x)
+            in
+            pure
+            @@ (PostDisSyntax.RemoteLoad (dis_x, dis_adr, dis_f), new_var_dict)
         | Store (f, x) ->
             (* f must be a locally defined field *)
             let%bind dis_f = name_def_as_simple_global f in
@@ -568,7 +582,27 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure
             @@ (PostDisSyntax.MapGet (dis_x, dis_m, dis_ks, fetch), new_var_dict)
-        | RemoteMapGet (_, _, _, _, _) -> fail0 "Not yet implemented"
+        | RemoteMapGet (x, adr, m, ks, fetch) ->
+            let%bind dis_x = name_def_as_simple_global x in
+            (* adr may be defined anywhere, so must be disambiguated *)
+            let%bind dis_adr =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) adr
+            in
+            (* m must be a field *)
+            let%bind dis_m = name_def_as_simple_global m in
+            let%bind dis_ks =
+              mapM ks
+                ~f:
+                  (disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
+            in
+            (* x is now in scope as a local, so remove from var dictionary *)
+            let new_var_dict =
+              remove_local_id_from_dict var_dict_acc (as_string x)
+            in
+            pure
+            @@ ( PostDisSyntax.RemoteMapGet
+                   (dis_x, dis_adr, dis_m, dis_ks, fetch),
+                 new_var_dict )
         | MatchStmt (x, pss) ->
             let%bind dis_x =
               disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) x

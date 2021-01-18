@@ -80,6 +80,7 @@ module StdlibTracker : sig
   val file_extn_expression : string
 
   val add_deflib_adttyp : string -> string -> unit
+
   val lookup_deflib_adttyp : string -> string option
 
   (* Reset internal state. *)

@@ -141,7 +141,7 @@ module TypeUtilities : sig
   val is_legal_message_field_type : TUType.t -> bool
 
   val is_legal_transition_parameter_type : TUType.t -> bool
-  
+
   val is_legal_procedure_parameter_type : TUType.t -> bool
 
   val is_legal_field_type : TUType.t -> bool
@@ -155,8 +155,9 @@ module TypeUtilities : sig
 
   val map_depth : TUType.t -> int
 
-  val address_field_type : 'a TUIdentifier.t -> TUType.t -> (TUType.t, scilla_error list) result
-    
+  val address_field_type :
+    'a TUIdentifier.t -> TUType.t -> (TUType.t, scilla_error list) result
+
   (****************************************************************)
   (*             Utility function for matching types              *)
   (****************************************************************)
@@ -180,12 +181,6 @@ module TypeUtilities : sig
   val type_assignable_list : TUType.t list -> TUType.t list -> bool
 
   val assert_type_assignable :
-    ?lc:ErrorUtils.loc ->
-    TUType.t ->
-    TUType.t ->
-    (unit, scilla_error list) result
-  
-  val assert_type_equiv :
     ?lc:ErrorUtils.loc ->
     TUType.t ->
     TUType.t ->
