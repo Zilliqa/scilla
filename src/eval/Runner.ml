@@ -448,7 +448,8 @@ let run_with_args args =
                           else Some { fname = s; ftyp = t; fval = None })
                     in
                     let () =
-                      StateService.initialize ~sm:(IPC args.ipc_address) ~fields ~ext_states:[]
+                      StateService.initialize ~sm:(IPC args.ipc_address) ~fields
+                        ~ext_states:[]
                     in
                     (cstate, gas_remaining')
                   else
@@ -484,7 +485,9 @@ let run_with_args args =
                           in
                           { fname = s; ftyp = t; fval = Some l })
                     in
-                    let () = StateService.initialize ~sm:Local ~fields ~ext_states:[] in
+                    let () =
+                      StateService.initialize ~sm:Local ~fields ~ext_states:[]
+                    in
                     (cstate, gas_remaining')
                 in
 

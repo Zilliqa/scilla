@@ -244,20 +244,20 @@ functor
                 @@ sprintf "Unbound type variable %s in type %s" a
                      (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
-          | Address fts ->
-              match List.find_a_dup fts
-                      ~compare:(fun (f1, _) (f2, _) ->
-                          Bytes.compare
-                            (Bytes.of_string (as_string f1))
-                            (Bytes.of_string (as_string f2))) with
+          | Address fts -> (
+              match
+                List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
+                    TIdentifier.compare f1 f2)
+              with
               | Some (dup_f, _) ->
                   (* No duplicate fields allowed *)
                   fail1
-                    (sprintf "Duplicate field %s in address type" (as_error_string dup_f))
+                    (sprintf "Duplicate field %s in address type"
+                       (as_error_string dup_f))
                     (get_rep dup_f)
               | None ->
                   (* Check all types of address fields *)
-                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
+                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb) )
         in
         is_wf_typ' t []
 
@@ -338,29 +338,20 @@ module TypeUtilities = struct
     List.length tlist1 = List.length tlist2
     && not
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-          not (type_equivalent t1 t2)))
+              not (type_equivalent t1 t2)))
 
   let type_assignable_list tlist1 tlist2 =
     List.length tlist1 = List.length tlist2
     && not
-      (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-           not (type_assignable t1 t2)))
-  
+         (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
+              not (type_assignable t1 t2)))
+
   let assert_type_assignable ?(lc = dummy_loc) expected given =
     if type_assignable expected given then pure ()
     else
       fail1
-      (sprintf "Type unassignable: %s expected, but %s provided."
-         (pp_typ expected) (pp_typ given))
-      lc
-
-  (* TODO: make this charge gas *)
-  let assert_type_equiv ?(lc = dummy_loc) expected given =
-    if [%equal: TUType.t] expected given then pure ()
-    else
-      fail1
-        (sprintf "Type mismatch: %s expected, but %s provided."
-           (pp_typ_error expected) (pp_typ_error given))
+        (sprintf "Type unassignable: %s expected, but %s provided."
+           (pp_typ expected) (pp_typ given))
         lc
 
   let rec is_ground_type t =
@@ -371,39 +362,33 @@ module TypeUtilities = struct
     | PolyFun _ | TypeVar _ -> false
     | Address _ ->
         (* Addresses are represented as ByStr20 *)
-        true 
+        true
     | _ -> true
-  
-  let rec is_serializable_storable_helper accept_maps allow_unserializable check_addresses t seen_adts =
+
+  let rec is_serializable_storable_helper accept_maps allow_unserializable
+      check_addresses t seen_adts =
     let rec recurser t seen_adts =
       match t with
       | FunType (a, r) ->
-          allow_unserializable &&
-          recurser a seen_adts &&
-          recurser r seen_adts
-      | PolyFun (_, t) ->
-          allow_unserializable &&
-          recurser t seen_adts
-      | Unit ->
-          allow_unserializable 
+          allow_unserializable && recurser a seen_adts && recurser r seen_adts
+      | PolyFun (_, t) -> allow_unserializable && recurser t seen_adts
+      | Unit -> allow_unserializable
       | MapType (kt, vt) ->
-          accept_maps &&
-          recurser kt seen_adts &&
-          recurser vt seen_adts
+          accept_maps && recurser kt seen_adts && recurser vt seen_adts
       | TypeVar _ ->
           (* If we are inside an ADT, then type variable
              instantiations are handled outside *)
           not @@ List.is_empty seen_adts
       | PrimType _ ->
           (* Messages and Events are not serialisable in terms of contract parameters *)
-          allow_unserializable ||
-          TUType.(
-            (not @@ [%equal: TUType.t] t msg_typ)
-            || [%equal: TUType.t] t event_typ)
+          allow_unserializable
+          || TUType.(
+               (not @@ [%equal: TUType.t] t msg_typ)
+               || [%equal: TUType.t] t event_typ)
       | ADT (tname, ts) -> (
           let open DataTypeDictionary in
           if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
-          (* Inductive ADT - ignore this branch *)
+            (* Inductive ADT - ignore this branch *)
           else
             (* Check that ADT is serializable *)
             match lookup_name ~sloc:(get_rep tname) (get_id tname) with
@@ -415,15 +400,12 @@ module TypeUtilities = struct
                           recurser carg (tname :: seen_adts)))
                 in
                 adt_serializable
-                && List.for_all ts ~f:(fun t ->
-                    recurser t seen_adts) )
-      | Address fts
-        when check_addresses -> 
-          (* If check_addresses is true, then all field types in the address type should be legal field types. 
+                && List.for_all ts ~f:(fun t -> recurser t seen_adts) )
+      | Address fts when check_addresses ->
+          (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
           List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
-      | Address _ ->
-          true
+      | Address _ -> true
     in
     recurser t seen_adts
 
@@ -444,9 +426,8 @@ module TypeUtilities = struct
     (* Maps are allowed. Address values should be checked for storable field types. *)
     is_serializable_storable_helper true false true t []
 
-  let is_legal_map_key_type t =
-    is_prim_type t || is_address_type t
-  
+  let is_legal_map_key_type t = is_prim_type t || is_address_type t
+
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
     if List.Assoc.mem m tag_label ~equal:String.( = ) then pure TUType.msg_typ
@@ -472,25 +453,24 @@ module TypeUtilities = struct
 
   let address_field_type f t =
     match t with
-    | Address fts ->
-        if [%equal: TUName.t] (get_id f) ContractUtil.balance_label
-        then
+    | Address fts -> (
+        if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
           pure ContractUtil.balance_typ
         else
           let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
-          (match List.Assoc.find loc_removed (get_id f)
-                   ~equal:[%equal: TUName.t] with
-          | Some ft ->
-              pure ft
+          match
+            List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
+          with
+          | Some ft -> pure ft
           | None ->
-              fail0 @@
-              sprintf "Field %s is not declared in address type %s."
-                (as_error_string f) (pp_typ t))
+              fail0
+              @@ sprintf "Field %s is not declared in address type %s."
+                   (as_error_string f) (pp_typ t) )
     | _ ->
-        fail0 @@
-        sprintf "Attempting to read field from non-address type %s."
-          (pp_typ t)
-  
+        fail0
+        @@ sprintf "Attempting to read field from non-address type %s."
+             (pp_typ t)
+
   let pp_typ_list_error ts =
     let tss = List.map ~f:(fun t -> pp_typ_error t) ts in
     sprintf "[%s]" (String.concat ~sep:"; " tss)
@@ -753,9 +733,7 @@ module TypeUtilities = struct
           let res = ADT (mk_loc_id tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid =
-            List.for_all2_exn tmap arg_typs ~f:type_assignable
-          in
+          let args_valid = List.for_all2_exn tmap arg_typs ~f:type_assignable in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"

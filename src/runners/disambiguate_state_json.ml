@@ -240,8 +240,9 @@ let disambiguate_type t this_address =
         let dis_t = recurse t in
         OutputType.PolyFun (tvar, dis_t)
     | Unit -> OutputType.Unit
-    | Address _ -> 
-        fatal_error (mk_error0 "Address type found in state to be disambiguated\n")
+    | Address _ ->
+        fatal_error
+          (mk_error0 "Address type found in state to be disambiguated\n")
   in
   recurse t
 
@@ -859,7 +860,10 @@ let run_with_args args =
               in
               (* Initialise with the final values, then update, then finalise. *)
               (* ~ext_states not initialised, since they are not supported anyway *)
-              let () = OutputStateService.initialize ~sm ~fields:outputfields ~ext_states:[] in
+              let () =
+                OutputStateService.initialize ~sm ~fields:outputfields
+                  ~ext_states:[]
+              in
               let () =
                 List.iter outputfields ~f:(fun ssf ->
                     let open Scilla_eval.StateService in

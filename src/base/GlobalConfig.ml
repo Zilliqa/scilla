@@ -134,16 +134,16 @@ module StdlibTracker = struct
 
   (* adt.tname -> defining library. *)
   let adt_deflib_dict = Caml.Hashtbl.create 5
+
   let add_deflib_adttyp tname libname =
     Caml.Hashtbl.add adt_deflib_dict tname libname
-  let lookup_deflib_adttyp tname =
-    Caml.Hashtbl.find_opt adt_deflib_dict tname
+
+  let lookup_deflib_adttyp tname = Caml.Hashtbl.find_opt adt_deflib_dict tname
 
   (* Reset internal state. *)
-  let reset () = 
+  let reset () =
     stdlib_dirs := [];
     Caml.Hashtbl.reset adt_deflib_dict
-
 end
 
 let reset () =

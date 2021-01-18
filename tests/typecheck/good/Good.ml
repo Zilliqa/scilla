@@ -36,27 +36,27 @@ let make_type_assignable_equiv_test st1 st2 eq f_name f =
     | _ ->
         raise
           (SyntaxError
-             ( "Error parsing types " ^ st1 ^ " and " ^ st2
-               ^ " in " ^ f_name ^ " tests",
+             ( "Error parsing types " ^ st1 ^ " and " ^ st2 ^ " in " ^ f_name
+               ^ " tests",
                dummy_loc ))
   in
-  let b, bs =
-    if eq then (f t1 t2, "=") else (not (f t1 t2), "<>")
-  in
+  let b, bs = if eq then (f t1 t2, "=") else (not (f t1 t2), "<>") in
   let err_msg =
     "Assert " ^ TestTypeType.pp_typ t1 ^ " " ^ bs ^ " " ^ TestTypeType.pp_typ t2
     ^ " test failed"
   in
   test_case (fun _ -> assert_bool err_msg b)
-  
+
 let make_type_assignable_test st1 st2 eq =
-  make_type_assignable_equiv_test st1 st2 eq "type_assignable" TestTypeType.type_assignable
+  make_type_assignable_equiv_test st1 st2 eq "type_assignable"
+    TestTypeType.type_assignable
 
 let make_all_type_assignable_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq)
 
 let make_type_equiv_test st1 st2 eq =
-  make_type_assignable_equiv_test st1 st2 eq "type_equiv" TestTypeType.type_equivalent
+  make_type_assignable_equiv_test st1 st2 eq "type_equiv"
+    TestTypeType.type_equivalent
 
 let make_all_type_equiv_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
@@ -64,67 +64,62 @@ let make_all_type_equiv_tests tlist =
 let equivalent_types =
   [
     ("Uint32", "Uint32");
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'B. List ('B) -> List ('B)");
+    ("forall 'A. List ('A) -> List ('A)", "forall 'B. List ('B) -> List ('B)");
     ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A");
+      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A" );
     ( "forall 'A. 'A -> forall 'B. List ('B)",
-      "forall 'B. 'B -> forall 'A. List ('A)");
+      "forall 'B. 'B -> forall 'A. List ('A)" );
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B");
+      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
-    ( "ByStr20", "ByStr20");
-    ( "ByStr20 with end",
-      "ByStr20 with end");
-    ( "ByStr20 with x : Uint32 end",
-      "ByStr20 with x : Uint32 end");
+    ("ByStr20", "ByStr20");
+    ("ByStr20 with end", "ByStr20 with end");
+    ("ByStr20 with x : Uint32 end", "ByStr20 with x : Uint32 end");
     ( "ByStr20 with x : Uint32, y : Bool end",
-      "ByStr20 with x : Uint32, y : Bool end");
+      "ByStr20 with x : Uint32, y : Bool end" );
     ( "ByStr20 with y : Bool, x : Uint32 end",
-      "ByStr20 with x : Uint32, y : Bool end");
+      "ByStr20 with x : Uint32, y : Bool end" );
     ( "ByStr20 with x : Uint32, y : ByStr20 with end end",
-      "ByStr20 with x : Uint32, y : ByStr20 with end end");
-    ( "ByStr20 with x : Uint32, y : ByStr20 with y2 : ByStr20, y1 : Option Int256 end end",
-      "ByStr20 with x : Uint32, y : ByStr20 with y1 : Option Int256, y2 : ByStr20 end end");
+      "ByStr20 with x : Uint32, y : ByStr20 with end end" );
+    ( "ByStr20 with x : Uint32, y : ByStr20 with y2 : ByStr20, y1 : Option \
+       Int256 end end",
+      "ByStr20 with x : Uint32, y : ByStr20 with y1 : Option Int256, y2 : \
+       ByStr20 end end" );
   ]
-  
+
 let assignable_but_not_equivalent_types =
   [
     (* Addresses *)
-    ( "ByStr20", 
-      "ByStr20 with end");
-    ( "ByStr20 with end",
-      "ByStr20 with x : Uint32 end");
+    ("ByStr20", "ByStr20 with end");
+    ("ByStr20 with end", "ByStr20 with x : Uint32 end");
+    ("ByStr20 with x : Uint32 end", "ByStr20 with x : Uint32, y : Uint32 end");
     ( "ByStr20 with x : Uint32 end",
-      "ByStr20 with x : Uint32, y : Uint32 end");
-    ( "ByStr20 with x : Uint32 end",
-      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end");
+      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end" );
     ( "ByStr20 with y : Uint32, x : Uint32 end",
-      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end");
+      "ByStr20 with x : Uint32, y : Uint32, z : ByStr20 with end end" );
     ( "ByStr20 with x : Uint32, y : ByStr20 with y1 : Int32 end end",
-      "ByStr20 with x : Uint32, y : ByStr20 with y2 : Bool, y1 : Int32 end end");
+      "ByStr20 with x : Uint32, y : ByStr20 with y2 : Bool, y1 : Int32 end end"
+    );
   ]
 
 let not_assignable_types =
   [
     ("Int32", "Uint32");
     ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'A. List ('A) -> List ('A) -> List ('A)");
+      "forall 'A. List ('A) -> List ('A) -> List ('A)" );
     ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B");
+      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B" );
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B");
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
-    ( "ByStr20 with x : Int32 end",
-      "ByStr20 with x : Uint32 end");
-    ( "ByStr20 with x : Int32 end",
-      "ByStr20 with y : Int32 end");
+    ("ByStr20 with x : Int32 end", "ByStr20 with x : Uint32 end");
+    ("ByStr20 with x : Int32 end", "ByStr20 with y : Int32 end");
     ( "ByStr20 with x : ByStr20 with y1 : Int32 end end",
-      "ByStr20 with x : ByStr20 with y1 : Uint32 end end");
+      "ByStr20 with x : ByStr20 with y1 : Uint32 end end" );
     ( "ByStr20 with x : ByStr20 with y1 : Int32 end end",
-      "ByStr20 with x : ByStr20 with y2 : Int32 end end");
+      "ByStr20 with x : ByStr20 with y2 : Int32 end end" );
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)
@@ -156,7 +151,7 @@ let all_type_assignable_tests =
   @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
   (* Non-assignable *)
   @ List.map not_assignable_types ~f:(make_test false)
-  (* Non-assignable and non-equivalent is reflexive 
+  (* Non-assignable and non-equivalent is reflexive
      - if it becomes assignable, then it should be place in assignable_but_not_equivalent_types. *)
   @ List.map not_assignable_types ~f:(reverse_test false)
 
@@ -229,19 +224,20 @@ let ground_type_tests =
     ("forall 'A. Pair Int32 'A", false);
   ]
 
-let all_ground_type_tests = List.map ground_type_tests ~f:(fun (t, res) -> make_ground_type_test t res)
-    
+let all_ground_type_tests =
+  List.map ground_type_tests ~f:(fun (t, res) -> make_ground_type_test t res)
+
 let type_equiv_tests =
   "type_equiv_tests" >::: make_all_type_equiv_tests all_type_equiv_tests
 
 let type_assignable_tests =
-  "type_assignable_tests" >::: make_all_type_assignable_tests all_type_assignable_tests
+  "type_assignable_tests"
+  >::: make_all_type_assignable_tests all_type_assignable_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
 
-let ground_type_tests =
-  "ground_type_tests" >::: all_ground_type_tests
+let ground_type_tests = "ground_type_tests" >::: all_ground_type_tests
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]

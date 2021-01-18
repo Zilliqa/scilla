@@ -75,9 +75,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | Address fts -> (
           match
             List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
-                Bytes.compare
-                  (Bytes.of_string (as_string f1))
-                  (Bytes.of_string (as_string f2)))
+                RecIdentifier.compare f1 f2)
           with
           | Some (dup_field, _) ->
               fail1
@@ -297,8 +295,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | PolyFun _ ->
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
-      | Address fts ->
-          forallM fts ~f:(fun (_, t) -> walk t)
+      | Address fts -> forallM fts ~f:(fun (_, t) -> walk t)
     in
     walk t
 

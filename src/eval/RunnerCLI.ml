@@ -31,7 +31,7 @@ type args = {
   balance : Stdint.uint128;
   pp_json : bool;
   ipc_address : string;
-  ext_states : string list
+  ext_states : string list;
 }
 
 let f_input_init = ref ""
@@ -86,7 +86,6 @@ let reset () =
   b_validate_json := true;
   i_ipc_address := "";
   f_ext_states := []
-
 
 let process_trace () =
   match !f_trace_level with
@@ -180,7 +179,7 @@ let parse args ~exe_name =
         "Path to state input json" );
       ( "-estate",
         Arg.String (fun x -> f_ext_states := x :: !f_ext_states),
-        "Path to the state of another blockchain address");
+        "Path to the state of another blockchain address" );
       ( "-imessage",
         Arg.String (fun x -> f_input_message := x),
         "Path to message input json" );
