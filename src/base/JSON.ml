@@ -17,61 +17,57 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open Literal
 open Syntax
 open ErrorUtils
 open Yojson
 open ContractUtil.MessagePayload
 open Datatypes
 open TypeUtil
-open PrimTypes
 open BuiltIns
 open PrettyPrinters
 module JSONTypeUtilities = TypeUtilities
-module JSONBuiltIns = ScillaBuiltIns (ParserRep) (ParserRep)
+module JSONLiteral = GlobalLiteral
+module JSONType = JSONLiteral.LType
+module JSONIdentifier = JSONType.TIdentifier
+module JSONName = JSONIdentifier.Name
+module JSONBuiltIns =
+  ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (JSONLiteral)
 open JSONTypeUtilities
+open JSONIdentifier
+open JSONType
+open JSONLiteral
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
 (****************************************************************)
 
-let json_exn_wrapper ?filename thunk =
-  try thunk () with
-  | Yojson.Json_error s
-  | Yojson.Basic.Util.Undefined (s, _)
-  | Yojson.Basic.Util.Type_error (s, _) ->
-      raise (mk_invalid_json s)
-  | _ -> (
-      match filename with
-      | Some f ->
-          raise
-            (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
-      | None ->
-          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
-      )
+let json_exn_wrapper = JSONParser.json_exn_wrapper
+
+let member_exn = JSONParser.member_exn
+
+let to_string_exn = JSONParser.to_string_exn
+
+let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let from_file f =
   let thunk () = Basic.from_file f in
   json_exn_wrapper thunk ~filename:f
 
+let parse_as_name n =
+  match String.split_on_chars ~on:[ '.' ] n with
+  | [ t1; t2 ] -> JSONName.parse_qualified_name t1 t2
+  | [ t1 ] -> JSONName.parse_simple_name t1
+  | _ -> raise (mk_invalid_json (sprintf "Invalid name in json: %s\n" n))
+
 let parse_typ_exn t =
-  match FrontEndParser.parse_type t with
+  match JSONFrontEndParser.parse_type t with
   | Error _ -> raise (mk_invalid_json (sprintf "Invalid type in json: %s\n" t))
   | Ok s -> s
 
-let member_exn m j =
-  let thunk () = Basic.Util.member m j in
-  let v = json_exn_wrapper thunk in
-  match v with
-  | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
-  | j -> j
-
 let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
-  json_exn_wrapper thunk
-
-let to_string_exn j =
-  let thunk () = Basic.Util.to_string j in
   json_exn_wrapper thunk
 
 (* Given a literal, return its full type name *)
@@ -84,21 +80,13 @@ let build_prim_lit_exn t v =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
   in
   let build_prim_literal_of_type t v =
-    match build_prim_literal t v with
-    | Some v' -> v'
-    | None -> raise (exn ())
+    match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
   in
   match t with
-  | PrimType pt ->
-      build_prim_literal_of_type pt v
-  | Address _ ->
-      build_prim_literal_of_type (Bystrx_typ 20) v
-  | MapType _
-  | FunType _
-  | ADT _
-  | TypeVar _
-  | PolyFun _
-  | Unit -> raise (exn ())
+  | PrimType pt -> build_prim_literal_of_type pt v
+  | Address _ -> build_prim_literal_of_type (Bystrx_typ 20) v
+  | MapType _ | FunType _ | ADT _ | TypeVar _ | PolyFun _ | Unit ->
+      raise (exn ())
 
 (****************************************************************)
 (*                    JSON parsing                              *)
@@ -120,18 +108,19 @@ let rec json_to_adtargs cname tlist ajs =
       let e = Int.to_string expected in
       raise
         (mk_invalid_json
-           ( "Malformed ADT constructor " ^ cname ^ ": expected " ^ e
-           ^ " args, but provided " ^ p ^ "." ))
+           ( "Malformed ADT constructor "
+           ^ JSONName.as_error_string cname
+           ^ ": expected " ^ e ^ " args, but provided " ^ p ^ "." ))
   in
   let dt =
     match DataTypeDictionary.lookup_constructor cname with
     | Error emsg -> raise (Invalid_json emsg)
     | Ok (r, _) -> r
   in
-  (* For each component literal of our ADT, calculate it's type.
+  (* For each component literal of our ADT, calculate its type.
    * This is essentially using DataTypes.constr_tmap and substituting safely. *)
   let tmap =
-    JSONParser.constr_pattern_arg_types_exn (ADT (asId dt.tname, tlist)) cname
+    constr_pattern_arg_types_exn (ADT (mk_loc_id dt.tname, tlist)) cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
   let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit_exn t j) in
@@ -147,18 +136,18 @@ and read_adt_json name j tlist_verify =
     match j with
     | `List vli ->
         (* We make an exception for Lists, allowing them to be stored flatly. *)
-        if String.(dt.tname <> "List") then
+        if not (is_list_adt_name dt.tname) then
           raise
             (Invalid_json
                (mk_error0 "ADT value is a JSON array, but type is not List"))
         else
           let etyp = List.nth_exn tlist_verify 0 in
           List.fold_right vli
-            ~f:(fun vl acc ->
-              ADTValue ("Cons", [ etyp ], [ json_to_lit_exn etyp vl; acc ]))
-            ~init:(ADTValue ("Nil", [ etyp ], []))
+            ~f:(fun vl acc -> build_cons_lit (json_to_lit_exn etyp vl) etyp acc)
+            ~init:(build_nil_lit etyp)
     | `Assoc _ ->
-        let constr = member_exn "constructor" j |> to_string_exn in
+        let constr_str = member_exn "constructor" j |> to_string_exn in
+        let constr = parse_as_name constr_str in
         let dt' =
           match DataTypeDictionary.lookup_constructor constr with
           | Error emsg -> raise (Invalid_json emsg)
@@ -167,12 +156,18 @@ and read_adt_json name j tlist_verify =
         if not @@ [%equal: Datatypes.adt] dt dt' then
           raise
             (mk_invalid_json
-               ("ADT type " ^ dt.tname ^ " does not match constructor " ^ constr));
+               ( "ADT type "
+               ^ JSONName.as_error_string dt.tname
+               ^ " does not match constructor "
+               ^ JSONName.as_error_string constr ));
         let argtypes = member_exn "argtypes" j |> to_list_exn in
         let arguments = member_exn "arguments" j |> to_list_exn in
         let tlist = json_to_adttyps argtypes in
         json_to_adtargs constr tlist arguments
-    | _ -> raise (mk_invalid_json ("JSON parsing: error parsing ADT " ^ name))
+    | _ ->
+        raise
+          (mk_invalid_json
+             ("JSON parsing: error parsing ADT " ^ JSONName.as_error_string name))
   in
   (* match tlist1 with adt's tlist. *)
   let verify_exn name tlist1 adt =
@@ -180,13 +175,17 @@ and read_adt_json name j tlist_verify =
     | ADTValue (_, tlist2, _) ->
         if type_assignable_list tlist1 tlist2 then ()
         else
-          let expected = pp_typ_list tlist1 in
-          let observed = pp_typ_list tlist2 in
+          let expected = pp_typ_list_error tlist1 in
+          let observed = pp_typ_list_error tlist2 in
           raise
             (mk_invalid_json
-               ( "Type mismatch in parsing ADT " ^ name ^ ". Expected: "
-               ^ expected ^ " vs Observed: " ^ observed ))
-    | _ -> raise (mk_invalid_json ("Type mismatch in parsing ADT " ^ name))
+               ( "Type mismatch in parsing ADT "
+               ^ JSONName.as_error_string name
+               ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed ))
+    | _ ->
+        raise
+          (mk_invalid_json
+             ("Type mismatch in parsing ADT " ^ JSONName.as_error_string name))
   in
   (* verify built ADT *)
   verify_exn name tlist_verify res;
@@ -224,27 +223,19 @@ and json_to_lit_exn t v =
   | ADT (name, tlist) ->
       let vl = read_adt_json (get_id name) v tlist in
       vl
-  | PrimType _
-  | Address _ ->
+  | PrimType _ | Address _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
-  | FunType _
-  | TypeVar _
-  | PolyFun _
-  | Unit ->
-      let exn () =
-        mk_invalid_json ("Invalid type " ^ pp_typ t ^ " in JSON")
-      in
+  | FunType _ | TypeVar _ | PolyFun _ | Unit ->
+      let exn () = mk_invalid_json ("Invalid type " ^ pp_typ t ^ " in JSON") in
       raise (exn ())
-       
-      
+
 let jobj_to_statevar json =
   let n = member_exn "vname" json |> to_string_exn in
   let tstring = member_exn "type" json |> to_string_exn in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () (* TODO: Add command line flag. *) then
-    (n, json_to_lit_exn t v)
+  if GlobalConfig.validate_json () then (n, json_to_lit_exn t v)
   else (n, JSONParser.parse_json t v)
 
 (****************************************************************)
@@ -275,7 +266,7 @@ let get_uint_literal l =
 
 let get_address_literal l =
   match l with
-  | ByStrX bs when Bystrx.width bs = address_length ->
+  | ByStrX bs when Bystrx.width bs = Type.address_length ->
       Some (Bystrx.hex_encoding bs)
   | _ -> None
 
@@ -285,7 +276,7 @@ let get_address_literal l =
 
 module ContractState = struct
   (** Returns a list of (vname:string,value:literal) items
-    Invalid inputs in the json are ignored **)
+      Invalid inputs in the json are ignored **)
   let get_json_data filename =
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
@@ -294,53 +285,93 @@ module ContractState = struct
 
   (* Get a json object from given states *)
   let state_to_json states =
-    let jsonl = slist_to_json states in
+    let states_str =
+      List.map states ~f:(fun (x, v) -> (JSONName.as_string x, v))
+    in
+    let jsonl = slist_to_json states_str in
     `List jsonl
 
   (** 
-  ** Prints a list of state variables (string, literal)
-  ** as a json and returns it as a string.
-  ** pp enables pretty printing.
-  **)
+   ** Prints a list of state variables (string, literal)
+   ** as a json and returns it as a string.
+   ** pp enables pretty printing.
+   **)
   let state_to_string ?(pp = false) states =
     let json = state_to_json states in
     if pp then pretty_to_string json else to_string json
 
-  (* Given an init.json, return extlib fields *)
-  let get_init_extlibs filename =
-    let allf = get_json_data filename in
+  (* Given the json data from an init file, return extlib fields *)
+  let get_init_extlibs init_data =
     let extlibs =
-      List.filter allf ~f:(fun (name, _) ->
-          String.(name = ContractUtil.extlibs_label))
+      List.filter init_data ~f:(fun (name, _v) ->
+          String.(name = JSONName.as_string ContractUtil.extlibs_label))
     in
     match extlibs with
     | [] -> []
-    | [ (_, lit) ] -> (
+    | [ (_name, lit) ] -> (
         match Datatypes.scilla_list_to_ocaml lit with
         | Error _ ->
             raise
               (mk_invalid_json
-                 ( "Invalid " ^ ContractUtil.extlibs_label
-                 ^ " entry in init json" ^ filename ))
+                 ( "Invalid "
+                 ^ JSONName.as_error_string ContractUtil.extlibs_label
+                 ^ " entry in init json" ))
         | Ok lit' ->
             (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
             List.map lit' ~f:(fun sp ->
                 match sp with
-                | ADTValue ("Pair", [ t1; t2 ], [ StringLit name; ByStrX bs ])
-                  when [%equal: typ] t1 PrimTypes.string_typ
-                       && [%equal: typ] t2 (PrimTypes.bystrx_typ address_length)
-                       && Bystrx.width bs = address_length ->
+                | ADTValue (c, [ t1; t2 ], [ StringLit name; ByStrX bs ])
+                  when is_pair_ctr_name c
+                       && [%equal: JSONType.t] t1 JSONType.string_typ
+                       && [%equal: JSONType.t] t2
+                            (JSONType.bystrx_typ Type.address_length)
+                       && Bystrx.width bs = Type.address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
                     raise
                       (mk_invalid_json
-                         ( "Invalid " ^ ContractUtil.extlibs_label
-                         ^ " entry in init json" ^ filename ))) )
+                         ( "Invalid "
+                         ^ JSONName.as_error_string ContractUtil.extlibs_label
+                         ^ " entry in init json" ))) )
     | _ ->
         raise
           (mk_invalid_json
-             ( "Multiple " ^ ContractUtil.extlibs_label
-             ^ " entries in init json " ^ filename ))
+             ( "Multiple "
+             ^ JSONName.as_error_string ContractUtil.extlibs_label
+             ^ " entries in init json" ))
+
+  (* Accessor for _this_address and _extlibs entries in init.json.
+     Combined into one function to avoid reading init.json from disk multiple times. *)
+  let get_init_this_address_and_extlibs filename =
+    let init_data = get_json_data filename in
+    let extlibs = get_init_extlibs init_data in
+    let this_address_init_opt =
+      match
+        List.filter init_data ~f:(fun (name, _) ->
+            String.(name = JSONName.as_string ContractUtil.this_address_label))
+      with
+      | [ (_, adr) ] -> Some adr
+      | [] ->
+          None
+          (* We allow init files without a _this_address entry in scilla-checker *)
+      | _ ->
+          raise
+            (mk_invalid_json
+               ( "Multiple "
+               ^ JSONName.as_string ContractUtil.this_address_label
+               ^ " entries specified in init json" ))
+    in
+    match this_address_init_opt with
+    | None -> (None, extlibs)
+    | Some adr -> (
+        match get_address_literal adr with
+        | Some adr -> (Some adr, extlibs)
+        | None ->
+            raise
+              (mk_invalid_json
+                 ( "Illegal type for field "
+                 ^ JSONName.as_string ContractUtil.this_address_label
+                 ^ " specified in init json" )) )
 
   (* Convert a single JSON serialized literal back to its Scilla value. *)
   let jstring_to_literal jstring tp =
@@ -351,25 +382,34 @@ end
 
 module Message = struct
   (** Parses and returns a list of (pname,pval), with
-  "_tag" and "_amount" at the beginning of this list.
-  Invalid inputs in the json are ignored **)
+      "_tag" and "_amount" at the beginning of this list.
+      Invalid inputs in the json are ignored **)
   let get_json_data filename =
     let json = from_file filename in
     let tags = member_exn tag_label json |> to_string_exn in
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in
+    let origins = member_exn origin_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
-    let tag = (tag_label, build_prim_lit_exn PrimTypes.string_typ tags) in
+    let tag = (tag_label, build_prim_lit_exn JSONType.string_typ tags) in
     let amount =
-      (amount_label, build_prim_lit_exn PrimTypes.uint128_typ amounts)
+      (amount_label, build_prim_lit_exn JSONType.uint128_typ amounts)
     in
     let sender =
       ( sender_label,
-        build_prim_lit_exn (PrimTypes.bystrx_typ address_length) senders )
+        build_prim_lit_exn (JSONType.bystrx_typ Type.address_length) senders )
+    in
+    let origin =
+      ( origin_label,
+        build_prim_lit_exn (JSONType.bystrx_typ Type.address_length) origins )
     in
     let pjlist = member_exn "params" json |> to_list_exn in
-    let params = List.map pjlist ~f:jobj_to_statevar in
-    tag :: amount :: sender :: params
+    let params =
+      List.map pjlist ~f:(fun f ->
+          let name, v = jobj_to_statevar f in
+          (name, v))
+    in
+    tag :: amount :: origin :: sender :: params
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
@@ -405,13 +445,13 @@ module Message = struct
       ]
 
   (** 
-  ** Prints a message (string, literal) as a json to the 
-  ** and returns the string. pp enables pretty printing.
-  ** The difference b/w this and the one in ContractState 
-  ** is that this has a mandatory "_tag" and "_amount" field,
-  ** with the actual params themselves in an array json with
-  ** name "params" (as described in comment in .mli file).
-  **)
+   ** Prints a message (string, literal) as a json to the 
+   ** and returns the string. pp enables pretty printing.
+   ** The difference b/w this and the one in ContractState 
+   ** is that this has a mandatory "_tag" and "_amount" field,
+   ** with the actual params themselves in an array json with
+   ** name "params" (as described in comment in .mli file).
+   **)
   let message_to_jstring ?(pp = false) message =
     let j = message_to_json message in
     if pp then Basic.pretty_to_string j else Basic.to_string j
@@ -431,19 +471,21 @@ module BlockChainState = struct
 end
 
 module ContractInfo = struct
-  open Syntax.ParsedSyntax
+  module JSONParserSyntax = ParserUtil.ParserSyntax (JSONLiteral)
+  open JSONParserSyntax
 
   let get_json cmver (contr : contract)
-      (event_info : (string * (string * typ) list) list) =
+      (event_info : (string * (string * JSONType.t) list) list) =
     (* 0. contract version *)
     let verj = ("scilla_major_version", `String (Int.to_string cmver)) in
     (* 1. contract name *)
-    let namej = ("vname", `String (get_id contr.cname)) in
+    let namej = ("vname", `String (as_string contr.cname)) in
     (* 2. parameters *)
     let paraml = contr.cparams in
     let paramlj =
       List.map paraml ~f:(fun (i, t) ->
-          `Assoc [ ("vname", `String (get_id i)); ("type", `String (pp_typ t)) ])
+          `Assoc
+            [ ("vname", `String (as_string i)); ("type", `String (pp_typ t)) ])
     in
     let paramj = ("params", `List paramlj) in
     (* 3. fields *)
@@ -452,7 +494,7 @@ module ContractInfo = struct
       List.map fieldsl ~f:(fun (i, t, _) ->
           `Assoc
             [
-              ("vname", `String (get_id i));
+              ("vname", `String (as_string i));
               ("type", `String (pp_typ t));
               ("depth", `Int (JSONTypeUtilities.map_depth t));
             ])
@@ -466,14 +508,15 @@ module ContractInfo = struct
     let map_comp_list_to_json cl =
       List.map cl ~f:(fun t ->
           (* 4a. component name *)
-          let namej = ("vname", `String (get_id t.comp_name)) in
+          let namej = ("vname", `String (as_string t.comp_name)) in
           (* 4b. component parameters *)
           let paraml = t.comp_params in
           let paramlj =
             List.map paraml ~f:(fun (i, t) ->
                 `Assoc
                   [
-                    ("vname", `String (get_id i)); ("type", `String (pp_typ t));
+                    ("vname", `String (as_string i));
+                    ("type", `String (pp_typ t));
                   ])
           in
           let paramj = ("params", `List paramlj) in
@@ -504,7 +547,7 @@ module ContractInfo = struct
     let adts_to_json (alist : adt list) =
       let jlist =
         List.map alist ~f:(fun a ->
-            let tname = `String a.tname in
+            let tname = `String (JSONName.as_string a.tname) in
             let tparams = `List (List.map a.tparams ~f:(fun t -> `String t)) in
             let tmap =
               `List
@@ -515,7 +558,11 @@ module ContractInfo = struct
                            `List (List.map ts ~f:(fun t -> `String (pp_typ t)))
                        | None -> `List []
                      in
-                     `Assoc [ ("cname", `String ctr.cname); ("argtypes", tsj) ]))
+                     `Assoc
+                       [
+                         ("cname", `String (JSONName.as_string ctr.cname));
+                         ("argtypes", tsj);
+                       ]))
             in
             `Assoc [ ("tname", tname); ("tparams", tparams); ("tmap", tmap) ])
       in
@@ -529,7 +576,7 @@ module ContractInfo = struct
     finalj
 
   let get_string cver (contr : contract)
-      (event_info : (string * (string * typ) list) list) =
+      (event_info : (string * (string * JSONType.t) list) list) =
     pretty_to_string (get_json cver contr event_info)
 end
 

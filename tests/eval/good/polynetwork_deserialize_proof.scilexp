@@ -1,0 +1,83 @@
+let proof = 0xd72000ca93f8738111a063d8ab7221f47c70a4cade0ca4a2829df494cd4b5e231bd60300000000000000204caa77a3d2ddfaa318c550f1f38dd09d610dcff827d1f2ccd4ddcafaa6c553cc081b0000000000000014b7041bc96b15da728fdfc1c47cbfc687b845adeb0200000000000000144ddcf539d13e92d4151b7f5e607d4a09f725c47d06756e6c6f636b4a14406d31a9291bdaed4f4bc31b97dc468f88256ded14344cfc3b8635f72f14200aaf2168d9f75df86fd353000000000000000000000000000000000000000000000000000000000000000177d99c0f0857535155071d49ded129993a5b98575761985e90e2d26c7a569a0d in
+
+let proof2 = 0xd020e91d858cba58b3dff91bf4b3adcacabf899e106ed6ad86a16a4a29e7817e307c080000000000000020b697330bd7a5850235f97d1bcd1c37739f4bc79a4f8e635dcb46ba45bc600ef4012f14f71b55ef55cedc91fd007f7a9ba386ec978f3aa80200000000000000144ddcf539d13e92d4151b7f5e607d4a09f725c47d06756e6c6f636b4a14000000000000000000000000000000000000000014344cfc3b8635f72f14200aaf2168d9f75df86fd36226100000000000000000000000000000000000000000000000000000000000 in
+
+let proof3 = 0x20c73c8b3c730086cfae83d735d2c405d6f5a00c3f1ff21ce91d223038d3c1ab4d000213149490394c2a8701af2dba1a303df05148a14092f6e59febca31eee4da660079807fe94ecb6f6d1b0b65be5f45159925a905bab8040af476c372ea0583dbba00b41a753c36f64bbe6d6fcd6c2ba40dc09c4c25b6b877bd363696fe1f62cbf6f700059195b0df4add4239eaef270bc187217dc872d11723d4fce02a3c2510461e5900f3c3d66c4611791ff1ebe8a2ef43f1cbf40876b637522c60a81f511445f8dc17011f86c65842afb760457d5ce8ad38821d2110331a7bbae87fe131a5e610f3a146004add0a7a5c74a56ce64a3555b4a73f367c414c80ecc15672dd86f7bff8bf65bc011daedaae87fc34d28ec3116dc04386c7c650f5db9e3a9a853c6e518821069bda001c6cf42ace3bf6b1a7e60ae29dc10aad67cdf672cdb083c601ee3996576cc2e401a1a8ab20062ebdcfa7a6e8f0c6c8b3de823920abd351eedc33d043de1c1449880171c734d6d77806f9475b69c8426bc5c09ce54c0b4ccb13df4315c62899e9926201f459d25426b21e5f2f6bdabf5e6a79f36002114b1ecc5cfa30a18cf3e4baf98d01ad42157822143a7be209b907901a31863d1b35ad9118c4c45d476e405872fb66017badaf21d00ca7e2a73c64dd7738ddcb6a881dcfb88ef0c171e33bfec529fe0a00e0a6008bab76556dbf47269adc41d6820c6a55982e9362257bfdf02a79ff5b8d01061cd147d032d11b1b7b6b5edc389f56d33f939e51be3c7949b357aac4e120df in
+
+(* Starting at pos, deserialize the byte string into a Proof.  *)
+let deserialize_proof : ByStr -> Uint32 -> Option Proof =
+  fun (proof : ByStr) =>
+  fun (pos : Uint32) =>
+    let value_pos = extract_bystr proof pos in
+    match value_pos with
+    | Some (Pair value pos) =>
+      (* Compute the number of list elements *)
+      let full_len = builtin strlen proof in
+      let llen = builtin sub full_len pos in
+      let comp_size = Uint32 33 in (* ByStr1 + ByStr32 *)
+      let nelm = builtin div llen comp_size in
+      let nelm_nat = builtin to_nat nelm in
+      let foldf =
+        fun(i_acc : Pair Uint32 (Option (List (Pair ByStr1 ByStr32)))) =>
+        fun (n_ : Nat) =>
+          match i_acc with
+          | Pair pos (Some acc) =>
+            let len = Uint32 1 in
+            let a = builtin substr proof pos len in
+            let pos_1 = builtin add pos len in
+            let len = Uint32 32 in
+            let b = builtin substr proof pos_1 len in
+            let ax_opt = builtin to_bystr1 a in
+            match ax_opt with
+            | Some ax =>
+              let bx_opt = builtin to_bystr32 b in
+              match bx_opt with
+              | Some bx =>
+                let axbx = Pair {ByStr1 ByStr32} ax bx in
+                let acc_new = Cons {(Pair ByStr1 ByStr32)} axbx acc in
+                let acc_new_opt = Some {(List (Pair ByStr1 ByStr32))} acc_new in
+                let pos_new = builtin add pos comp_size in
+                Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos_new acc_new_opt
+              | None =>
+                let none = None {(List (Pair ByStr1 ByStr32))} in
+                Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+              end
+            | None =>
+              let none = None {(List (Pair ByStr1 ByStr32))} in
+              Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+            end
+          | Pair _ None =>
+            let none = None {(List (Pair ByStr1 ByStr32))} in
+            Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos none
+          end
+      in
+      let folder = @nat_fold (Pair Uint32 (Option (List (Pair ByStr1 ByStr32)))) in
+      let nil = Nil {(Pair ByStr1 ByStr32)} in
+      let some = Some {(List (Pair ByStr1 ByStr32))} nil in
+      let init = Pair {Uint32 (Option (List (Pair ByStr1 ByStr32)))} pos some in
+      let res = folder foldf init nelm_nat in
+      match res with
+      | Pair _ (Some ls) =>
+        (* Our fold builds the list in reverse, so we reverse it back now. *)
+        let revver = @list_reverse (Pair ByStr1 ByStr32) in
+        let ls_rev = revver ls in
+        let p = Proof value ls_rev in
+        Some {Proof} p
+      | _ => None {Proof}
+      end
+    | None => None {Proof}
+    end
+in
+
+let pos = Uint32 0 in
+
+let proof_bs = builtin to_bystr proof in
+let res1 = deserialize_proof proof_bs pos in
+
+let proof2_bs = builtin to_bystr proof2 in
+let res2 = deserialize_proof proof2_bs pos in
+
+let proof3_bs = builtin to_bystr proof3 in
+let res3 = deserialize_proof proof3_bs pos in
+
+Uint32 0

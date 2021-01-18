@@ -37,10 +37,24 @@
       },
       { "vname": "incNat", "params": [] },
       { "vname": "lflatten", "params": [] },
-      { "vname": "optlist", "params": [] }
+      { "vname": "optlist", "params": [] },
+      {
+        "vname": "redef_warn",
+        "params": [ { "vname": "b", "type": "Bool" } ]
+      },
+      { "vname": "print_sender_origin", "params": [] }
     ],
     "procedures": [],
-    "events": [],
+    "events": [
+      {
+        "vname": "Source",
+        "params": [
+          { "vname": "_sender", "type": "ByStr20 with end" },
+          { "vname": "_origin", "type": "ByStr20 with end" }
+        ]
+      },
+      { "vname": "Foo", "params": [ { "vname": "x", "type": "Uint32" } ] }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -84,12 +98,23 @@
   "warnings": [
     {
       "warning_message":
+        "x is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 113,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
         "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7259"
+  "gas_remaining": "7907"
 }
 

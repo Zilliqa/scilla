@@ -17,10 +17,15 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
-open Syntax
+open Literal
 open MonadUtil
 open Result.Let_syntax
+module DTLiteral = GlobalLiteral
+module DTType = DTLiteral.LType
+module DTIdentifier = DTType.TIdentifier
+module DTName = DTIdentifier.Name
+open DTType
+open DTLiteral
 
 (**********************************************************)
 (*                 Built-in Algebraic Data Types          *)
@@ -28,7 +33,7 @@ open Result.Let_syntax
 
 (* A tagged constructor *)
 type constructor = {
-  cname : string;
+  cname : DTName.t;
   (* constructor name *)
   arity : int; (* How many arguments it takes *)
 }
@@ -36,7 +41,7 @@ type constructor = {
 
 (* An Algebraic Data Type *)
 type adt = {
-  tname : string;
+  tname : DTName.t;
   (* type name *)
   tparams : string list;
   (* type parameters *)
@@ -46,73 +51,87 @@ type adt = {
   (* Mapping for constructors' types
      The arity of the constructor is the same as the length
      of the list, so the types are mapped correspondingly. *)
-  tmap : (string * typ list) list;
+  tmap : (DTName.t * DTType.t list) list;
 }
 [@@deriving equal]
 
 module DataTypeDictionary = struct
-  (* Booleans *)
-  let c_true = { cname = "True"; arity = 0 }
+  let dtname_of_string str = DTName.parse_simple_name str
 
-  let c_false = { cname = "False"; arity = 0 }
+  let dtid_of_string str = DTIdentifier.mk_loc_id @@ dtname_of_string str
+
+  (* Booleans *)
+  let c_true = { cname = dtname_of_string "True"; arity = 0 }
+
+  let c_false = { cname = dtname_of_string "False"; arity = 0 }
 
   let t_bool =
-    { tname = "Bool"; tparams = []; tconstr = [ c_true; c_false ]; tmap = [] }
+    {
+      tname = dtname_of_string "Bool";
+      tparams = [];
+      tconstr = [ c_true; c_false ];
+      tmap = [];
+    }
 
   (* Natural numbers *)
-  let c_zero = { cname = "Zero"; arity = 0 }
+  let c_zero = { cname = dtname_of_string "Zero"; arity = 0 }
 
-  let c_succ = { cname = "Succ"; arity = 1 }
+  let c_succ = { cname = dtname_of_string "Succ"; arity = 1 }
 
   let t_nat =
     {
-      tname = "Nat";
+      tname = dtname_of_string "Nat";
       tparams = [];
       tconstr = [ c_zero; c_succ ];
-      tmap = [ ("Succ", [ ADT (asId "Nat", []) ]) ];
+      tmap = [ (dtname_of_string "Succ", [ ADT (dtid_of_string "Nat", []) ]) ];
     }
 
   (* Option *)
-  let c_some = { cname = "Some"; arity = 1 }
+  let c_some = { cname = dtname_of_string "Some"; arity = 1 }
 
-  let c_none = { cname = "None"; arity = 0 }
+  let c_none = { cname = dtname_of_string "None"; arity = 0 }
 
   let t_option =
     {
-      tname = "Option";
+      tname = dtname_of_string "Option";
       tparams = [ "'A" ];
       tconstr = [ c_some; c_none ];
-      tmap = [ ("Some", [ TypeVar "'A" ]) ];
+      tmap = [ (dtname_of_string "Some", [ TypeVar "'A" ]) ];
     }
 
   (* Lists *)
-  let c_cons = { cname = "Cons"; arity = 2 }
+  let c_cons = { cname = dtname_of_string "Cons"; arity = 2 }
 
-  let c_nil = { cname = "Nil"; arity = 0 }
+  let c_nil = { cname = dtname_of_string "Nil"; arity = 0 }
 
   let t_list =
     {
-      tname = "List";
+      tname = dtname_of_string "List";
       tparams = [ "'A" ];
       tconstr = [ c_cons; c_nil ];
-      tmap = [ ("Cons", [ TypeVar "'A"; ADT (asId "List", [ TypeVar "'A" ]) ]) ];
+      tmap =
+        [
+          ( dtname_of_string "Cons",
+            [ TypeVar "'A"; ADT (dtid_of_string "List", [ TypeVar "'A" ]) ] );
+        ];
     }
 
   (* Products (Pairs) *)
-  let c_pair = { cname = "Pair"; arity = 2 }
+  let c_pair = { cname = dtname_of_string "Pair"; arity = 2 }
 
   let t_product =
     {
-      tname = "Pair";
+      tname = dtname_of_string "Pair";
       tparams = [ "'A"; "'B" ];
       tconstr = [ c_pair ];
-      tmap = [ ("Pair", [ TypeVar "'A"; TypeVar "'B" ]) ];
+      tmap = [ (dtname_of_string "Pair", [ TypeVar "'A"; TypeVar "'B" ]) ];
     }
 
-  (* adt.tname -> adt *)
+  (* Hashtable keys must be strings. Otherwise the wrong equality function will be used *)
+  (* (as_string adt.tname) -> (adt.tname * adt) *)
   let adt_name_dict = Caml.Hashtbl.create 5
 
-  (* tconstr -> (adt * constructor) *)
+  (* (as_string tconstr) -> (tconstr * adt * constructor) *)
   let adt_cons_dict = Caml.Hashtbl.create 10
 
   (* Re-initialize environment dictionaries *)
@@ -120,77 +139,133 @@ module DataTypeDictionary = struct
     Caml.Hashtbl.(
       reset adt_name_dict;
       reset adt_cons_dict;
-      add adt_name_dict t_bool.tname t_bool;
-      add adt_name_dict t_nat.tname t_nat;
-      add adt_name_dict t_option.tname t_option;
-      add adt_name_dict t_list.tname t_list;
-      add adt_name_dict t_product.tname t_product;
+      add adt_name_dict (DTName.as_string t_bool.tname) (t_bool.tname, t_bool);
+      add adt_name_dict (DTName.as_string t_nat.tname) (t_nat.tname, t_nat);
+      add adt_name_dict
+        (DTName.as_string t_option.tname)
+        (t_option.tname, t_option);
+      add adt_name_dict (DTName.as_string t_list.tname) (t_list.tname, t_list);
+      add adt_name_dict
+        (DTName.as_string t_product.tname)
+        (t_product.tname, t_product);
       iter
-        (fun _ a ->
-          Caml.List.iter (fun c -> add adt_cons_dict c.cname (a, c)) a.tconstr)
+        (fun _ (_, a) ->
+          Caml.List.iter
+            (fun c ->
+              add adt_cons_dict (DTName.as_string c.cname) (c.cname, a, c))
+            a.tconstr)
         adt_name_dict)
 
   let add_adt (new_adt : adt) error_loc =
     let open Caml in
-    match Hashtbl.find_opt adt_name_dict new_adt.tname with
+    match Hashtbl.find_opt adt_name_dict (DTName.as_string new_adt.tname) with
     | Some _ ->
         fail1
-          (sprintf "Multiple declarations of type %s" new_adt.tname)
+          (sprintf "Multiple declarations of type %s"
+             (DTName.as_error_string new_adt.tname))
           error_loc
     | None ->
-        let _ = Hashtbl.add adt_name_dict new_adt.tname new_adt in
+        let _ =
+          Hashtbl.add adt_name_dict
+            (DTName.as_string new_adt.tname)
+            (new_adt.tname, new_adt)
+        in
         foldM new_adt.tconstr ~init:() ~f:(fun () ctr ->
-            match Hashtbl.find_opt adt_cons_dict ctr.cname with
+            match
+              Hashtbl.find_opt adt_cons_dict (DTName.as_string ctr.cname)
+            with
             | Some _ ->
                 fail1
                   (sprintf "Multiple declarations of type constructor %s"
-                     ctr.cname)
+                     (DTName.as_error_string ctr.cname))
                   error_loc
-            | None -> pure @@ Hashtbl.add adt_cons_dict ctr.cname (new_adt, ctr))
+            | None ->
+                pure
+                @@ Hashtbl.add adt_cons_dict
+                     (DTName.as_string ctr.cname)
+                     (ctr.cname, new_adt, ctr))
 
   (*  Get ADT by name *)
   let lookup_name ?(sloc = ErrorUtils.dummy_loc) name =
     let open Caml in
-    match Hashtbl.find_opt adt_name_dict name with
-    | None -> fail1 (sprintf "ADT %s not found" name) sloc
-    | Some a -> pure a
+    match Hashtbl.find_opt adt_name_dict (DTName.as_string name) with
+    | None ->
+        fail1 (sprintf "ADT %s not found" (DTName.as_error_string name)) sloc
+    | Some (_, a) -> pure a
 
   (*  Get ADT by the constructor *)
   let lookup_constructor ?(sloc = ErrorUtils.dummy_loc) cn =
     let open Caml in
-    match Hashtbl.find_opt adt_cons_dict cn with
-    | None -> fail1 (sprintf "No data type with constructor %s found" cn) sloc
-    | Some dt -> pure dt
+    match Hashtbl.find_opt adt_cons_dict (DTName.as_string cn) with
+    | None ->
+        fail1
+          (sprintf "No data type with constructor %s found"
+             (DTName.as_error_string cn))
+          sloc
+    | Some (_, adt, ctr) -> pure (adt, ctr)
 
   (* Get typing map for a constructor *)
-  let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:String.( = )
+  let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:[%equal: DTName.t]
 
-  let bool_typ = ADT (asId t_bool.tname, [])
+  let bool_typ = ADT (TIdentifier.mk_loc_id t_bool.tname, [])
 
-  let nat_typ = ADT (asId t_nat.tname, [])
+  let nat_typ = ADT (TIdentifier.mk_loc_id t_nat.tname, [])
 
-  let option_typ t = ADT (asId t_option.tname, [ t ])
+  let option_typ t = ADT (TIdentifier.mk_loc_id t_option.tname, [ t ])
 
-  let list_typ t = ADT (asId t_list.tname, [ t ])
+  let list_typ t = ADT (TIdentifier.mk_loc_id t_list.tname, [ t ])
 
-  let pair_typ t s = ADT (asId t_product.tname, [ t; s ])
+  let pair_typ t s = ADT (TIdentifier.mk_loc_id t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
   let get_all_adts () =
-    Caml.Hashtbl.fold (fun _ a acc -> a :: acc) adt_name_dict []
+    Caml.Hashtbl.fold (fun _ (_, a) acc -> a :: acc) adt_name_dict []
 
   (* Get all known ADT constructors *)
   let get_all_ctrs () =
-    Caml.Hashtbl.fold (fun _ c acc -> c :: acc) adt_cons_dict []
+    Caml.Hashtbl.fold
+      (fun _ (_, adt, c) acc -> (adt, c) :: acc)
+      adt_cons_dict []
 end
+
+(* Helper functions for matching against names *)
+let match_simple_names n m = [%equal: DTName.t] n m
+
+let is_true_ctr_name = match_simple_names DataTypeDictionary.c_true.cname
+
+let is_false_ctr_name = match_simple_names DataTypeDictionary.c_false.cname
+
+let is_bool_adt_name = match_simple_names DataTypeDictionary.t_bool.tname
+
+let is_nil_ctr_name = match_simple_names DataTypeDictionary.c_nil.cname
+
+let is_cons_ctr_name = match_simple_names DataTypeDictionary.c_cons.cname
+
+let is_list_adt_name = match_simple_names DataTypeDictionary.t_list.tname
+
+let is_pair_ctr_name = match_simple_names DataTypeDictionary.c_pair.cname
+
+let is_pair_adt_name = match_simple_names DataTypeDictionary.t_product.tname
+
+let is_zero_ctr_name = match_simple_names DataTypeDictionary.c_zero.cname
+
+let is_succ_ctr_name = match_simple_names DataTypeDictionary.c_succ.cname
+
+let is_nat_adt_name = match_simple_names DataTypeDictionary.t_nat.tname
+
+let is_none_ctr_name = match_simple_names DataTypeDictionary.c_none.cname
+
+let is_some_ctr_name = match_simple_names DataTypeDictionary.c_some.cname
+
+let is_option_adt_name = match_simple_names DataTypeDictionary.t_option.tname
 
 (* Convert Scilla list to OCaml list.
  * Not tail recursive. Don't use for long lists. *)
 let scilla_list_to_ocaml v =
   let open Result.Let_syntax in
   let rec convert_to_list = function
-    | ADTValue ("Nil", _, []) -> pure []
-    | ADTValue ("Cons", _, [ h; t ]) ->
+    | ADTValue (c, _, []) when is_nil_ctr_name c -> pure []
+    | ADTValue (c, _, [ h; t ]) when is_cons_ctr_name c ->
         let%bind rest = convert_to_list t in
         pure @@ (h :: rest)
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to ocaml list:\n"
@@ -202,16 +277,16 @@ let scilla_list_to_ocaml v =
 let scilla_list_to_ocaml_rev v =
   let rec convert_to_list l acc =
     match l with
-    | ADTValue ("Nil", _, []) -> pure acc
-    | ADTValue ("Cons", _, [ h; t ]) -> convert_to_list t (h :: acc)
+    | ADTValue (c, _, []) when is_nil_ctr_name c -> pure acc
+    | ADTValue (c, _, [ h; t ]) when is_cons_ctr_name c ->
+        convert_to_list t (h :: acc)
     | _ ->
         fail0 @@ sprintf "Cannot convert scilla list to reverse ocaml list:\n"
   in
   convert_to_list v []
 
 module SnarkTypes = struct
-  open Snark
-  open PrimTypes
+  open Scilla_crypto.Snark
   open DataTypeDictionary
 
   let scalar_type = bystrx_typ scalar_len
@@ -234,9 +309,10 @@ module SnarkTypes = struct
 
   let scilla_g1point_to_ocaml g1p =
     match g1p with
-    | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: typ] pxt scalar_type
-           && [%equal: typ] pyt scalar_type
+    | ADTValue (c, [ pxt; pyt ], [ ByStrX px; ByStrX py ])
+      when is_pair_ctr_name c
+           && [%equal: DTType.t] pxt scalar_type
+           && [%equal: DTType.t] pyt scalar_type
            && Bystrx.width px = scalar_len
            && Bystrx.width py = scalar_len ->
         pure { g1x = Bystrx.to_raw_bytes px; g1y = Bystrx.to_raw_bytes py }
@@ -244,9 +320,10 @@ module SnarkTypes = struct
 
   let scilla_g2point_to_ocaml g2p =
     match g2p with
-    | ADTValue ("Pair", [ pxt; pyt ], [ ByStrX px; ByStrX py ])
-      when [%equal: typ] pxt g2comp_type
-           && [%equal: typ] pyt g2comp_type
+    | ADTValue (c, [ pxt; pyt ], [ ByStrX px; ByStrX py ])
+      when is_pair_ctr_name c
+           && [%equal: DTType.t] pxt g2comp_type
+           && [%equal: DTType.t] pyt g2comp_type
            && Bystrx.width px = g2comp_len
            && Bystrx.width py = g2comp_len ->
         pure { g2x = Bystrx.to_raw_bytes px; g2y = Bystrx.to_raw_bytes py }
@@ -260,7 +337,9 @@ module SnarkTypes = struct
     | Some x, Some y ->
         pure
         @@ ADTValue
-             ("Pair", [ g1point_type; g1point_type ], [ ByStrX x; ByStrX y ])
+             ( DataTypeDictionary.c_pair.cname,
+               [ g1point_type; g1point_type ],
+               [ ByStrX x; ByStrX y ] )
     | _ -> fail0 @@ sprintf "Cannot convert OCaml G1 point to Scilla literal."
 
   let scilla_g1g2pairlist_to_ocaml g1g2pl =
@@ -268,9 +347,10 @@ module SnarkTypes = struct
     let%bind g1g2ol' =
       mapM g1g2ol ~f:(fun g1g2p_lit ->
           match g1g2p_lit with
-          | ADTValue ("Pair", [ g1pt; g2pt ], [ g1p; g2p ])
-            when [%equal: typ] g1pt g1point_type
-                 && [%equal: typ] g2pt g2point_type ->
+          | ADTValue (c, [ g1pt; g2pt ], [ g1p; g2p ])
+            when is_pair_ctr_name c
+                 && [%equal: DTType.t] g1pt g1point_type
+                 && [%equal: DTType.t] g2pt g2point_type ->
               let%bind g1p' = scilla_g1point_to_ocaml g1p in
               let%bind g2p' = scilla_g2point_to_ocaml g2p in
               pure (g1p', g2p')

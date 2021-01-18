@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Stdint
 
 type uint256 = { high : uint128; low : uint128 }

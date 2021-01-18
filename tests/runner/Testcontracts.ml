@@ -17,19 +17,19 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open OUnit2
+open Scilla_base
 open ScillaUtil.FilePathInfix
-open TestUtil
+open Scilla_test.Util
 open OUnitTest
 
 let testsuit_gas_limit = "8000"
 
 let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
 
-let succ_code : Unix.process_status = WEXITED 0
+let succ_code : UnixLabels.process_status = WEXITED 0
 
-let fail_code : Unix.process_status = WEXITED 1
+let fail_code : UnixLabels.process_status = WEXITED 1
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -40,12 +40,9 @@ let rec build_contract_tests_with_init_file env name exit_code i n
   if i > n then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
-    let test ~disable_validate_json ~ipc_mode =
+    let test ~ipc_mode =
       let istr = Int.to_string i in
-      let testname =
-        name ^ "_" ^ istr
-        ^ if disable_validate_json then "_disable_validate_json" else ""
-      in
+      let testname = name ^ "_" ^ istr in
       testname
       >:: (* function to run scilla-runner and check exit code *)
       fun test_ctxt ->
@@ -101,11 +98,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           ~f:(fun lib_name cur_args ->
             "-libdir" :: (contract_dir ^/ lib_name) :: cur_args)
       in
-      let args =
-        if disable_validate_json || env.server test_ctxt then
-          "-disable-validate-json" :: args'
-        else args'
-      in
+      let args = args' in
       (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
       let runner =
         if env.server test_ctxt then "scilla-client" else "scilla-runner"
@@ -146,14 +139,11 @@ let rec build_contract_tests_with_init_file env name exit_code i n
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
     if Poly.(exit_code = succ_code) then
-      test ~disable_validate_json:true ~ipc_mode:true
-      :: test ~disable_validate_json:false ~ipc_mode:true
-      :: test ~disable_validate_json:false ~ipc_mode:false
-      :: test ~disable_validate_json:true ~ipc_mode:false
+      test ~ipc_mode:true :: test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
            additional_libs init_name
     else
-      test ~disable_validate_json:false ~ipc_mode:false
+      test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
            additional_libs init_name
 
@@ -275,7 +265,13 @@ let contract_tests env =
                 >: build_contract_init_test env succ_code
                      "0x111256789012345678901234567890123456abef" "init" true;
                 "import-test-lib"
-                >::: build_contract_tests env "import-test-lib" succ_code 1 1 [];
+                >::: build_contract_tests env "import-test-lib" succ_code 1 3 [];
+                "import-test-lib2"
+                >::: build_contract_tests env "import-test-lib2" succ_code 1 1
+                       [];
+                "import-test-lib3"
+                >::: build_contract_tests env "import-test-lib3" succ_code 1 1
+                       [];
                 "cfinvoke"
                 >::: build_contract_tests env "cfinvoke" succ_code 1 4 [];
                 "ping" >::: build_contract_tests env "ping" succ_code 0 3 [];
@@ -286,6 +282,8 @@ let contract_tests env =
                 >::: build_contract_tests env "auction" succ_code 1 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" succ_code 1 7 [];
+                "mappair"
+                >::: build_contract_tests env "mappair" succ_code 9 9 [];
                 "bookstore"
                 >::: build_contract_tests env "bookstore" succ_code 1 12 [];
                 "nonfungible-token"
@@ -342,6 +340,10 @@ let contract_tests env =
                        [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
+                "listiter"
+                >::: build_contract_tests env "listiter" succ_code 1 1 [];
+                "polynetwork"
+                >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -351,9 +353,13 @@ let contract_tests env =
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 12 14 [];
+                "polynetwork"
+                >::: build_contract_tests env "Polynetwork" fail_code 25 28 [];
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];
+                "UintParam"
+                >::: build_contract_tests env "UintParam" fail_code 1 3 [];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
                      "0x565556789012345678901234567890123456abcd" "init" true;

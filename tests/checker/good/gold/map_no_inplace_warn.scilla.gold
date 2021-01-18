@@ -79,16 +79,6 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 24,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 19,
         "column": 14
       },
@@ -123,6 +113,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "8000"
+  "gas_remaining": "7999"
 }
 

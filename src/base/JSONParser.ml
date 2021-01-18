@@ -19,25 +19,46 @@
 (* A fast JSON parser for states that performs no validations. *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Yojson
-open Syntax
 open ErrorUtils
 open TypeUtil
 open Datatypes
 module JSONTypeUtilities = TypeUtilities
+module JSONIdentifier = TypeUtil.TUIdentifier
+module JSONName = JSONIdentifier.Name
+module JSONType = TypeUtil.TUType
+module JSONLiteral = TypeUtil.TULiteral
 open JSONTypeUtilities
 
 (*************************************)
 (***** Exception and wrappers ********)
 (*************************************)
 
+let json_exn_wrapper ?filename thunk =
+  try thunk () with
+  | Yojson.Json_error s
+  | Yojson.Basic.Util.Undefined (s, _)
+  | Yojson.Basic.Util.Type_error (s, _) ->
+      raise (mk_invalid_json s)
+  | _ -> (
+      match filename with
+      | Some f ->
+          raise
+            (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
+      | None ->
+          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
+      )
+
 let member_exn m j =
-  let open Basic.Util in
-  let v = member m j in
+  let thunk () = Basic.Util.member m j in
+  let v = json_exn_wrapper thunk in
   match v with
   | `Null -> raise (mk_invalid_json ("Member '" ^ m ^ "' not found in json"))
   | j -> j
+
+let to_string_exn j =
+  let thunk () = Basic.Util.to_string j in
+  json_exn_wrapper thunk
 
 let constr_pattern_arg_types_exn dt cname =
   match constr_pattern_arg_types dt cname with
@@ -45,7 +66,7 @@ let constr_pattern_arg_types_exn dt cname =
   | Ok s -> s
 
 let lookup_adt_name_exn name =
-  match DataTypeDictionary.lookup_name (get_id name) with
+  match DataTypeDictionary.lookup_name (JSONIdentifier.get_id name) with
   | Error emsg -> raise (Invalid_json emsg)
   | Ok s -> s
 
@@ -55,7 +76,7 @@ let lookup_adt_name_exn name =
 
 type adt_parser_entry =
   | Incomplete (* Parser not completely constructed. *)
-  | Parser of (Basic.t -> literal)
+  | Parser of (Basic.t -> JSONLiteral.t)
 
 let adt_parsers =
   let open Caml in
@@ -82,39 +103,41 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : typ) : Basic.t -> literal =
+let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
   let open Basic in
+  let open TUType in
+  let open TULiteral in
   let rec recurser t =
     match t with
     | PrimType pt -> (
         match pt with
-        | String_typ -> fun j -> StringLit (Util.to_string j)
-        | Bnum_typ -> fun j -> BNum (Util.to_string j)
-        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (Util.to_string j))
-        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (Util.to_string j))
+        | String_typ -> fun j -> StringLit (to_string_exn j)
+        | Bnum_typ -> fun j -> BNum (to_string_exn j)
+        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
+        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
         | Int_typ Bits32 ->
-            fun j -> IntLit (Int32L (Int32.of_string (Util.to_string j)))
+            fun j -> IntLit (Int32L (Int32.of_string (to_string_exn j)))
         | Int_typ Bits64 ->
-            fun j -> IntLit (Int64L (Int64.of_string (Util.to_string j)))
+            fun j -> IntLit (Int64L (Int64.of_string (to_string_exn j)))
         | Int_typ Bits128 ->
             fun j ->
-              IntLit (Int128L (Stdint.Int128.of_string (Util.to_string j)))
+              IntLit (Int128L (Stdint.Int128.of_string (to_string_exn j)))
         | Int_typ Bits256 ->
             fun j ->
-              IntLit (Int256L (Integer256.Int256.of_string (Util.to_string j)))
+              IntLit (Int256L (Integer256.Int256.of_string (to_string_exn j)))
         | Uint_typ Bits32 ->
             fun j ->
-              UintLit (Uint32L (Stdint.Uint32.of_string (Util.to_string j)))
+              UintLit (Uint32L (Stdint.Uint32.of_string (to_string_exn j)))
         | Uint_typ Bits64 ->
             fun j ->
-              UintLit (Uint64L (Stdint.Uint64.of_string (Util.to_string j)))
+              UintLit (Uint64L (Stdint.Uint64.of_string (to_string_exn j)))
         | Uint_typ Bits128 ->
             fun j ->
-              UintLit (Uint128L (Stdint.Uint128.of_string (Util.to_string j)))
+              UintLit (Uint128L (Stdint.Uint128.of_string (to_string_exn j)))
         | Uint_typ Bits256 ->
             fun j ->
               UintLit
-                (Uint256L (Integer256.Uint256.of_string (Util.to_string j)))
+                (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
         | _ -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
@@ -171,7 +194,11 @@ let gen_parser (t' : typ) : Basic.t -> literal =
                       ADTValue (cn.cname, tlist, arg_lits)
                 | `List vli ->
                     (* We make an exception for Lists, allowing them to be stored flatly. *)
-                    if String.(get_id name <> "List") then
+                    if
+                      not
+                        (Datatypes.is_list_adt_name
+                           (JSONIdentifier.get_id name))
+                    then
                       raise
                         (mk_invalid_json
                            "ADT value is a JSON array, but type is not List")
@@ -189,16 +216,16 @@ let gen_parser (t' : typ) : Basic.t -> literal =
                       List.fold_right vli
                         ~f:(fun vl acc ->
                           (* Apply eparser thunk, and then apply to argument *)
-                          ADTValue ("Cons", [ etyp ], [ eparser' vl; acc ]))
-                        ~init:(ADTValue ("Nil", [ etyp ], []))
+                          build_cons_lit (eparser' vl) etyp acc)
+                        ~init:(build_nil_lit etyp)
                 | _ -> raise (mk_invalid_json "Invalid ADT in JSON")
               in
-              AssocDictionary.insert cn.cname parser maps)
+              AssocDictionary.insert (JSONName.as_string cn.cname) parser maps)
         in
         let adt_parser cn_parsers j =
           let cn =
             match j with
-            | `Assoc _ -> member_exn "constructor" j |> Util.to_string
+            | `Assoc _ -> member_exn "constructor" j |> to_string_exn
             | `List _ ->
                 "Cons" (* for efficiency, Lists can be stored flatly. *)
             | _ -> raise (mk_invalid_json "Invalid construct in ADT JSON")

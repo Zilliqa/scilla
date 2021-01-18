@@ -1,5 +1,5 @@
 # escape=\
-ARG BASE_IMAGE=ubuntu:16.04
+ARG BASE_IMAGE=ubuntu:18.04
 
 FROM ${BASE_IMAGE}
 
@@ -11,7 +11,6 @@ WORKDIR /scilla/${MAJOR_VERSION}
 
 RUN apt-get update \
     && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:tah83/secp256k1 -y \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -30,7 +29,7 @@ RUN apt-get update \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV OCAML_VERSION 4.07.1
+ENV OCAML_VERSION 4.08.1
 
 RUN make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \

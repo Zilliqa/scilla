@@ -22,7 +22,11 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 - Install `libsecp256k1-devel` from
   https://software.opensuse.org/package/libsecp256k1-devel by clicking
-  on the `Show experimental packages` button and then performing the
+  the wrench icon next to the Search button and selecting `Show
+  development packages`, and then `OK` to apply the settings.
+  Then you should see the page reload and show the package in
+  question.  Click the `Show experimental packages` icon 
+  corresponding to your distribution in order to perform the
   1-click install from the `network:cryptocurrencies` project.
 
 - Install `bubblewrap` from
@@ -58,6 +62,8 @@ sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
 sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev cmake
 ```
+
+On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
 
 </details>
 
@@ -150,7 +156,7 @@ Disabling sandboxing is required since [WSL does not support Sandboxing](https:/
 To disable sandboxing, simply run:
 
 ```shell
-opam init --disable-sandboxing --compiler=4.07.1 --yes
+opam init --disable-sandboxing --compiler=4.08.1 --yes
 ```
 
 7. Set up current shell to work with opam
@@ -170,7 +176,7 @@ opam install ./scilla.opam --deps-only --with-test
 then
 
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.07.1
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.08.1
 ```
 
 9. Build and install
@@ -218,7 +224,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
 
 #### Initialize opam
 ```shell
-opam init --compiler=4.07.1 --yes
+opam init --compiler=4.08.1 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.
@@ -226,6 +232,27 @@ You can remove `--yes` from the above command to manually control that process.
 #### Setup your current shell to work with opam
 ```shell
 eval $(opam env)
+```
+
+#### Check that you have all system-level dependencies
+If one of the following commands asks you to install a plugin respond with "Y".
+```shell
+opam pin add . --no-action --yes
+opam depext
+opam pin remove scilla
+```
+You should see something like
+```shell
+# Detecting depexts using vars: arch=x86_64, os=macos, os-distribution=homebrew, os-family=homebrew
+# The following system packages are needed:
+gcc
+gmp
+libffi
+lzlib
+pcre
+pkg-config
+secp256k1
+# All required OS packages found.
 ```
 
 #### Install Scilla dependencies using opam
@@ -244,6 +271,9 @@ make opamdep
 <details><summary>Local opam switch to avoid conflicts with already installed global opam switches</summary>
 
 ### If you have opam package manager already installed
+
+First of all, [make sure](#check-that-you-have-all-system-level-dependencies) you have all the system-level dependencies.
+
 You can try installing the Scilla dependencies using the instructions above, but skipping the initialization step.
 If `opam` reports a dependency conflict, one way out might be creating yet another opam switch and
 managing your switches when doing Scilla- and non-Scilla- related hacking.
@@ -253,7 +283,7 @@ This is like a standard opam switch but instead of `$HOME/.opam`, it will reside
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
 To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.07.1
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.08.1
 ```
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.

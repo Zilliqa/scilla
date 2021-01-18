@@ -17,9 +17,8 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
-open Syntax
-open ErrorUtils
+open Scilla_base
+open ParserUtil
 open MonadUtil
 open EvalMonad
 open EvalMonad.Let_syntax
@@ -31,47 +30,35 @@ open BuiltIns
 open Gas
 module SR = ParserRep
 module ER = ParserRep
-module EvalSyntax = ScillaSyntax (SR) (ER)
+module EvalGas = ScillaGas (SR) (ER)
+module EvalSyntax = EvalGas.GasSyntax
+module EvalLiteral = EvalSyntax.SLiteral
 module EvalTypeUtilities = TypeUtilities
 module EvalBuiltIns = ScillaBuiltIns (SR) (ER)
-module EvalGas = ScillaGas (SR) (ER)
+module EvalType = EvalSyntax.SType
+module EvalIdentifier = EvalSyntax.SIdentifier
+module EvalName = EvalIdentifier.Name
+open EvalIdentifier
 open EvalSyntax
-
-(* Return a builtin_op wrapped in EvalMonad *)
-let builtin_executor f arg_tps arg_lits =
-  let%bind _, ret_typ, op =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f arg_tps
-  in
-  let%bind cost = fromR @@ EvalGas.builtin_cost f arg_lits in
-  let res () = op arg_lits ret_typ in
-  checkwrap_opR res (Uint64.of_int cost)
-
-(* Add a check that the just evaluated statement was in our gas limit. *)
-let stmt_gas_wrap scon sloc =
-  let%bind cost = fromR @@ EvalGas.stmt_cost scon in
-  let err = mk_error1 "Ran out of gas evaluating statement" sloc in
-  let dummy () = pure () in
-  (* the operation is already executed unfortunately *)
-  checkwrap_op dummy (Uint64.of_int cost) err
 
 (*****************************************************)
 (* Update-only execution environment for expressions *)
 (*****************************************************)
 module Env = struct
-  type ident = string
+  type ident = EvalName.t
 
   (* Environment *)
-  type t = (string * literal) list [@@deriving sexp]
+  type t = (EvalName.t * EvalLiteral.t) list [@@deriving sexp]
 
   (* Pretty-printing *)
   let rec pp_value = pp_literal
 
-  and pp ?(f = fun (_ : string * literal) -> true) e =
+  and pp ?(f = fun (_ : EvalName.t * EvalLiteral.t) -> true) e =
     (* FIXME: Do not print folds *)
     let e_filtered = List.filter e ~f in
     let ps =
       List.map e_filtered ~f:(fun (k, v) ->
-          " [" ^ k ^ " -> " ^ pp_value v ^ "]")
+          " [" ^ EvalName.as_string k ^ " -> " ^ pp_value v ^ "]")
     in
     let cs = String.concat ~sep:",\n " ps in
     "{" ^ cs ^ " }"
@@ -79,7 +66,7 @@ module Env = struct
   let empty = []
 
   (* Core's List.Assoc.add function removes duplicate key-value entries to keep lists small *)
-  let bind e k v = List.Assoc.add e k v ~equal:String.( = )
+  let bind e k v = List.Assoc.add e k v ~equal:[%equal: EvalName.t]
 
   let bind_all e kvs =
     List.fold_left ~init:e ~f:(fun z (k, v) -> bind z k v) kvs
@@ -88,12 +75,14 @@ module Env = struct
   let filter e ~f = List.filter e ~f:(fun (id, _) -> f id)
 
   let lookup e k =
+    let open MonadUtil in
     let i = get_id k in
-    match List.Assoc.find e i ~equal:String.( = ) with
+    match List.Assoc.find e i ~equal:[%equal: EvalName.t] with
     | Some v -> pure v
     | None ->
         fail1
-          (sprintf "Identifier \"%s\" is not bound in environment:\n" i)
+          (sprintf "Identifier \"%s\" is not bound in environment:\n"
+             (EvalName.as_error_string i))
           (get_rep k)
 end
 
@@ -101,7 +90,7 @@ end
 (*                 Blockchain State               *)
 (**************************************************)
 module BlockchainState = struct
-  type t = (string * literal) list
+  type t = (string * EvalLiteral.t) list
 
   let lookup e k =
     match List.Assoc.find e k ~equal:String.( = ) with
@@ -123,7 +112,7 @@ module Configuration = struct
     (* Current environment parameters and local variables *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * typ) list;
+    fields : (EvalName.t * EvalType.t) list;
     (* Contract balance *)
     balance : uint128;
     (* Was incoming money accepted? *)
@@ -138,11 +127,11 @@ module Configuration = struct
        procedures available to p. *)
     procedures : EvalSyntax.component list;
     (* The stack of procedure call, starting from the externally invoked transition. *)
-    component_stack : ER.rep ident list;
+    component_stack : ER.rep EvalIdentifier.t list;
     (* Emitted messages *)
-    emitted : literal list;
+    emitted : EvalLiteral.t list;
     (* Emitted events *)
-    events : literal list;
+    events : EvalLiteral.t list;
   }
 
   let pp conf =
@@ -180,24 +169,25 @@ module Configuration = struct
 
   let load st k =
     let i = get_id k in
-    if String.(i = balance_label) then
+    if [%equal: EvalName.t] i balance_label then
       (* Balance is a special case *)
-      let l = UintLit (Uint128L st.balance) in
-      pure (l, G_Load l)
+      let l = EvalLiteral.UintLit (Uint128L st.balance) in
+      pure l
     else
       let%bind fval = fromR @@ StateService.fetch ~fname:k ~keys:[] in
       match fval with
-      | Some v, g -> pure (v, g)
+      | Some v -> pure v
       | _ ->
           fail1
-            (Printf.sprintf "Error loading field %s" i)
+            (Printf.sprintf "Error loading field %s"
+               (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
   let remote_load _st _adr k =
     (* TODO - maybe useful to refactor load to avoid code duplicateion *)
     (* Note that adr has already been typechecked, so we know the field k is there. *)
-    fail1 ("Remote load not implemented.") (ER.get_loc (get_rep k))
-    
+    fail1 "Remote load not implemented." (ER.get_loc (get_rep k))
+
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
     match vopt with
@@ -209,54 +199,37 @@ module Configuration = struct
     let open BuiltIns.UsefulLiterals in
     if fetchval then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
-      match List.Assoc.find st.fields (get_id m) ~equal:String.( = ) with
+      match
+        List.Assoc.find st.fields (get_id m) ~equal:[%equal: EvalName.t]
+      with
       | Some mt -> (
           let%bind vt =
             fromR @@ EvalTypeUtilities.map_access_type mt (List.length klist)
           in
           (* Need to wrap the result in a Scilla Option. *)
           match vopt with
-          | Some v, G_MapGet (i, Some lo) ->
-              let%bind lo_lit = fromR @@ some_lit lo in
+          | Some v ->
               let%bind v_lit = fromR @@ some_lit v in
-              let g' = G_MapGet (i, Some lo_lit) in
-              pure (v_lit, g')
-          | None, G_MapGet (i, None) ->
-              let g' = G_MapGet (i, Some (none_lit vt)) in
-              pure (none_lit vt, g')
-          | _ ->
-              fail1
-                (sprintf
-                   "Inconsistency in fetching map value form StateService for \
-                    field %s"
-                   (get_id m))
-                (ER.get_loc (get_rep m)) )
+              pure v_lit
+          | None -> pure (none_lit vt) )
       | None ->
           fail1
-            (sprintf "Unable to fetch from map field %s" (get_id m))
+            (sprintf "Unable to fetch from map field %s" (as_error_string m))
             (ER.get_loc (get_rep m))
     else
-      let%bind is_member, g =
+      let%bind is_member =
         fromR @@ StateService.is_member ~fname:m ~keys:klist
       in
-      match g with
-      | G_MapGet (i, _) ->
-          let is_member_lit = to_Bool is_member in
-          let g' = G_MapGet (i, Some is_member_lit) in
-          pure (is_member_lit, g')
-      | _ ->
-          fail1
-            (sprintf "Unable to check exists for map field %s" (get_id m))
-            (ER.get_loc (get_rep m))
+      pure @@ EvalLiteral.build_bool_lit is_member
 
   let remote_map_get _st _adr m _klist _fetchval =
     (* TODO - probably useful to refactor map_get to avoid code duplicateion *)
     (* Note that adr has already been typechecked, so we know the map m is there. *)
-    fail1 ("Remote map get not implemented.") (ER.get_loc (get_rep m))
-  
+    fail1 "Remote map get not implemented." (ER.get_loc (get_rep m))
+
   let bind st k v =
     let e = st.env in
-    { st with env = List.Assoc.add e k v ~equal:String.( = ) }
+    { st with env = List.Assoc.add e k v ~equal:[%equal: EvalName.t] }
 
   let bind_all st ks vs =
     let e = st.env in
@@ -268,7 +241,7 @@ module Configuration = struct
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
-              not (List.mem ks (fst z) ~equal:String.( = )))
+              not (List.mem ks (fst z) ~equal:[%equal: EvalName.t]))
         in
         pure { st with env = kvs @ filtered_env }
 
@@ -279,7 +252,7 @@ module Configuration = struct
   let accept_incoming st =
     let incoming' = st.incoming_funds in
     (* Although unsigned integer is used, and this check isn't
-     * necessary, we have it just in case, some how a malformed
+     * necessary, we have it just in case, somehow a malformed
      * Uint128 literal manages to reach here. *)
     if Uint128.compare incoming' Uint128.zero >= 0 then
       let balance = Uint128.add st.balance incoming' in
@@ -288,7 +261,7 @@ module Configuration = struct
       pure @@ { st with balance; accepted; incoming_funds }
     else
       fail0
-      @@ sprintf "Incoming balance is negaitve (somehow):%s."
+      @@ sprintf "Incoming balance is negative (somehow):%s."
            (Uint128.to_string incoming')
 
   (* Finds a procedure proc_name, and returns the procedure and the
@@ -296,19 +269,21 @@ module Configuration = struct
   let lookup_procedure st proc_name =
     let rec finder procs =
       match procs with
-      | p :: p_rest when String.(get_id p.comp_name = proc_name) ->
+      | p :: p_rest when EvalIdentifier.equal p.comp_name proc_name ->
           pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
-      | [] -> fail0 @@ sprintf "Procedure %s not found." proc_name
+      | [] ->
+          fail0 @@ sprintf "Procedure %s not found." (as_error_string proc_name)
     in
     finder st.procedures
 
   (* Check that message is well-formed before adding to the sending pool *)
   let rec validate_messages ls =
+    let open EvalLiteral in
     (* Note: We don't need a whole lot of checks as the checker does it. *)
     let validate_msg_payload pl =
       let has_tag = List.Assoc.mem pl "tag" ~equal:String.( = ) in
-      if has_tag then pure true
+      if has_tag then pure ()
       else
         fail0
         @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
@@ -316,12 +291,13 @@ module Configuration = struct
     in
     match ls with
     | Msg pl :: tl ->
-        let%bind _ = validate_msg_payload pl in
+        let%bind () = validate_msg_payload pl in
         validate_messages tl
-    | [] -> pure true
+    | [] -> pure ()
     | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
 
   let validate_outgoing_message m' =
+    let open EvalLiteral in
     let open ContractUtil.MessagePayload in
     match m' with
     | Msg m ->
@@ -354,9 +330,10 @@ module Configuration = struct
     let%bind ls = mapM ~f:validate_outgoing_message ls' in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls in
-    pure ({ conf with emitted }, G_SendMsgs ls)
+    pure { conf with emitted }
 
   let validate_event m' =
+    let open EvalLiteral in
     let open ContractUtil.MessagePayload in
     match m' with
     | Msg m ->
@@ -380,6 +357,7 @@ module Configuration = struct
         @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
 
   let create_event conf l =
+    let open EvalLiteral in
     let%bind event =
       match l with
       | Msg _ -> pure @@ l
@@ -389,7 +367,7 @@ module Configuration = struct
     let%bind event' = validate_event event in
     let old_events = conf.events in
     let events = event' :: old_events in
-    pure ({ conf with events }, G_CreateEvnt event')
+    pure { conf with events }
 end
 
 (*****************************************************)
@@ -397,14 +375,14 @@ end
 (*****************************************************)
 
 module ContractState = struct
-  type init_args = (string * literal) list
+  type init_args = (string * EvalLiteral.t) list
 
   (* Runtime contract configuration and operations with it *)
   type t = {
     (* Immutable parameters *)
     env : Env.t;
     (* Contract fields *)
-    fields : (string * typ) list;
+    fields : (EvalName.t * EvalType.t) list;
     (* Contract balance *)
     balance : uint128;
   }

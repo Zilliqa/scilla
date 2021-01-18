@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in the initialiser of `list_map`:\nType error in application of `folder`:\nType unassignable: 'A -> 'B -> 'B expected, but 'A -> List ('B) -> List ('B) provided.",
+        "Type unassignable: 'A -> 'B -> 'B expected, but 'A -> List ('B) -> List ('B) provided.",
       "start_location": {
         "file": "typecheck/bad/map-error.scilexp",
         "line": 8,

@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
 open ErrorUtils
 open Stdint
@@ -74,6 +73,15 @@ let rec foldM ~f ~init ls =
       foldM ~f ~init:res ls'
   | [] -> pure init
 
+(* Monad version of fold2 *)
+let rec fold2M ~f ~init ls ms ~msg =
+  match (ls, ms) with
+  | x :: ls', y :: ms' ->
+      let%bind res = f init x y in
+      fold2M ~f ~init:res ls' ms' ~msg
+  | [], [] -> pure init
+  | _ -> fail @@ msg ()
+
 (* Monadic fold-right for error *)
 let rec foldrM ~f ~init ls =
   match ls with
@@ -86,34 +94,43 @@ let rec foldrM ~f ~init ls =
 let rec mapM ~f ls =
   match ls with
   | x :: ls' ->
-      let%bind z = f x in
-      let%bind zs = mapM ~f ls' in
-      pure (z :: zs)
+      let%map z = f x and zs = mapM ~f ls' in
+      z :: zs
   | [] -> pure []
 
-let rec iterM ~f ls =
-  match ls with
-  | x :: ls' ->
-      let%bind _ = f x in
-      iterM ~f ls'
-  | [] -> pure ()
+(* Monadic map2 *)
+let rec map2M ~f ls ms ~msg =
+  match (ls, ms) with
+  | x :: ls', y :: ms' ->
+      let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
+      z :: zs
+  | [], [] -> pure []
+  | _ -> fail @@ msg ()
 
 let liftPair1 m x =
-  let%bind z = m in
-  pure (z, x)
+  let%map z = m in
+  (z, x)
 
 let liftPair2 x m =
-  let%bind z = m in
-  pure (x, z)
+  let%map z = m in
+  (x, z)
+
+let fstM m =
+  let%map x, _y = m in
+  x
+
+let sndM m =
+  let%map _x, y = m in
+  y
 
 (* Return the first error applying f to elements of ls.
- * Returns true if all elements satisfy f. *)
+ * Returns () if all elements satisfy f. *)
 let rec forallM ~f ls =
   match ls with
   | x :: ls' ->
-      let%bind _ = f x in
+      let%bind () = f x in
       forallM ~f ls'
-  | [] -> pure true
+  | [] -> pure ()
 
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg =
@@ -121,6 +138,64 @@ let rec tryM ~f ls ~msg =
   | x :: ls' -> (
       match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
+
+(* Monadic Option.map for error *)
+let option_mapM ~f opt_val =
+  match opt_val with
+  | None -> pure None
+  | Some v ->
+      let%map z = f v in
+      Some z
+
+(* Monadic Option.value_map for error *)
+let option_value_mapM ~f ~default opt_val =
+  match opt_val with None -> pure default | Some v -> f v
+
+(* Monadic version of List.fold_map *)
+let fold_mapM ~f ~init l =
+  let%map acc, l'_rev =
+    foldM ~init:(init, [])
+      ~f:(fun (accacc, lrevacc) lel ->
+        let%map accacc', lel' = f accacc lel in
+        (accacc', lel' :: lrevacc))
+      l
+  in
+  (acc, List.rev l'_rev)
+
+let partition_mapM ~f l =
+  let%map fst_rev, snd_rev =
+    (* We don't use foldrM and avoid List.rev because we want
+     * any errors to be flagged in-order. *)
+    foldM ~init:([], []) l ~f:(fun (fst, snd) i ->
+        let%map fi = f i in
+        match fi with `Fst i' -> (i' :: fst, snd) | `Snd i' -> (fst, i' :: snd))
+  in
+  (List.rev fst_rev, List.rev snd_rev)
+
+(* Monadic version of List.filter_map *)
+let filter_mapM ~f alist =
+  let rec recurser alist =
+    match alist with
+    | [] -> pure []
+    | a :: rem -> (
+        match%bind f a with
+        | Some a' ->
+            let%bind rem' = recurser rem in
+            pure (a' :: rem')
+        | None -> recurser rem )
+  in
+  recurser alist
+
+(* Monadic version of List.filter *)
+let filter f alist =
+  let f' a = match%bind f a with true -> pure (Some a) | false -> pure None in
+  filter_mapM ~f:f' alist
+
+(* Monadic wrapper around any container's fold (Set, Map etc). *)
+(* folder : 'a t -> init:'accum -> f:('accum -> 'a -> 'accum) -> 'accum *)
+let wrapM_folder ~folder ~f ~init l =
+  let f' acc e = match acc with Error _ -> acc | Ok acc' -> f acc' e in
+  folder l ~init:(Ok init) ~f:f'
 
 (****************************************************************)
 (*           A gas-aware monad for `Eval` and related utilites  *)
@@ -130,7 +205,7 @@ module EvalMonad = struct
   include Monad.Make3 (CPSMonad)
 
   (* Monadic evaluation results *)
-  let fail (s : scilla_error list) k remaining_gas = k (Error s) remaining_gas
+  let fail s k remaining_gas = k (Error s) remaining_gas
 
   let pure e = return e
 
@@ -182,27 +257,43 @@ module EvalMonad = struct
   let rec mapM ~f ls =
     match ls with
     | x :: ls' ->
-        let%bind z = f x in
-        let%bind zs = mapM ~f ls' in
-        pure (z :: zs)
+        let%map z = f x and zs = mapM ~f ls' in
+        z :: zs
     | [] -> pure []
 
+  (* Monadic map2 *)
+  let rec map2M ~f ls ms ~msg =
+    match (ls, ms) with
+    | x :: ls', y :: ms' ->
+        let%map z = f x y and zs = map2M ~f ls' ms' ~msg in
+        z :: zs
+    | [], [] -> pure []
+    | _ -> fail @@ msg ()
+
   let liftPair1 m x =
-    let%bind z = m in
-    pure (z, x)
+    let%map z = m in
+    (z, x)
 
   let liftPair2 x m =
-    let%bind z = m in
-    pure (x, z)
+    let%map z = m in
+    (x, z)
+
+  let fstM m =
+    let%map x, _y = m in
+    x
+
+  let sndM m =
+    let%map _x, y = m in
+    y
 
   (* Return the first error applying f to elements of ls.
-   * Returns true if all elements satisfy f. *)
+   * Returns () if all elements satisfy f. *)
   let rec forallM ~f ls =
     match ls with
     | x :: ls' ->
-        let%bind _ = f x in
+        let%bind () = f x in
         forallM ~f ls'
-    | [] -> pure true
+    | [] -> pure ()
 
   (* Try all variants in the list, pick the first successful one *)
   let tryM ~f ls ~msg =

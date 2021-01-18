@@ -21,9 +21,13 @@
 
 open Core_kernel
 open OUnit2
+open Scilla_base
+open Scilla_crypto
 open Snark
 open Integer256
-open Syntax
+open Literal
+module TestSnarkLiteral = GlobalLiteral
+open TestSnarkLiteral
 
 (* Convert a decimal string to a binary string of 32 bytes. *)
 let dec2bystr32 s =
@@ -70,7 +74,7 @@ let test_add_zero =
       match alt_bn128_G1_add zero_zero_p zero_zero_p with
       | Some result ->
           assert_bool "TestSnark failed: test_add_zero: incorrect result"
-            (result = zero_zero_p)
+            ([%equal: g1point] result zero_zero_p)
       | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
 
 let test_invalid =
@@ -114,7 +118,7 @@ let test_mul_add =
       match (alt_bn128_G1_add p p, alt_bn128_G1_mul p s) with
       | Some sum, Some prod ->
           assert_bool "TestSnark failed: test_mul_add: comparison failed"
-            (prod = sum)
+            ([%equal: g1point] prod sum)
       | _ ->
           assert_failure
             "TestSnark failed: test_mul_add: alt_bn128_(add/mul) failed")
@@ -492,45 +496,40 @@ let test_generate_random_points =
       let input = dec2bystr32 "1" in
       let output = mul_helper trivialPt input in
       assert_bool "TestSnark: test_generate_random_points1: incorrect value"
-        (eq_g1 output trivialPt);
+        ([%equal: g1point] output trivialPt);
 
       let input = dec2bystr32 "123454352435654643" in
       let a = mul_helper trivialPt input in
       assert_bool "TestSnark: test_generate_random_points2: incorrect value"
-        ( encode_g1point_bytes a
-        = hex2bystr
-            "0x18b18acfb4c2c30276db5411368e7185b311dd124691610c5d3b74034e093dc9063c909c4720840cb5134cb9f59fa749755796819658d32efc0d288198f37266"
-        );
+        ([%equal: string] (encode_g1point_bytes a)
+           (hex2bystr
+              "0x18b18acfb4c2c30276db5411368e7185b311dd124691610c5d3b74034e093dc9063c909c4720840cb5134cb9f59fa749755796819658d32efc0d288198f37266"));
 
       let input = dec2bystr32 "653179013456575642" in
       let b = mul_helper trivialPt input in
       assert_bool "TestSnark: test_generate_random_points3: incorrect value"
-        ( encode_g1point_bytes b
-        = hex2bystr
-            "0x07c2b7f58a84bd6145f00c9c2bc0bb1a187f20ff2c92963a88019e7c6a014eed06614e20c147e940f2d70da3f74c9a17df361706a4485c742bd6788478fa17d7"
-        );
+        ([%equal: string] (encode_g1point_bytes b)
+           (hex2bystr
+              "0x07c2b7f58a84bd6145f00c9c2bc0bb1a187f20ff2c92963a88019e7c6a014eed06614e20c147e940f2d70da3f74c9a17df361706a4485c742bd6788478fa17d7"));
 
       let c = add_helper a b in
       assert_bool "TestSnark: test_generate_random_points4: incorrect value"
-        ( encode_g1point_bytes c
-        = hex2bystr
-            "0x2243525c5efd4b9c3d3c45ac0ca3fe4dd85e830a4ce6b65fa1eeaee202839703301d1d33be6da8e509df21cc35964723180eed7532537db9ae5e7d48f195c915"
-        );
+        ([%equal: string] (encode_g1point_bytes c)
+           (hex2bystr
+              "0x2243525c5efd4b9c3d3c45ac0ca3fe4dd85e830a4ce6b65fa1eeaee202839703301d1d33be6da8e509df21cc35964723180eed7532537db9ae5e7d48f195c915"));
 
       let d = add_helper c a in
       assert_bool "TestSnark: test_generate_random_points5: incorrect value"
-        ( encode_g1point_bytes d
-        = hex2bystr
-            "0x2bd3e6d0f3b142924f5ca7b49ce5b9d54c4703d7ae5648e61d02268b1a0a9fb721611ce0a6af85915e2f1d70300909ce2e49dfad4a4619c8390cae66cefdb204"
-        );
+        ([%equal: string] (encode_g1point_bytes d)
+           (hex2bystr
+              "0x2bd3e6d0f3b142924f5ca7b49ce5b9d54c4703d7ae5648e61d02268b1a0a9fb721611ce0a6af85915e2f1d70300909ce2e49dfad4a4619c8390cae66cefdb204"));
 
       let input = dec2bystr32 "1230482048326178242" in
       let e = mul_helper d input in
       assert_bool "TestSnark: test_generate_random_points6: incorrect value"
-        ( encode_g1point_bytes e
-        = hex2bystr
-            "0x070a8d6a982153cae4be29d434e8faef8a47b274a053f5a4ee2a6c9c13c31e5c031b8ce914eba3a9ffb989f9cdd5b0f01943074bf4f0f315690ec3cec6981afc"
-        );
+        ([%equal: string] (encode_g1point_bytes e)
+           (hex2bystr
+              "0x070a8d6a982153cae4be29d434e8faef8a47b274a053f5a4ee2a6c9c13c31e5c031b8ce914eba3a9ffb989f9cdd5b0f01943074bf4f0f315690ec3cec6981afc"));
 
       (* Multiply by (p - 1). *)
       let input =
@@ -539,10 +538,9 @@ let test_generate_random_points =
       in
       let f = mul_helper e input in
       assert_bool "TestSnark: test_generate_random_points7: incorrect value"
-        ( encode_g1point_bytes f
-        = hex2bystr
-            "0x025a6f4181d2b4ea8b724290ffb40156eb0adb514c688556eb79cdea0752c2bb2eff3f31dea215f1eb86023a133a996eb6300b44da664d64251d05381bb8a02e"
-        );
+        ([%equal: string] (encode_g1point_bytes f)
+           (hex2bystr
+              "0x025a6f4181d2b4ea8b724290ffb40156eb0adb514c688556eb79cdea0752c2bb2eff3f31dea215f1eb86023a133a996eb6300b44da664d64251d05381bb8a02e"));
 
       (* Multiply by (p - 1) / 2. *)
       let input =
@@ -551,18 +549,20 @@ let test_generate_random_points =
       in
       let output = mul_helper f input in
       assert_bool "TestSnark: test_generate_random_points8: incorrect value"
-        ( encode_g1point_bytes output
-        = hex2bystr
-            "0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d3230af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27"
-        ))
+        ([%equal: string]
+           (encode_g1point_bytes output)
+           (hex2bystr
+              "0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d3230af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27")))
 
-let all_tests _ =
-  "snark_tests"
-  >::: [
-         test_add_zero;
-         test_invalid;
-         test_mul_add;
-         test_pairing;
-         test_pairing_null_input;
-         test_generate_random_points;
-       ]
+module All = struct
+  let tests _ =
+    "snark_tests"
+    >::: [
+           test_add_zero;
+           test_invalid;
+           test_mul_add;
+           test_pairing;
+           test_pairing_null_input;
+           test_generate_random_points;
+         ]
+end

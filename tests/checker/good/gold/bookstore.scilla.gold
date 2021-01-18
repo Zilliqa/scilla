@@ -9,12 +9,17 @@
     ],
     "ADT constructors": [
       {
-        "Member": [
-          { "constructor": "Member", "tags": [ "NoInfo", "NoInfo" ] }
+        "bookstore.Book": [
+          { "constructor": "bookstore.Book", "tags": [ "NoInfo", "NoInfo" ] }
         ]
       },
       {
-        "Book": [ { "constructor": "Book", "tags": [ "NoInfo", "NoInfo" ] } ]
+        "bookstore.Member": [
+          {
+            "constructor": "bookstore.Member",
+            "tags": [ "NoInfo", "NoInfo" ]
+          }
+        ]
       }
     ]
   },
@@ -26,9 +31,17 @@
       { "vname": "store_name", "type": "String" }
     ],
     "fields": [
-      { "vname": "members", "type": "Map (ByStr20) (Member)", "depth": 1 },
+      {
+        "vname": "members",
+        "type": "Map (ByStr20) (bookstore.Member)",
+        "depth": 1
+      },
       { "vname": "is_store_open", "type": "Bool", "depth": 0 },
-      { "vname": "bookInventory", "type": "Map (Uint32) (Book)", "depth": 1 }
+      {
+        "vname": "bookInventory",
+        "type": "Map (Uint32) (bookstore.Book)",
+        "depth": 1
+      }
     ],
     "transitions": [
       {
@@ -121,14 +134,11 @@
     ],
     "ADTs": [
       {
-        "tname": "Member",
+        "tname": "bookstore.Book",
         "tparams": [],
-        "tmap": [ { "cname": "Member", "argtypes": [ "String", "Uint32" ] } ]
-      },
-      {
-        "tname": "Book",
-        "tparams": [],
-        "tmap": [ { "cname": "Book", "argtypes": [ "String", "String" ] } ]
+        "tmap": [
+          { "cname": "bookstore.Book", "argtypes": [ "String", "String" ] }
+        ]
       },
       {
         "tname": "Option",
@@ -136,6 +146,13 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "bookstore.Member",
+        "tparams": [],
+        "tmap": [
+          { "cname": "bookstore.Member", "argtypes": [ "String", "Uint32" ] }
         ]
       },
       {
@@ -178,6 +195,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "8000"
+  "gas_remaining": "7999"
 }
 

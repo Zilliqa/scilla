@@ -2,69 +2,31 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract BadLibTest1:\n",
+      "error_message":
+        "Type unassignable: Message expected, but Uint128 provided.",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 57,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in library BadLib1:\n\n",
-      "start_location": {
-        "file": "checker/bad/lib_bad1.scilla",
-        "line": 7,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in library variable one_msg:\n\n",
-      "start_location": {
-        "file": "checker/bad/lib_bad1.scilla",
-        "line": 7,
-        "column": 1
+        "line": 12,
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
         "Type unassignable: Message expected, but Uint128 provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in library variable two_msg:\n\n",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 7,
-        "column": 1
+        "line": 23,
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type unassignable: Message expected, but Uint128 provided.",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error in library variable andb:\n\n",
+      "error_message": "Not an algebraic data type: Int32",
       "start_location": {
         "file": "checker/bad/lib_bad1.scilla",
-        "line": 7,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type error in pattern matching on `b` of type Bool (or one of its branches):\nType error in pattern matching on `c` of type Int32 (or one of its branches):\nNot an algebraic data type: Int32",
-      "start_location": {
-        "file": "checker/bad/lib_bad1.scilla",
-        "line": 37,
-        "column": 7
+        "line": 38,
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

@@ -3,3 +3,4 @@
   [s -> (String "abc")],
   [p -> (Pair <closure> <closure>)],
   [f -> <closure>] }
+Gas remaining: 4001187

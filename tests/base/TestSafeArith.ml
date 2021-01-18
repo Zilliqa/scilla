@@ -1,7 +1,24 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+  
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+ 
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open Stdint
 open OUnit2
+open Scilla_base
 open SafeArith
 
 (* We test by comparing the result of the safe arithmetic operations
@@ -54,6 +71,15 @@ module TestArith (SmallInt : Int) = struct
         test binop big_binop a_int b_int
       done
     done
+
+  let test_all_isqrt isqrt_op =
+    for a = min_small_int to max_small_int do
+      let asqrt = SmallInt.to_int @@ isqrt_op (SmallInt.of_int a) in
+      (* asqrt * asqrt <= a && asqrt+1 * asqrt+1 > a *)
+      assert_bool
+        (sprintf "Got isqrt %d = %d" a asqrt)
+        (asqrt * asqrt <= a && (asqrt + 1) * (asqrt + 1) > a)
+    done
 end
 
 module I8_safe = SafeInt (Int8)
@@ -82,6 +108,9 @@ let builtin_arith_8bit_tests =
              TestUnsigned.test_all U8_safe.div Int.( / ) );
            ( "unsigned 8-bit: safe rem",
              TestUnsigned.test_all U8_safe.rem Int.rem );
+           ("unsigned 8-bit: isqrt", TestUnsigned.test_all_isqrt U8_safe.isqrt);
          ]
 
-let all_tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]
+module All = struct
+  let tests _ = "arith_builtin_tests" >::: [ builtin_arith_8bit_tests ]
+end

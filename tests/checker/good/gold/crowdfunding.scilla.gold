@@ -122,28 +122,8 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/crowdfunding.scilla",
-        "line": 142,
-        "column": 9
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/crowdfunding.scilla",
         "line": 121,
         "column": 11
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "contracts/crowdfunding.scilla",
-        "line": 71,
-        "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -159,6 +139,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "8000"
+  "gas_remaining": "7999"
 }
 

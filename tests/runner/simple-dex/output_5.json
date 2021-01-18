@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7245",
+  "gas_remaining": "7898",
   "_accepted": "false",
   "messages": [
     {
@@ -24,7 +24,12 @@
   ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "value": [] },
+    {
+      "vname": "orderbook",
+      "type":
+        "Map (ByStr32) (0xabfeccdc9012345678901234567890f777567890.Order)",
+      "value": []
+    },
     {
       "vname": "orderInfo",
       "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",

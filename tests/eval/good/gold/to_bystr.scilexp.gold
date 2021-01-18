@@ -1,2 +1,7 @@
-(ByStr 0xfb19),
-{ [x -> (ByStr2 0xfb19)] }
+(True),
+{ [res2 -> (True)],
+  [xx_opt -> (None)],
+  [res1 -> (True)],
+  [y -> (ByStr 0xfb19)],
+  [x -> (ByStr2 0xfb19)] }
+Gas remaining: 4001213

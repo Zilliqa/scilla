@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "This let expression is likely missing an 'in'.\n",
+      "error_message":
+        "Invalid module. A module entry (a type or variable definition for libraries, a field, transition or procedure definition for contracts) must be followed by another valid module entry, or end-of-file.\n",
       "start_location": {
         "file": "typecheck/bad/parsing_hex_literals.scilexp",
         "line": 1,

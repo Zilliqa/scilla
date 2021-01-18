@@ -44,4 +44,11 @@ let ks = builtin to_string k in
 let len1 = builtin strlen s1 in
 let len2 = builtin strlen ks in
 
+let bs_rev = builtin strrev bs in
+let bsx_rev = builtin strrev bsx in
+let s1_rev = builtin strrev s1 in
+
+let ascii_bs = 0x756e6c6f636b in
+let ascii = builtin to_ascii ascii_bs in
+
 res

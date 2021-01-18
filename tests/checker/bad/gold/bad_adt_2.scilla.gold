@@ -2,19 +2,11 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract BadLib:\n",
+      "error_message":
+        "Multiple declarations of type constructor Item3 in library bad_adt_2",
       "start_location": {
         "file": "checker/bad/bad_adt_2.scilla",
-        "line": 16,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Multiple declarations of type constructor Item3",
-      "start_location": {
-        "file": "checker/bad/bad_adt_2.scilla",
-        "line": 12,
+        "line": 14,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

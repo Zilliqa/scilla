@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open Scilla_base
 
 type args = {
   input_init : string;
@@ -31,6 +31,7 @@ type args = {
   balance : Stdint.uint128;
   pp_json : bool;
   ipc_address : string;
+  ext_states : string list;
 }
 
 let f_input_init = ref ""
@@ -65,6 +66,8 @@ let b_validate_json = ref true
 
 let i_ipc_address = ref ""
 
+let f_ext_states = ref []
+
 let reset () =
   f_input_init := "";
   f_input_state := "";
@@ -81,7 +84,8 @@ let reset () =
   b_json_errors := false;
   b_pp_json := true;
   b_validate_json := true;
-  i_ipc_address := ""
+  i_ipc_address := "";
+  f_ext_states := []
 
 let process_trace () =
   match !f_trace_level with
@@ -97,7 +101,7 @@ let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
 
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
 
-let process_json_validation () = GlobalConfig.set_validate_json !b_validate_json
+let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
@@ -173,6 +177,9 @@ let parse args ~exe_name =
       ( "-istate",
         Arg.String (fun x -> f_input_state := x),
         "Path to state input json" );
+      ( "-estate",
+        Arg.String (fun x -> f_ext_states := x :: !f_ext_states),
+        "Path to the state of another blockchain address" );
       ( "-imessage",
         Arg.String (fun x -> f_input_message := x),
         "Path to message input json" );
@@ -227,12 +234,19 @@ let parse args ~exe_name =
       ( "-jsonerrors",
         Arg.Unit (fun () -> b_json_errors := true),
         "Print errors in JSON format" );
+      ( "-debuglevel",
+        Arg.Symbol
+          ( [ "none"; "normal"; "verbose" ],
+            fun s ->
+              match s with
+              | "none" -> GlobalConfig.set_debug_level Debug_None
+              | "normal" -> GlobalConfig.set_debug_level Debug_Normal
+              | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
+              | _ -> raise (ErrorUtils.FatalError "Invalid debug log level") ),
+        ": Set debug logging level" );
       ( "-disable-pp-json",
         Arg.Unit (fun () -> b_pp_json := false),
         "Disable pretty printing of JSONs" );
-      ( "-disable-validate-json",
-        Arg.Unit (fun () -> b_validate_json := false),
-        "Disable validation of input JSONs" );
     ]
   in
 
@@ -276,4 +290,5 @@ let parse args ~exe_name =
     gas_limit = !v_gas_limit;
     pp_json = !b_pp_json;
     ipc_address = !i_ipc_address;
+    ext_states = List.rev !f_ext_states;
   }

@@ -1,37 +1,10 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "6967",
+  "gas_remaining": "7863",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
-    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
-    {
-      "vname": "signatures",
-      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
-      "value": [ { "key": "1", "val": [] } ]
-    },
-    {
-      "vname": "signature_counts",
-      "type": "Map (Uint32) (Uint32)",
-      "value": [ { "key": "1", "val": "0" } ]
-    },
-    {
-      "vname": "transactions",
-      "type": "Map (Uint32) (Transaction)",
-      "value": [
-        {
-          "key": "1",
-          "val": {
-            "constructor": "Trans",
-            "argtypes": [],
-            "arguments": [
-              "0x1234567890123456789012345678906780000000", "10", ""
-            ]
-          }
-        }
-      ]
-    },
     {
       "vname": "owners",
       "type": "Map (ByStr20) (Bool)",
@@ -47,6 +20,34 @@
         {
           "key": "0x1234567890123456789012345678906784567890",
           "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+        }
+      ]
+    },
+    { "vname": "transactionCount", "type": "Uint32", "value": "2" },
+    {
+      "vname": "signatures",
+      "type": "Map (Uint32) (Map (ByStr20) (Bool))",
+      "value": [ { "key": "1", "val": [] } ]
+    },
+    {
+      "vname": "signature_counts",
+      "type": "Map (Uint32) (Uint32)",
+      "value": [ { "key": "1", "val": "0" } ]
+    },
+    {
+      "vname": "transactions",
+      "type":
+        "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
+      "value": [
+        {
+          "key": "1",
+          "val": {
+            "constructor": "0xabfeccdc9012345678901234567890f777567890.Trans",
+            "argtypes": [],
+            "arguments": [
+              "0x1234567890123456789012345678906780000000", "10", ""
+            ]
+          }
         }
       ]
     }

@@ -1,0 +1,15 @@
+scilla_version 0
+
+(* This library is used by import-test-lib-bad.scilla *)
+library NestedTestLib1
+
+type BaseType1 =
+| BaseConstructor1 of Uint128
+
+type BaseType2 =
+| BaseConstructor2 of Map Uint128 Uint128
+
+let base_val_1_from_lib_1 : BaseType1 =
+  let x = Uint128 432 in
+  BaseConstructor1 x
+

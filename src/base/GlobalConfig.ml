@@ -17,7 +17,6 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
@@ -46,7 +45,7 @@ let rec get_highest_numbered_log files =
  * scilla-runner-[0-9]+.log and return the next in sequence *)
 let create_log_filename dir =
   if (not (Caml.Sys.file_exists dir)) || not (Caml.Sys.is_directory dir) then
-    Unix.mkdir dir 0o766;
+    Core.Unix.mkdir dir ~perm:0o766;
   (* Arbitrary *)
   let files = Sys.readdir dir in
   let num = get_highest_numbered_log (Array.to_list files) in
@@ -124,9 +123,6 @@ module StdlibTracker = struct
   (* File extension for Scilla libraries. *)
   let file_extn_library = "scillib"
 
-  (* Reset internal state. *)
-  let reset () = stdlib_dirs := []
-
   (* File extension for Scilla expressions. *)
   let file_extn_expression = "scilexp"
 
@@ -135,6 +131,19 @@ module StdlibTracker = struct
     let dirs = get_stdlib_dirs () in
     List.find dirs ~f:(fun d ->
         Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
+
+  (* adt.tname -> defining library. *)
+  let adt_deflib_dict = Caml.Hashtbl.create 5
+
+  let add_deflib_adttyp tname libname =
+    Caml.Hashtbl.add adt_deflib_dict tname libname
+
+  let lookup_deflib_adttyp tname = Caml.Hashtbl.find_opt adt_deflib_dict tname
+
+  (* Reset internal state. *)
+  let reset () =
+    stdlib_dirs := [];
+    Caml.Hashtbl.reset adt_deflib_dict
 end
 
 let reset () =

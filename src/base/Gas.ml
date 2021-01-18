@@ -17,23 +17,36 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
+open Literal
 open Syntax
-open TypeUtil
-open PrimTypes
-open Schnorr
-open PrettyPrinters
+open Scilla_crypto.Schnorr
 open Datatypes.SnarkTypes
+
+let scale_factor = Stdint.Uint64.of_int 8
+
+(* Scale down the remaining gas to original metrics *)
+let finalize_remaining_gas initial_gas_limit remaining_gas =
+  let open Stdint in
+  let remain = Uint64.div remaining_gas scale_factor in
+  (* Ensure that at least one unit of gas is consumed. *)
+  if Uint64.compare remain initial_gas_limit = 0 then
+    Uint64.sub remain Uint64.one
+  else remain
 
 (* Arbitrarily picked, the largest prime less than 100. *)
 let version_mismatch_penalty = 97
 
 module ScillaGas (SR : Rep) (ER : Rep) = struct
-  module GasSyntax = ScillaSyntax (SR) (ER)
-  open TypeUtilities
+  module GasLiteral = GlobalLiteral
+  module GasSyntax = ScillaSyntax (SR) (ER) (GasLiteral)
+  module GasType = GasSyntax.SType
+  module GI = GasSyntax.SIdentifier
+  module GasGasCharge = GasSyntax.SGasCharge
+  open GasType
+  open GasLiteral
   open GasSyntax
 
   (* The storage cost of a literal, based on it's size. *)
@@ -69,14 +82,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           m (pure 0)
     (* A constructor in HNF *)
     | ADTValue (cn, _, ll) as als ->
+        let open Datatypes in
         (* Make a special case for Lists, to avoid overflowing recursion. *)
-        if String.(cn = "Cons") then
+        if is_cons_ctr_name cn then
           let rec walk elm acc_cost =
             match elm with
-            | ADTValue ("Cons", _, [ l; ll ]) ->
+            | ADTValue (c, _, [ l; ll ]) when is_cons_ctr_name c ->
                 let%bind lcost = literal_cost l in
                 walk ll (acc_cost + lcost)
-            | ADTValue ("Nil", _, _) -> pure (acc_cost + 1)
+            | ADTValue (c, _, _) when is_nil_ctr_name c -> pure (acc_cost + 1)
             | _ -> fail0 "Malformed list while computing literal cost"
           in
           walk als 0
@@ -91,280 +105,481 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Clo _ -> pure @@ 1
     | TAbs _ -> pure @@ 1
 
-  let expr_static_cost erep =
-    let e, _ = erep in
-    match e with
-    | Literal _ | Var _ | Let _ | Message _ | Fun _ | App _ | Constr _ | TFun _
-    | TApp _ ->
-        pure 1
-    | MatchExpr (_, clauses) -> pure @@ List.length clauses
-    | Fixpoint _ ->
-        pure 1 (* more cost accounted during recursive evaluation. *)
-    | Builtin _ -> pure 0
+  let rec map_sort_cost l =
+    match l with
+    | Map (_, kvlist) ->
+        let sub_cost =
+          Caml.Hashtbl.fold
+            (fun _ vlit acc -> acc + map_sort_cost vlit)
+            kvlist 0
+        in
+        let this_cost =
+          let len = Caml.Hashtbl.length kvlist in
+          if len > 0 then
+            let log_len = Int.of_float (Float.log (Int.to_float len)) in
+            len * log_len
+          else 0
+        in
+        sub_cost + this_cost
+    | _ -> 0
+
+  let rec expr_static_cost e =
+    let ee, erep = e in
+    let%bind e' =
+      match ee with
+      | Literal _ | Var _ | Message _ | App _ | Constr _ | TApp _ ->
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, e)
+      | Fixpoint (f, t, e') ->
+          let%bind e'' = expr_static_cost e' in
+          pure
+          @@ GasExpr (GasGasCharge.StaticCost 1, (Fixpoint (f, t, e''), erep))
+      | Fun (f, t, e') ->
+          let%bind e'' = expr_static_cost e' in
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, (Fun (f, t, e''), erep))
+      | TFun (f, e') ->
+          let%bind e'' = expr_static_cost e' in
+          pure @@ GasExpr (GasGasCharge.StaticCost 1, (TFun (f, e''), erep))
+      | Let (i, t, lhs, rhs) ->
+          let%bind lhs' = expr_static_cost lhs in
+          let%bind rhs' = expr_static_cost rhs in
+          pure
+          @@ GasExpr (GasGasCharge.StaticCost 1, (Let (i, t, lhs', rhs'), erep))
+      | MatchExpr (o, clauses) ->
+          let%bind clauses' =
+            mapM clauses ~f:(fun (p, e') ->
+                let%bind e'' = expr_static_cost e' in
+                pure (p, e''))
+          in
+          pure
+          @@ GasExpr
+               ( GasGasCharge.StaticCost (List.length clauses),
+                 (MatchExpr (o, clauses'), erep) )
+      | Builtin _ ->
+          (* We don't add costs for Builtin because we can't know it statically
+           * without type info (Eval doesn't run the type checker). To know this
+           * statically, call builtin_cost below, providing argument types. *)
+          pure ee
+      | GasExpr _ -> fail0 "Unexpected gas charge"
+    in
+    pure (e', erep)
 
   (* this is a dynamic cost. *)
+  let rec stmts_cost = function
+    | [] -> pure []
+    | (s, srep) :: rem_stmts ->
+        let%bind s' =
+          match s with
+          | Load (x, _) | RemoteLoad (x, _, _) ->
+              let g =
+                GasStmt
+                  (GasGasCharge.SumOf
+                     ( GasGasCharge.SizeOf (GI.get_id x),
+                       GasGasCharge.MapSortCost (GI.get_id x) ))
+              in
+              (* We charge *after* the load because we can't know the size before. *)
+              pure @@ [ (s, srep); (g, srep) ]
+          | Store (_, v) | SendMsgs v | CreateEvnt v ->
+              let g = GasStmt (GasGasCharge.SizeOf (GI.get_id v)) in
+              pure @@ [ (g, srep); (s, srep) ]
+          | Bind (x, e) ->
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
+              let%bind e' = expr_static_cost e in
+              let s' = Bind (x, e') in
+              pure @@ [ (g, srep); (s', srep) ]
+          | ReadFromBC _ | CallProc _ ->
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
+              pure @@ [ (g, srep); (s, srep) ]
+          | MapUpdate (_, klist, ropt) ->
+              let n = GasGasCharge.StaticCost (List.length klist) in
+              let g =
+                match ropt with
+                | Some r ->
+                    GasGasCharge.SumOf (GasGasCharge.SizeOf (GI.get_id r), n)
+                | None -> n
+              in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
+          | MapGet (x, _, klist, _) | RemoteMapGet (x, _, _, klist, _) ->
+              let n = GasGasCharge.StaticCost (List.length klist) in
+              let g =
+                GasGasCharge.SumOf
+                  ( GasGasCharge.SumOf
+                      ( GasGasCharge.SizeOf (GI.get_id x),
+                        GasGasCharge.MapSortCost (GI.get_id x) ),
+                    n )
+              in
+              pure @@ [ (s, srep); (GasStmt g, srep) ]
+          | MatchStmt (x, clauses) ->
+              let g = GasGasCharge.StaticCost (List.length clauses) in
+              let%bind clauses' =
+                mapM clauses ~f:(fun (p, stmts) ->
+                    let%bind stmts' = stmts_cost stmts in
+                    pure @@ (p, stmts'))
+              in
+              let s' = MatchStmt (x, clauses') in
+              pure @@ [ (GasStmt g, srep); (s', srep) ]
+          | AcceptPayment ->
+              let g = GasStmt (GasGasCharge.StaticCost 1) in
+              pure @@ [ (g, srep); (s, srep) ]
+          | Iterate (l, _) ->
+              let g = GasStmt (GasGasCharge.LengthOf (GI.get_id l)) in
+              pure @@ [ (g, srep); (s, srep) ]
+          | Throw eopt ->
+              let g =
+                match eopt with
+                | Some e -> GasGasCharge.SizeOf (GI.get_id e)
+                | None -> GasGasCharge.StaticCost 1
+              in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
+          | GasStmt _ -> fail0 "Unexpected gas charge"
+        in
 
-  let stmt_cost scon =
-    let rec map_sort_cost l =
-      match l with
-      | Map (_, kvlist) ->
-          let sub_cost =
-            Caml.Hashtbl.fold
-              (fun _ vlit acc -> acc + map_sort_cost vlit)
-              kvlist 0
-          in
-          let this_cost =
-            let len = Caml.Hashtbl.length kvlist in
-            if len > 0 then
-              let log_len = Int.of_float (Float.log (Int.to_float len)) in
-              len * log_len
-            else 0
-          in
-          sub_cost + this_cost
-      | _ -> 0
+        let%bind rem_stmts' = stmts_cost rem_stmts in
+        pure (s' @ rem_stmts')
+
+  let lib_entry_cost = function
+    | LibVar (v, topt, e) ->
+        let%bind e' = expr_static_cost e in
+        pure @@ LibVar (v, topt, e')
+    | LibTyp _ as le -> pure le
+
+  let lib_cost lib =
+    let%bind lentries' = mapM lib.lentries ~f:lib_entry_cost in
+    pure { lib with lentries = lentries' }
+
+  let rec libtree_cost ltree =
+    let%bind deps' = mapM ltree.deps ~f:libtree_cost in
+    let%bind libn' = lib_cost ltree.libn in
+    pure { libn = libn'; deps = deps' }
+
+  let lmod_cost lmod =
+    let%bind libs' = lib_cost lmod.libs in
+    pure @@ { lmod with libs = libs' }
+
+  let cmod_cost (cmod : cmodule) =
+    let contr_cost contr =
+      let comp_cost comp =
+        let%bind body' = stmts_cost comp.comp_body in
+        pure { comp with comp_body = body' }
+      in
+      let%bind constraint' = expr_static_cost contr.cconstraint in
+      let%bind cfields' =
+        mapM contr.cfields ~f:(fun (i, t, e) ->
+            let%bind e' = expr_static_cost e in
+            pure (i, t, e'))
+      in
+      let%bind ccomps' = mapM contr.ccomps ~f:comp_cost in
+      pure
+        {
+          contr with
+          cconstraint = constraint';
+          cfields = cfields';
+          ccomps = ccomps';
+        }
     in
-    match scon with
-    | G_Load l ->
-        let%bind l_cost = literal_cost l in
-        let sort_cost = map_sort_cost l in
-        pure (l_cost + sort_cost)
-    | G_Store l -> literal_cost l
-    | G_MapUpdate (n, lopt) ->
-        let%bind l_cost =
-          match lopt with Some l -> literal_cost l | None -> pure 0
-        in
-        pure @@ (n + l_cost)
-    | G_MapGet (n, lopt) ->
-        let%bind l_cost, sort_cost =
-          match lopt with
-          | Some l ->
-              let%bind l_cost = literal_cost l in
-              pure (l_cost, map_sort_cost l)
-          | None -> pure (0, 0)
-        in
-        pure (n + l_cost + sort_cost)
-    | G_Bind -> pure 1
-    | G_MatchStmt num_clauses -> pure num_clauses
-    | G_ReadFromBC -> pure 1
-    | G_AcceptPayment -> pure 1
-    | G_SendMsgs mlist ->
-        foldM
-          ~f:(fun acc m ->
-            let%bind c = literal_cost m in
-            pure (acc + c))
-          ~init:0 mlist
-    | G_CreateEvnt e -> literal_cost e
-    | G_CallProc -> pure 1
+    let%bind libs' = option_mapM cmod.libs ~f:lib_cost in
+    let%bind contr' = contr_cost cmod.contr in
+    pure { cmod with libs = libs'; contr = contr' }
 
   (* A signature for functions that determine dynamic cost of built-in ops. *)
   (* op -> arguments -> base cost -> total cost *)
   type coster =
-    builtin -> literal list -> int -> (int, scilla_error list) result
+    builtin ->
+    ER.rep GI.t list ->
+    GasType.t list ->
+    (GasGasCharge.gas_charge, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
-  type builtin_record = builtin * typ list * coster * int
+  type builtin_record = builtin * GasType.t list * coster
 
-  (* a static coster that only looks at base cost. *)
-  let base_coster (_ : builtin) (_ : literal list) base = pure base
-
-  let string_coster op args base =
+  let string_coster op args _arg_types =
     match (op, args) with
-    | Builtin_eq, [ StringLit s1; StringLit s2 ] ->
-        pure @@ (Int.min (String.length s1) (String.length s2) * base)
-    | Builtin_concat, [ StringLit s1; StringLit s2 ] ->
-        pure @@ ((String.length s1 + String.length s2) * base)
-    | ( Builtin_substr,
-        [ StringLit s; UintLit (Uint32L i1); UintLit (Uint32L i2) ] ) ->
+    | Builtin_eq, [ s1; s2 ] ->
         pure
-        @@ Int.min (String.length s)
-             (Stdint.Uint32.to_int i1 + Stdint.Uint32.to_int i2)
-           * base
-    | Builtin_strlen, [ StringLit s ] -> pure @@ (String.length s * base)
-    | Builtin_to_string, [ l ] ->
-        let%bind c = literal_cost l in
-        pure @@ (c * base)
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
+    | Builtin_concat, [ s1; s2 ] ->
+        pure
+        @@ GasGasCharge.SumOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
+    | Builtin_substr, [ s; i1; i2 ] ->
+        pure
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s),
+               GasGasCharge.SumOf
+                 ( GasGasCharge.ValueOf (GI.get_id i1),
+                   GasGasCharge.ValueOf (GI.get_id i2) ) )
+    | Builtin_strlen, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
+    | Builtin_strrev, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
+    | Builtin_to_string, [ l ] | Builtin_to_ascii, [ l ] ->
+        pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
-  let crypto_coster op args base =
-    let%bind types = mapM args ~f:literal_type in
-    let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
+  let crypto_coster op args types =
     match (op, types, args) with
+    | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
+        pure @@ GasGasCharge.SizeOf (GI.get_id a1)
+    | ( Builtin_substr,
+        [
+          PrimType Bystr_typ;
+          PrimType (Uint_typ Bits32);
+          PrimType (Uint_typ Bits32);
+        ],
+        [ s; i1; i2 ] ) ->
+        pure
+        @@ GasGasCharge.MinOf
+             ( GasGasCharge.SizeOf (GI.get_id s),
+               GasGasCharge.SumOf
+                 ( GasGasCharge.ValueOf (GI.get_id i1),
+                   GasGasCharge.ValueOf (GI.get_id i2) ) )
     | Builtin_eq, [ a1; a2 ], _
       when is_bystrx_type a1 && is_bystrx_type a2
            && Option.(value_exn (bystrx_width a1) = value_exn (bystrx_width a2))
       ->
-        pure @@ (Option.value_exn (bystrx_width a1) * base)
+        let width = Option.value_exn (bystrx_width a1) in
+        pure @@ GasGasCharge.StaticCost width
+    | Builtin_to_uint32, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 4 ->
+        pure @@ GasGasCharge.StaticCost 4
+    | Builtin_to_uint64, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 8 ->
+        pure @@ GasGasCharge.StaticCost 8
+    | Builtin_to_uint128, [ a ], _
+      when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 16 ->
+        pure @@ GasGasCharge.StaticCost 16
     | Builtin_to_uint256, [ a ], _
       when is_bystrx_type a && Option.value_exn (bystrx_width a) <= 32 ->
-        pure (32 * base)
-    | Builtin_sha256hash, _, [ a ] | Builtin_schnorr_get_address, _, [ a ] ->
+        pure @@ GasGasCharge.StaticCost 32
+    | Builtin_sha256hash, _, [ a ]
+    | Builtin_schnorr_get_address, _, [ a ]
+    | Builtin_ecdsa_recover_pk, _, a :: _ ->
         (* Block size of sha256hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64 * 15 * base)
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (64 * 15) in
+        pure (GasGasCharge.DivCeil (s, n))
     | Builtin_keccak256hash, _, [ a ] ->
         (* Block size of keccak256hash is 1088 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 136 * 15 * base)
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (136 * 15) in
+        pure (GasGasCharge.DivCeil (s, n))
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
-        pure @@ (div_ceil (String.length (pp_literal a)) 64 * 10 * base)
-    | Builtin_schnorr_verify, _, [ _; ByStr s; _ ]
-    | Builtin_ecdsa_verify, _, [ _; ByStr s; _ ] ->
-        let x = div_ceil (Bystr.width s + 66) 64 in
-        pure @@ ((250 + (15 * x)) * base)
+        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let n = GasGasCharge.StaticCost (64 * 10) in
+        pure (GasGasCharge.DivCeil (s, n))
+    | Builtin_schnorr_verify, _, [ _; s; _ ]
+    | Builtin_ecdsa_verify, _, [ _; s; _ ] ->
+        (* x = div_ceil (Bystr.width s + 66) 64 *)
+        let x =
+          GasGasCharge.DivCeil
+            ( GasGasCharge.SumOf
+                (GasGasCharge.SizeOf (GI.get_id s), GasGasCharge.StaticCost 66),
+              GasGasCharge.StaticCost 64 )
+        in
+        (* (250 + (15 * x)) *)
+        pure
+          (GasGasCharge.SumOf
+             ( GasGasCharge.StaticCost 250,
+               GasGasCharge.ProdOf (GasGasCharge.StaticCost 15, x) ))
     | Builtin_to_bystr, [ a ], _ when is_bystrx_type a ->
-        pure @@ (Option.value_exn (bystrx_width a) * base)
+        pure (GasGasCharge.StaticCost (Option.value_exn (bystrx_width a)))
+    | Builtin_to_bystrx i, [ PrimType Bystr_typ ], _
+    | Builtin_to_bystrx i, [ PrimType (Uint_typ _) ], _ ->
+        pure (GasGasCharge.StaticCost i)
     | Builtin_bech32_to_bystr20, _, [ prefix; addr ]
     | Builtin_bystr20_to_bech32, _, [ prefix; addr ] ->
+        let base = 4 in
         pure
-        @@ (String.length (pp_literal prefix) + String.length (pp_literal addr))
-           * base
+          (GasGasCharge.ProdOf
+             ( GasGasCharge.SumOf
+                 ( GasGasCharge.SizeOf (GI.get_id prefix),
+                   GasGasCharge.SizeOf (GI.get_id addr) ),
+               GasGasCharge.StaticCost base ))
+    | Builtin_concat, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ s1; s2 ] ->
+        pure
+        @@ GasGasCharge.SumOf
+             ( GasGasCharge.SizeOf (GI.get_id s1),
+               GasGasCharge.SizeOf (GI.get_id s2) )
     | Builtin_concat, [ a1; a2 ], _ when is_bystrx_type a1 && is_bystrx_type a2
       ->
         pure
-        @@ Option.(
-             (value_exn (bystrx_width a1) + value_exn (bystrx_width a2)) * base)
-    | Builtin_alt_bn128_G1_add, _, _ -> pure @@ (20 * base)
+          (GasGasCharge.StaticCost
+             Option.(value_exn (bystrx_width a1) + value_exn (bystrx_width a2)))
+    | Builtin_alt_bn128_G1_add, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
-        let%bind s' = scilla_scalar_to_ocaml s in
-        let u = Integer256.Uint256.of_bytes_big_endian (Bytes.of_string s') 0 in
-        let multiplier = Float.log (Integer256.Uint256.to_float u) in
-        let multiplier_int = Float.to_int multiplier in
-        pure @@ (20 * multiplier_int * base)
+        let multiplier = GasGasCharge.LogOf (GI.get_id s) in
+        pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
-        let%bind opairs = scilla_g1g2pairlist_to_ocaml pairs in
-        let list_len = List.length opairs in
-        pure @@ (list_len * 40 * base)
+        let list_len = GasGasCharge.LengthOf (GI.get_id pairs) in
+        pure (GasGasCharge.ProdOf (GasGasCharge.StaticCost 40, list_len))
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster op args base =
+  let map_coster op args _arg_types =
     match args with
-    | Map (_, m) :: _ -> (
-        (* get and contains do not make a copy of the Map, hence constant. *)
+    | m :: _ -> (
+        (* size, get and contains do not make a copy of the Map, hence constant. *)
         match op with
-        | Builtin_get | Builtin_contains -> pure base
-        | _ -> pure (base + (base * Caml.Hashtbl.length m)) )
+        | Builtin_size | Builtin_get | Builtin_contains ->
+            pure (GasGasCharge.StaticCost 1)
+        | _ ->
+            pure
+              (GasGasCharge.SumOf
+                 (GasGasCharge.StaticCost 1, GasGasCharge.LengthOf (GI.get_id m)))
+        )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
-  let to_nat_coster _ args base =
+  let to_nat_coster _ args _arg_types =
     match args with
-    | [ UintLit (Uint32L i) ] -> pure @@ (Stdint.Uint32.to_int i * base)
+    | [ a ] -> pure (GasGasCharge.ValueOf (GI.get_id a))
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_conversion_coster w _ args base =
-    match args with
-    | [ IntLit _ ] | [ UintLit _ ] | [ StringLit _ ] ->
-        if w = 32 || w = 64 then pure base
-        else if w = 128 then pure (base * 2)
-        else if w = 256 then pure (base * 4)
+  let int_conversion_coster w _ _args arg_types =
+    let base = 4 in
+    match arg_types with
+    | [ PrimType (Uint_typ _) ]
+    | [ PrimType (Int_typ _) ]
+    | [ PrimType String_typ ] ->
+        if w = 32 || w = 64 then pure (GasGasCharge.StaticCost base)
+        else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
+        else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
         else fail0 @@ "Gas cost error for integer conversion"
     | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
 
-  let int_coster op args base =
+  let int_coster op args arg_types =
+    let base = 4 in
     let%bind base' =
       match op with
-      | Builtin_mul | Builtin_div | Builtin_rem -> pure (base * 5)
+      | Builtin_mul | Builtin_div | Builtin_rem ->
+          pure (GasGasCharge.StaticCost (5 * base))
       | Builtin_pow -> (
           match args with
-          | [ _; UintLit (Uint32L p) ] ->
-              pure (base * 5 * Stdint.Uint32.to_int p)
+          | [ _; p ] ->
+              pure
+                (GasGasCharge.ProdOf
+                   ( GasGasCharge.StaticCost (base * 5),
+                     GasGasCharge.ValueOf (GI.get_id p) ))
           | _ -> fail0 @@ "Gas cost error for built-in pow" )
-      | _ -> pure base
+      | Builtin_isqrt -> (
+          match args with
+          | [ a ] ->
+              pure
+                (GasGasCharge.ProdOf
+                   ( GasGasCharge.StaticCost base,
+                     GasGasCharge.LogOf (GI.get_id a) ))
+          | _ -> fail0 "Invalid argument type to isqrt" )
+      | _ -> pure (GasGasCharge.StaticCost base)
     in
     let%bind w =
-      match args with
-      | [ IntLit i; _ ] -> pure @@ int_lit_width i
-      | [ UintLit i; _ ] -> pure @@ uint_lit_width i
+      match arg_types with
+      | a :: _ -> (
+          match int_width a with
+          | Some w -> pure w
+          | None -> fail0 "int_coster: cannot determine integer width" )
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'
-    else if w = 128 then pure (base' * 2)
-    else if w = 256 then pure (base' * 4)
+    else if w = 128 then
+      pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 2))
+    else if w = 256 then
+      pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 4))
     else fail0 @@ "Gas cost error for integer built-in"
+
+  let bnum_coster _op _args _arg_types = pure (GasGasCharge.StaticCost 32)
 
   let tvar s = TypeVar s
 
   [@@@ocamlformat "disable"]
 
   (* built-in op costs are propotional to size of data they operate on. *)
-  let builtin_records : builtin_record list = [
+  let builtin_records_find = function
+    (* Polymorhpic *)
+    | Builtin_eq -> [
+      ([string_typ;string_typ], string_coster);
+      ([bnum_typ;bnum_typ], bnum_coster);
+      ([tvar "'A"; tvar "'A"], crypto_coster);
+      ([tvar "'A"; tvar "'A"], int_coster)
+    ];
+    | Builtin_substr -> [
+      ([string_typ; tvar "'A"; tvar "'A"], string_coster);
+      ([bystr_typ; uint32_typ; uint32_typ], crypto_coster)
+    ];
+    | Builtin_concat -> [
+      ([string_typ;string_typ], string_coster);
+      ([tvar "'A"; tvar "'A"], crypto_coster)
+    ];
+    | Builtin_strrev -> [ ([tvar "'A"], string_coster) ]
+  
     (* Strings *)
-    (Builtin_eq, [string_typ;string_typ], string_coster, 1);
-    (Builtin_concat, [string_typ;string_typ], string_coster, 1);
-    (Builtin_substr, [string_typ; tvar "'A"; tvar "'A"], string_coster, 1);
-    (Builtin_strlen, [string_typ], string_coster, 1);
-    (Builtin_to_string, [tvar "'A"], string_coster, 1);
+    | Builtin_strlen -> [([string_typ], string_coster); ([bystr_typ], string_coster);];
+    | Builtin_to_string -> [([tvar "'A"], string_coster)];
+    | Builtin_to_ascii -> [([tvar "'A"], string_coster)];
   
     (* Block numbers *)
-    (Builtin_eq, [bnum_typ;bnum_typ], base_coster, 32);
-    (Builtin_blt, [bnum_typ;bnum_typ], base_coster, 32);
-    (Builtin_badd, [bnum_typ;tvar "'A"], base_coster, 32);
-    (Builtin_bsub, [bnum_typ;bnum_typ], base_coster, 32);
+    | Builtin_blt -> [([bnum_typ;bnum_typ], bnum_coster)];
+    | Builtin_badd -> [([bnum_typ;tvar "'A"], bnum_coster)];
+    | Builtin_bsub -> [([bnum_typ;bnum_typ], bnum_coster)];
   
     (* Crypto *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    (Builtin_to_bystr, [tvar "'A"], crypto_coster, 1);
-    (Builtin_bech32_to_bystr20, [string_typ;string_typ], crypto_coster, 4);
-    (Builtin_bystr20_to_bech32, [string_typ;bystrx_typ address_length], crypto_coster, 4);
-    (Builtin_to_uint256, [tvar "'A"], crypto_coster, 1);
-    (Builtin_sha256hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_keccak256hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_ripemd160hash, [tvar "'A"], crypto_coster, 1);
-    (Builtin_schnorr_verify, [bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster, 1);
-    (Builtin_ecdsa_verify, [bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster, 1);
-    (Builtin_concat, [tvar "'A"; tvar "'A"], crypto_coster, 1);
-    (Builtin_schnorr_get_address, [bystrx_typ pubkey_len], crypto_coster, 1);
-    (Builtin_alt_bn128_G1_add, [g1point_type; g1point_type], crypto_coster, 1);
-    (Builtin_alt_bn128_G1_mul, [g1point_type; scalar_type], crypto_coster, 1);
-    (Builtin_alt_bn128_pairing_product, [g1g2pair_list_type], crypto_coster, 1);
+    | Builtin_to_bystr -> [([tvar "'A"], crypto_coster)];
+    | Builtin_to_bystrx _ -> [([tvar "'A"], crypto_coster)];
+    | Builtin_bech32_to_bystr20 -> [([string_typ;string_typ], crypto_coster)];
+    | Builtin_bystr20_to_bech32 -> [([string_typ;bystrx_typ Type.address_length], crypto_coster)];
+    | Builtin_sha256hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_keccak256hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_ripemd160hash -> [([tvar "'A"], crypto_coster)];
+    | Builtin_schnorr_verify -> [([bystrx_typ pubkey_len; bystr_typ; bystrx_typ signature_len], crypto_coster)];
+    | Builtin_ecdsa_verify -> [([bystrx_typ Secp256k1Wrapper.pubkey_len; bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len], crypto_coster)];
+    | Builtin_ecdsa_recover_pk -> [([bystr_typ; bystrx_typ Secp256k1Wrapper.signature_len; uint32_typ], crypto_coster)];
+    | Builtin_schnorr_get_address -> [([bystrx_typ pubkey_len], crypto_coster)];
+    | Builtin_alt_bn128_G1_add -> [([g1point_type; g1point_type], crypto_coster)];
+    | Builtin_alt_bn128_G1_mul -> [([g1point_type; scalar_type], crypto_coster)];
+    | Builtin_alt_bn128_pairing_product -> [([g1g2pair_list_type], crypto_coster)];
   
     (* Maps *)
-    (Builtin_contains, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_put, [tvar "'A"; tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_get, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_remove, [tvar "'A"; tvar "'A"], map_coster, 1);
-    (Builtin_to_list, [tvar "'A"], map_coster, 1);
-    (Builtin_size, [tvar "'A"], map_coster, 1);
+    | Builtin_contains -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_put -> [([tvar "'A"; tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_get -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_remove -> [([tvar "'A"; tvar "'A"], map_coster)];
+    | Builtin_to_list -> [([tvar "'A"], map_coster)];
+    | Builtin_size -> [([tvar "'A"], map_coster)];
   
     (* Integers *)
-    (Builtin_eq, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_lt, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_add, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_sub, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_mul, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_div, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_rem, [tvar "'A"; tvar "'A"], int_coster, 4);
-    (Builtin_pow, [tvar "'A"; uint32_typ], int_coster, 4);
-    (Builtin_to_int32, [tvar "'A"], int_conversion_coster 32, 4);
-    (Builtin_to_int64, [tvar "'A"], int_conversion_coster 64, 4);
-    (Builtin_to_int128, [tvar "'A"], int_conversion_coster 128, 4);
-    (Builtin_to_int256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_uint32, [tvar "'A"], int_conversion_coster 32, 4);
-    (Builtin_to_uint64, [tvar "'A"], int_conversion_coster 64, 4);
-    (Builtin_to_uint128, [tvar "'A"], int_conversion_coster 128, 4);
-    (Builtin_to_uint256, [tvar "'A"], int_conversion_coster 256, 4);
-    (Builtin_to_nat, [tvar "'A"], to_nat_coster, 1);
-  ]
+    | Builtin_lt -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_add -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_sub -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_mul -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_div -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_rem -> [([tvar "'A"; tvar "'A"], int_coster)];
+    | Builtin_pow -> [([tvar "'A"; uint32_typ], int_coster)];
+    | Builtin_isqrt -> [([tvar "'A"], int_coster)];
+  
+    | Builtin_to_int32 -> [([tvar "'A"], int_conversion_coster 32)];
+    | Builtin_to_int64 -> [([tvar "'A"], int_conversion_coster 64)];
+    | Builtin_to_int128 -> [([tvar "'A"], int_conversion_coster 128)];
+    | Builtin_to_int256 -> [([tvar "'A"], int_conversion_coster 256)];
+    | Builtin_to_uint32 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 32)
+    ];
+    | Builtin_to_uint64 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 64)
+    ];
+    | Builtin_to_uint128 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 128)
+    ];
+    | Builtin_to_uint256 -> [
+      ([tvar "'A"], crypto_coster); ([tvar "'A"], int_conversion_coster 256)
+    ];
+  
+    | Builtin_to_nat -> [([uint32_typ], to_nat_coster)];
 
   [@@@ocamlformat "enable"]
 
-  let builtin_hashtbl =
-    let open Caml in
-    let ht : (builtin, builtin_record list) Hashtbl.t = Hashtbl.create 64 in
-    List.iter
-      (fun row ->
-        let opname, _, _, _ = row in
-        match Hashtbl.find_opt ht opname with
-        | Some p -> Hashtbl.add ht opname (row :: p)
-        | None -> Hashtbl.add ht opname [ row ])
-      builtin_records;
-    ht
-
-  let builtin_cost (op, _) arg_literals =
-    let%bind arg_types = mapM arg_literals ~f:literal_type in
-    let matcher (name, types, fcoster, base) =
+  let builtin_cost (op, _) arg_types arg_ids =
+    let matcher (types, fcoster) =
       (* The names and type list lengths must match and *)
       if
-        [%equal: Syntax.builtin] name op
-        && List.length types = List.length arg_types
+        List.length types = List.length arg_types
         && List.for_all2_exn
              ~f:(fun t1 t2 ->
                (* the types should match *)
@@ -372,18 +587,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                ||
                (* or the built-in record is generic *)
                match t1 with TypeVar _ -> true | _ -> false)
-              types arg_types
-      then fcoster op arg_literals base (* this can fail too *)
+             types arg_types
+      then fcoster op arg_ids arg_types (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in
     let msg =
       sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
     in
-    let dict =
-      match Caml.Hashtbl.find_opt builtin_hashtbl op with
-      | Some rows -> rows
-      | None -> []
+    let%bind _, cost =
+      tryM (builtin_records_find op) ~f:matcher ~msg:(fun () -> mk_error0 msg)
     in
-    let%bind _, cost = tryM dict ~f:matcher ~msg:(fun () -> mk_error0 msg) in
     pure cost
 end

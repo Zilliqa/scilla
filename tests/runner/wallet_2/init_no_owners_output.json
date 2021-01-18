@@ -1,8 +1,8 @@
 {
-  "gas_remaining": "0",
+  "gas_remaining": "6082",
   "errors": [
     {
-      "error_message": "Ran out of gas when parsing contract/init files.\n",
+      "error_message": "Contract constraint violation.\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

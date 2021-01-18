@@ -17,12 +17,17 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open Type
+open Literal
 open Syntax
 open MonadUtil
 open Stdint
 open Core_kernel.Result.Let_syntax
 open PrettyPrinters
+module CULiteral = GlobalLiteral
+module CUType = CULiteral.LType
+module CUIdentifier = CUType.TIdentifier
+module CUName = CUIdentifier.Name
 
 (*****************************************************)
 (*                Message payload                    *)
@@ -34,6 +39,8 @@ module MessagePayload = struct
   let amount_label = "_amount"
 
   let sender_label = "_sender"
+
+  let origin_label = "_origin"
 
   let recipient_label = "_recipient"
 
@@ -61,7 +68,14 @@ module MessagePayload = struct
 
   let get_sender =
     get_value_for_entry sender_label (function
-      | ByStrX bs as a when Bystrx.width bs = address_length -> Some (pure a)
+      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
+          Some (pure a)
+      | _ -> None)
+
+  let get_origin =
+    get_value_for_entry origin_label (function
+      | ByStrX bs as a when CULiteral.Bystrx.width bs = address_length ->
+          Some (pure a)
       | _ -> None)
 
   let get_amount =
@@ -85,37 +99,42 @@ module MessagePayload = struct
     List.filter es ~f:(fun (l, _) -> String.(l <> tag_label))
 end
 
-let balance_label = "_balance"
+let label_name_of_string str = CUName.parse_simple_name str
 
-let balance_typ = PrimTypes.uint128_typ
+let balance_label = label_name_of_string "_balance"
 
-let creation_block_label = "_creation_block"
+let balance_typ = CUType.uint128_typ
 
-let this_address_label = "_this_address"
+let creation_block_label = label_name_of_string "_creation_block"
 
-let scilla_version_label = "_scilla_version"
+let this_address_label = label_name_of_string "_this_address"
 
-let accepted_label = "_accepted"
+let scilla_version_label = label_name_of_string "_scilla_version"
 
-let extlibs_label = "_extlibs"
+let accepted_label = label_name_of_string "_accepted"
+
+let extlibs_label = label_name_of_string "_extlibs"
 
 let no_store_fields = [ balance_label ]
 
 module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
-  module ContractUtilSyntax = ScillaSyntax (SR) (ER)
+  module ContractUtilSyntax = ScillaSyntax (SR) (ER) (CULiteral)
   open ContractUtilSyntax
 
   let balance_field =
-    (ER.mk_id_uint128 balance_label, balance_typ)
+    (CUIdentifier.mk_id balance_label ER.uint128_rep, CUType.uint128_typ)
 
   let append_implict_contract_params tparams =
-    let open PrimTypes in
-    let creation_block = (ER.mk_id_bnum creation_block_label, bnum_typ) in
+    let open CUType in
+    let creation_block =
+      (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ)
+    in
     let this_address =
-      (ER.mk_id_address this_address_label, bystrx_typ address_length)
+      ( CUIdentifier.mk_id this_address_label ER.address_rep,
+        bystrx_typ address_length )
     in
     let scilla_version_init =
-      (ER.mk_id_uint32 scilla_version_label, uint32_typ)
+      (CUIdentifier.mk_id scilla_version_label ER.uint32_rep, uint32_typ)
     in
     creation_block :: scilla_version_init :: this_address :: tparams
 
@@ -123,21 +142,35 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
     List.filter args ~f:(fun a ->
-        not (List.mem nonevalargs (fst a) ~equal:String.( = )))
+        not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
   let append_implict_comp_params cparams =
-    let open PrimTypes in
+    let open CUType in
     let sender =
-      (ER.mk_id_address MessagePayload.sender_label, Address [ ] )
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.sender_label)
+          ER.address_rep,
+        Address [ ] )
     in
-    let amount = (ER.mk_id_uint128 MessagePayload.amount_label, uint128_typ) in
-    amount :: sender :: cparams
+    let origin =
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.origin_label)
+          ER.address_rep,
+        Address [ ] )
+    in
+    let amount =
+      ( CUIdentifier.mk_id
+          (label_name_of_string MessagePayload.amount_label)
+          ER.uint128_rep,
+        uint128_typ )
+    in
+    amount :: origin :: sender :: cparams
 
   let msg_mandatory_field_types =
     [
-      (MessagePayload.tag_label, PrimTypes.string_typ);
-      (MessagePayload.amount_label, PrimTypes.uint128_typ);
-      (MessagePayload.recipient_label, PrimTypes.bystrx_typ address_length);
+      (MessagePayload.tag_label, CUType.string_typ);
+      (MessagePayload.amount_label, CUType.uint128_typ);
+      (MessagePayload.recipient_label, CUType.bystrx_typ address_length);
     ]
 
   (* Iterate over all messages in the contract, accumuating result. 
@@ -153,13 +186,16 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
       | Fixpoint _ -> pure acc
       (* Recursion. *)
       | Let (b', _, (e1, _), (e2, _)) ->
-          let%bind acc' = expr_folder (ER.get_loc @@ get_rep b') e1 acc in
+          let%bind acc' =
+            expr_folder (ER.get_loc @@ CUIdentifier.get_rep b') e1 acc
+          in
           expr_folder loc e2 acc'
-      | Fun (_, _, (e', _)) | TFun (_, (e', _)) -> expr_folder loc e' acc
+      | Fun (_, _, (e', _)) | TFun (_, (e', _)) | GasExpr (_, (e', _)) ->
+          expr_folder loc e' acc
       | MatchExpr (p, pl) ->
           foldM
             ~f:(fun acc (_, (e', _)) ->
-              expr_folder (ER.get_loc @@ get_rep p) e' acc)
+              expr_folder (ER.get_loc @@ CUIdentifier.get_rep p) e' acc)
             ~init:acc pl
     in
 
@@ -172,7 +208,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         ~f:(fun acc le ->
           match le with
           | LibVar (b, _, (ex, _)) ->
-              expr_folder (ER.get_loc @@ get_rep b) ex acc
+              expr_folder (ER.get_loc @@ CUIdentifier.get_rep b) ex acc
           | LibTyp _ -> pure acc)
         ~init lentries
     in
@@ -194,7 +230,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
                       ~init:acc clauses
                 (* Every message created gets bound to some variable. *)
                 | Bind (b, (e, _)) ->
-                    expr_folder (ER.get_loc @@ get_rep b) e acc
+                    expr_folder (ER.get_loc @@ CUIdentifier.get_rep b) e acc
                 | _ -> (* Uninteresting statement. *) pure acc
               in
               stmt_iter stmt_list' acc'

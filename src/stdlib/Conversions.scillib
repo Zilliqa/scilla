@@ -1,0 +1,221 @@
+(* ******************************************************************************** *)
+(*   This file is part of scilla.                                                   *)
+(*                                                                                  *)
+(*   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.                        *)
+(*                                                                                  *)
+(*   scilla is free software: you can redistribute it and/or modify it under the    *)
+(*   terms of the GNU General Public License as published by the Free Software      *)
+(*   Foundation, either version 3 of the License, or (at your option) any later     *)
+(*   version.                                                                       *)
+(*                                                                                  *)
+(*   scilla is distributed in the hope that it will be useful, but WITHOUT ANY      *)
+(*   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR  *)
+(*   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.    *)
+(*                                                                                  *)
+(*   You should have received a copy of the GNU General Public License along with   *)
+(*   scilla.  If not, see <http://www.gnu.org/licenses/>.                           *)
+(* ******************************************************************************** *)
+scilla_version 0
+
+import IntUtils
+
+library Conversions
+
+type IntegerEncoding =
+  | LittleEndian
+  | BigEndian
+
+(* does not throw exceptions *)
+let substr_safe : ByStr -> Uint32 -> Uint32 -> Option ByStr =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+  fun (len : Uint32) =>
+    let length = builtin strlen bs in
+    let shorter = uint32_le len length in
+    match shorter with
+    | True =>
+      let delta = builtin sub length len in
+      let safe_pos = uint32_le pos delta in
+      match safe_pos with
+      | True =>
+        let substr = builtin substr bs pos len in
+        Some {ByStr} substr
+      | False => None {ByStr}
+      end
+    | False => None {ByStr}
+    end
+
+(* Extract out a Scilla type from a ByStr starting at pos. Returns next position. *)
+(* Use the type specific helpers below rather than this function. *)
+let extract_scillaval : forall 'A. forall 'B. (ByStr -> Option 'B) -> ('B -> 'A) -> ByStr -> Uint32 -> Uint32 -> Option (Pair 'A Uint32) =
+  tfun 'A =>
+  tfun 'B =>
+  fun (to_bystrx : ByStr -> Option 'B) =>
+  fun (to_uint : 'B -> 'A) =>
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+  fun (len : Uint32) =>         (* Byte size of the Uint value. *)
+    let subbs_opt =  substr_safe bs pos len in
+    match subbs_opt with
+    | Some subbs =>
+      let subbs_x_opt = to_bystrx subbs in
+      match subbs_x_opt with
+      | Some subbs_x =>
+        let ui = to_uint subbs_x in
+        let next_pos = builtin add pos len in
+        let res = Pair {'A Uint32} ui next_pos in
+        Some {(Pair 'A Uint32)} res
+      | None =>
+        None {(Pair 'A Uint32)}
+      end
+    | None =>
+      None {(Pair 'A Uint32)}
+    end
+
+(* Extracts Uint32 in bs from position pos and returns next position. *)
+let extract_uint32 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint32 Uint32) =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr4 a in
+    let to_uint =
+      fun (a : ByStr4) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint32 b
+    in
+    let extractor = @extract_scillaval Uint32 ByStr4 in
+    let uint32_bsize = Uint32 4 in
+    extractor to_bystrx to_uint bs pos uint32_bsize
+
+(* Extracts Uint64 in bs from position pos and returns next position. *)
+let extract_uint64 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr8 a in
+    let to_uint =
+      fun (a : ByStr8) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint64 b
+    in
+    let extractor = @extract_scillaval Uint64 ByStr8 in
+    let uint64_bsize = Uint32 8 in
+    extractor to_bystrx to_uint bs pos uint64_bsize
+
+(* Extracts Uint128 in bs from position pos and returns next position. *)
+let extract_uint128 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint128 Uint32) =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr16 a in
+    let to_uint =
+      fun (a : ByStr16) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint128 b
+    in
+    let extractor = @extract_scillaval Uint128 ByStr16 in
+    let uint128_bsize = Uint32 16 in
+    extractor to_bystrx to_uint bs pos uint128_bsize
+
+(* Extracts Uint256 in bs from position pos and returns next position. *)
+let extract_uint256 : IntegerEncoding -> ByStr -> Uint32 -> Option (Pair Uint256 Uint32) =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr32 a in
+    let to_uint =
+      fun (a : ByStr32) =>
+        let b = match endian with | LittleEndian => builtin strrev a | BigEndian => a end in
+        builtin to_uint256 b
+    in
+    let extractor = @extract_scillaval Uint256 ByStr32 in
+    let uint256_bsize = Uint32 32 in
+    extractor to_bystrx to_uint bs pos uint256_bsize
+
+(* Extracts ByStr1 in bs from position pos and returns next position *)
+let extract_bystr1 : ByStr -> Uint32 -> Option (Pair ByStr1 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr1 a in
+    let unit = fun (a : ByStr1) => a in
+    let extractor = @extract_scillaval ByStr1 ByStr1 in
+    let bystr1_bsize = Uint32 1 in
+    extractor to_bystrx unit bs pos bystr1_bsize
+
+(* Extracts ByStr2 in bs from position pos and returns next position *)
+let extract_bystr2 : ByStr -> Uint32 -> Option (Pair ByStr2 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr2 a in
+    let unit = fun (a : ByStr2) => a in
+    let extractor = @extract_scillaval ByStr2 ByStr2 in
+    let bystr2_bsize = Uint32 2 in
+    extractor to_bystrx unit bs pos bystr2_bsize
+
+(* Extracts ByStr20 in bs from position pos and returns next position *)
+let extract_bystr20 : ByStr -> Uint32 -> Option (Pair ByStr20 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr20 a in
+    let unit = fun (a : ByStr20) => a in
+    let extractor = @extract_scillaval ByStr20 ByStr20 in
+    let bystr20_bsize = Uint32 20 in
+    extractor to_bystrx unit bs pos bystr20_bsize
+
+(* Extracts ByStr32 in bs from position pos and returns next position *)
+let extract_bystr32 : ByStr -> Uint32 -> Option (Pair ByStr32 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let to_bystrx = fun (a : ByStr) => builtin to_bystr32 a in
+    let unit = fun (a : ByStr32) => a in
+    let extractor = @extract_scillaval ByStr32 ByStr32 in
+    let bystr32_bsize = Uint32 32 in
+    extractor to_bystrx unit bs pos bystr32_bsize
+
+(* Append serialized Uint32 value to given byte string *)
+let append_uint32 : IntegerEncoding -> ByStr -> Uint32 -> ByStr =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (ui : Uint32) =>
+    let uibx = builtin to_bystr4 ui in
+    let uib = builtin to_bystr uibx in
+    let uib_endian =
+      match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
+    in
+    builtin concat bs uib_endian
+
+(* Append serialized Uint64 value to given byte string *)
+let append_uint64 : IntegerEncoding -> ByStr -> Uint64 -> ByStr =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (ui : Uint64) =>
+    let uibx = builtin to_bystr8 ui in
+    let uib = builtin to_bystr uibx in
+    let uib_endian =
+      match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
+    in
+    builtin concat bs uib_endian
+
+(* Append serialized Uint128 value to given byte string *)
+let append_uint128 : IntegerEncoding -> ByStr -> Uint128 -> ByStr =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (ui : Uint128) =>
+    let uibx = builtin to_bystr16 ui in
+    let uib = builtin to_bystr uibx in
+    let uib_endian =
+      match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
+    in
+    builtin concat bs uib
+
+(* Append serialized Uint256 value to given byte string *)
+let append_uint256 : IntegerEncoding -> ByStr -> Uint256 -> ByStr =
+  fun (endian : IntegerEncoding) =>
+  fun (bs : ByStr) =>
+  fun (ui : Uint256) =>
+    let uibx = builtin to_bystr32 ui in
+    let uib = builtin to_bystr uibx in
+    let uib_endian =
+      match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
+    in
+    builtin concat bs uib

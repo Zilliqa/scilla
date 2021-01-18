@@ -35,11 +35,15 @@ module type IntRep = sig
 
   val rem : t -> t -> t
 
+  val shift_right : t -> int -> t
+
   val zero : t
 
   val one : t
 
   val min_int : t
+
+  val max_int : t
 end
 
 (* Integer arithmitic
@@ -76,4 +80,6 @@ module SafeUint (Unsafe : IntRep) : sig
   val pow : Unsafe.t -> Stdint.Uint32.t -> Unsafe.t
 
   val lt : Unsafe.t -> Unsafe.t -> bool
+
+  val isqrt : Unsafe.t -> Unsafe.t
 end

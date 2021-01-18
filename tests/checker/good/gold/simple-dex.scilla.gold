@@ -8,9 +8,9 @@
     ],
     "ADT constructors": [
       {
-        "Order": [
+        "simple-dex.Order": [
           {
-            "constructor": "Order",
+            "constructor": "simple-dex.Order",
             "tags": [ "NotMoney", "NoInfo", "NotMoney", "NoInfo" ]
           }
         ]
@@ -22,7 +22,11 @@
     "vname": "SimpleDex",
     "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
     "fields": [
-      { "vname": "orderbook", "type": "Map (ByStr32) (Order)", "depth": 1 },
+      {
+        "vname": "orderbook",
+        "type": "Map (ByStr32) (simple-dex.Order)",
+        "depth": 1
+      },
       {
         "vname": "orderInfo",
         "type": "Map (ByStr32) (Pair (ByStr20) (BNum))",
@@ -90,11 +94,11 @@
     ],
     "ADTs": [
       {
-        "tname": "Order",
+        "tname": "simple-dex.Order",
         "tparams": [],
         "tmap": [
           {
-            "cname": "Order",
+            "cname": "simple-dex.Order",
             "argtypes": [ "ByStr20", "Uint128", "ByStr20", "Uint128" ]
           }
         ]
@@ -147,6 +151,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7945"
+  "gas_remaining": "7993"
 }
 

@@ -1,0 +1,10 @@
+(True),
+{ [value_reserialized -> (ByStr 0x64)],
+  [empty -> (ByStr 0x)],
+  [emptyx -> (ByStr0 0x)],
+  [ui -> (Uint64 100)],
+  [ui_opt -> (Some (Pair (Uint64 100) (Uint32 1)))],
+  [pos -> (Uint32 0)],
+  [value -> (ByStr 0x64)],
+  [uint_value -> (ByStr1 0x64)] }
+Gas remaining: 4001054

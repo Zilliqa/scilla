@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7512",
+  "gas_remaining": "7931",
   "_accepted": "false",
   "messages": [
     {
@@ -14,7 +14,8 @@
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
       "vname": "earmarked_coins",
-      "type": "Map (ByStr20) (EarmarkedCoin)",
+      "type":
+        "Map (ByStr20) (0xcccccccccccccccccccccccccccccccccccccccc.EarmarkedCoin)",
       "value": []
     }
   ],

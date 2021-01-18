@@ -37,7 +37,7 @@ let explist =
     "list_zip_with.scilexp";
   ]
 
-module Tests = TestUtil.DiffBasedTests (struct
+module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "gas_use_analysis"; "expr"; "gold"; f ^ ".gold" ]
 
   let test_path f = [ "gas_use_analysis"; "expr"; f ]
@@ -45,6 +45,8 @@ module Tests = TestUtil.DiffBasedTests (struct
   let runner = "type-checker"
 
   let ignore_predef_args = true
+
+  let json_errors = true
 
   let gas_limit = Stdint.Uint64.of_int 4002000
 
@@ -56,7 +58,7 @@ module Tests = TestUtil.DiffBasedTests (struct
 
   let tests = explist
 
-  let exit_code : Unix.process_status = WEXITED 0
+  let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
-let all_tests = Tests.all_tests
+let tests = Tests.tests

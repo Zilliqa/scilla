@@ -21,12 +21,18 @@
 
 open OUnit2
 open Core_kernel
-open! Int.Replace_polymorphic_compare
-open Syntax
 open Yojson
+open Scilla_base
+open Scilla_eval
+open Literal
+module IPCTestType = StateIPCTestClient.Type
+module IPCTestName = IPCTestType.TIdentifier.Name
+
+(* Use GlobalLiteral for compatibility with TypeUtil *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
 
 let parse_typ_wrapper t =
-  match FrontEndParser.parse_type t with
+  match FEParser.parse_type t with
   | Error _ ->
       assert_failure (sprintf "StateIPCTest: Invalid type in json: %s\n" t)
   | Ok s -> s
@@ -62,6 +68,7 @@ let json_to_string j =
   json_exn_wrapper thunk
 
 let rec json_to_pb t j =
+  let open IPCTestType in
   match t with
   | MapType (_, vt) ->
       let kvlist = json_to_list j in
@@ -101,6 +108,7 @@ let json_file_to_state path =
   svars
 
 let state_to_json s =
+  let open IPCTestType in
   `List
     (List.map s ~f:(fun (fname, ftyp, fval) ->
          `Assoc
@@ -115,12 +123,28 @@ let state_to_json s =
 let sort_mapkeys goldj outj =
   let goldstates = json_to_list @@ json_member "states" goldj in
   let outstates = json_to_list @@ json_member "states" outj in
+  let rec map_dumper outmap t =
+    let open IPCTestType in
+    match t with
+    | MapType (_, vt) ->
+        let outlist = json_to_list outmap in
+        let outlist_complete =
+          List.map outlist ~f:(fun out ->
+              let outkey = json_member "key" out in
+              let outval = json_member "val" out in
+              let outval' = map_dumper outval vt in
+              `Assoc [ ("key", outkey); ("val", outval') ])
+        in
+        `List outlist_complete
+    | _ -> outmap
+  in
   let rec map_sorter goldmap outmap t =
+    let open IPCTestType in
     match t with
     | MapType (_, vt) ->
         let goldlist = json_to_list goldmap in
         let outlist = json_to_list outmap in
-        let outlist' =
+        let outlist_goldkeys =
           List.fold_right goldlist
             ~f:(fun gold outacc ->
               let goldkey = json_member "key" gold |> json_to_string in
@@ -140,7 +164,27 @@ let sort_mapkeys goldj outj =
               | None -> outacc)
             ~init:[]
         in
-        `List outlist'
+        let outlist_complete =
+          List.fold_left outlist ~init:outlist_goldkeys ~f:(fun outacc out ->
+              let outkey = json_member "key" out in
+              match
+                List.find outlist_goldkeys ~f:(fun other_out ->
+                    let other_outkey =
+                      json_member "key" other_out |> json_to_string
+                    in
+                    String.(json_to_string outkey = other_outkey))
+              with
+              | Some _ ->
+                  (* Ignore - already sorted *)
+                  outacc
+              | None ->
+                  (* New key not present in the gold file *)
+                  let outval = json_member "val" out in
+                  let outval' = map_dumper outval vt in
+                  let outj = `Assoc [ ("key", outkey); ("val", outval') ] in
+                  outj :: outacc)
+        in
+        `List outlist_complete
     | _ -> outmap
   in
   let outstates' =
@@ -148,7 +192,7 @@ let sort_mapkeys goldj outj =
       (List.map2_exn goldstates outstates ~f:(fun goldstate outstate ->
            let vname = json_member "vname" goldstate in
            let t =
-             json_member "type" goldstate |> json_to_string |> parse_typ_wrapper
+             json_member "type" outstate |> json_to_string |> parse_typ_wrapper
            in
            assert_bool
              "sort_mapkeys: order of gold states and out states mismatch"
@@ -164,7 +208,7 @@ let sort_mapkeys goldj outj =
            `Assoc
              [
                ("vname", vname);
-               ("type", json_member "type" goldstate);
+               ("type", json_member "type" outstate);
                ("value", outval);
              ]))
   in
@@ -178,6 +222,7 @@ let sort_mapkeys goldj outj =
 (* Start a mock server (if set) at ~sock_addr and initialize server
  * (external or mock server) state with ~state_json_path. *)
 let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
+  let open ContractUtil in
   let state = json_file_to_state state_json_path in
 
   (* Setup a mock server within the testsuite? *)
@@ -185,17 +230,17 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
 
   let fields =
     List.filter_map state ~f:(fun (s, t, _) ->
-        if String.(s = ContractUtil.balance_label) then None else Some (s, t))
+        if String.(s = CUName.as_string balance_label) then None else Some (s, t))
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (fname, _, value) ->
-      if String.(fname <> ContractUtil.balance_label) then
+      if String.(fname <> CUName.as_string balance_label) then
         StateIPCTestClient.update ~fname ~value);
   (* Find the balance from state and return it. *)
   match
     List.find state ~f:(fun (fname, _, _) ->
-        String.(fname = ContractUtil.balance_label))
+        String.(fname = CUName.as_string balance_label))
   with
   | Some (_, _, balpb) -> (
       match balpb with
@@ -203,11 +248,14 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
           json_from_string (Bytes.to_string bal) |> json_to_string
       | _ ->
           assert_failure
-            ( "Incorrect type of " ^ ContractUtil.balance_label
+            ( "Incorrect type of "
+            ^ CUName.as_error_string balance_label
             ^ " in state.json" ) )
   | None ->
       assert_failure
-        ("Unable to find " ^ ContractUtil.balance_label ^ " in state.json")
+        ( "Unable to find "
+        ^ CUName.as_error_string balance_label
+        ^ " in state.json" )
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish ~sock_addr =
@@ -224,7 +272,10 @@ let append_full_state ~goldoutput_file ~interpreter_output svars =
   let svars' =
     List.fold_right goldjs ~init:svars ~f:(fun goldv acc ->
         let golds = json_member "vname" goldv |> json_to_string in
-        if String.(golds = ContractUtil.balance_label) then acc
+        if
+          String.(
+            golds = ContractUtil.CUName.as_string ContractUtil.balance_label)
+        then acc
         else
           let s', rest =
             List.partition_tf acc ~f:(fun (s, _, _) -> String.(s = golds))

@@ -1,74 +1,28 @@
 {
-  "gas_remaining": "7278",
+  "gas_remaining": "7909",
   "errors": [
     {
-      "error_message": "Type error(s) in contract Test:\n",
+      "error_message":
+        "Type unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
-        "line": 30,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition testMapPair:\n",
-      "start_location": {
-        "file": "checker/bad/mappair.scilla",
-        "line": 41,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Error in pattern matching \"is_owner\" of type Bool",
-      "start_location": {
-        "file": "checker/bad/mappair.scilla",
-        "line": 43,
+        "line": 56,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Type error in the binding to into `p`:\nType unassignable: Int32 expected, but Int64 provided.",
-      "start_location": {
-        "file": "checker/bad/mappair.scilla",
-        "line": 56,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message": "Type error(s) in transition addNumToList:\n",
-      "start_location": {
-        "file": "checker/bad/mappair.scilla",
-        "line": 63,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type error in the binding to into `l2`:\nType unassignable: Int32 expected, but Int64 provided.",
+        "Type unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
         "line": 72,
-        "column": 3
+        "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error(s) in transition createBadEvent:\n",
-      "start_location": {
-        "file": "checker/bad/mappair.scilla",
-        "line": 92,
-        "column": 12
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Type error in the binding to into `e`:\nCannot serialize values of type Nat -> Uint32.",
+      "error_message": "Cannot serialize values of type Nat -> Uint32.",
       "start_location": {
         "file": "checker/bad/mappair.scilla",
         "line": 95,

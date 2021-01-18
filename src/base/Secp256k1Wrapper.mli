@@ -22,6 +22,8 @@ val privkey_len : int
 
 val pubkey_len : int
 
+val uncompressed_pubkey_len : int
+
 val signature_len : int
 
 (* Given a private key, return it's public key. *)
@@ -36,3 +38,6 @@ val sign : string -> string -> (string, scilla_error list) result
  * that the message was indeed signed by the public key.
  *)
 val verify : string -> string -> string -> (bool, scilla_error list) result
+
+(* Recover public key from a message, it's signature and a recover ID. *)
+val recover_pk : string -> string -> int -> (string, scilla_error list) result

@@ -17,12 +17,13 @@
 *)
 
 open Core
-open! Int.Replace_polymorphic_compare
-open Syntax
+open Scilla_base
+open Scilla_eval
 open TypeUtil
 open StateIPCIdl
 open OUnit2
 open IPCUtil
+module Type = TypeUtil.TUType
 module M = Idl.IdM
 module IDL = Idl.Make (M)
 
@@ -33,7 +34,7 @@ module IPCClient = IPCIdl (IDL.GenClient ())
  * with Scilla literals, which we cannot always parse from the JSONs. Parsing it requires the
  * definitions of custom ADTs that are only available in the source file. *)
 
-type state_info = (string * typ) list
+type state_info = (string * Type.t) list
 
 (* For persistance b/w multiple queries. *)
 let stateref = ref None
@@ -80,7 +81,7 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
   in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
   let ic, oc =

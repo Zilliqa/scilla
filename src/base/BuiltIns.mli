@@ -19,26 +19,26 @@
 open Syntax
 open ErrorUtils
 open Core_kernel
+open Literal
+module BILiteral = GlobalLiteral
+module BIType = BILiteral.LType
 
 module UsefulLiterals : sig
-  val true_lit : literal
+  val some_lit :
+    BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
 
-  val false_lit : literal
-
-  val to_Bool : bool -> literal
-
-  val some_lit : literal -> (literal, ErrorUtils.scilla_error list) result
-
-  val none_lit : typ -> literal
+  val none_lit : BIType.t -> BILiteral.t
 
   val pair_lit :
-    literal -> literal -> (literal, ErrorUtils.scilla_error list) result
+    BILiteral.t ->
+    BILiteral.t ->
+    (BILiteral.t, ErrorUtils.scilla_error list) result
 end
 
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
     type built_in_executor =
-      literal list -> typ -> (literal, scilla_error list) result
+      BILiteral.t list -> BIType.t -> (BILiteral.t, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool
@@ -47,10 +47,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
      *)
     val find_builtin_op :
       ER.rep builtin_annot ->
-      typ list ->
-      (typ * typ * built_in_executor, scilla_error list) result
+      BIType.t list ->
+      (BIType.t * BIType.t * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
-  val elab_id : typ -> typ list -> (typ, scilla_error list) result
+  val elab_id :
+    BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
 end

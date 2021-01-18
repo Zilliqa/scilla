@@ -107,15 +107,15 @@ transition Bid ()
       bidder = Some {ByStr20} _sender;
       highestBidder := bidder;
       highestBid := _amount;
-      e = {_eventname: "Bid"; code: bid_accepted_code; addr: _sender; amount: _amount};
-      event e
+      ev = {_eventname: "Bid"; code: bid_accepted_code; addr: _sender; amount: _amount};
+      event ev
       | None =>
         (* Process first bid *)
         first_bidder = Some {ByStr20} _sender;
         highestBidder := first_bidder;
         highestBid := _amount;
-        e = {_eventname: "Bid"; code: first_bid_accepted_code; addr: _sender; amount: _amount};
-        event e
+        ev1 = {_eventname: "Bid"; code: first_bid_accepted_code; addr: _sender; amount: _amount};
+        event ev1
       end
     end
   end
@@ -160,8 +160,8 @@ transition AuctionEnd ()
     val = True;
     ended := val;
     hb <- highestBid;
-    e = {_eventname: "Auction ended"; highest_bid: hb};
-    event e;
+    ev = {_eventname: "Auction ended"; highest_bid: hb};
+    event ev;
     msg  = {_tag : ""; _recipient : beneficiary; _amount : hb; code : auction_end_code; highest_bid : hb};
     msgs = one_msg msg;
     send msgs

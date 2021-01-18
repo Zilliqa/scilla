@@ -1,0 +1,10 @@
+scilla_version 0
+
+(* This library is used in import-test-lib3.scilla. *)
+import TestLib7
+
+library TestLib9
+
+let base_value : BaseType =
+  let x = Uint128 0 in
+  BaseConstructor x

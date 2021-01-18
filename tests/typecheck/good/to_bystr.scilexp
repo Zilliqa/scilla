@@ -1,0 +1,33 @@
+let x = 0xfb19 in
+let y = builtin to_bystr x in
+let xx_opt = builtin to_bystr2 y in
+let res1 =
+  match xx_opt with
+  | Some xx => builtin eq x xx
+  | None => False
+  end
+in
+
+let xx_opt = builtin to_bystr3 y in
+let res2 =
+  match xx_opt with
+  | Some xx => False
+  | None => True
+  end
+in
+
+let res3 = andb res1 res2 in
+
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let minus_one = Int32 -1 in
+let big_num = Uint64   9999999999999999999 in
+
+let zero_bystrx = builtin to_bystr4 zero in
+let one_bystrx = builtin to_bystr4 one in
+let big_bystrx = builtin to_bystr8 big_num in
+let big_bystrx_uint = builtin to_uint64 big_bystrx in
+
+let res4 = builtin eq big_bystrx_uint big_num in
+andb res4 res3
+

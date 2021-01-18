@@ -1,0 +1,94 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "4621",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "unlock",
+      "_amount": "0",
+      "_recipient": "0x4ddcf539d13e92d4151b7f5e607d4a09f725c47d",
+      "params": [
+        {
+          "vname": "args",
+          "type": "ByStr",
+          "value":
+            "0x14406d31a9291bdaed4f4bc31b97dc468f88256ded14344cfc3b8635f72f14200aaf2168d9f75df86fd35300000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "vname": "fromContractAddr",
+          "type": "ByStr",
+          "value": "0xb7041bc96b15da728fdfc1c47cbfc687b845adeb"
+        },
+        { "vname": "fromChainId", "type": "Uint64", "value": "3" }
+      ]
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "f_curKeepers",
+      "type": "List (ByStr20)",
+      "value": [
+        "0x09732fac787afb2c5d3abb45f3927da18504f10f",
+        "0x7fbfc361a31bdbc57ccc7917fe5dbdbba744e3a8",
+        "0xa42a4e85034d5bebc225743da400cc4c0e43727a",
+        "0x5d60f39ab5bec41fa712562a5c098d8a128cd406",
+        "0xda9cdffbfccab4181efc77831dc8ce7c442a7c7f",
+        "0xb98d72dc7743ede561f225e1bf258f49aea8f786",
+        "0x02cbc020209ef8835388882e2c4c4e6acef96f28"
+      ]
+    },
+    { "vname": "f_curStartHeight", "type": "Uint32", "value": "0" },
+    {
+      "vname": "f_zilToPolyTxHashMap",
+      "type": "Map (Uint256) (ByStr32)",
+      "value": []
+    },
+    { "vname": "f_zilToPolyTxHashIndex", "type": "Uint256", "value": "0" },
+    {
+      "vname": "f_fromChainTxExist",
+      "type": "Map (Uint64) (Map (ByStr32) (Polynetwork.Unit))",
+      "value": [
+        {
+          "key": "3",
+          "val": [
+            {
+              "key":
+                "0x00ca93f8738111a063d8ab7221f47c70a4cade0ca4a2829df494cd4b5e231bd6",
+              "val": {
+                "constructor": "Polynetwork.Unit",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "VerifyHeaderAndExecuteTxEvent",
+      "params": [
+        { "vname": "fromChainId", "type": "Uint64", "value": "3" },
+        {
+          "vname": "toContractAddr",
+          "type": "ByStr20",
+          "value": "0x4ddcf539d13e92d4151b7f5e607d4a09f725c47d"
+        },
+        {
+          "vname": "crossChainTxHash",
+          "type": "ByStr",
+          "value":
+            "0x00ca93f8738111a063d8ab7221f47c70a4cade0ca4a2829df494cd4b5e231bd6"
+        },
+        {
+          "vname": "fromChainTxHash",
+          "type": "ByStr",
+          "value":
+            "0x4caa77a3d2ddfaa318c550f1f38dd09d610dcff827d1f2ccd4ddcafaa6c553cc"
+        }
+      ]
+    }
+  ]
+}

@@ -17,7 +17,7 @@
 *)
 
 open Core_kernel
-open! Int.Replace_polymorphic_compare
+open ParserUtil
 open Syntax
 open ErrorUtils
 open PrettyPrinters
@@ -33,8 +33,16 @@ open EventInfo
 open TypeInfo
 open Cashflow
 open Accept
+open Stdint
+open Literal
+
+(* Modules use local names, which are then disambiguated *)
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+module Parser = FEParser.Parser
+module ParserSyntax = FEParser.FESyntax
 module PSRep = ParserRep
 module PERep = ParserRep
+module Dis = Disambiguate.ScillaDisambiguation (PSRep) (PERep)
 module Rec = Recursion.ScillaRecursion (PSRep) (PERep)
 module RecSRep = Rec.OutputSRep
 module RecERep = Rec.OutputERep
@@ -53,10 +61,30 @@ module TI = ScillaTypeInfo (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
-  let cmod = FrontEndParser.parse_file syn ctr in
+  let cmod = FEParser.parse_file syn ctr in
   if Result.is_ok cmod then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
   cmod
+
+(* Change local names to global names *)
+let disambiguate_lmod lmod elibs names_and_addresses this_address =
+  let open Dis in
+  let res = disambiguate_lmodule lmod elibs names_and_addresses this_address in
+  if Result.is_ok res then
+    plog
+    @@ sprintf "\n[Disambiguation]:\n lmodule [%s] is successfully checked.\n"
+         (PreDisIdentifier.as_error_string lmod.libs.lname);
+  res
+
+(* Change local names to global names *)
+let disambiguate_cmod cmod elibs names_and_addresses this_address =
+  let open Dis in
+  let res = disambiguate_cmodule cmod elibs names_and_addresses this_address in
+  if Result.is_ok res then
+    plog
+    @@ sprintf "\n[Disambiguation]:\n cmodule [%s] is successfully checked.\n"
+         (PreDisIdentifier.as_error_string cmod.contr.cname);
+  res
 
 (* Check restrictions on inductive datatypes, and on associated recursion principles *)
 let check_recursion cmod elibs =
@@ -65,7 +93,7 @@ let check_recursion cmod elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Recursion Check]:\n module [%s] is successfully checked.\n"
-         (get_id cmod.contr.cname);
+         (RecIdentifier.as_error_string cmod.contr.cname);
   res
 
 let check_recursion_lmod lmod elibs =
@@ -74,7 +102,7 @@ let check_recursion_lmod lmod elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Recursion Check]:\n lmodule [%s] is successfully checked.\n"
-         (get_id lmod.libs.lname);
+         (RecIdentifier.as_error_string lmod.libs.lname);
   res
 
 (* Type check the contract with external libraries *)
@@ -86,7 +114,7 @@ let check_typing cmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog
         @@ sprintf "\n[Type Check]:\n module [%s] is successfully checked.\n"
-             (get_id cmod.contr.cname);
+             (TCIdentifier.as_error_string cmod.contr.cname);
         let open Stdint.Uint64 in
         plog
         @@ sprintf "Gas remaining after typechecking: %s units.\n"
@@ -106,7 +134,7 @@ let check_typing_lmod lmod rprin elibs gas =
     | Ok (_, remaining_gas) ->
         plog
         @@ sprintf "\n[Type Check]:\n lmodule [%s] is successfully checked.\n"
-             (get_id lmod.libs.lname);
+             (TCIdentifier.as_error_string lmod.libs.lname);
         let open Stdint.Uint64 in
         plog
         @@ sprintf "Gas remaining after typechecking: %s units.\n"
@@ -120,7 +148,7 @@ let check_patterns e rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Pattern Check]:\n module [%s] is successfully checked.\n"
-         (get_id e.contr.cname);
+         (PMC.PCIdentifier.as_error_string e.contr.cname);
   res
 
 let check_patterns_lmodule e rlibs elibs =
@@ -135,7 +163,7 @@ let check_sanity m rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
-         (get_id m.contr.cname);
+         (SC.SCIdentifier.as_error_string m.contr.cname);
   res
 
 let check_sanity_lmod m rlibs elibs =
@@ -143,7 +171,7 @@ let check_sanity_lmod m rlibs elibs =
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
-         (get_id m.libs.lname);
+         (SC.SCIdentifier.as_error_string m.libs.lname);
   res
 
 let check_accepts m = AC.contr_sanity m
@@ -158,13 +186,14 @@ let analyze_print_gas cmod typed_elibs =
       plog
       @@ sprintf
            "\n[Gas Use Analysis]:\n module [%s] is successfully analyzed.\n"
-           (get_id cmod.contr.cname);
+           (GUA.GUAIdentifier.as_error_string cmod.contr.cname);
       let _ =
         List.iter
           ~f:(fun (i, pol) ->
             pout
             @@ sprintf "Gas use polynomial for transition %s:\n%s\n\n"
-                 (get_id i) (GUA.sprint_gup pol))
+                 (GUA.GUAIdentifier.as_error_string i)
+                 (GUA.sprint_gup pol))
           cpol
       in
       res
@@ -176,10 +205,12 @@ let check_cashflow typed_cmod token_fields =
         (i, CF.ECFR.money_tag_to_string t))
   in
   let ctr_tags_to_string =
+    let open Datatypes in
+    (* Using as_error_string to ensure that localised names are output *)
     List.map ctr_tags ~f:(fun (adt, ctrs) ->
-        ( adt,
+        ( DTName.as_string adt,
           List.map ctrs ~f:(fun (i, ts) ->
-              ( i,
+              ( DTName.as_string i,
                 List.map ts ~f:(fun t_opt ->
                     Option.value_map t_opt ~default:"_"
                       ~f:CF.ECFR.money_tag_to_string) )) ))
@@ -200,57 +231,95 @@ let wrap_error_with_gas gas res =
 
 let check_lmodule cli =
   let r =
-    let initial_gas = cli.gas_limit in
-    let%bind (lmod : ParsedSyntax.lmodule) =
+    let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
+    let%bind (lmod : ParserSyntax.lmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file ScillaParser.Incremental.lmodule
+      @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
-    let elibs = import_libs lmod.elibs cli.init_file in
+    let this_address_opt, init_address_map =
+      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+        ~default:(None, [])
+    in
+    let this_address =
+      Option.value this_address_opt
+        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    in
+    let elibs = import_libs lmod.elibs init_address_map in
+    let%bind dis_lmod =
+      wrap_error_with_gas initial_gas
+      @@ disambiguate_lmod lmod elibs init_address_map this_address
+    in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
-      wrap_error_with_gas initial_gas @@ check_recursion_lmod lmod elibs
+      wrap_error_with_gas initial_gas @@ check_recursion_lmod dis_lmod elibs
     in
     let%bind (typed_lmod, typed_rlibs, typed_elibs), remaining_gas =
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs
         initial_gas
     in
-    let%bind _ =
-      wrap_error_with_gas remaining_gas
+    let%bind () =
+      Result.ignore_m
+      @@ wrap_error_with_gas remaining_gas
       @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
     in
-    let%bind _ =
-      wrap_error_with_gas remaining_gas
+    let%bind () =
+      Result.ignore_m
+      @@ wrap_error_with_gas remaining_gas
       @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
     in
-    pure ((typed_lmod, typed_rlibs, typed_elibs), remaining_gas)
+    let type_info =
+      if cli.p_type_info then TI.type_info_lmod typed_lmod else []
+    in
+    let remaining_gas' =
+      Gas.finalize_remaining_gas cli.gas_limit remaining_gas
+    in
+    pure ((typed_lmod, typed_rlibs, typed_elibs), type_info, remaining_gas')
   in
   match r with
-  | Error (s, g) -> fatal_error_gas s g
-  | Ok (_, g) ->
-      if not (GlobalConfig.use_json_errors ()) then
-        scilla_warning_to_sstring (get_warnings ())
-        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
-      else
+  | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
+  | Ok (_, type_info, g) ->
+      let json_output =
+        if cli.p_type_info then
+          [ ("type_info", JSON.TypeInfo.type_info_to_json type_info) ]
+        else []
+      in
+      if GlobalConfig.use_json_errors () || not (List.is_empty json_output) then
         let warnings_and_gas_output =
           [
             ("warnings", scilla_warning_to_json (get_warnings ()));
             ("gas_remaining", `String (Stdint.Uint64.to_string g));
           ]
+          @ json_output
         in
         let j = `Assoc warnings_and_gas_output in
-        sprintf "%s\n" (Yojson.pretty_to_string j)
+        sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+      else
+        scilla_warning_to_sstring (get_warnings ())
+        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
 
 (* Check a contract module. *)
 let check_cmodule cli =
   let r =
-    let initial_gas = cli.gas_limit in
-    let%bind (cmod : ParsedSyntax.cmodule) =
+    let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
+    let%bind (cmod : ParserSyntax.cmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file ScillaParser.Incremental.cmodule
+      @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
-    let elibs = import_libs cmod.elibs cli.init_file in
+    let this_address_opt, init_address_map =
+      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+        ~default:(None, [])
+    in
+    let this_address =
+      Option.value this_address_opt
+        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    in
+    let elibs = import_libs cmod.elibs init_address_map in
+    let%bind dis_cmod =
+      wrap_error_with_gas initial_gas
+      @@ disambiguate_cmod cmod elibs init_address_map this_address
+    in
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
-      wrap_error_with_gas initial_gas @@ check_recursion cmod elibs
+      wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
     in
     let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas =
       check_typing recursion_cmod recursion_rec_principles recursion_elibs
@@ -264,14 +333,16 @@ let check_cmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
-    let%bind _ =
+    let%bind () =
       wrap_error_with_gas remaining_gas
       @@ check_sanity typed_cmod typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
     in
-    let%bind _ =
+    let%bind () =
+      Result.ignore_m
+      @@
       if cli.gua_flag then
         wrap_error_with_gas remaining_gas
         @@ analyze_print_gas typed_cmod typed_elibs
@@ -281,10 +352,13 @@ let check_cmodule cli =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
-    pure @@ (cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas)
+    let remaining_gas' =
+      Gas.finalize_remaining_gas cli.gas_limit remaining_gas
+    in
+    pure @@ (dis_cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
   in
   match r with
-  | Error (s, g) -> fatal_error_gas s g
+  | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
       check_version cmod.smver;
       let output =
@@ -335,11 +409,6 @@ let run args ~exe_name =
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
   if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name ();
-
-  (* Testsuite runs this executable with cwd=tests and ends
-       up complaining about missing _build directory for logger.
-       So disable the logger. *)
-  set_debug_level Debug_None;
 
   let open FilePath in
   let open StdlibTracker in

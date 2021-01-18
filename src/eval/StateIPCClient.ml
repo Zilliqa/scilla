@@ -16,10 +16,11 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 open Core
-open! Int.Replace_polymorphic_compare
 open Result.Let_syntax
+open Scilla_base
 open MonadUtil
-open Syntax
+open Literal
+open ParserUtil
 open JSON
 open TypeUtil
 open StateIPCIdl
@@ -30,6 +31,11 @@ module M = Idl.IdM
 module IDL = Idl.Make (M)
 
 module IPCClient = IPCIdl (IDL.GenClient ())
+
+module IPCCLiteral = GlobalLiteral
+module IPCCType = IPCCLiteral.LType
+module IPCCIdentifier = IPCCType.TIdentifier
+module FEParser = FrontEndParser.ScillaFrontEndParser (IPCCLiteral)
 
 (* Translate JRPC result to our result. *)
 let translate_res res =
@@ -49,7 +55,7 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0
+    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
   in
   Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
   let ic, oc =
@@ -79,6 +85,7 @@ let deserialize_literal s tp =
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
 let rec serialize_field value =
+  let open IPCCLiteral in
   match value with
   | Map (_, mlit) ->
       let mpb =
@@ -108,13 +115,13 @@ let rec deserialize_value value tp =
               List.sort m.m ~compare:(fun (k1, _) (k2, _) ->
                   String.compare k1 k2)
             in
-            iterM m ~f:(fun (k, v) ->
+            forallM m ~f:(fun (k, v) ->
                 let%bind k' = deserialize_literal k kt in
                 let%bind v' = deserialize_value v vt in
                 Caml.Hashtbl.add mlit k' v';
                 pure ())
           in
-          pure (Map ((kt, vt), mlit))
+          pure (IPCCLiteral.Map ((kt, vt), mlit))
       | _ ->
           fail0
             "StateIPCClient: Type mismatch deserializing value. Unexpected \
@@ -146,7 +153,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -167,12 +174,44 @@ let fetch ~socket_addr ~fname ~keys ~tp =
       pure @@ Some res''
   | false, _ -> pure None
 
+(* Fetch from another contract's field. "keys" is empty when fetching non-map fields
+ * or an entire Map field. If a map key is not found, then None is returned, otherwise
+ * (Some value) is returned. *)
+let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
+  let open Ipcmessage_types in
+  let q =
+    {
+      name = IPCCIdentifier.as_string fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = List.map keys ~f:serialize_literal;
+      ignoreval = false;
+    }
+  in
+  let%bind q' = encode_serialized_query q in
+  let%bind res =
+    let thunk () =
+      translate_res
+      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  match res with
+  | true, res', field_typ ->
+      let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
+      let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+      let%bind res'' = deserialize_value decoded_pb tp' in
+      let%bind stored_typ = FEParser.parse_type field_typ in
+      pure @@ (Some res'', stored_typ)
+  | false, _, field_typ ->
+      let%bind stored_typ = FEParser.parse_type field_typ in
+      pure (None, stored_typ)
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -180,7 +219,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   in
   let%bind q' = encode_serialized_query q in
   let%bind value' = encode_serialized_value (serialize_field value) in
-  let%bind _ =
+  let%bind () =
     let thunk () =
       translate_res
       @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value'
@@ -194,7 +233,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;
@@ -209,12 +248,33 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   in
   pure @@ fst res
 
+(* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
+let external_is_member ~socket_addr ~caddr ~fname ~keys ~tp =
+  let open Ipcmessage_types in
+  let q =
+    {
+      name = IPCCIdentifier.as_string fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = List.map keys ~f:serialize_literal;
+      ignoreval = true;
+    }
+  in
+  let%bind q' = encode_serialized_query q in
+  let%bind found, _, field_type =
+    let thunk () =
+      translate_res
+      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  pure @@ (found, field_type)
+
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~socket_addr ~fname ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
-      name = get_id fname;
+      name = IPCCIdentifier.as_string fname;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;
@@ -223,7 +283,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let%bind q' = encode_serialized_query q in
   let dummy_val = "" in
   (* This will be ignored by the blockchain. *)
-  let%bind _ =
+  let%bind () =
     let thunk () =
       translate_res
       @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val

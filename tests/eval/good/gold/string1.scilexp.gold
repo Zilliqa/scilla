@@ -6,3 +6,4 @@
   [s -> (String "abc")],
   [k2 -> (Int32 2)],
   [k1 -> (Int32 1)] }
+Gas remaining: 4001223

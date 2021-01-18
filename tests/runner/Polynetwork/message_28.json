@@ -1,0 +1,212 @@
+{
+    "_tag": "verifyHeaderAndExecuteTx",
+    "_amount": "0",
+    "_sender" : "0x12345678901234567890123456789012345678ab",
+    "_origin" : "0x12345678901234567890123456789012345678ab",
+    "params": [
+        {
+            "vname" : "proof",
+            "type" : "Polynetwork.Proof",
+            "value" : {
+                "constructor" : "Polynetwork.Proof",
+                "argtypes" : [],
+                "arguments" : [
+                    "0x20e91d858cba58b3dff91bf4b3adcacabf899e106ed6ad86a16a4a29e7817e307c080000000000000020b697330bd7a5850235f97d1bcd1c37739f4bc79a4f8e635dcb46ba45bc600ef4012f14f71b55ef55cedc91fd007f7a9ba386ec978f3aa80200000000000000144ddcf539d13e92d4151b7f5e607d4a09f725c47d06756e6c6f636b4a14000000000000000000000000000000000000000014344cfc3b8635f72f14200aaf2168d9f75df86fd36226100000000000000000000000000000000000000000000000000000000000",
+                    []
+                ]
+            }
+        },
+        {
+            "vname" : "rawHeader",
+            "type" : "ByStr",
+            "value" : "0x000000009b91561700000000285c4b50cb092422c306eee00b18730bd1e05f0c144bc04d0adf1f44e0aef6c70000000000000000000000000000000000000000000000000000000000000000829ba7727b3bb7d42eff74342bafb37362b4898169750e8b2b8af2267c863ebf6fb8849a086fbed1ccd873b63642cce60ac54875cc3c1f054c1866e0bca5136dc90a185f5e4100007de0abdc2a5b63d5fd0c017b226c6561646572223a312c227672665f76616c7565223a224249703243555764736c424c6b34754979584174417949682f74685a6b5072445539566279697358754c574d6e634a775a49515161434f4b74724474793437454d3541554e4a7542523133546b6857616e56422b4b7a493d222c227672665f70726f6f66223a224a3830534c2b6c62433537306f64426374486f477a45504631516d506f7a4f4332323132553563796b4949346a6b77374d2f74746f317537386e4634347256433443676d344f786f71667943656b3568487132576a413d3d222c226c6173745f636f6e6669675f626c6f636b5f6e756d223a302c226e65775f636861696e5f636f6e666967223a6e756c6c7d0000000000000000000000000000000000000000"
+        },
+        {
+            "vname" : "headerProof",
+            "type" : "Polynetwork.Proof",
+            "value" : {
+                "constructor" : "Polynetwork.Proof",
+                "argtypes" : [],
+                "arguments" : [
+                    "0xc73c8b3c730086cfae83d735d2c405d6f5a00c3f1ff21ce91d223038d3c1ab4d",
+                    [
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0x0213149490394c2a8701af2dba1a303df05148a14092f6e59febca31eee4da66"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0x79807fe94ecb6f6d1b0b65be5f45159925a905bab8040af476c372ea0583dbba"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0xb41a753c36f64bbe6d6fcd6c2ba40dc09c4c25b6b877bd363696fe1f62cbf6f7"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0x059195b0df4add4239eaef270bc187217dc872d11723d4fce02a3c2510461e59"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0xf3c3d66c4611791ff1ebe8a2ef43f1cbf40876b637522c60a81f511445f8dc17"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x1f86c65842afb760457d5ce8ad38821d2110331a7bbae87fe131a5e610f3a146"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0x4add0a7a5c74a56ce64a3555b4a73f367c414c80ecc15672dd86f7bff8bf65bc"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x1daedaae87fc34d28ec3116dc04386c7c650f5db9e3a9a853c6e518821069bda"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0x1c6cf42ace3bf6b1a7e60ae29dc10aad67cdf672cdb083c601ee3996576cc2e4"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0xa1a8ab20062ebdcfa7a6e8f0c6c8b3de823920abd351eedc33d043de1c144988"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x71c734d6d77806f9475b69c8426bc5c09ce54c0b4ccb13df4315c62899e99262"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0xf459d25426b21e5f2f6bdabf5e6a79f36002114b1ecc5cfa30a18cf3e4baf98d"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0xad42157822143a7be209b907901a31863d1b35ad9118c4c45d476e405872fb66"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x7badaf21d00ca7e2a73c64dd7738ddcb6a881dcfb88ef0c171e33bfec529fe0a"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x00",
+                                "0xe0a6008bab76556dbf47269adc41d6820c6a55982e9362257bfdf02a79ff5b8d"
+                            ]
+                        },
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x061cd147d032d11b1b7b6b5edc389f56d33f939e51be3c7949b357aac4e120df"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "vname" : "curRawHeader",
+            "type" : "ByStr",
+            "value" : "0x000000009b91561700000000f2e3823838bcdfafe08c6e9ff2cd1f86ae65dfc1052d15c9441aa6c07097015f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000051d45928d93800ffebc80373df7dbe735a2e9c5998b883e69494921fedbbe858057f1a5f5a8e0000216854be71737efbfd10017b226c6561646572223a362c227672665f76616c7565223a224244592f6c4875783448587341376f394962357877634a4d39727466656a454c786d6637766a48583574507a64724d356a47304a305265756d4338632f6e64725131306b4751622f50537a3255667a6267723430666a413d222c227672665f70726f6f66223a2242437877375a6d49446243476a3839576e715744564f6b714f7239645574344f4f2f777176366d4c3165656377474d542b3078664476544642614f3951534451437879725551344c316835392b3130486671386176673d3d222c226c6173745f636f6e6669675f626c6f636b5f6e756d223a33363433322c226e65775f636861696e5f636f6e666967223a6e756c6c7d0000000000000000000000000000000000000000"
+        },
+        {
+            "vname" : "headerSig",
+            "type" : "List Polynetwork.Signature",
+            "value" : [
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x6d905d095fc1b47eb30b8f176c94b01b64502790f3c20db2a5b7e555791bdbf8458a24c73c8f690ad8481e3754c3297991f9f4148d03316e2e5a6c6af9e7bbc900"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0xa81911a6eb529979ee021124c242a828657865fc7a899ab55fb7d2a1623341a67ae83c90a40bec8bf54fa3c5caad445062568d3c4c4099e84ad6c774e70d7d7d00"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x0b5d0a2ebc3685a6deeb96cfabf71e4a9d05606a5918e4765be6cc4cad38c3954e248d97b2fa378b954f323335c93298913c61048cf0b396467df1c6b6bbba4d01"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0xcd68657ad3c6d5a979093ff1345eefb269e86498b519418fa0e5e756ce01a9b939d46b405d2a167883bda0a40023cce39659890c97a59e3f772b6fc3c2e0322100"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x4d425ad3bfef2de8b1d523cbfd754d4ea2c8e8fa5f6904b0389f4e5d62039083454e2a24da6e1c90334fd760eaa1921bdac10158758f682cb401e1df16ee0ec801"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0xb8e8eb23200a1571c6ad516528ce3f1280506eed9f1e380b9a5e770f1e89d8414182c7b83dc8f230d288c4745d0a8102cfc015d422af77d139bc606054363ecf01"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x38fc63be97c354539b517bd8abd97d86fa3484894663aa7dcf578cfad7368df577206e28daf800cba179314f34f1a6dec569ff12e15c22b598028cce64bfa54601"]
+                }
+            ]
+        }
+    ]
+}

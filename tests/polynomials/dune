@@ -1,4 +1,5 @@
 (executable
+ (modes byte native)
  (name testsuite_polynomials)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))

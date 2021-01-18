@@ -1,0 +1,674 @@
+(* ******************************************************************************** *)
+(*   This file is part of scilla.                                                   *)
+(*                                                                                  *)
+(*   Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.                        *)
+(*                                                                                  *)
+(*   scilla is free software: you can redistribute it and/or modify it under the    *)
+(*   terms of the GNU General Public License as published by the Free Software      *)
+(*   Foundation, either version 3 of the License, or (at your option) any later     *)
+(*   version.                                                                       *)
+(*                                                                                  *)
+(*   scilla is distributed in the hope that it will be useful, but WITHOUT ANY      *)
+(*   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR  *)
+(*   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.    *)
+(*                                                                                  *)
+(*   You should have received a copy of the GNU General Public License along with   *)
+(*   scilla.  If not, see <http://www.gnu.org/licenses/>.                           *)
+(* ******************************************************************************** *)
+scilla_version 0
+
+import Conversions ListUtils BoolUtils
+
+library Polynetwork
+
+type Header =
+  | Header of
+    Uint32                        (* version *)
+    Uint64                        (* chainID *)
+    ByStr32                       (* prevBlockHash *)
+    ByStr32                       (* transactionRoot *)
+    ByStr32                       (* crossStatesRoot *)
+    ByStr32                       (* blockRoot *)
+    Uint32                        (* timestamp *)
+    Uint32                        (* height *)
+    Uint64                        (* consensusData *)
+    ByStr                         (* consensusPayload *)
+    ByStr20                       (* nextBookkeeper *)
+
+type TxParam =
+  | TxParam of
+    ByStr                       (* txHash *)
+    ByStr                       (* crossChainId *)
+    ByStr                       (* fromContract *)
+    Uint64                      (* toChainId *)
+    ByStr                       (* toContract *)
+    ByStr                       (* method *)
+    ByStr                       (* args *)
+
+type ToMerkleValue =
+  | ToMerkleValue of
+    ByStr                       (* txHash *)
+    Uint64                      (* fromChainID *)
+    TxParam                     (* makeTxParam *)
+
+type Pubkey = | Pubkey of ByStr67
+let pubkey_length = Uint32 67
+
+type Signature = | Signature of ByStr65
+let signature_length = Uint32 65
+
+type Unit = | Unit
+let unit = Unit
+let zero_uint32 = Uint32 0
+
+type Proof =
+  | Proof of ByStr (List (Pair ByStr1 ByStr32))
+
+let little_endian = LittleEndian
+let extract_uint32_le = extract_uint32 little_endian
+let extract_uint64_le = extract_uint64 little_endian
+let extract_uint128_le = extract_uint128 little_endian
+let extract_uint256_le = extract_uint256 little_endian
+
+let append_uint32_le = append_uint32 little_endian
+let append_uint64_le = append_uint64 little_endian
+let append_uint128_le = append_uint128 little_endian
+let append_uint256_le = append_uint256 little_endian
+
+(* Raise an exception and return a default value. *)
+let raise_exception =
+  tfun 'A =>
+  fun (default_val : 'A) =>
+  let ignore = builtin div zero_uint32 zero_uint32 in
+  default_val
+
+let some_exn =
+  tfun 'A =>
+  fun (option_val : Option 'A) =>
+  fun (default_val : 'A) =>
+    match option_val with
+    | Some val => val
+    | None =>
+      let exceptioner = @raise_exception 'A in
+      let ignore = exceptioner default_val in
+      default_val
+    end
+
+(* Return (as Uint64) the next VarUint at pos in bystr, and the next position. *)
+(* ZeroCopySource.sol : NextVarUint *)
+let next_var_uint : ByStr -> Uint32 -> Option (Pair Uint64 Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let first_byte_nextpos = extract_bystr1 bs pos in
+    match first_byte_nextpos with
+    | Some (Pair first_byte nextpos) =>
+      let bit16_marker = 0xfd in
+      let is_16bit = builtin eq first_byte bit16_marker in
+      match is_16bit with
+      | True =>
+        (* Extract the next 16bits and convert to an integer. *)
+        let b16_nextpos = extract_bystr2 bs nextpos in
+        match b16_nextpos with
+        | Some (Pair b16 nextpos) =>
+          let b16_little = builtin strrev b16 in
+          let b16_u32 = builtin to_uint64 b16_little in
+          let res = Pair {Uint64 Uint32} b16_u32 nextpos in
+          Some {(Pair Uint64 Uint32)} res
+        | None =>
+          None {(Pair Uint64 Uint32)}
+        end
+      | False =>
+        (* It's either 32bits or 64bits or 8bits. *)
+        let b32_marker = 0xfe in
+        let is_32b = builtin eq first_byte b32_marker in
+        match is_32b with
+        | True =>
+          (* This is a 32b integer *)
+          let uint32val_nextpos = extract_uint32_le bs nextpos in
+          match uint32val_nextpos with
+          | Some (Pair uint32val nextpos) =>
+            (* Upcast to a Uint64 value. *)
+            let uint64val_opt = builtin to_uint64 uint32val in
+            match uint64val_opt with
+            | Some uint64val =>
+              let res = Pair {Uint64 Uint32} uint64val nextpos in
+              Some {(Pair Uint64 Uint32)} res
+            | None => None {(Pair Uint64 Uint32)}
+            end
+          | None => None {(Pair Uint64 Uint32)}
+          end
+        | False =>
+          (* 64b or 8bits. *)
+          let b64_marker = 0xff in
+          let is_64b = builtin eq first_byte b64_marker in
+          match is_64b with
+          | True =>
+            extract_uint64_le bs nextpos
+          | False =>
+            let u8_val = builtin to_uint64 first_byte in
+            let res = Pair {Uint64 Uint32} u8_val nextpos in
+            Some {(Pair Uint64 Uint32)} res
+          end
+        end
+      end
+    | None =>
+      None {(Pair Uint64 Uint32)}
+    end
+
+(* Serialize and append to given byte string, a Uint64 as a VarInt value. *)
+let append_var_uint : ByStr -> Uint64 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint64) =>
+    let uibystrx = builtin to_bystr8 ui in
+    let uibystr = builtin to_bystr uibystrx in
+    let uint8_limit = Uint64 253 in (* 0xfd *)
+    let uint16_limit = Uint64 65536 in (* uint16_max + 1 *)
+    let uint32_limit =  Uint64 4294967296 in (* Uint32_max + 1 *)
+    let fits_in_byte1 = builtin lt ui uint8_limit in
+    let res =
+      match fits_in_byte1 with
+      | True =>
+        (* ui < 0xfd. Write just a byte and be done. *)
+        let pos = Uint32 7 in
+        let len = Uint32 1 in
+        (* Extract out the last byte; our integers are big-endian. *)
+        builtin substr uibystr pos len
+      | False =>
+        (* Does the value fit in Uint16? ui <= 0xffff *)
+        let fits_in_byte2 = builtin lt ui uint16_limit in
+        match fits_in_byte2 with
+        | True =>
+          let markerx = 0xfd in
+          let marker = builtin to_bystr markerx in
+          (* Extract out the last two bytes; our integers are big-endian. *)
+          let pos = Uint32 6 in
+          let len = Uint32 2 in
+          let ui16_bigendian = builtin substr uibystr pos len in
+          let ui16_littleendian = builtin strrev ui16_bigendian in
+          builtin concat marker ui16_littleendian
+        | False =>
+          (* Does the value fit in Uint32? ui <= 0xffffffff *)
+          let fits_in_byte4 = builtin lt ui uint32_limit in
+          match fits_in_byte4 with
+          | True =>
+            let markerx = 0xfe in
+            let marker = builtin to_bystr markerx in
+            (* Extract out the last four bytes; our integers are big-endian. *)
+            let pos = Uint32 4 in
+            let len = Uint32 4 in
+            let ui32_bigendian = builtin substr uibystr pos len in
+            let ui32_littleendian = builtin strrev ui32_bigendian in
+            builtin concat marker ui32_littleendian
+          | False =>
+            let markerx = 0xff in
+            let marker = builtin to_bystr markerx in
+            let ui64_littleendian = builtin strrev uibystr in
+            builtin concat marker ui64_littleendian
+          end
+        end
+      end
+    in
+    builtin concat bs res
+
+(* Extract a Bystr value start at pos. See ZeroCopySource.sol:NextVarBytes. *)
+let extract_bystr : ByStr -> Uint32 -> Option (Pair ByStr Uint32) =
+  fun (bs : ByStr) =>
+  fun (pos : Uint32) =>
+    let bystr_len_64_opt = next_var_uint bs pos in
+    match bystr_len_64_opt with
+    | Some (Pair bystr_len_64 nextpos) =>
+      let bystr_len_32_opt = builtin to_uint32 bystr_len_64 in
+      match bystr_len_32_opt with
+      | Some bystr_len_32 =>
+        let some = fun (a : ByStr) => Some {ByStr} a in
+        let unit = fun (a : ByStr) => a in
+        let extractor = @extract_scillaval ByStr ByStr in
+        extractor some unit bs nextpos bystr_len_32
+      | None => None {(Pair ByStr Uint32)}
+      end
+    | None => None {(Pair ByStr Uint32)}
+    end
+
+(* Append to first byte string, serialized form of the second byte string. *)
+(* See ZeroCopySink.WriteVarBytes. *)
+let append_varbytes : ByStr -> ByStr -> ByStr =
+  fun (bs : ByStr) =>
+  fun (varby : ByStr) =>
+    let sommer = @some_exn Uint64 in
+    let exnobj = Uint64 0 in
+    let len_32b = builtin strlen varby in
+    let len_64b_opt = builtin to_uint64 len_32b in
+    let len = sommer len_64b_opt exnobj in
+    let varint_bs = append_var_uint bs len in
+    builtin concat varint_bs varby
+
+(* Downcast Uint32 to Uint16, serialize it and append to given byte string *)
+let append_uint16 : ByStr -> Uint32 -> ByStr =
+  fun (bs : ByStr) =>
+  fun (ui : Uint32) =>
+    let uibx = builtin to_bystr4 ui in
+    let uib = builtin to_bystr uibx in
+    let pos = Uint32 2 in
+    let len = Uint32 2 in
+    let uib_sub2 = builtin substr uib pos len in
+    let uib_sub2_littleendian = builtin strrev uib_sub2 in
+    builtin concat bs uib_sub2_littleendian
+
+(* Serialize TxParam and append to given byte string. *)
+let append_TxParam : ByStr -> TxParam -> ByStr =
+  fun (bs : ByStr) =>
+  fun (txp : TxParam) =>
+    match txp with
+    | TxParam txHash crossChainId fromContract toChainId toContract method args =>
+      let t1 = append_varbytes bs txHash in
+      let t2 = append_varbytes t1 crossChainId in
+      let t3 = append_varbytes t2 fromContract in
+      let t4 = builtin to_bystr8 toChainId in
+      let t5 = builtin to_bystr t4 in
+      let t6 = builtin concat t3 t5 in
+      let t7 = append_varbytes t6 toContract in
+      let t8 = append_varbytes t7 method in
+      let t9 = append_varbytes t8 args in
+      t9
+    end
+
+(* Deserialize a byte stream into a Header, starting at nextpos. *)
+let deserialize_Header : ByStr -> Uint32 -> Option (Pair Header Uint32) =
+  fun (header : ByStr) =>
+  fun (nextpos : Uint32) =>
+    let version_nextpos = extract_uint32_le header nextpos in
+    match version_nextpos with
+    | Some (Pair version nextpos) =>
+      let chainid_nextpos = extract_uint64_le header nextpos in
+      match chainid_nextpos with
+      | Some (Pair chainid nextpos) =>
+        let prevBlockHash_nextpos = extract_bystr32 header nextpos in
+        match prevBlockHash_nextpos with
+        | Some (Pair prevBlockHash nextpos) =>
+          let txnroot_nextpos = extract_bystr32 header nextpos in
+          match txnroot_nextpos with
+          | Some (Pair txnroot nextpos) =>
+            let crossStatesRoot_nextpos = extract_bystr32 header nextpos in
+            match crossStatesRoot_nextpos with
+            | Some (Pair crossStatesRoot nextpos) =>
+              let blockRoot_nextpos = extract_bystr32 header nextpos in
+              match blockRoot_nextpos with
+              | Some (Pair blockRoot nextpos) =>
+                let timestamp_nextpos = extract_uint32_le header nextpos in
+                match timestamp_nextpos with
+                | Some (Pair timestamp nextpos) =>
+                  let height_nextpos = extract_uint32_le header nextpos in
+                  match height_nextpos with
+                  | Some (Pair height nextpos) =>
+                    let consensusData_nextpos = extract_uint64_le header nextpos in
+                    match consensusData_nextpos with
+                    | Some (Pair consensusData nextpos) =>
+                      let consensusPayload_nextpos = extract_bystr header nextpos in
+                      match consensusPayload_nextpos with
+                      | Some (Pair consensusPayload nextpos) =>
+                        let nextBookkeeper_nextpos = extract_bystr20 header nextpos in
+                        match nextBookkeeper_nextpos with
+                        | Some (Pair nextBookkeeper nextpos) =>
+                          let header =
+                            Header version chainid prevBlockHash txnroot crossStatesRoot
+                            blockRoot timestamp height consensusData consensusPayload
+                            nextBookkeeper
+                          in
+                          let res = Pair {Header Uint32} header nextpos in
+                          Some {(Pair Header Uint32)} res
+                        | None => None {(Pair Header Uint32)}
+                        end
+                      | None => None {(Pair Header Uint32)}
+                      end
+                    | None => None {(Pair Header Uint32)}
+                    end
+                  | None => None {(Pair Header Uint32)}
+                  end
+                | None => None {(Pair Header Uint32)}
+                end
+              | None => None {(Pair Header Uint32)}
+              end
+            | None => None {(Pair Header Uint32)}
+            end
+          | None => None {(Pair Header Uint32)}
+          end
+        | None => None {(Pair Header Uint32)}
+        end
+      | None => None {(Pair Header Uint32)}
+      end
+    | None => None {(Pair Header Uint32)}
+    end
+
+(* Deserialize a byte stream into a TxParam, starting at nextpos. *)
+let deserialize_TxParam : ByStr -> Uint32 -> Option (Pair TxParam Uint32) =
+  fun (txparam : ByStr) =>
+  fun (nextpos : Uint32) =>
+    let txhash_nextpos = extract_bystr txparam nextpos in
+    match txhash_nextpos with
+    | Some (Pair txhash nextpos) =>
+      let crossChainId_nextpos = extract_bystr txparam nextpos in
+      match crossChainId_nextpos with
+      | Some (Pair crossChainId nextpos) =>
+        let fromContract_nextpos = extract_bystr txparam nextpos in
+        match fromContract_nextpos with
+        | Some (Pair fromContract nextpos) =>
+          let toChainId_nextpos = extract_uint64_le txparam nextpos in
+          match toChainId_nextpos with
+          | Some (Pair toChainId nextpos) =>
+            let toContract_nextpos = extract_bystr txparam nextpos in
+            match toContract_nextpos with
+            | Some (Pair toContract nextpos) =>
+              let method_nextpos = extract_bystr txparam nextpos in
+              match method_nextpos with
+              | Some (Pair method nextpos) =>
+                let args_nextpos = extract_bystr txparam nextpos in
+                match args_nextpos with
+                | Some (Pair args nextpos) =>
+                  let txparam =
+                    TxParam txhash crossChainId fromContract
+                    toChainId toContract method args
+                  in
+                  let res = Pair {TxParam Uint32} txparam nextpos in
+                  Some {(Pair TxParam Uint32)} res
+                | None => None {(Pair TxParam Uint32)}
+                end
+              | None => None {(Pair TxParam Uint32)}
+              end
+            | None => None {(Pair TxParam Uint32)}
+            end
+          | None => None {(Pair TxParam Uint32)}
+          end
+        | None => None {(Pair TxParam Uint32)}
+        end
+      | None => None {(Pair TxParam Uint32)}
+      end
+    | None => None {(Pair TxParam Uint32)}
+    end
+
+(* Deserialize a byte stream into a ToMerkleValue, starting at nextpos. *)
+let deserialize_ToMerkleValue : ByStr -> Uint32 -> Option (Pair ToMerkleValue Uint32) =
+  fun (tomerklevalue : ByStr) =>
+  fun (nextpos : Uint32) =>
+    let txhash_nextpos = extract_bystr tomerklevalue nextpos in
+    match txhash_nextpos with
+    | Some (Pair txhash nextpos) =>
+      let fromChainId_nextpos = extract_uint64_le tomerklevalue nextpos in
+      match fromChainId_nextpos with
+      | Some (Pair fromChainId nextpos) =>
+        let txparam = deserialize_TxParam tomerklevalue nextpos in
+        match txparam with
+        | Some (Pair txparam nextpos) =>
+          let tmkv = ToMerkleValue txhash fromChainId txparam in
+          let res = Pair {ToMerkleValue Uint32} tmkv nextpos in
+          Some {(Pair ToMerkleValue Uint32)} res
+        | None => None {(Pair ToMerkleValue Uint32)}
+        end
+      | None => None {(Pair ToMerkleValue Uint32)}
+      end
+    | None => None {(Pair ToMerkleValue Uint32)}
+    end
+
+(* See Utils.col:compressMCPubKey *)
+let compress_pubkey : Pubkey -> ByStr35 =
+  fun (pk : Pubkey) =>
+    let exceptioner = @raise_exception ByStr35 in
+    let default_ret = 0x0000000000000000000000000000000000000000000000000000000000000000000000 in
+    match pk with
+    | Pubkey pk =>
+      let pk = builtin to_bystr pk in
+      let pos = Uint32 66 in
+      let one = Uint32 1 in
+      let last_byte = builtin substr pk pos one in
+      let last_bytex_opt = builtin to_bystr1 last_byte in
+      match last_bytex_opt with
+      | Some last_bytex =>
+        let last_byte_uint = builtin to_uint32 last_bytex in
+        let two = Uint32 2 in
+        let is_even = let rem = builtin rem last_byte_uint two in builtin eq rem zero_uint32 in
+        let flagx =
+          match is_even with
+          | True => 0x02
+          | False => 0x03
+          end
+        in
+        let flag = builtin to_bystr flagx in
+        let pos = Uint32 0 in
+        let len = Uint32 2 in   (* bytes 0 and 1. *)
+        let first = builtin substr pk pos len in
+        let pos = Uint32 3 in   (* bytes starting from 3 *)
+        let len = Uint32 32 in  (* 35 - 3 bytes *)
+        let third = builtin substr pk pos len in
+        let partial_res = builtin concat first flag in
+        let res = builtin concat partial_res third in
+        let resx_opt = builtin to_bystr35 res in
+        match resx_opt with
+        | Some resx => resx
+        | None => exceptioner default_ret
+        end
+      | None =>
+        exceptioner default_ret
+      end
+    end
+
+(*  @notice              calculate next book keeper according to public key list
+ *  @param _m            minimum signature number
+ *  @param _pubKeyList   consensus node public key list
+ *  @return              two element: next book keeper, consensus node signer addresses
+ *  See EthCrossChainUtils.sol:_getBookKeeper()
+ *)
+let getBookKeeper : Uint32 -> List Pubkey -> Pair ByStr20 (List ByStr20) =
+  fun (m : Uint32) =>
+  fun (pubKeys : List Pubkey) =>
+    let lengther = @list_length Pubkey in
+    let mapper = @list_map Pubkey ByStr20 in
+    let folder = @list_foldl Pubkey ByStr in
+
+    let keyLen = lengther pubKeys in
+
+    let mapf =
+      fun (pk : Pubkey) =>
+        let sommer = @some_exn ByStr20 in
+        let exnobj = 0x0000000000000000000000000000000000000000 in
+        match pk with
+        | Pubkey pubKeyX =>
+          let pubKey = builtin to_bystr pubKeyX in
+          let pos = Uint32 3 in
+          let len = Uint32 64 in
+          let slice = builtin substr pubKey pos len in
+          let hashX = builtin keccak256hash slice in
+          (* Pick the lower 20 bytes *)
+          let hash = builtin to_bystr hashX in
+          let pos = Uint32 12 in
+          let len = Uint32 20 in
+          let keeperX = builtin substr hash pos len in
+          let keeper_opt = builtin to_bystr20 keeperX in
+          sommer keeper_opt exnobj
+        end
+    in
+    let keepers = mapper mapf pubKeys in
+
+    let foldf =
+      fun (acc : ByStr) =>
+      fun (pk : Pubkey) =>
+        let compressed_pkx = compress_pubkey pk in
+        let compressed_pk = builtin to_bystr compressed_pkx in
+        append_varbytes acc compressed_pk
+    in
+    let empty_bystrx = 0x in
+    let empty_bystr = builtin to_bystr empty_bystrx in
+    let initv = append_uint16 empty_bystr keyLen in
+    let buff = folder foldf initv pubKeys in
+    let buff = append_uint16 buff m in
+    let buff_sha256 = builtin sha256hash buff in
+    let nextBookKeeper = builtin ripemd160hash buff_sha256 in
+
+    Pair {ByStr20 (List ByStr20)} nextBookKeeper keepers
+
+let lengther_pubkey = @list_length Pubkey
+let lengther_address = @list_length ByStr20
+
+let compute_m : Uint32 -> Uint32 =
+  fun (n : Uint32) =>
+    let one = Uint32 1 in
+    let t1 = builtin sub n one in
+    let three = Uint32 3 in
+    let t2 = builtin div t1 three in
+    let m = builtin sub n t2 in
+    m
+
+(* See EthCrossChainUtils.sol:verifyPubKey *)
+let verifyPubkey : List Pubkey -> Pair ByStr20 (List ByStr20) =
+  fun (pubKeys : List Pubkey) =>
+    let n = lengther_pubkey pubKeys in
+    let m = compute_m n in
+    getBookKeeper m pubKeys
+
+(* Mimics ethereum's recovery of address from message and a signature. *)
+(* https://ethereum.stackexchange.com/questions/13778/get-public-key-of-any-ethereum-account *)
+let ecrecover : ByStr -> ByStr64 -> Uint32 -> ByStr20 =
+  fun (msg : ByStr) =>
+  fun (sig : ByStr64) =>
+  fun (recid : Uint32) =>
+    let pk = builtin ecdsa_recover_pk msg sig recid in
+    let pos = Uint32 1 in
+    let len = Uint32 64 in
+    let pk_bs = builtin to_bystr pk in
+    let pk_ = builtin substr pk_bs pos len in
+    let pkHash = builtin keccak256hash pk_ in
+    let pkHash_bs = builtin to_bystr pkHash in
+    let pos = Uint32 12 in
+    let len = Uint32 20 in
+    let addr_bs = builtin substr pkHash_bs pos len in
+    let addr_opt = builtin to_bystr20 addr_bs in
+    let sommer = @some_exn ByStr20 in
+    let exnobj = 0x0000000000000000000000000000000000000000 in
+    sommer addr_opt exnobj
+
+(* See EthCrossChainUtils.sol:verifySig *)
+let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
+  fun (rawHeader : ByStr) =>
+  fun (siglist : List Signature) =>
+  fun (keepers : List ByStr20) =>
+  fun ( m : Uint32) =>
+    let header_hash =
+      fun (header : ByStr) =>
+        let h1 = builtin sha256hash header in
+        let h2 = builtin sha256hash h1 in
+        builtin to_bystr h2
+    in
+    let hashedHeader = header_hash rawHeader in
+    let mapf =
+      fun (s : Signature) =>
+        match s with
+        | Signature rs_v =>
+          let rs_v = builtin to_bystr rs_v in
+          let pos = Uint32 64 in
+          let len = Uint32 1 in
+          let v_bs = builtin substr rs_v pos len in
+          let v_bsx_opt = builtin to_bystr1 v_bs in
+          let exnobj_bystr1 = 0x00 in
+          let sommer_bystr1 = @some_exn ByStr1 in
+          let v_bsx = sommer_bystr1 v_bsx_opt exnobj_bystr1 in
+          let v = builtin to_uint32 v_bsx in
+          let pos = Uint32 0 in
+          let len = Uint32 64 in
+          let rs_bs = builtin substr rs_v pos len in
+          let rs_bs64_opt = builtin to_bystr64 rs_bs in
+          let exnobj_bystr64 = 0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 in
+          let sommer_bystr64 = @some_exn ByStr64 in
+          let rs = sommer_bystr64 rs_bs64_opt exnobj_bystr64 in
+          ecrecover hashedHeader rs v
+        end
+    in
+    let mapper = @list_map Signature ByStr20 in
+    let signers = mapper mapf siglist in
+    (* Now check that at least "m" signers are in keepers list. *)
+    let eqquer = fun (a : ByStr20) => fun (b : ByStr20) => builtin eq a b in
+    let memmer = @list_mem ByStr20 in
+    let folder = @list_foldl ByStr20 Uint32 in
+    let foldf =
+      fun (n : Uint32) =>
+      fun (s : ByStr20) =>
+        let is_s_in_keepers = memmer eqquer s keepers in
+        match is_s_in_keepers with
+        | True =>
+          let one = Uint32 1 in
+          builtin add n one
+        | False =>
+          n
+        end
+     in
+     let n = folder foldf zero_uint32 signers in
+     let is_not_sufficient = builtin lt n m in
+     negb is_not_sufficient
+
+(* See EthCrossChainUtils.sol:getHeaderHash *)
+let get_header_hash : ByStr -> ByStr32 =
+  fun (header : ByStr) =>
+    let h = builtin sha256hash header in
+    builtin sha256hash h
+
+(* Given a proof, trace the path and compare with root hash. Return the merkle value on success. *)
+let merkle_prove : Proof -> ByStr32 -> Option ByStr =
+  fun (proof : Proof) =>
+  fun (root : ByStr32) =>
+    let hash_leaf =
+      fun (data : ByStr) =>
+        let k = 0x00 in
+        let k_bs = builtin to_bystr k in
+        let r = builtin concat k_bs data in
+        builtin sha256hash r
+    in
+    let hash_children =
+      fun (l : ByStr32) =>
+      fun (r : ByStr32) =>
+        let k = 0x01 in
+        let t1 = builtin concat k l in
+        let r = builtin concat t1 r in
+        builtin sha256hash r
+    in
+    match proof with
+    | Proof value path =>
+      let succ = True in
+      let fail = False in
+      let hash = hash_leaf value in
+      let foldf =
+        fun (acc : Pair ByStr32 Bool) =>
+        fun (el : Pair ByStr1 ByStr32) =>
+          match acc with
+          | Pair hash False => Pair {ByStr32 Bool} hash fail
+          | Pair hash _ =>
+            let zerob = 0x00 in
+            let oneb = 0x01 in
+            match el with
+            | Pair pos nodeHash =>
+              let eqzero = builtin eq zerob pos in
+              match eqzero with
+              | True =>
+                let r = hash_children nodeHash hash in
+                Pair {ByStr32 Bool} r succ
+              | False =>
+                let eqone = builtin eq oneb pos in
+                match eqone with
+                | True =>
+                  let r = hash_children hash nodeHash in
+                  Pair {ByStr32 Bool} r succ
+                | False => Pair {ByStr32 Bool} hash fail
+                end
+              end
+            end
+          end
+      in
+      let folder = @list_foldl (Pair ByStr1 ByStr32) (Pair ByStr32 Bool) in
+      let init = Pair {ByStr32 Bool} hash succ in
+      let res = folder foldf init path in
+      match res with
+      | Pair _ False => None {ByStr}
+      | Pair hash _ =>
+        let eq = builtin eq hash root in
+        match eq with
+        | True => Some {ByStr} value
+        | False => None {ByStr}
+        end
+      end
+    end

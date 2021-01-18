@@ -1,0 +1,10 @@
+scilla_version 0
+
+library MyLib
+
+contract MyContract ()
+
+transition ByStr20 (x : ByStr20)
+  e1 = { _eventname : "Hello"; x : Int32 0; y : Int128 0};
+  e2 = { _eventname : "Hello"; y : Int128 0; x : Int32 0}
+end
