@@ -49,8 +49,8 @@
       {
         "vname": "Source",
         "params": [
-          { "vname": "_sender", "type": "ByStr20 with end" },
-          { "vname": "_origin", "type": "ByStr20 with end" }
+          { "vname": "_sender", "type": "ByStr20" },
+          { "vname": "_origin", "type": "ByStr20" }
         ]
       },
       { "vname": "Foo", "params": [ { "vname": "x", "type": "Uint32" } ] }

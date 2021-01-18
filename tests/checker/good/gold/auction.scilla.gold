@@ -42,13 +42,13 @@
       },
       {
         "vname": "Withdraw Successful",
-        "params": [ { "vname": "addr", "type": "ByStr20 with end" } ]
+        "params": [ { "vname": "addr", "type": "ByStr20" } ]
       },
       {
         "vname": "Bid",
         "params": [
           { "vname": "code", "type": "Int32" },
-          { "vname": "addr", "type": "ByStr20 with end" },
+          { "vname": "addr", "type": "ByStr20" },
           { "vname": "amount", "type": "Uint128" }
         ]
       }

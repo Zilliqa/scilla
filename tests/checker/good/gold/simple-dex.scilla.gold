@@ -71,7 +71,7 @@
       {
         "vname": "Claimback Successful",
         "params": [
-          { "vname": "caller", "type": "ByStr20 with end" },
+          { "vname": "caller", "type": "ByStr20" },
           { "vname": "tokenAddr", "type": "ByStr20" },
           { "vname": "amt", "type": "Uint128" }
         ]

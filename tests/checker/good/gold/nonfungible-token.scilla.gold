@@ -85,7 +85,7 @@
       {
         "vname": "setApprovalForAll successful",
         "params": [
-          { "vname": "from", "type": "ByStr20 with end" },
+          { "vname": "from", "type": "ByStr20" },
           { "vname": "recipient", "type": "ByStr20" },
           { "vname": "status", "type": "String" }
         ]
@@ -93,7 +93,7 @@
       {
         "vname": "Approve successful",
         "params": [
-          { "vname": "from", "type": "ByStr20 with end" },
+          { "vname": "from", "type": "ByStr20" },
           { "vname": "approvedTo", "type": "ByStr20" },
           { "vname": "token", "type": "Uint256" }
         ]
@@ -101,7 +101,7 @@
       {
         "vname": "transferFrom successful",
         "params": [
-          { "vname": "from", "type": "ByStr20 with end" },
+          { "vname": "from", "type": "ByStr20" },
           { "vname": "recipient", "type": "ByStr20" },
           { "vname": "token", "type": "Uint256" }
         ]
@@ -109,7 +109,7 @@
       {
         "vname": "Mint successful",
         "params": [
-          { "vname": "by", "type": "ByStr20 with end" },
+          { "vname": "by", "type": "ByStr20" },
           { "vname": "recipient", "type": "ByStr20" },
           { "vname": "token", "type": "Uint256" }
         ]
