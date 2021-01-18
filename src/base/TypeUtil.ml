@@ -244,13 +244,10 @@ functor
                 @@ sprintf "Unbound type variable %s in type %s" a
                      (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
-          | Address fts -> (
-              match
-                List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
-                    Bytes.compare
-                      (Bytes.of_string (as_string f1))
-                      (Bytes.of_string (as_string f2)))
-              with
+          | Address fts ->
+              match List.find_a_dup fts
+                      ~compare:(fun (f1, _) (f2, _) ->
+                          TIdentifier.compare f1 f2) with
               | Some (dup_f, _) ->
                   (* No duplicate fields allowed *)
                   fail1
@@ -259,7 +256,7 @@ functor
                     (get_rep dup_f)
               | None ->
                   (* Check all types of address fields *)
-                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb) )
+                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb)
         in
         is_wf_typ' t []
 
