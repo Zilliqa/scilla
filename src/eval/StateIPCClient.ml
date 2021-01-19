@@ -173,6 +173,20 @@ let fetch ~socket_addr ~fname ~keys ~tp =
       pure @@ Some res''
   | false, _ -> pure None
 
+(* Make a blockchain query, returns a query specific string result. *)
+let blockchain_fetch ~socket_addr ~query_name ~arg =
+  let%bind res =
+    let thunk () =
+      translate_res
+      @@ IPCClient.fetch_blockchain_info (binary_rpc ~socket_addr) query_name
+           arg
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  match res with
+  | true, res' -> pure res'
+  | false, _ -> fail0 "blockchain_fetch failed"
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
   let open Ipcmessage_types in

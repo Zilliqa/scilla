@@ -32,6 +32,12 @@ val fetch :
   tp:IPCCType.t ->
   (IPCCLiteral.t option, scilla_error list) result
 
+val blockchain_fetch :
+  socket_addr:string ->
+  query_name:string ->
+  arg:string ->
+  (string, scilla_error list) result
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->

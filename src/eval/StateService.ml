@@ -148,6 +148,13 @@ module MakeStateService () = struct
           | Some _res' -> pure @@ res )
     | Local -> fetch_local ~fname ~keys fields
 
+  let blockchain_fetch ~query_name ~arg =
+    let%bind sm, _fields = assert_init () in
+    match sm with
+    | IPC socket_addr ->
+        StateIPCClient.blockchain_fetch ~socket_addr ~query_name ~arg
+    | Local -> fail0 "blockchain_fetch_local not implemented  yet"
+
   let update_local ~fname ~keys vopt fields =
     let s = fields in
     match

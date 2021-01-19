@@ -62,4 +62,10 @@ module IPCIdl (R : RPC) = struct
     declare "updateStateValue"
       [ "Update state value in blockchain" ]
       (query @-> value @-> returning return_update RPCError.err)
+
+  let fetch_blockchain_info =
+    declare "fetchBlockchainInfo"
+      [ "Fetch blockchain information" ]
+      (query @-> value @-> returning return_fetch RPCError.err)
+
 end
