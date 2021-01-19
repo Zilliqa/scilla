@@ -233,6 +233,7 @@ targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = scid; { to_type d (toLoc $startpos(d))}
 | t = TID; { TypeVar t }
+| t = address_typ; { t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 address_field_type:

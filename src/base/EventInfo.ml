@@ -76,7 +76,13 @@ struct
                       let t' = ER.get_type (get_rep v) in
                       pure t'.tp
                 in
-                pure (fname, t))
+                let output_t =
+                  (* Output addresses as ByStr20 *)
+                  match t with
+                  | Address _ -> bystrx_typ Type.address_length
+                  | _ -> t
+                in
+                pure (fname, output_t))
               filtered_m
           in
           (* If we already have an entry for "eventname" in "acc",
@@ -96,7 +102,7 @@ struct
                 && (* Check that each entry in tlist is equal to the same entry in m_types. *)
                 List.for_all tlist ~f:(fun (n1, t1) ->
                     List.exists m_types ~f:(fun (n2, t2) ->
-                        String.(n1 = n2) && [%equal: EIType.t] t2 t1))
+                        String.(n1 = n2) && type_assignable t2 t1))
               in
               if not @@ matcher m_types tlist then
                 fail1

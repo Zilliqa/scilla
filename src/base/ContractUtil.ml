@@ -150,13 +150,13 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.sender_label)
           ER.address_rep,
-        bystrx_typ address_length )
+        Address [] )
     in
     let origin =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.origin_label)
           ER.address_rep,
-        bystrx_typ address_length )
+        Address [] )
     in
     let amount =
       ( CUIdentifier.mk_id
