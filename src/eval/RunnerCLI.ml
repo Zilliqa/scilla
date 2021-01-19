@@ -31,6 +31,7 @@ type args = {
   balance : Stdint.uint128;
   pp_json : bool;
   ipc_address : string;
+  reinit : bool;
 }
 
 let f_input_init = ref ""
@@ -65,6 +66,8 @@ let b_validate_json = ref true
 
 let i_ipc_address = ref ""
 
+let b_reinit = ref false
+
 let reset () =
   f_input_init := "";
   f_input_state := "";
@@ -81,7 +84,8 @@ let reset () =
   b_json_errors := false;
   b_pp_json := true;
   b_validate_json := true;
-  i_ipc_address := ""
+  i_ipc_address := "";
+  b_reinit := false
 
 let process_trace () =
   match !f_trace_level with
@@ -148,6 +152,18 @@ let validate_main usage =
       msg
       ^ "Input message provided, but either none or both of input state / (IPC \
          address and balance) provided\n"
+    else msg
+  in
+  (* If reinit is provided, then we can't have a message. *)
+  let msg =
+    if
+      !b_reinit
+      && String.(
+           !f_input_message <> "" || !i_ipc_address = "" || !f_input_state = "")
+    then
+      msg
+      ^ "Reinitialization of state specified. State JSON and IPC address must \
+         be specified without specifying a message."
     else msg
   in
   if not @@ String.is_empty msg then
@@ -240,6 +256,9 @@ let parse args ~exe_name =
       ( "-disable-pp-json",
         Arg.Unit (fun () -> b_pp_json := false),
         "Disable pretty printing of JSONs" );
+      ( "-reinit",
+        Arg.Unit (fun () -> b_reinit := true),
+        "Reinitialize state from JSON" );
     ]
   in
 
@@ -283,4 +302,5 @@ let parse args ~exe_name =
     gas_limit = !v_gas_limit;
     pp_json = !b_pp_json;
     ipc_address = !i_ipc_address;
+    reinit = !b_reinit;
   }
