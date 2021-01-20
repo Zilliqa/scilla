@@ -22,19 +22,19 @@ default: release
 # multiple subcommands and uses the library.
 # The library can be loaded in utop for interactive testing.
 release:
-	./scripts/libff.sh
+	./scripts/build_deps.sh
 	dune build --profile release @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
 slim:
-	./scripts/libff.sh
+	./scripts/build_deps.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
-	./scripts/libff.sh
+	./scripts/build_deps.sh
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
 	@test -L bin || ln -s _build/install/default/bin .
@@ -164,7 +164,7 @@ opamdep-ci:
 coverage :
 	make clean
 	mkdir -p _build/coverage
-	./scripts/libff.sh
+	./scripts/build_deps.sh
 	BISECT_ENABLE=YES make
 	dune build @install
 	dune exec -- tests/testsuite.exe
@@ -176,7 +176,7 @@ coverage :
 coveralls:
 	make clean
 	mkdir -p _build/coverage
-	./scripts/libff.sh
+	./scripts/build_deps.sh
 	BISECT_ENABLE=YES make
 	dune build @install
 	dune exec -- tests/testsuite.exe

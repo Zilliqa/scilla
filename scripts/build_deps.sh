@@ -1,0 +1,2 @@
+./libff.sh
+./schnorr.sh
