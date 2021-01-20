@@ -49,7 +49,7 @@ let make_type_assignable_equiv_test st1 st2 eq f_name f =
 
 let make_type_assignable_test st1 st2 eq =
   make_type_assignable_equiv_test st1 st2 eq "type_assignable"
-    TestTypeType.type_assignable
+    (fun expected actual -> TestTypeType.type_assignable ~expected ~actual)
 
 let make_all_type_assignable_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq)

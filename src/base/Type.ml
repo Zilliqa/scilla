@@ -117,7 +117,7 @@ module type ScillaType = sig
 
   val type_equivalent : t -> t -> bool
 
-  val type_assignable : t -> t -> bool
+  val type_assignable : expected:t -> actual:t -> bool
 
   val subst_type_in_type : string -> t -> t -> t
 
@@ -361,9 +361,9 @@ module MkType (I : ScillaIdentifier) = struct
     let t2' = canonicalize_tfun t2 in
     equal t1' t2'
 
-  let type_assignable to_typ from_typ =
-    let to_typ' = canonicalize_tfun to_typ in
-    let from_typ' = canonicalize_tfun from_typ in
+  let type_assignable ~expected ~actual =
+    let to_typ' = canonicalize_tfun expected in
+    let from_typ' = canonicalize_tfun actual in
     let rec assignable to_typ from_typ =
       match (to_typ, from_typ) with
       | Address tfts, Address ffts ->
