@@ -1,2 +1,2 @@
-./libff.sh
-./schnorr.sh
+scripts/libff.sh
+scripts/schnorr.sh

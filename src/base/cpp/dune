@@ -7,11 +7,6 @@
   (pps ppx_compare))
  (modes byte native)
  (foreign_stubs
-  (language c)
-  (names generate_dsa_nonce)
-  (flags
-   (:include c_flags.sexp)))
- (foreign_stubs
   (language cxx)
   (names c_schnorr Snark c_snark)
   ;;; -lstdc++ is not portable, it can be e.g. -lc++
