@@ -29,25 +29,22 @@ bool genKeyPair_Z(RawBytes_Z* privKey, RawBytes_Z* pubKey)
     try {
 
     // Get key pair from C++ lib.
-    Schnorr& s = Schnorr::GetInstance();
-    std::pair<PrivKey, PubKey> kpair = s.GenKeyPair();
+    std::pair<PrivKey, PubKey> kpair = Schnorr::GenKeyPair();
 
     // Make sure we can pass on the result back.
     std::vector<unsigned char> privK, pubK;
-    int privKSize = kpair.first.Serialize(privK, 0);
-    int pubKSize = kpair.second.Serialize(pubK, 0);
-    assert(privKSize == (int)privK.size() && pubKSize == (int)pubK.size()
-           && "Output size of generate key mismatches reported size");
-    if (privKey->len != privKSize)
+    kpair.first.Serialize(privK, 0);
+    kpair.second.Serialize(pubK, 0);
+    if (privKey->len != privK.size())
         err_abort("Schnorr::genKeyPair_Z: Incorrect memory allocated for "
                   "private key");
-    if (pubKey->len != pubKSize)
+    if (pubKey->len != pubK.size())
         err_abort(
             "Schnorr::genKeyPair_Z: Incorrect memory allocated for public key");
 
     // Pass on the result.
-    std::memcpy(privKey->data, privK.data(), privKSize);
-    std::memcpy(pubKey->data, pubK.data(), pubKSize);
+    std::memcpy(privKey->data, privK.data(), privK.size());
+    std::memcpy(pubKey->data, pubK.data(), pubK.size());
 
     } catch (...) {
         return false;
@@ -76,13 +73,12 @@ bool sign_Z(const RawBytes_Z* privKey, const RawBytes_Z* pubKey,
     std::memcpy(pubK.data(), pubKey->data, pubKey->len);
     std::memcpy(M.data(), message->data, message->len);
 
-    Schnorr& s = Schnorr::GetInstance();
     PrivKey keyPriv(privK, 0);
     PubKey keyPub(pubK, 0);
     Signature sig;
 
     // Sign the message.
-    s.Sign(M, keyPriv, keyPub, sig);
+    Schnorr::Sign(M, keyPriv, keyPub, sig);
     // Extract signature into byte array.
     sig.Serialize(S, 0);
 
@@ -120,12 +116,11 @@ bool verify_Z(const RawBytes_Z* pubKey, const RawBytes_Z* message,
     std::memcpy(M.data(), message->data, message->len);
     std::memcpy(S.data(), signature->data, signature->len);
 
-    Schnorr& s = Schnorr::GetInstance();
     PubKey keyPub(pubK, 0);
     Signature sig(S, 0);
 
     // Sign the message.
-    if (s.Verify(M, sig, keyPub))
+    if (Schnorr::Verify(M, sig, keyPub))
         *res = 1;
     else
         *res = 0;
