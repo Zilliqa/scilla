@@ -88,7 +88,7 @@ let reset () =
   b_pp_json := true;
   b_validate_json := true;
   i_ipc_address := "";
-  f_ext_states := []
+  f_ext_states := [];
   b_reinit := false
 
 let process_trace () =
