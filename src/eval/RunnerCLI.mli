@@ -29,6 +29,7 @@ type args = {
   pp_json : bool;
   ipc_address : string;
   ext_states : string list;
+  reinit : bool;
 }
 
 val parse : string list option -> exe_name:string -> args
