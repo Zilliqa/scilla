@@ -13,16 +13,15 @@
    (:include c_flags.sexp)))
  (foreign_stubs
   (language cxx)
-  (names c_schnorr DataConversion Schnorr PrivKey PubKey Signature
-    BIGNUMSerialize ECPOINTSerialize Snark c_snark)
+  (names c_schnorr Snark c_snark)
   ;;; -lstdc++ is not portable, it can be e.g. -lc++
   (flags
    -std=c++11
    -fPIC
    (:include c_flags.sexp))
-  (include_dirs %{project_root}/deps/libff/install/include))
+  (include_dirs %{project_root}/deps/libff/install/include %{project_root}/deps/schnorr/install/include))
  ; foreign_archives does not support %{vars} hence the relative path to deps/
- (foreign_archives ../../../deps/libff/install/lib/ff)
+ (foreign_archives ../../../deps/libff/install/lib/ff ../../../deps/schnorr/install/lib/Schnorr)
  (c_library_flags
   -lstdc++
   (:include c_library_flags.sexp))

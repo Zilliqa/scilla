@@ -77,4 +77,6 @@ src/stdlib/*.json
 # external dependencies
 deps/libff/build/
 deps/libff/install/
+deps/schnorr/build/
+deps/schnorr/install/
 
