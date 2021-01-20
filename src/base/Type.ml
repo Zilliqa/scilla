@@ -173,6 +173,8 @@ module type ScillaType = sig
 
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
+
+  val address_typ : (loc TIdentifier.t * t) list -> t
 end
 
 module MkType (I : ScillaIdentifier) = struct
@@ -431,6 +433,8 @@ module MkType (I : ScillaIdentifier) = struct
 
   (* Given a ByStrX string, return integer X *)
   let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
+
+  let address_typ fts = Address fts
 
   let is_prim_type = function PrimType _ -> true | _ -> false
 
