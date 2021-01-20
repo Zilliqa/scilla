@@ -178,7 +178,8 @@ module TypeUtilities : sig
   val mark_error_as_type_error :
     ('a, 'b) result -> ('a, typeCheckerErrorType * 'b) result
 
-  val type_assignable_list : to_list:TUType.t list -> from_list:TUType.t list -> bool
+  val type_assignable_list :
+    to_list:TUType.t list -> from_list:TUType.t list -> bool
 
   val assert_type_assignable :
     ?lc:ErrorUtils.loc ->

@@ -499,8 +499,9 @@ module TypeUtilities = struct
           lc
 
   let proc_type_applies ~lc formals actuals =
-    map2M formals actuals ~f:(fun expected actual -> assert_type_assignable ~expected ~actual ~lc) ~msg:(fun () ->
-        mk_error1 "Incorrect number of arguments to procedure" lc)
+    map2M formals actuals
+      ~f:(fun expected actual -> assert_type_assignable ~expected ~actual ~lc)
+      ~msg:(fun () -> mk_error1 "Incorrect number of arguments to procedure" lc)
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
@@ -700,7 +701,9 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ (type_assignable ~expected:kt ~actual:kt' && type_assignable ~expected:vt ~actual:vt'))
+                  pure
+                  @@ ( type_assignable ~expected:kt ~actual:kt'
+                     && type_assignable ~expected:vt ~actual:vt' ))
               kv (pure true)
           in
           if not valid then
@@ -733,7 +736,10 @@ module TypeUtilities = struct
           let res = ADT (mk_loc_id tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid = List.for_all2_exn tmap arg_typs ~f:(fun expected actual -> type_assignable ~expected ~actual) in
+          let args_valid =
+            List.for_all2_exn tmap arg_typs ~f:(fun expected actual ->
+                type_assignable ~expected ~actual)
+          in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"

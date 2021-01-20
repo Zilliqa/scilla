@@ -341,7 +341,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           | Some tannot ->
               let%bind () =
                 fromR_TE
-                @@ assert_type_assignable ~lc:(ER.get_loc rep) ~expected:tannot ~actual:ityp.tp
+                @@ assert_type_assignable ~lc:(ER.get_loc rep) ~expected:tannot
+                     ~actual:ityp.tp
               in
               pure (mk_qual_tp tannot)
           | None -> pure ityp
@@ -419,7 +420,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           with_extended_env tenv Fn.id [ (f, t) ] [] (type_expr body)
         in
         let%bind () =
-          fromR_TE @@ assert_type_assignable ~lc:(ER.get_loc rep) ~expected:t ~actual:bt.tp
+          fromR_TE
+          @@ assert_type_assignable ~lc:(ER.get_loc rep) ~expected:t
+               ~actual:bt.tp
         in
         pure
         @@ ( TypedSyntax.Fixpoint
@@ -467,7 +470,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               List.Assoc.find CU.msg_mandatory_field_types fld
                 ~equal:String.( = )
             with
-            | Some fld_t when not @@ type_assignable ~expected:fld_t ~actual:seen_type ->
+            | Some fld_t
+              when not @@ type_assignable ~expected:fld_t ~actual:seen_type ->
                 fail
                   (mk_type_error1
                      (sprintf
@@ -686,7 +690,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 in
                 let%bind () =
                   fromR_TE
-                  @@ assert_type_assignable ~expected:(rr_typ fr).tp ~actual:(rr_typ rr).tp ~lc:(ER.get_loc (get_rep r))
+                  @@ assert_type_assignable ~expected:(rr_typ fr).tp
+                       ~actual:(rr_typ rr).tp
+                       ~lc:(ER.get_loc (get_rep r))
                 in
                 let%bind checked_stmts = type_stmts sts get_loc env in
                 pure @@ (checked_stmts, rr_typ fr, rr_typ rr)
@@ -725,7 +731,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     let typed_v = rr_typ v_resolv in
                     let%bind () =
                       fromR_TE
-                      @@ assert_type_assignable ~expected:v_type ~actual:typed_v.tp
+                      @@ assert_type_assignable ~expected:v_type
+                           ~actual:typed_v.tp
                            ~lc:(ER.get_loc (get_rep v))
                     in
                     let typed_v' = add_type_to_ident v typed_v in
@@ -898,7 +905,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 let%bind () =
                   fromR_TE
                   (* The procedure accepts an element of l. *)
-                  @@ assert_type_assignable ~expected:(list_typ arg_typ) ~actual:l_type.tp
+                  @@ assert_type_assignable ~expected:(list_typ arg_typ)
+                       ~actual:l_type.tp
                        ~lc:(ER.get_loc (get_rep l))
                 in
                 let%bind checked_stmts = type_stmts sts get_loc env in
@@ -925,7 +933,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 let i_type = rr_typ r in
                 let%bind () =
                   fromR_TE
-                  @@ assert_type_assignable ~expected:exception_typ ~actual:i_type.tp
+                  @@ assert_type_assignable ~expected:exception_typ
+                       ~actual:i_type.tp
                        ~lc:(ER.get_loc (get_rep i))
                 in
                 let typed_i = add_type_to_ident i i_type in
@@ -1022,7 +1031,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             | _ ->
                 (* Non-address field.
                    Initialiser must be assignable to field type. *)
-                assert_type_assignable ~expected:ft ~actual ~lc:(ER.get_loc (get_rep fn))
+                assert_type_assignable ~expected:ft ~actual
+                  ~lc:(ER.get_loc (get_rep fn))
           in
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
@@ -1062,7 +1072,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind ((_, (ar, _)) as typed_body) = type_expr body env0 in
           let%bind () =
             match topt with
-            | Some tannot -> fromR_TE @@ assert_type_assignable ~expected:tannot ~actual:ar.tp ~lc:(ER.get_loc (snd body))
+            | Some tannot ->
+                fromR_TE
+                @@ assert_type_assignable ~expected:tannot ~actual:ar.tp
+                     ~lc:(ER.get_loc (snd body))
             | None -> pure ()
           in
           let typed_rn = add_type_to_ident rn ar in
@@ -1315,8 +1328,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              type_expr cconstraint tenv0 init_gas_kont remaining_gas
            in
            match
-             assert_type_assignable ~expected:Datatypes.DataTypeDictionary.bool_typ
-               ~actual:ityp.tp ~lc:(ER.get_loc rep)
+             assert_type_assignable
+               ~expected:Datatypes.DataTypeDictionary.bool_typ ~actual:ityp.tp
+               ~lc:(ER.get_loc rep)
            with
            | Ok () -> pure (checked_constraint, remaining_gas)
            | Error e -> Error ((TypeError, e), remaining_gas)
