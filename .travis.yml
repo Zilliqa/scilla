@@ -62,7 +62,7 @@ branches:
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_shellcheck_ubuntu.sh; fi
-- if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_cmake_ubuntu.sh; fi
+- if [ $TRAVIS_OS_NAME = linux ]; then sudo bash ./scripts/install_cmake_ubuntu.sh; fi
 - make opamdep-ci
 - rm $HOME/.opam/log/*
 script:
