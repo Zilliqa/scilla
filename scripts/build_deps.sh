@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-scripts/libff.sh
+scripts/cryptoutils.sh
 scripts/schnorr.sh
