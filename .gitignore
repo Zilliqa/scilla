@@ -75,8 +75,8 @@ src/stdlib/*.json
 .DS_Store
 
 # external dependencies
-deps/libff/build/
-deps/libff/install/
+deps/cryptoutils/build/
+deps/cryptoutils/install/
 deps/schnorr/build/
 deps/schnorr/install/
 

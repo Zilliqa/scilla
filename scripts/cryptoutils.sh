@@ -21,7 +21,7 @@
 # The script builds and installs libff in the
 # _build directory of Scilla root.
 
-libffdir="deps/libff"
+libCryptoUtilsdir="deps/cryptoutils"
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
 if [[ ! -f scilla.opam ]]
@@ -31,27 +31,32 @@ then
 fi
 
 # If there's already a built version available, exit early.
-if [[ -f ${libffdir}/install/lib/libff.a ]]
+if [[ -f ${libCryptoUtilsdir}/install/lib/libCryptoUtils.a ]]
 then
-    echo "Found libff.a, not building again"
+    echo "Found libCryptoUtils.a, not building again"
     exit 0
 fi
 
-cd $libffdir || exit
+cd $libCryptoUtilsdir || exit
 mkdir -p build install
 cd src || exit
-echo "Installing libff into ${libffdir}/install"
+
+# Build its dependences
+echo "Building deps of libCryptoUtils"
+./build_libff.sh
+
+echo "Installing libCryptoUtils into ${libCryptoUtilsdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DWITH_PROCPS=OFF
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DCRYPTOUTILS_BUILD_ARCHIVE=1
 then
-    echo "libff: CMake configuration failed"
+    echo "libCryptoUtils: CMake configuration failed"
     exit 1
 fi
 
 if ! make -j4 install
 then
-    echo "libff: build failed"
+    echo "libCryptoUtils: build failed"
     exit 1
 fi
 
-echo "libff: installation complete"
+echo "libCryptoUtils: installation complete"
