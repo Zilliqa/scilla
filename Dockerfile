@@ -14,6 +14,7 @@ RUN apt-get update \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    wget \
     cmake \
     build-essential \
     m4 \
@@ -26,12 +27,17 @@ RUN apt-get update \
     libssl-dev \
     libsecp256k1-dev \
     libboost-system-dev \
+    libboost-test-dev \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV OCAML_VERSION 4.08.1
 
-RUN make opamdep-ci \
+# CMake gets installed here
+ENV PATH="/root/.local/bin:${PATH}"
+
+RUN bash scripts/install_cmake_ubuntu.sh \
+    && make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval $(opam env) && \
     make
