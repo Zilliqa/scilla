@@ -43,7 +43,7 @@ cd src || exit
 
 echo "Installing libCryptoUtils into ${libCryptoUtilsdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DWITH_PROCPS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DCRYPTOUTILS_BUILD_ARCHIVE=1
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCRYPTOUTILS_BUILD_ARCHIVE=1
 then
     echo "libCryptoUtils: CMake configuration failed"
     exit 1
