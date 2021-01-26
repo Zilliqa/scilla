@@ -124,7 +124,7 @@ clean:
 
 # Clean up libff installation
 cleanall: clean
-	rm -rf deps/cryptoutils/{build,install} deps/schnorr/{build,install} deps/cryptoutils/src/deps/libff/{build,install}
+	rm -rf deps/cryptoutils/{build,install} deps/schnorr/{build,install}
 
 # Build a standalone scilla docker
 docker:

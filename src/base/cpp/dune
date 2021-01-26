@@ -18,7 +18,7 @@
     %{project_root}/deps/schnorr/install/include))
  ; foreign_archives does not support %{vars} hence the relative path to deps/
  (foreign_archives ../../../deps/cryptoutils/install/lib/CryptoUtils
-   ../../../deps/cryptoutils/src/deps/libff/install/lib/ff
+   ../../../deps/cryptoutils/install/lib/ff
    ../../../deps/schnorr/install/lib/Schnorr)
  (c_library_flags
   -lstdc++
