@@ -42,7 +42,7 @@ depends: [
   "yojson" {>= "1.7.0" & < "1.8~"}
 ]
 build: [
-  [ "./scripts/libff.sh" ]
+  [ "./scripts/build_deps.sh" ]
   [ "dune" "build" "-p" name "-j" jobs ]
 ]
 synopsis: "Scilla: Safe-By-Design Smart Contract Language"

@@ -72,3 +72,5 @@ script:
 - make test_server
 - make coveralls
 - make lint
+# check Scilla is installable as an opam package
+- opam install .
