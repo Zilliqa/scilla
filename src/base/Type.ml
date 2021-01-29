@@ -117,7 +117,7 @@ module type ScillaType = sig
 
   val type_equivalent : t -> t -> bool
 
-  val type_assignable : t -> t -> bool
+  val type_assignable : expected:t -> actual:t -> bool
 
   val subst_type_in_type : string -> t -> t -> t
 
@@ -173,6 +173,8 @@ module type ScillaType = sig
 
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
+
+  val address_typ : (loc TIdentifier.t * t) list -> t
 end
 
 module MkType (I : ScillaIdentifier) = struct
@@ -361,9 +363,9 @@ module MkType (I : ScillaIdentifier) = struct
     let t2' = canonicalize_tfun t2 in
     equal t1' t2'
 
-  let type_assignable to_typ from_typ =
-    let to_typ' = canonicalize_tfun to_typ in
-    let from_typ' = canonicalize_tfun from_typ in
+  let type_assignable ~expected ~actual =
+    let to_typ' = canonicalize_tfun expected in
+    let from_typ' = canonicalize_tfun actual in
     let rec assignable to_typ from_typ =
       match (to_typ, from_typ) with
       | Address tfts, Address ffts ->
@@ -431,6 +433,8 @@ module MkType (I : ScillaIdentifier) = struct
 
   (* Given a ByStrX string, return integer X *)
   let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
+
+  let address_typ fts = Address fts
 
   let is_prim_type = function PrimType _ -> true | _ -> false
 

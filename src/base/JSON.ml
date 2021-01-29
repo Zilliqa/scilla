@@ -173,7 +173,7 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-        if type_assignable_list tlist1 tlist2 then ()
+        if type_assignable_list ~to_list:tlist1 ~from_list:tlist2 then ()
         else
           let expected = pp_typ_list_error tlist1 in
           let observed = pp_typ_list_error tlist2 in

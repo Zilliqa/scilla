@@ -640,7 +640,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
               let%bind at = fromR @@ literal_type (snd a) in
               if
                 [%equal: EvalName.t] (get_id ps) (fst a)
-                && type_assignable pt at
+                && type_assignable ~expected:pt ~actual:at
               then pure ()
               else fail0 "")
             cparams ~msg:emsg

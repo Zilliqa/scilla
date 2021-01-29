@@ -340,18 +340,18 @@ module TypeUtilities = struct
          (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
               not (type_equivalent t1 t2)))
 
-  let type_assignable_list tlist1 tlist2 =
-    List.length tlist1 = List.length tlist2
+  let type_assignable_list ~to_list ~from_list =
+    List.length to_list = List.length from_list
     && not
-         (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
-              not (type_assignable t1 t2)))
+         (List.exists2_exn to_list from_list ~f:(fun expected actual ->
+              not (type_assignable ~expected ~actual)))
 
-  let assert_type_assignable ?(lc = dummy_loc) expected given =
-    if type_assignable expected given then pure ()
+  let assert_type_assignable ?(lc = dummy_loc) ~expected ~actual =
+    if type_assignable ~expected ~actual then pure ()
     else
       fail1
         (sprintf "Type unassignable: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ given))
+           (pp_typ expected) (pp_typ actual))
         lc
 
   let rec is_ground_type t =
@@ -483,7 +483,7 @@ module TypeUtilities = struct
   let rec fun_type_applies ?(lc = dummy_loc) ft argtypes =
     match (ft, argtypes) with
     | FunType (argt, rest), a :: ats ->
-        let%bind () = assert_type_assignable argt a ~lc in
+        let%bind () = assert_type_assignable ~expected:argt ~actual:a ~lc in
         fun_type_applies ~lc rest ats
     | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
@@ -499,8 +499,9 @@ module TypeUtilities = struct
           lc
 
   let proc_type_applies ~lc formals actuals =
-    map2M formals actuals ~f:(assert_type_assignable ~lc) ~msg:(fun () ->
-        mk_error1 "Incorrect number of arguments to procedure" lc)
+    map2M formals actuals
+      ~f:(fun expected actual -> assert_type_assignable ~expected ~actual ~lc)
+      ~msg:(fun () -> mk_error1 "Incorrect number of arguments to procedure" lc)
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
@@ -700,7 +701,9 @@ module TypeUtilities = struct
                 else
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
-                  pure @@ (type_assignable kt kt' && type_assignable vt vt'))
+                  pure
+                  @@ ( type_assignable ~expected:kt ~actual:kt'
+                     && type_assignable ~expected:vt ~actual:vt' ))
               kv (pure true)
           in
           if not valid then
@@ -733,7 +736,10 @@ module TypeUtilities = struct
           let res = ADT (mk_loc_id tname, ts) in
           let%bind tmap = constr_pattern_arg_types res cname in
           let%bind arg_typs = mapM ~f:(fun l -> is_wellformed_lit l) args in
-          let args_valid = List.for_all2_exn tmap arg_typs ~f:type_assignable in
+          let args_valid =
+            List.for_all2_exn tmap arg_typs ~f:(fun expected actual ->
+                type_assignable ~expected ~actual)
+          in
           if not args_valid then
             fail0
             @@ sprintf "Malformed ADT %s. Arguments do not match expected types"
