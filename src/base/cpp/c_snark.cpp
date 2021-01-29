@@ -16,7 +16,7 @@
  */
 
 #include "c_snark.h"
-#include "Snark.h"
+#include <Snark/Snark.h>
 
 extern "C" {
 

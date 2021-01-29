@@ -37,6 +37,7 @@ addons:
     - libgmp-dev
     - libssl-dev
     - libboost-system-dev
+    - libboost-test-dev
     - libpcre3-dev
     - aspcud
     - libsecp256k1-dev
@@ -61,6 +62,7 @@ branches:
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_shellcheck_ubuntu.sh; fi
+- if [ $TRAVIS_OS_NAME = linux ]; then bash ./scripts/install_cmake_ubuntu.sh; fi
 - make opamdep-ci
 - rm $HOME/.opam/log/*
 script:
@@ -70,3 +72,5 @@ script:
 - make test_server
 - make coveralls
 - make lint
+# check Scilla is installable as an opam package
+- opam install .
