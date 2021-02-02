@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error, state number 222",
+      "error_message": "Syntax error, state number 224",
       "start_location": {
         "file": "base/parser/bad/cmodule-field-id-colon-tid-eq-with.scilla",
         "line": 7,

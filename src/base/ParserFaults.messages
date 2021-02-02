@@ -282,25 +282,6 @@ type_term: MAP CID UNDERSCORE
 
 This map type likely has an invalid map value type.
 
-type_term: MAP LPAREN CID UNDERSCORE
-##
-## Ends in an error in state: 28.
-##
-## t_map_key -> LPAREN scid . RPAREN [ MAP LPAREN HEXLIT CID ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN scid
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 25, spurious reduction of production scid -> CID 
-##
-# see tests/checker/bad/bad_map_key_1.scilla
-
-This map type has an invalid key type. A closing bracket or proper separated capital identifier is expected.
-
 type_term: MAP LPAREN WITH
 ##
 ## Ends in an error in state: 21.
