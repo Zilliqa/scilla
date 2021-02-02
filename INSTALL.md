@@ -55,6 +55,10 @@ On machines with Ubuntu strictly older than 18.04, run these additional commands
 sudo add-apt-repository ppa:tah83/secp256k1 -y
 ```
 
+On machines older than Ubuntu 20.04, CMake >=3.16 (which is a requirement) is not present.
+Run the script `scripts/install_cmake_ubuntu.sh` (without root) to install a new CMake
+into `~/.local/bin`.
+
 Required Ubuntu packages can be installed as below:
 
 ```shell
