@@ -191,6 +191,7 @@ id_with_typ :
 t_map_key :
 | kt = scid { to_map_key_type_exn kt (toLoc $startpos) }
 | LPAREN; kt = scid; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
+| LPAREN; kt = address_typ; RPAREN; { kt }
 | kt = address_typ; { kt }
 
 (* TODO: This is a temporary fix of issue #261 *)
