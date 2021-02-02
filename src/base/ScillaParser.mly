@@ -264,9 +264,9 @@ simple_exp :
 (* Atomic expression *)
 | a = atomic_exp {a}
 (* Built-in call *)
-| BUILTIN; b = ID; xs = builtin_args
+| BUILTIN; b = ID; targs = option(ctargs); xs = builtin_args
   { let bloc = toLoc $startpos(b) in
-    (Builtin ((parse_builtin b bloc, bloc), xs)), toLoc $startpos }
+    (Builtin ((parse_builtin b bloc, bloc), Option.value targs ~default:[], xs)), toLoc $startpos }
 (* Message construction *)
 | LBRACE; es = separated_list(SEMICOLON, msg_entry); RBRACE
   { (Message es, toLoc $startpos) }

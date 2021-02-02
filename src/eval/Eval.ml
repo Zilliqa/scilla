@@ -130,23 +130,23 @@ let eval_gas_charge env g =
   in
   SGasCharge.eval resolver g
 
-let builtin_cost env f tps args_id =
+let builtin_cost env f targs tps args_id =
   let open MonadUtil in
   let open Result.Let_syntax in
-  let%bind cost_expr = EvalGas.builtin_cost f tps args_id in
+  let%bind cost_expr = EvalGas.builtin_cost f ~targ_types:targs ~arg_types:tps args_id in
   let%bind cost = eval_gas_charge env cost_expr in
   pure cost
 
 (* Return a builtin_op wrapped in EvalMonad *)
-let builtin_executor env f args_id =
+let builtin_executor env f targs args_id =
   let%bind arg_lits =
     mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
   let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
   let%bind _, ret_typ, op =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f tps
+    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f ~targtypes:targs ~argtypes:tps
   in
-  let%bind cost = fromR @@ builtin_cost env f tps args_id in
+  let%bind cost = fromR @@ builtin_cost env f targs tps args_id in
   let res () = op arg_lits ret_typ in
   checkwrap_opR res (Uint64.of_int cost)
 
@@ -244,8 +244,8 @@ let rec exp_eval erep env =
             Env.bind z (get_id i) w)
       in
       exp_eval e_branch env'
-  | Builtin (i, actuals) ->
-      let%bind res = builtin_executor env i actuals in
+  | Builtin (i, targs, actuals) ->
+      let%bind res = builtin_executor env i targs actuals in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =

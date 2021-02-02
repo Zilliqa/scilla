@@ -322,16 +322,16 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let typed_f = add_type_to_ident f (rr_typ fres) in
         pure @@ (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep))
-    | Builtin (b, actuals) ->
+    | Builtin (b, ts, actuals) ->
         let%bind targs, typed_actuals = type_actuals tenv actuals in
         let%bind _, ret_typ, _ =
-          fromR_TE @@ BuiltInDictionary.find_builtin_op b targs
+          fromR_TE @@ BuiltInDictionary.find_builtin_op b ~targtypes:ts ~argtypes:targs
         in
         let%bind () = fromR_TE @@ TEnv.is_wf_type tenv ret_typ in
         let q_ret_typ = mk_qual_tp ret_typ in
         let q_ret_tag = ETR.mk_rep rep q_ret_typ in
         pure
-        @@ ( TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals),
+        @@ ( TypedSyntax.Builtin ((fst b, q_ret_tag), ts, typed_actuals),
              (q_ret_typ, rep) )
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)

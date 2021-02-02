@@ -487,6 +487,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   let bnum_coster _op _args _arg_types = pure (GasGasCharge.StaticCost 32)
 
+  let to_addr_coster _op _args _arg_types = fail0 @@ "Gas cost for to_addr not yet implemented"
+  
   let tvar s = TypeVar s
 
   [@@@ocamlformat "disable"]
@@ -573,9 +575,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   
     | Builtin_to_nat -> [([uint32_typ], to_nat_coster)];
 
+        (* Addresses *)
+    | Builtin_to_addr -> [ ( [tvar "'A" ; bystrx_typ Type.address_length ], to_addr_coster ) ];
+
   [@@@ocamlformat "enable"]
 
-  let builtin_cost (op, _) arg_types arg_ids =
+  let builtin_cost (op, _) ~targ_types ~arg_types arg_ids =
     let matcher (types, fcoster) =
       (* The names and type list lengths must match and *)
       if
@@ -587,7 +592,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                ||
                (* or the built-in record is generic *)
                match expected with TypeVar _ -> true | _ -> false)
-             types arg_types
+             types (targ_types @ arg_types)
       then fcoster op arg_ids arg_types (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in

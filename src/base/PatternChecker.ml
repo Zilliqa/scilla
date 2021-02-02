@@ -215,7 +215,7 @@ struct
                clauses
            in
            pure @@ (CheckedPatternSyntax.MatchExpr (x, checked_clauses), rep)
-    | Builtin (f, args) -> pure @@ (CheckedPatternSyntax.Builtin (f, args), rep)
+    | Builtin (f, targs, args) -> pure @@ (CheckedPatternSyntax.Builtin (f, targs, args), rep)
     (* Advanced features: to be added in Scilla 0.2 *)
     | TFun (t, body) ->
         let%bind checked_body = pm_check_expr body in

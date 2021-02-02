@@ -47,11 +47,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
      *)
     val find_builtin_op :
       ER.rep builtin_annot ->
-      BIType.t list ->
+      targtypes : BIType.t list ->
+      argtypes : BIType.t list ->
       (BIType.t * BIType.t * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
   val elab_id :
-    BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
+    BIType.t ->      (* type of builtin *)
+    BIType.t list -> (* type arguments *)
+    BIType.t list -> (* types of value arguments *)
+    (BIType.t, scilla_error list) result
 end

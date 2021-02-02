@@ -85,6 +85,7 @@ type builtin =
   | Builtin_to_uint128
   | Builtin_to_nat
   | Builtin_schnorr_get_address
+  | Builtin_to_addr
 [@@deriving sexp, equal]
 
 type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
@@ -138,6 +139,7 @@ let pp_builtin b =
   | Builtin_to_uint64 -> "to_uint64"
   | Builtin_to_uint128 -> "to_uint128"
   | Builtin_to_nat -> "to_nat"
+  | Builtin_to_addr -> "to_addr"
 
 let parse_builtin s loc =
   match s with
@@ -187,6 +189,7 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
+  | "to_addr" -> Builtin_to_addr
   | _ -> (
       try
         let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
@@ -269,7 +272,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     | App of ER.rep SIdentifier.t * ER.rep SIdentifier.t list
     | Constr of SR.rep SIdentifier.t * SType.t list * ER.rep SIdentifier.t list
     | MatchExpr of ER.rep SIdentifier.t * (pattern * expr_annot) list
-    | Builtin of ER.rep builtin_annot * ER.rep SIdentifier.t list
+    | Builtin of ER.rep builtin_annot * SType.t list * ER.rep SIdentifier.t list
     | TFun of ER.rep SIdentifier.t * expr_annot
     | TApp of ER.rep SIdentifier.t * SType.t list
     (* Fixpoint combinator: used to implement recursion principles *)
@@ -478,7 +481,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | TFun (_, body) -> recurser body bound_vars acc
       | Constr (_, _, es) -> get_free es bound_vars @ acc
       | App (f, args) -> get_free (f :: args) bound_vars @ acc
-      | Builtin (_f, args) -> get_free args bound_vars @ acc
+      | Builtin (_f, _targs, args) -> get_free args bound_vars @ acc
       | Let (i, _, lhs, rhs) ->
           let acc_lhs = recurser lhs bound_vars acc in
           recurser rhs (i :: bound_vars) acc_lhs
@@ -536,7 +539,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf
             "Type error in pattern matching on `%s`%s (or one of its branches):\n"
             (as_error_string x) opt
-      | Builtin ((i, _), _) ->
+      | Builtin ((i, _), _, _) ->
           sprintf "Type error in built-in application of `%s`:\n" (pp_builtin i)
       | TApp (tf, _) ->
           sprintf "Type error in type application of `%s`:\n"

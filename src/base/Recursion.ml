@@ -162,7 +162,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 pes
             in
             pure @@ RecursionSyntax.MatchExpr (x, new_pes)
-        | Builtin (f, args) -> pure @@ RecursionSyntax.Builtin (f, args)
+        | Builtin (f, targs, args) -> pure @@ RecursionSyntax.Builtin (f, targs, args)
         | TFun (s, e) ->
             let%bind new_e = walk e in
             pure @@ RecursionSyntax.TFun (s, new_e)
