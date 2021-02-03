@@ -133,7 +133,9 @@ let eval_gas_charge env g =
 let builtin_cost env f targs tps args_id =
   let open MonadUtil in
   let open Result.Let_syntax in
-  let%bind cost_expr = EvalGas.builtin_cost f ~targ_types:targs ~arg_types:tps args_id in
+  let%bind cost_expr =
+    EvalGas.builtin_cost f ~targ_types:targs ~arg_types:tps args_id
+  in
   let%bind cost = eval_gas_charge env cost_expr in
   pure cost
 
@@ -144,7 +146,9 @@ let builtin_executor env f targs args_id =
   in
   let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
   let%bind _, ret_typ, op =
-    fromR @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f ~targtypes:targs ~vargtypes:tps
+    fromR
+    @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f ~targtypes:targs
+         ~vargtypes:tps
   in
   let%bind cost = fromR @@ builtin_cost env f targs tps args_id in
   let res () = op targs arg_lits ret_typ in

@@ -85,7 +85,10 @@ module type Syn = sig
         * SType.t list
         * ParserRep.rep SIdentifier.t list
     | MatchExpr of ParserRep.rep SIdentifier.t * (pattern * expr_annot) list
-    | Builtin of ParserRep.rep builtin_annot * SType.t list * ParserRep.rep SIdentifier.t list
+    | Builtin of
+        ParserRep.rep builtin_annot
+        * SType.t list
+        * ParserRep.rep SIdentifier.t list
     (* Advanced features: to be added in Scilla 0.2 *)
     | TFun of ParserRep.rep SIdentifier.t * expr_annot
     | TApp of ParserRep.rep SIdentifier.t * SType.t list

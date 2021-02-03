@@ -153,7 +153,9 @@ struct
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
       | Builtin (op, targs, actuals) ->
           CFSyntax.Builtin
-            (add_noinfo_to_builtin op, targs, List.map ~f:add_noinfo_to_ident actuals)
+            ( add_noinfo_to_builtin op,
+              targs,
+              List.map ~f:add_noinfo_to_ident actuals )
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let
             ( add_noinfo_to_ident i,

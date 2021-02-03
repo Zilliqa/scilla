@@ -284,9 +284,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* op -> arguments -> base cost -> total cost *)
   type coster =
     builtin ->
-    GasType.t list ->   (* type arguments *)
-    ER.rep GI.t list -> (* argument identifiers *)
-    GasType.t list ->   (* types of value arguments *)
+    GasType.t list ->
+    (* type arguments *)
+    ER.rep GI.t list ->
+    (* argument identifiers *)
+    GasType.t list ->
+    (* types of value arguments *)
     (GasGasCharge.gas_charge, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
@@ -486,7 +489,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 4))
     else fail0 @@ "Gas cost error for integer built-in"
 
-  let bnum_coster _op _targs _args _arg_types = pure (GasGasCharge.StaticCost 32)
+  let bnum_coster _op _targs _args _arg_types =
+    pure (GasGasCharge.StaticCost 32)
 
   let tvar s = TypeVar s
 
