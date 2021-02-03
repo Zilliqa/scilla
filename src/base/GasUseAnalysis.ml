@@ -962,7 +962,7 @@ struct
         let%bind ressize', gup' = resolve_expand genv u v in
         (* TODO: Return value having no arguments implies partial application not supported. *)
         pure ([], ressize', add_pn gup' cc)
-    | Builtin ((b, rep), actuals) ->
+    | Builtin ((b, rep), _, actuals) ->
         (* Handle builtin-s like we handle function application. *)
         let%bind bsig = builtin_cost (b, rep) actuals in
         let genv' = GUAEnv.addS genv (pp_builtin b) bsig in

@@ -284,14 +284,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   (* op -> arguments -> base cost -> total cost *)
   type coster =
     builtin ->
-    ER.rep GI.t list ->
-    GasType.t list ->
+    GasType.t list ->   (* type arguments *)
+    ER.rep GI.t list -> (* argument identifiers *)
+    GasType.t list ->   (* types of value arguments *)
     (GasGasCharge.gas_charge, scilla_error list) result
 
   (* op, arg types, coster, base cost. *)
   type builtin_record = builtin * GasType.t list * coster
 
-  let string_coster op args _arg_types =
+  let string_coster op _targs args _arg_types =
     match (op, args) with
     | Builtin_eq, [ s1; s2 ] ->
         pure
@@ -316,7 +317,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         pure @@ GasGasCharge.SizeOf (GI.get_id l)
     | _ -> fail0 @@ "Gas cost error for string built-in"
 
-  let crypto_coster op args types =
+  let crypto_coster op _targs args types =
     match (op, types, args) with
     | Builtin_eq, [ PrimType Bystr_typ; PrimType Bystr_typ ], [ a1; _ ] ->
         pure @@ GasGasCharge.SizeOf (GI.get_id a1)
@@ -415,7 +416,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         pure (GasGasCharge.ProdOf (GasGasCharge.StaticCost 40, list_len))
     | _ -> fail0 @@ "Gas cost error for hash built-in"
 
-  let map_coster op args _arg_types =
+  let map_coster op _targs args _arg_types =
     match args with
     | m :: _ -> (
         (* size, get and contains do not make a copy of the Map, hence constant. *)
@@ -429,12 +430,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         )
     | _ -> fail0 @@ "Gas cost error for map built-in"
 
-  let to_nat_coster _ args _arg_types =
+  let to_nat_coster _ _targs args _arg_types =
     match args with
     | [ a ] -> pure (GasGasCharge.ValueOf (GI.get_id a))
     | _ -> fail0 @@ "Gas cost error for to_nat built-in"
 
-  let int_conversion_coster w _ _args arg_types =
+  let int_conversion_coster w _ _targs _args arg_types =
     let base = 4 in
     match arg_types with
     | [ PrimType (Uint_typ _) ]
@@ -446,7 +447,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         else fail0 @@ "Gas cost error for integer conversion"
     | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
 
-  let int_coster op args arg_types =
+  let int_coster op _targs args arg_types =
     let base = 4 in
     let%bind base' =
       match op with
@@ -485,7 +486,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 4))
     else fail0 @@ "Gas cost error for integer built-in"
 
-  let bnum_coster _op _args _arg_types = pure (GasGasCharge.StaticCost 32)
+  let bnum_coster _op _targs _args _arg_types = pure (GasGasCharge.StaticCost 32)
 
   let tvar s = TypeVar s
 
@@ -575,7 +576,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
 
   [@@@ocamlformat "enable"]
 
-  let builtin_cost (op, _) arg_types arg_ids =
+  let builtin_cost (op, _) ~targ_types ~arg_types arg_ids =
     let matcher (types, fcoster) =
       (* The names and type list lengths must match and *)
       if
@@ -588,7 +589,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                (* or the built-in record is generic *)
                match t2 with TypeVar _ -> true | _ -> false)
              arg_types types
-      then fcoster op arg_ids arg_types (* this can fail too *)
+      then fcoster op targ_types arg_ids arg_types (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in
     let msg =

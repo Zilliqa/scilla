@@ -151,9 +151,9 @@ struct
       | App (f, actuals) ->
           CFSyntax.App
             (add_noinfo_to_ident f, List.map ~f:add_noinfo_to_ident actuals)
-      | Builtin (op, actuals) ->
+      | Builtin (op, targs, actuals) ->
           CFSyntax.Builtin
-            (add_noinfo_to_builtin op, List.map ~f:add_noinfo_to_ident actuals)
+            (add_noinfo_to_builtin op, targs, List.map ~f:add_noinfo_to_ident actuals)
       | Let (i, topt, lhs, rhs) ->
           CFSyntax.Let
             ( add_noinfo_to_ident i,
@@ -1300,7 +1300,7 @@ struct
             ctr_tag_map,
             args_changes
             || (not @@ [%equal: ECFR.money_tag] f_tag (get_id_tag f)) )
-      | Builtin (f, args) ->
+      | Builtin (f, targs, args) ->
           let args_tags =
             List.map
               ~f:(fun arg -> lookup_var_tag2 arg local_env param_env)
@@ -1335,7 +1335,7 @@ struct
           let op, (tag, r) = f in
           let new_f = (op, (f_tag, r)) in
 
-          ( Builtin (new_f, final_args),
+          ( Builtin (new_f, targs, final_args),
             res_tag,
             final_param_env,
             final_local_env,
