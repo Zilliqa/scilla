@@ -1,0 +1,5 @@
+let x : Uint128 = Uint128 0
+in
+let y : Uint128 = Uint128 1
+in
+builtin add { } x y
