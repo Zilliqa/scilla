@@ -95,6 +95,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "constraint_type_illegal.scilla";
       "match-in-transition.scilla";
       "listiter-bad.scilla";
+      "builtin_type_args.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1

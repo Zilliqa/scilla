@@ -38,7 +38,13 @@ end
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
   module BuiltInDictionary : sig
     type built_in_executor =
-      BILiteral.t list -> BIType.t -> (BILiteral.t, scilla_error list) result
+      BIType.t list ->
+      (* type arguments *)
+      BILiteral.t list ->
+      (* value arguments *)
+      BIType.t ->
+      (* result type *)
+      (BILiteral.t, scilla_error list) result
 
     (* The return result is a triple:
      * The full elaborated type of the operation, e.g., string -> Bool
@@ -47,11 +53,20 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
      *)
     val find_builtin_op :
       ER.rep builtin_annot ->
-      BIType.t list ->
+      targtypes:BIType.t list ->
+      (* type arguments *)
+      vargtypes:BIType.t list ->
+      (* types of value arguments *)
       (BIType.t * BIType.t * built_in_executor, scilla_error list) result
   end
 
   (* Elaborator for the built-in typ *)
   val elab_id :
-    BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
+    BIType.t ->
+    (* builtin type *)
+    BIType.t list ->
+    (* type arguments *)
+    BIType.t list ->
+    (* types of value arguments *)
+    (BIType.t, scilla_error list) result
 end
