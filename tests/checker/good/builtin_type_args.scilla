@@ -1,0 +1,12 @@
+scilla_version 0
+
+library Lib
+
+let x : Uint128 = Uint128 0
+
+let y : Uint128 = Uint128 1
+
+(* Empty type argument allowed to add *)
+let foo = builtin add { } x y
+
+contract Contr()
