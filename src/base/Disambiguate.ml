@@ -455,14 +455,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   pure (dis_p, dis_erep'))
             in
             pure @@ PostDisSyntax.MatchExpr (dis_x, dis_pes)
-        | Builtin (b, args) ->
+        | Builtin (b, targs, args) ->
+            let%bind dis_targs = mapM targs ~f:disambiguate_type_helper in
             let%bind dis_args =
               mapM args
                 ~f:
                   (disambiguate_identifier_helper simp_var_dict
                      (ER.get_loc rep))
             in
-            pure @@ PostDisSyntax.Builtin (b, dis_args)
+            pure @@ PostDisSyntax.Builtin (b, dis_targs, dis_args)
         | TFun (tvar, body) ->
             let%bind dis_tvar = name_def_as_simple_global tvar in
             (* tvar is in scope as a type, but won't affect disambiguation,

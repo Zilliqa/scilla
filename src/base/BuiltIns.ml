@@ -22,7 +22,6 @@ open Syntax
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
-open Big_int
 open Stdint
 open TypeUtil
 open Integer256
@@ -93,12 +92,22 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         let _ = Uint256.to_bytes_big_endian ui buf 0 in
         Bytes.to_string buf
 
+  (* Elaborates the operation type based on the arguments types *)
+  type elaborator =
+    BIType.t ->
+    (* builtin type *)
+    BIType.t list ->
+    (* type arguments *)
+    BIType.t list ->
+    (* types of value arguments *)
+    (BIType.t, scilla_error list) result
+
   (*******************************************************)
   (**************** String *******************************)
   (*******************************************************)
 
   (* String operations *)
-  module String = struct
+  module StringBuiltins = struct
     open Datatypes.DataTypeDictionary
 
     (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
@@ -107,122 +116,65 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
 
-    let eq ls _ =
-      match ls with
-      | [ StringLit x; StringLit y ] -> pure @@ build_bool_lit String.(x = y)
-      | _ -> builtin_fail "String.eq" ls
-
     let concat_arity = 2
 
     let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ
-
-    let concat ls _ =
-      match ls with
-      | [ StringLit x; StringLit y ] -> pure @@ StringLit (x ^ y)
-      | _ -> builtin_fail "String.concat" ls
 
     let substr_arity = 3
 
     let substr_type =
       fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
 
-    let substr ls _ =
-      match ls with
-      | [ StringLit x; UintLit (Uint32L s); UintLit (Uint32L e) ] -> (
-          try
-            pure
-            @@ StringLit
-                 (String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
-          with Invalid_argument msg ->
-            builtin_fail ("String.substr: " ^ msg) ls )
-      | _ -> builtin_fail "String.substr" ls
-
     let strlen_arity = 1
 
     let strlen_type = tfun_typ "'A" (fun_typ (tvar "'A") uint32_typ)
 
-    let strlen_elab _ ts =
-      match ts with
-      | [ PrimType pt ] -> (
+    let strlen_elab _ targs ts =
+      match (targs, ts) with
+      | [], [ PrimType pt ] -> (
           match pt with
           | String_typ | Bystr_typ -> elab_tfun_with_args_no_gas strlen_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | _ -> fail0 "Failed to elaborate"
-
-    let strlen ls _ =
-      match ls with
-      | [ StringLit x ] ->
-          pure @@ UintLit (Uint32L (Uint32.of_int (String.length x)))
-      | [ ByStr bs ] ->
-          pure @@ UintLit (Uint32L (Uint32.of_int (Bystr.length bs)))
-      | _ -> builtin_fail "String.strlen" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_string_arity = 1
 
     let to_string_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
 
-    let to_string_elab _ ts =
-      match ts with
-      | [ PrimType pt ] -> (
+    let to_string_elab _ targs ts =
+      match (targs, ts) with
+      | [], [ PrimType pt ] -> (
           match pt with
           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_string_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_string ls _ =
-      let%bind s =
-        match ls with
-        | [ IntLit x ] -> pure @@ string_of_int_lit x
-        | [ UintLit x ] -> pure @@ string_of_uint_lit x
-        | [ ByStr x ] -> pure @@ Bystr.hex_encoding x
-        | [ ByStrX x ] -> pure @@ Bystrx.hex_encoding x
-        | _ -> builtin_fail (sprintf "String.to_string") ls
-      in
-      pure @@ StringLit s
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_ascii_arity = 1
 
     let to_ascii_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
 
-    let to_ascii_elab _ ts =
-      match ts with
-      | [ PrimType pt ] -> (
+    let to_ascii_elab _ targs ts =
+      match (targs, ts) with
+      | [], [ PrimType pt ] -> (
           match pt with
           | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_ascii_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_ascii ls _ =
-      let%bind s =
-        match ls with
-        | [ ByStr x ] -> pure @@ Bystr.to_raw_bytes x
-        | [ ByStrX x ] -> pure @@ Bystrx.to_raw_bytes x
-        | _ -> builtin_fail (sprintf "String.to_ascii") ls
-      in
-      if validate_string_literal s then pure @@ StringLit s
-      else fail0 "String.to_ascii: Not printable"
+      | _, _ -> fail0 "Failed to elaborate"
 
     let strrev_arity = 1
 
     let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
 
-    let strrev_elab _ ts =
-      match ts with
-      | [ PrimType pt ] -> (
+    let strrev_elab _ targs ts =
+      match (targs, ts) with
+      | [], [ PrimType pt ] -> (
           match pt with
           | String_typ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas strrev_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | _ -> fail0 "Failed to elaborate"
-
-    let strrev ls _ =
-      match ls with
-      | [ StringLit x ] -> pure @@ StringLit (String.rev x)
-      | [ ByStr x ] -> pure @@ ByStr (Bystr.rev x)
-      | [ ByStrX x ] -> pure @@ ByStrX (Bystrx.rev x)
-      | _ -> builtin_fail (sprintf "String.strrev") ls
+      | _, _ -> fail0 "Failed to elaborate"
   end
 
   (* Instantiating the functors *)
@@ -240,7 +192,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   (*******************************************************)
 
   (* Integer operations *)
-  module Int = struct
+  module IntBuiltins = struct
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -248,161 +200,34 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let eq_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
-    let eq_elab t ts =
-      match ts with
-      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
+    let eq_elab t targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
 
     let binop_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
 
-    let binop_elab t ts =
-      match ts with
-      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
+    let binop_elab t targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let eq ls _ =
-      match ls with
-      | [ IntLit x; IntLit y ] -> pure @@ build_bool_lit ([%equal: int_lit] x y)
-      | _ -> builtin_fail "Int.eq: unsupported types" ls
-
-    let add ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-              pure @@ Int32L (Int32_safe.add x y)
-          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-              pure @@ Int64L (Int64_safe.add x y)
-          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-              pure @@ Int128L (Int128_safe.add x y)
-          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-              pure @@ Int256L (Int256_safe.add x y)
-          | _ -> builtin_fail "Int.add: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.add: an overflow/underflow occurred" ls
-
-    let sub ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-              pure @@ Int32L (Int32_safe.sub x y)
-          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-              pure @@ Int64L (Int64_safe.sub x y)
-          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-              pure @@ Int128L (Int128_safe.sub x y)
-          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-              pure @@ Int256L (Int256_safe.sub x y)
-          | _ -> builtin_fail "Int.sub: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.sub: an overflow/underflow occurred" ls
-
-    let mul ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-              pure @@ Int32L (Int32_safe.mul x y)
-          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-              pure @@ Int64L (Int64_safe.mul x y)
-          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-              pure @@ Int128L (Int128_safe.mul x y)
-          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-              pure @@ Int256L (Int256_safe.mul x y)
-          | _ -> builtin_fail "Int.mul: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.mul: an overflow/underflow occurred" ls
-
-    let div ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-              pure @@ Int32L (Int32_safe.div x y)
-          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-              pure @@ Int64L (Int64_safe.div x y)
-          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-              pure @@ Int128L (Int128_safe.div x y)
-          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-              pure @@ Int256L (Int256_safe.div x y)
-          | _ -> builtin_fail "Int.div: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with Division_by_zero | IntOverflow ->
-        builtin_fail "Int.div: Division by zero / IntOverflow error occurred" ls
-
-    let rem ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-              pure @@ Int32L (Int32_safe.rem x y)
-          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-              pure @@ Int64L (Int64_safe.rem x y)
-          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-              pure @@ Int128L (Int128_safe.rem x y)
-          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-              pure @@ Int256L (Int256_safe.rem x y)
-          | _ -> builtin_fail "Int.rem: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with Division_by_zero ->
-        builtin_fail "Int.rem: Division by zero error occurred" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let pow_arity = 2
 
     let pow_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
 
-    let pow_elab t ts =
-      match ts with
-      | [ i1; i2 ] when is_int_type i1 && [%equal: BIType.t] i2 uint32_typ ->
+    let pow_elab t targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when is_int_type i1 && [%equal: BIType.t] i2 uint32_typ
+        ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let pow ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
-              pure @@ Int32L (Int32_safe.pow x y)
-          | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
-              pure @@ Int64L (Int64_safe.pow x y)
-          | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
-              pure @@ Int128L (Int128_safe.pow x y)
-          | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
-              pure @@ Int256L (Int256_safe.pow x y)
-          | _ -> builtin_fail "Int.pow: unsupported types" ls
-        in
-        pure @@ IntLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.pow: an overflow/underflow occurred" ls
-
-    let lt ls _ =
-      try
-        match ls with
-        | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
-            pure @@ build_bool_lit (Int32_safe.lt x y)
-        | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
-            pure @@ build_bool_lit (Int64_safe.lt x y)
-        | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
-            pure @@ build_bool_lit (Int128_safe.lt x y)
-        | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
-            pure @@ build_bool_lit (Int256_safe.lt x y)
-        | _ -> builtin_fail "Int.lt: unsupported types" ls
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.lt: an overflow/underflow occurred" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_int_arity = 1
 
@@ -410,40 +235,18 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       tfun_typ "'A"
       @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
-    let to_int_elab w sc ts =
-      match ts with
-      | [ (PrimType (Int_typ _) as t) ]
-      | [ (PrimType (Uint_typ _) as t) ]
-      | [ (PrimType String_typ as t) ] ->
+    let to_int_elab w sc targs ts =
+      match (targs, ts) with
+      | [], [ (PrimType (Int_typ _) as t) ]
+      | [], [ (PrimType (Uint_typ _) as t) ]
+      | [], [ (PrimType String_typ as t) ] ->
           let ityp = PrimType (Int_typ w) in
           elab_tfun_with_args_no_gas sc [ t; ityp ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_int_helper ls w =
-      let open Type.PrimType in
-      let%bind xs =
-        match ls with
-        | [ IntLit x ] -> pure @@ string_of_int_lit x
-        | [ UintLit x ] -> pure @@ string_of_uint_lit x
-        | [ StringLit x ] -> pure x
-        | _ -> builtin_fail ("Int.to_int" ^ int_bit_width_to_string w) ls
-      in
-      let iptyp = Int_typ w in
-      match build_prim_literal iptyp xs with
-      | Some lit -> pure @@ build_some_lit lit (PrimType iptyp)
-      | None -> pure @@ build_none_lit (PrimType iptyp)
-
-    let to_int32 ls _ = to_int_helper ls Bits32
-
-    let to_int64 ls _ = to_int_helper ls Bits64
-
-    let to_int128 ls _ = to_int_helper ls Bits128
-
-    let to_int256 ls _ = to_int_helper ls Bits256
+      | _, _ -> fail0 "Failed to elaborate"
   end
 
   (* Unsigned integer operation *)
-  module Uint = struct
+  module UintBuiltins = struct
     open Datatypes.DataTypeDictionary
 
     let eq_arity = 2
@@ -451,186 +254,43 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let eq_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
-    let eq_elab sc ts =
-      match ts with
-      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
+    let eq_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 "Failed to elaborate"
 
     let binop_arity = 2
 
     let binop_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") (tvar "'A"))
 
-    let binop_elab sc ts =
-      match ts with
-      | [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
+    let binop_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let eq ls _ =
-      match ls with
-      | [ UintLit x; UintLit y ] ->
-          pure @@ build_bool_lit ([%equal: uint_lit] x y)
-      | _ -> builtin_fail "Uint.eq: unsupported types" ls
-
-    let add ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.add x y)
-          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-              pure @@ Uint64L (Uint64_safe.add x y)
-          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-              pure @@ Uint128L (Uint128_safe.add x y)
-          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-              pure @@ Uint256L (Uint256_safe.add x y)
-          | _ -> builtin_fail "Uint.add: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Uint.add: an overflow/underflow occurred" ls
-
-    let sub ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.sub x y)
-          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-              pure @@ Uint64L (Uint64_safe.sub x y)
-          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-              pure @@ Uint128L (Uint128_safe.sub x y)
-          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-              pure @@ Uint256L (Uint256_safe.sub x y)
-          | _ -> builtin_fail "Uint.sub: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Uint.sub: an overflow/underflow occurred" ls
-
-    let mul ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.mul x y)
-          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-              pure @@ Uint64L (Uint64_safe.mul x y)
-          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-              pure @@ Uint128L (Uint128_safe.mul x y)
-          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-              pure @@ Uint256L (Uint256_safe.mul x y)
-          | _ -> builtin_fail "Uint.mul: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Uint.mul: an overflow/underflow occurred" ls
-
-    let div ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.div x y)
-          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-              pure @@ Uint64L (Uint64_safe.div x y)
-          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-              pure @@ Uint128L (Uint128_safe.div x y)
-          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-              pure @@ Uint256L (Uint256_safe.div x y)
-          | _ -> builtin_fail "Uint.div: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with Division_by_zero ->
-        builtin_fail "Uint.div: Division by zero / UintOverflow error occurred"
-          ls
-
-    let rem ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.rem x y)
-          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-              pure @@ Uint64L (Uint64_safe.rem x y)
-          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-              pure @@ Uint128L (Uint128_safe.rem x y)
-          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-              pure @@ Uint256L (Uint256_safe.rem x y)
-          | _ -> builtin_fail "Uint.rem: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with Division_by_zero ->
-        builtin_fail "Uint.rem: Division by zero error occurred" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let pow_arity = 2
 
     let pow_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ uint32_typ (tvar "'A"))
 
-    let pow_elab t ts =
-      match ts with
-      | [ i1; i2 ] when is_uint_type i1 && [%equal: BIType.t] i2 uint32_typ ->
+    let pow_elab t targs ts =
+      match (targs, ts) with
+      | [], [ i1; i2 ] when is_uint_type i1 && [%equal: BIType.t] i2 uint32_typ
+        ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let pow ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint32L (Uint32_safe.pow x y)
-          | [ UintLit (Uint64L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint64L (Uint64_safe.pow x y)
-          | [ UintLit (Uint128L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint128L (Uint128_safe.pow x y)
-          | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
-              pure @@ Uint256L (Uint256_safe.pow x y)
-          | _ -> builtin_fail "Int.pow: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Int.pow: an overflow/underflow occurred" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let isqrt_arity = 1
 
     let isqrt_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
 
-    let isqrt_elab t ts =
-      match ts with
-      | [ i ] when is_uint_type i -> elab_tfun_with_args_no_gas t [ i ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let isqrt ls _ =
-      try
-        let%bind l =
-          match ls with
-          | [ UintLit (Uint32L x) ] -> pure @@ Uint32L (Uint32_safe.isqrt x)
-          | [ UintLit (Uint64L x) ] -> pure @@ Uint64L (Uint64_safe.isqrt x)
-          | [ UintLit (Uint128L x) ] -> pure @@ Uint128L (Uint128_safe.isqrt x)
-          | [ UintLit (Uint256L x) ] -> pure @@ Uint256L (Uint256_safe.isqrt x)
-          | _ -> builtin_fail "Uint.isqrt: unsupported types" ls
-        in
-        pure @@ UintLit l
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Uint.isqrt: isqrt cannot throw, impossible!" ls
-
-    let lt ls _ =
-      try
-        match ls with
-        | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
-            pure @@ build_bool_lit (Uint32_safe.lt x y)
-        | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
-            pure @@ build_bool_lit (Uint64_safe.lt x y)
-        | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
-            pure @@ build_bool_lit (Uint128_safe.lt x y)
-        | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
-            pure @@ build_bool_lit (Uint256_safe.lt x y)
-        | _ -> builtin_fail "Uint.lt: unsupported types" ls
-      with IntOverflow | IntUnderflow ->
-        builtin_fail "Uint.lt: an overflow/underflow occurred" ls
+    let isqrt_elab t targs ts =
+      match (targs, ts) with
+      | [], [ i ] when is_uint_type i -> elab_tfun_with_args_no_gas t [ i ]
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_uint_arity = 1
 
@@ -638,106 +298,47 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       tfun_typ "'A"
       @@ tfun_typ "'B" (fun_typ (tvar "'A") (option_typ (tvar "'B")))
 
-    let to_uint_elab w sc ts =
-      match ts with
-      | [ (PrimType (Int_typ _) as t) ]
-      | [ (PrimType (Uint_typ _) as t) ]
-      | [ (PrimType String_typ as t) ] ->
+    let to_uint_elab w sc targs ts =
+      match (targs, ts) with
+      | [], [ (PrimType (Int_typ _) as t) ]
+      | [], [ (PrimType (Uint_typ _) as t) ]
+      | [], [ (PrimType String_typ as t) ] ->
           let ityp = PrimType (Uint_typ w) in
           elab_tfun_with_args_no_gas sc [ t; ityp ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_uint_helper ls w =
-      let open Type.PrimType in
-      let%bind xs =
-        match ls with
-        | [ IntLit x ] -> pure @@ string_of_int_lit x
-        | [ UintLit x ] -> pure @@ string_of_uint_lit x
-        | [ StringLit x ] -> pure x
-        | _ -> builtin_fail ("UInt.to_uint" ^ int_bit_width_to_string w) ls
-      in
-
-      let iptyp = Uint_typ w in
-      match build_prim_literal iptyp xs with
-      | Some lit -> pure @@ build_some_lit lit (PrimType iptyp)
-      | None -> pure @@ build_none_lit (PrimType iptyp)
-
-    let to_uint32 ls _ = to_uint_helper ls Bits32
-
-    let to_uint64 ls _ = to_uint_helper ls Bits64
-
-    let to_uint128 ls _ = to_uint_helper ls Bits128
-
-    let to_uint256 ls _ = to_uint_helper ls Bits256
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_nat_arity = 1
 
     let to_nat_type = fun_typ uint32_typ nat_typ
-
-    let to_nat ls _ =
-      match ls with
-      | [ UintLit (Uint32L n) ] ->
-          let rec nat_builder (i : Uint32.t) (acc : BILiteral.t) =
-            if [%equal: uint32] i Uint32.zero then acc
-            else nat_builder (Uint32.pred i) (build_succ_lit acc)
-          in
-          pure @@ nat_builder n zero_lit
-      (* Other integer widths can be in the library, using integer conversions. *)
-      | _ -> builtin_fail "Uint.to_nat only supported for Uint32" ls
 
     let to_bystrx_arity = 1
 
     let to_bystrx_type =
       tfun_typ "'A" @@ tfun_typ "'B" (fun_typ (tvar "'A") (tvar "'B"))
 
-    let to_bystrx_elab x sc ts =
+    let to_bystrx_elab x sc targs ts =
       let open Type.PrimType in
-      match ts with
-      | [ (PrimType (Uint_typ w) as t) ] when int_bit_width_to_int w / 8 = x ->
+      match (targs, ts) with
+      | [], [ (PrimType (Uint_typ w) as t) ] when int_bit_width_to_int w / 8 = x
+        ->
           elab_tfun_with_args_no_gas sc
             [ t; PrimType (Bystrx_typ (int_bit_width_to_int w / 8)) ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_bystrx ls _ =
-      match ls with
-      | [ UintLit nl ] -> (
-          match
-            Bystrx.of_raw_bytes
-              (uint_lit_width nl / 8)
-              (bstring_from_uint_lit nl)
-          with
-          | Some nlbs -> pure @@ ByStrX nlbs
-          | None -> fail0 "Internal error in converting UintLit to ByStrX" )
-      | _ -> builtin_fail "Uint.to_bystrx: unsupported type" ls
+      | _, _ -> fail0 "Failed to elaborate"
   end
 
   (***********************************************************)
   (* Working with block numbers *)
   (***********************************************************)
-  module BNum = struct
+  module BNumBuiltins = struct
     open Datatypes.DataTypeDictionary
 
     let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
 
     let eq_arity = 2
 
-    let eq ls _ =
-      match ls with
-      | [ BNum x; BNum y ] -> pure @@ build_bool_lit Core_kernel.String.(x = y)
-      | _ -> builtin_fail "BNum.eq" ls
-
     let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
 
     let blt_arity = 2
-
-    let blt ls _ =
-      match ls with
-      | [ BNum x; BNum y ] ->
-          pure
-            (let i1 = big_int_of_string x in
-             let i2 = big_int_of_string y in
-             build_bool_lit (lt_big_int i1 i2))
-      | _ -> builtin_fail "BNum.blt" ls
 
     let badd_arity = 2
 
@@ -747,24 +348,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (tvar "'B") bnum_typ
 
     (* Elaborator to run with arbitrary uints *)
-    let badd_elab sc ts =
-      match ts with
-      | [ PrimType Bnum_typ; PrimType (Uint_typ _) ] ->
+    let badd_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ PrimType Bnum_typ; PrimType (Uint_typ _) ] ->
           elab_tfun_with_args_no_gas sc ts
-      | _ -> fail0 "Failed to elaborate"
-
-    let badd ls _ =
-      match ls with
-      | [ BNum x; UintLit y ] ->
-          let i1 = big_int_of_string x in
-          let i2 = big_int_of_string (string_of_uint_lit y) in
-          if ge_big_int i2 (big_int_of_int 0) then
-            pure @@ BNum (string_of_big_int (add_big_int i1 i2))
-          else
-            fail0
-            @@ sprintf "Cannot add a negative value (%s) to a block."
-                 (string_of_uint_lit y)
-      | _ -> builtin_fail "BNum.badd" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let bsub_arity = 2
 
@@ -774,207 +362,85 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (tvar "'B") int256_typ
 
     (* Elaborator to run with arbitrary uints *)
-    let bsub_elab sc ts =
-      match ts with
-      | [ PrimType Bnum_typ; PrimType Bnum_typ ] ->
+    let bsub_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ PrimType Bnum_typ; PrimType Bnum_typ ] ->
           elab_tfun_with_args_no_gas sc ts
-      | _ -> fail0 "Failed to elaborate"
-
-    let bsub ls _ =
-      match ls with
-      | [ BNum x; BNum y ] -> (
-          let i1 = big_int_of_string x in
-          let i2 = big_int_of_string y in
-          let d = Big_int.sub_big_int i1 i2 in
-          match
-            build_prim_literal (Int_typ Bits256) (Big_int.string_of_big_int d)
-          with
-          | Some l -> pure l
-          | None ->
-              fail0
-              @@ sprintf
-                   "Unable to express result of BNum subtraction in Int256" )
-      | _ -> builtin_fail "BNum.bsub" ls
+      | _, _ -> fail0 "Failed to elaborate"
   end
 
   (***********************************************************)
   (******************** Crypto Builtins *************************)
   (***********************************************************)
-  module Crypto = struct
+  module CryptoBuiltins = struct
     open UsefulLiterals
-    open Cryptokit
     open Datatypes.DataTypeDictionary
     open Scilla_crypto.Schnorr
-
-    (* Hash raw bytes / binary string. *)
-    let sha256_hasher s = hash_string (Hash.sha2 256) s
-
-    (* Keccak256 hash raw bytes / binary string. *)
-    let keccak256_hasher s = hash_string (Hash.keccak 256) s
-
-    (* Ripemd hash raw bytes/ binary string. *)
-    let ripemd160_hasher s = hash_string (Hash.ripemd160 ()) s
-
-    let hash_helper hasher name len ls =
-      match ls with
-      | [ l ] -> (
-          let rec raw_bytes l =
-            match l with
-            (* we don't keep type information here *)
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | BNum s -> s
-            | ByStr bs -> Bystr.to_raw_bytes bs
-            | ByStrX bs -> Bystrx.to_raw_bytes bs
-            | Msg entries ->
-                let raw_entries =
-                  List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v)
-                in
-                Core_kernel.String.concat ~sep:"" raw_entries
-            | Map (_, tbl) ->
-                let raw_strings =
-                  Caml.Hashtbl.fold
-                    (fun k v acc -> raw_bytes k :: raw_bytes v :: acc)
-                    tbl []
-                in
-                Core_kernel.String.concat ~sep:"" raw_strings
-            | ADTValue (cons_name, _, params) ->
-                let raw_params = List.map params ~f:raw_bytes in
-                Core_kernel.String.concat ~sep:""
-                  (BIName.as_string cons_name :: raw_params)
-            | Clo _fun -> "(Clo <fun>)"
-            | TAbs _fun -> "(Tabs <fun>)"
-          in
-          let lhash = hasher (raw_bytes l) in
-          match Bystrx.of_raw_bytes len lhash with
-          | Some bs -> pure @@ ByStrX bs
-          | None ->
-              builtin_fail
-                ("Crypto." ^ name ^ ": internal error, invalid hash")
-                ls )
-      | _ -> builtin_fail ("Crypto." ^ name) ls
 
     let eq_type =
       tfun_typ "'A" (fun_typ (tvar "'A") @@ fun_typ (tvar "'A") bool_typ)
 
     let eq_arity = 2
 
-    let eq_elab sc ts =
-      match ts with
-      | [ bstyp1; bstyp2 ]
+    let eq_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ bstyp1; bstyp2 ]
         when (* Addresses should be compared as ByStr20 *)
              is_address_type bstyp1 || is_address_type bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
-      | [ bstyp1; bstyp2 ]
+      | [], [ bstyp1; bstyp2 ]
         when (* We want both types to be ByStr with equal width. *)
              is_bystrx_type bstyp1 && [%equal: BIType.t] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
-      | [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
+      | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc [ PrimType Bystr_typ ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let eq ls _ =
-      match ls with
-      | [ ByStrX bs1; ByStrX bs2 ] ->
-          pure @@ build_bool_lit (Bystrx.equal bs1 bs2)
-      | [ ByStr bs1; ByStr bs2 ] -> pure @@ build_bool_lit (Bystr.equal bs1 bs2)
-      | _ -> builtin_fail "Crypto.eq" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let hash_type =
       tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
 
     let hash_arity = 1
 
-    let hash_elab sc ts =
-      match ts with
-      | [ _ ] -> elab_tfun_with_args_no_gas sc ts
-      | _ -> fail0 "Failed to elaborate"
-
-    let sha256hash ls _ = hash_helper sha256_hasher "sha256hash" hash_length ls
-
-    let keccak256hash ls _ =
-      hash_helper keccak256_hasher "keccak256hash" hash_length ls
+    let hash_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ _ ] -> elab_tfun_with_args_no_gas sc ts
+      | _, _ -> fail0 "Failed to elaborate"
 
     (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
     let ripemd160hash_type =
       tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ Type.address_length)
-
-    let ripemd160hash ls _ =
-      hash_helper ripemd160_hasher "ripemd160hash" Type.address_length ls
 
     (* ByStr -> Option ByStrX *)
     let to_bystrx_type x = fun_typ bystr_typ (option_typ (bystrx_typ x))
 
     let to_bystrx_arity = 1
 
-    let to_bystrx x ls _ =
-      match ls with
-      | [ ByStr bs ] -> (
-          match Bystrx.of_raw_bytes x (Bystr.to_raw_bytes bs) with
-          | Some l' -> some_lit (ByStrX l')
-          | None -> pure @@ none_lit (bystrx_typ x) )
-      | _ -> builtin_fail "Crypto.to_bystr" ls
-
     (* ByStrX -> ByStr *)
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
 
     let to_bystr_arity = 1
 
-    let to_bystr_elab sc ts =
-      match ts with
-      | [ t ] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_bystr ls _ =
-      match ls with
-      | [ ByStrX bs ] -> pure @@ ByStr (Bystrx.to_bystr bs)
-      | _ -> builtin_fail "Crypto.to_bystr" ls
+    let to_bystr_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ t ] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
+      | _, _ -> fail0 "Failed to elaborate"
 
     let substr_arity = 3
 
     let substr_type =
       fun_typ bystr_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ bystr_typ
 
-    let substr ls _ =
-      try
-        match ls with
-        | [ ByStr x; UintLit (Uint32L s); UintLit (Uint32L e) ] ->
-            pure
-            @@ ByStr (Bystr.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
-        | _ -> builtin_fail "Crypto.substr" ls
-      with Invalid_argument msg -> builtin_fail ("Crypto.substr: " ^ msg) ls
-
     let to_uint_type x =
       tfun_typ "'A" @@ fun_typ (tvar "'A") (PrimType (Uint_typ x))
 
     let to_uint_arity = 1
 
-    let to_uint_elab x sc ts =
+    let to_uint_elab x sc targs ts =
       let open Type.PrimType in
-      match ts with
-      | [ PrimType (Bystrx_typ w) ] when w <= int_bit_width_to_int x / 8 ->
+      match (targs, ts) with
+      | [], [ PrimType (Bystrx_typ w) ] when w <= int_bit_width_to_int x / 8 ->
           elab_tfun_with_args_no_gas sc ts
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_uint x ls _ =
-      let open Type.PrimType in
-      let width_bytes = int_bit_width_to_int x / 8 in
-      match ls with
-      | [ ByStrX bs ] when Bystrx.width bs <= width_bytes ->
-          (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
-          let rem = width_bytes - Bystrx.width bs in
-          let pad = Core_kernel.String.make rem '\000' in
-          let bs_padded = Bytes.of_string (pad ^ Bystrx.to_raw_bytes bs) in
-          let l =
-            match x with
-            | Bits32 -> Uint32L (Uint32.of_bytes_big_endian bs_padded 0)
-            | Bits64 -> Uint64L (Uint64.of_bytes_big_endian bs_padded 0)
-            | Bits128 -> Uint128L (Uint128.of_bytes_big_endian bs_padded 0)
-            | Bits256 -> Uint256L (Uint256.of_bytes_big_endian bs_padded 0)
-          in
-          pure (UintLit l)
-      | _ -> builtin_fail ("Crypto.to_uint" ^ int_bit_width_to_string x) ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let bech32_to_bystr20_type =
       fun_typ string_typ
@@ -982,38 +448,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let bech32_to_bystr20_arity = 2
 
-    let bech32_to_bystr20 ls _ =
-      match ls with
-      | [ StringLit prfx; StringLit addr ] -> (
-          if Core_kernel.String.(prfx <> "zil" && prfx <> "tzil") then
-            fail0 "Only zil and tzil bech32 addresses are supported"
-          else
-            match Bech32.decode_bech32_addr ~prfx ~addr with
-            | Some bys20 -> (
-                match Bystrx.of_raw_bytes 20 bys20 with
-                | Some b -> some_lit @@ ByStrX b
-                | None -> fail0 "Invalid bech32 decode" )
-            | None -> fail0 "bech32 decoding failed" )
-      | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
-
     let bystr20_to_bech32_type =
       fun_typ string_typ
         (fun_typ (bystrx_typ Type.address_length) (option_typ string_typ))
 
     let bystr20_to_bech32_arity = 2
-
-    let bystr20_to_bech32 ls _ =
-      match ls with
-      | [ StringLit prfx; ByStrX addr ] -> (
-          if Core_kernel.String.(prfx <> "zil" && prfx <> "tzil") then
-            fail0 "Only zil and tzil bech32 addresses are supported"
-          else
-            match
-              Bech32.encode_bech32_addr ~prfx ~addr:(Bystrx.to_raw_bytes addr)
-            with
-            | Some bech32 -> some_lit @@ StringLit bech32
-            | None -> fail0 "bech32 encoding failed" )
-      | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
 
     (* ByStrX + ByStrY -> ByStr(X+Y)*)
     let concat_type =
@@ -1022,19 +461,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let concat_arity = 2
 
-    let concat_elab sc ts =
-      match ts with
-      | [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
+    let concat_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + w2) ])
-      | [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
+      | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
-      | _ -> fail0 "Failed to elaborate"
-
-    let concat ls _ =
-      match ls with
-      | [ ByStrX bs1; ByStrX bs2 ] -> pure @@ ByStrX (Bystrx.concat bs1 bs2)
-      | [ ByStr bs1; ByStr bs2 ] -> pure @@ ByStr (Bystr.concat bs1 bs2)
-      | _ -> builtin_fail "Crypto.concat" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let[@warning "-32"] ec_gen_key_pair_type =
       fun_typ unit_typ
@@ -1104,21 +537,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let schnorr_verify_arity = 3
 
-    let schnorr_verify ls _ =
-      match ls with
-      | [ ByStrX pubkey; ByStr msg; ByStrX signature ]
-        when Bystrx.width pubkey = pubkey_len
-             && Bystrx.width signature = signature_len -> (
-          match
-            verify
-              (Bystrx.to_raw_bytes pubkey)
-              (Bystr.to_raw_bytes msg)
-              (Bystrx.to_raw_bytes signature)
-          with
-          | Some v -> pure @@ build_bool_lit v
-          | None -> builtin_fail "schnorr_verify: internal error" ls )
-      | _ -> builtin_fail "schnorr_verify" ls
-
     let[@warning "-32"] ecdsa_sign_type =
       fun_typ (bystrx_typ Secp256k1Wrapper.privkey_len)
       (* private key *)
@@ -1155,21 +573,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let ecdsa_verify_arity = 3
 
-    let ecdsa_verify ls _ =
-      let open Secp256k1Wrapper in
-      match ls with
-      | [ ByStrX pubkey; ByStr msg; ByStrX signature ]
-        when Bystrx.width signature = signature_len
-             && Bystrx.width pubkey = pubkey_len ->
-          let%bind v =
-            verify
-              (Bystrx.to_raw_bytes pubkey)
-              (Bystr.to_raw_bytes msg)
-              (Bystrx.to_raw_bytes signature)
-          in
-          pure @@ build_bool_lit v
-      | _ -> builtin_fail "ecdsa_verify" ls
-
     let ecdsa_recover_pk_arity = 3
 
     let ecdsa_recover_pk_type =
@@ -1182,41 +585,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         (* public key *)
         (bystrx_typ Secp256k1Wrapper.uncompressed_pubkey_len)
 
-    let ecdsa_recover_pk ls _ =
-      let open Secp256k1Wrapper in
-      match ls with
-      | [ ByStr msg; ByStrX signature; UintLit (Uint32L recid) ]
-        when Bystrx.width signature = signature_len -> (
-          let%bind pk =
-            recover_pk (Bystr.to_raw_bytes msg)
-              (Bystrx.to_raw_bytes signature)
-              (Stdint.Uint32.to_int recid)
-          in
-          match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
-          | Some pk' -> pure (ByStrX pk')
-          | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls )
-      | _ -> builtin_fail "ecdsa_recover_pk" ls
-
     let schnorr_get_address_type =
       fun_typ (bystrx_typ pubkey_len) (bystrx_typ Type.address_length)
 
     let schnorr_get_address_arity = 1
 
-    let schnorr_get_address ls _ =
-      match ls with
-      | [ ByStrX pubkey ] when Bystrx.width pubkey = pubkey_len -> (
-          let pks = Bystrx.to_raw_bytes pubkey in
-          (* Hash the public key *)
-          let pkh = sha256_hasher pks in
-          (* and extract the least significant 20 bytes. *)
-          let addr = Core_kernel.String.suffix pkh 20 in
-          match Bystrx.of_raw_bytes Type.address_length addr with
-          | Some bs -> pure @@ ByStrX bs
-          | None -> builtin_fail "schnorr_get_address: Internal error." ls )
-      | _ -> builtin_fail "schnorr_get_address" ls
-
     open Datatypes.SnarkTypes
-    open Scilla_crypto
 
     (* alt_bn128_G1_add : zksnark_g1point_typ -> zksnark_g1point_type ->
                           Option {zksnark_g1point_type} *)
@@ -1225,18 +599,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let alt_bn128_G1_add_arity = 2
 
-    let alt_bn128_G1_add ls _ =
-      match ls with
-      | [ p1; p2 ] -> (
-          let%bind p1' = scilla_g1point_to_ocaml p1 in
-          let%bind p2' = scilla_g1point_to_ocaml p2 in
-          match Snark.alt_bn128_G1_add p1' p2' with
-          | None -> pure @@ none_lit g1point_type
-          | Some pr ->
-              let%bind pr' = ocaml_g1point_to_scilla_lit pr in
-              some_lit pr' )
-      | _ -> builtin_fail "Crypto.alt_bn128_G1_add" ls
-
     (* alt_bn128_G1_mul : zksnark_g1point_typ -> zksnark_g1point_type ->
                       Option {zksnark_g1point_type} *)
     let alt_bn128_G1_mul_type =
@@ -1244,39 +606,17 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let alt_bn128_G1_mul_arity = 2
 
-    let alt_bn128_G1_mul ls _ =
-      match ls with
-      | [ p1; s ] -> (
-          let%bind p1' = scilla_g1point_to_ocaml p1 in
-          let%bind s' = scilla_scalar_to_ocaml s in
-          match Snark.alt_bn128_G1_mul p1' s' with
-          | None -> pure @@ none_lit g1point_type
-          | Some pr ->
-              let%bind pr' = ocaml_g1point_to_scilla_lit pr in
-              some_lit pr' )
-      | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
-
-    (* alt_bn128_pairing_roduct : List (g1g2pair_type) -> Option {Bool} *)
+    (* alt_bn128_pairing_product : List (g1g2pair_type) -> Option {Bool} *)
     let alt_bn128_pairing_product_type =
       fun_typ g1g2pair_list_type (option_typ bool_typ)
 
     let alt_bn128_pairing_product_arity = 1
-
-    let alt_bn128_pairing_product ls _ =
-      match ls with
-      | [ pairs ] -> (
-          let%bind pairs' = scilla_g1g2pairlist_to_ocaml pairs in
-          match Snark.alt_bn128_pairing_product pairs' with
-          | None -> pure @@ none_lit bool_typ
-          | Some b -> some_lit (build_bool_lit b) )
-      | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
   end
 
   (***********************************************************)
-  (* Maps *)
+  (*                        Maps                             *)
   (***********************************************************)
-  module Maps = struct
-    open UsefulLiterals
+  module MapBuiltins = struct
     open Datatypes.DataTypeDictionary
 
     let contains_arity = 2
@@ -1286,18 +626,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (map_typ (tvar "'K") (tvar "'V"))
       @@ fun_typ (tvar "'K") bool_typ
 
-    let contains_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
+    let contains_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let contains ls _ =
-      match ls with
-      | [ Map (_, entries); key ] ->
-          let res = Caml.Hashtbl.mem entries key in
-          pure @@ build_bool_lit res
-      | _ -> builtin_fail "Map.contains" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let put_arity = 3
 
@@ -1307,22 +640,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (tvar "'K")
       @@ fun_typ (tvar "'V") (map_typ (tvar "'K") (tvar "'V"))
 
-    let put_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt); kt'; vt' ]
+    let put_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); kt'; vt' ]
         when type_assignable ~expected:kt ~actual:kt'
              && type_assignable ~expected:vt ~actual:vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let put ls _ =
-      match ls with
-      | [ Map (tm, entries); key; value ] ->
-          (* Scilla semantics is not in-place modification. *)
-          let entries' = Caml.Hashtbl.copy entries in
-          let _ = Caml.Hashtbl.replace entries' key value in
-          pure @@ Map (tm, entries')
-      | _ -> builtin_fail "Map.put" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     (* Must take result type into the account *)
     let get_arity = 2
@@ -1332,21 +656,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (map_typ (tvar "'K") (tvar "'V"))
       @@ fun_typ (tvar "'K") (option_typ (tvar "'V"))
 
-    let get_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt); kt' ] when type_assignable ~expected:kt ~actual:kt'
+    let get_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); kt' ] when type_assignable ~expected:kt ~actual:kt'
         ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    (* Notice that get passes return type *)
-    let get ls rt =
-      match (ls, rt) with
-      | [ Map (_, entries); key ], ADT (tname, [ targ ])
-        when Datatypes.is_option_adt_name (BIIdentifier.get_id tname) -> (
-          let res = Caml.Hashtbl.find_opt entries key in
-          match res with None -> pure @@ none_lit targ | Some v -> some_lit v )
-      | _ -> builtin_fail "Map.get" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let remove_arity = 2
 
@@ -1355,20 +670,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (map_typ (tvar "'K") (tvar "'V"))
       @@ fun_typ (tvar "'K") (map_typ (tvar "'K") (tvar "'V"))
 
-    let remove_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
+    let remove_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let remove ls _ =
-      match ls with
-      | [ Map (tm, entries); key ] ->
-          (* Scilla semantics is not in-place modification. *)
-          let entries' = Caml.Hashtbl.copy entries in
-          let _ = Caml.Hashtbl.remove entries' key in
-          pure @@ Map (tm, entries')
-      | _ -> builtin_fail "Map.remove" ls
+      | _, _ -> fail0 "Failed to elaborate"
 
     let to_list_arity = 1
 
@@ -1377,27 +683,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (map_typ (tvar "'K") (tvar "'V"))
       @@ list_typ (pair_typ (tvar "'K") (tvar "'V"))
 
-    let to_list_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let to_list ls _ =
-      match ls with
-      | [ Map ((kt, vt), entries) ] ->
-          (* The type of the output list will be "Pair (kt) (vt)" *)
-          let otyp = pair_typ kt vt in
-          let nil = build_nil_lit otyp in
-          let ol =
-            Caml.Hashtbl.fold
-              (fun k v accum ->
-                let kv = build_pair_lit k kt v vt in
-                let kvl = build_cons_lit kv otyp accum in
-                kvl)
-              entries nil
-          in
-          pure ol
-      | _ -> builtin_fail "Map.to_list" ls
+    let to_list_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
+      | _, _ -> fail0 "Failed to elaborate"
 
     let size_arity = 1
 
@@ -1406,36 +695,20 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       @@ fun_typ (map_typ (tvar "'K") (tvar "'V"))
       @@ uint32_typ
 
-    let size_elab sc ts =
-      match ts with
-      | [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _ -> fail0 "Failed to elaborate"
-
-    let size ls _ =
-      match ls with
-      | [ Map (_, entries) ] ->
-          (* The type of the output will be "Uint32" *)
-          let ol = Caml.Hashtbl.length entries in
-          pure (UintLit (Uint32L (Stdint.Uint32.of_int ol)))
-      | _ -> builtin_fail "Map.size" ls
+    let size_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
+      | _, _ -> fail0 "Failed to elaborate"
   end
 
   (* Identity elaborator *)
-  let elab_id t _ = pure t
+  let elab_id t _ _ = pure t
 
   (**********************************************************)
   (*                   Built-in  Dictionary                *)
   (**********************************************************)
 
   module BuiltInDictionary = struct
-    (* Elaborates the operation type based on the arguments types *)
-    type elaborator =
-      BIType.t -> BIType.t list -> (BIType.t, scilla_error list) result
-
-    (* Takes the expected type as an argument to elaborate the result *)
-    type built_in_executor =
-      BILiteral.t list -> BIType.t -> (BILiteral.t, scilla_error list) result
-
     (* A built-in record type:
        * arity
        * full, unelaborated type
@@ -1443,130 +716,132 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
          to support polymorphism -- e.g., for ints and maps
        * executor - operational semantics of the built-in
     *)
-    type built_in_record = int * BIType.t * elaborator * built_in_executor
+    type built_in_record = int * BIType.t * elaborator
 
     [@@@ocamlformat "disable"]
 
     (* All built-in functions *)
     let built_in_multidict : builtin -> built_in_record list = function
       (* Polymorphic builtins *)
-      | Builtin_eq -> [String.eq_arity, String.eq_type, elab_id, String.eq;
-                       BNum.eq_arity, BNum.eq_type, elab_id , BNum.eq;
-                       Crypto.eq_arity, Crypto.eq_type, Crypto.eq_elab, Crypto.eq;
-                       Int.eq_arity, Int.eq_type, Int.eq_elab, Int.eq;
-                       Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.eq]
-      | Builtin_concat -> [String.concat_arity, String.concat_type, elab_id, String.concat;
-                           Crypto.concat_arity, Crypto.concat_type, Crypto.concat_elab, Crypto.concat]
-      | Builtin_substr -> [String.substr_arity, String.substr_type, elab_id, String.substr;
-                           Crypto.substr_arity, Crypto.substr_type, elab_id, Crypto.substr
+      | Builtin_eq -> [StringBuiltins.eq_arity, StringBuiltins.eq_type, elab_id;
+                       BNumBuiltins.eq_arity, BNumBuiltins.eq_type, elab_id;
+                       CryptoBuiltins.eq_arity, CryptoBuiltins.eq_type, CryptoBuiltins.eq_elab;
+                       IntBuiltins.eq_arity, IntBuiltins.eq_type, IntBuiltins.eq_elab;
+                       UintBuiltins.eq_arity, UintBuiltins.eq_type, UintBuiltins.eq_elab]
+      | Builtin_concat -> [StringBuiltins.concat_arity, StringBuiltins.concat_type, elab_id;
+                           CryptoBuiltins.concat_arity, CryptoBuiltins.concat_type, CryptoBuiltins.concat_elab]
+      | Builtin_substr -> [StringBuiltins.substr_arity, StringBuiltins.substr_type, elab_id;
+                           CryptoBuiltins.substr_arity, CryptoBuiltins.substr_type, elab_id
                           ]
-      | Builtin_strlen -> [String.strlen_arity, String.strlen_type, String.strlen_elab, String.strlen]
-      | Builtin_to_string -> [String.to_string_arity, String.to_string_type, String.to_string_elab, String.to_string]
-      | Builtin_to_ascii -> [String.to_ascii_arity, String.to_ascii_type, String.to_ascii_elab, String.to_ascii]
-      | Builtin_strrev -> [ String.strrev_arity, String.strrev_type, String.strrev_elab, String.strrev ]
+      | Builtin_strlen -> [StringBuiltins.strlen_arity, StringBuiltins.strlen_type, StringBuiltins.strlen_elab]
+      | Builtin_to_string -> [StringBuiltins.to_string_arity, StringBuiltins.to_string_type, StringBuiltins.to_string_elab]
+      | Builtin_to_ascii -> [StringBuiltins.to_ascii_arity, StringBuiltins.to_ascii_type, StringBuiltins.to_ascii_elab]
+      | Builtin_strrev -> [ StringBuiltins.strrev_arity, StringBuiltins.strrev_type, StringBuiltins.strrev_elab]
       | Builtin_to_bystrx i -> [
-        Crypto.to_bystrx_arity, Crypto.to_bystrx_type i, elab_id, Crypto.to_bystrx i;
-        Uint.to_bystrx_arity, Uint.to_bystrx_type, Uint.to_bystrx_elab i, Uint.to_bystrx
+        CryptoBuiltins.to_bystrx_arity, CryptoBuiltins.to_bystrx_type i, elab_id;
+        UintBuiltins.to_bystrx_arity, UintBuiltins.to_bystrx_type, UintBuiltins.to_bystrx_elab i
       ]
     
       (* Block numbers *)
-      | Builtin_blt -> [BNum.blt_arity, BNum.blt_type, elab_id, BNum.blt]
-      | Builtin_badd -> [BNum.badd_arity, BNum.badd_type, BNum.badd_elab, BNum.badd]
-      | Builtin_bsub -> [BNum.bsub_arity, BNum.bsub_type, BNum.bsub_elab, BNum.bsub]
+      | Builtin_blt -> [BNumBuiltins.blt_arity, BNumBuiltins.blt_type, elab_id]
+      | Builtin_badd -> [BNumBuiltins.badd_arity, BNumBuiltins.badd_type, BNumBuiltins.badd_elab]
+      | Builtin_bsub -> [BNumBuiltins.bsub_arity, BNumBuiltins.bsub_type, BNumBuiltins.bsub_elab]
     
-      (* Crypto *)
-      | Builtin_sha256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.sha256hash]
-      | Builtin_keccak256hash -> [Crypto.hash_arity, Crypto.hash_type,Crypto.hash_elab, Crypto.keccak256hash]
-      | Builtin_ripemd160hash -> [Crypto.hash_arity, Crypto.ripemd160hash_type,Crypto.hash_elab, Crypto.ripemd160hash]
-      | Builtin_to_bystr -> [Crypto.to_bystr_arity, Crypto.to_bystr_type, Crypto.to_bystr_elab, Crypto.to_bystr]
-      | Builtin_bech32_to_bystr20 -> [Crypto.bech32_to_bystr20_arity, Crypto.bech32_to_bystr20_type, elab_id, Crypto.bech32_to_bystr20]
-      | Builtin_bystr20_to_bech32 -> [Crypto.bystr20_to_bech32_arity, Crypto.bystr20_to_bech32_type, elab_id, Crypto.bystr20_to_bech32]
-      | Builtin_schnorr_verify -> [Crypto.schnorr_verify_arity, Crypto.schnorr_verify_type, elab_id, Crypto.schnorr_verify]
-      | Builtin_ecdsa_verify -> [Crypto.ecdsa_verify_arity, Crypto.ecdsa_verify_type, elab_id, Crypto.ecdsa_verify]
-      | Builtin_ecdsa_recover_pk -> [Crypto.ecdsa_recover_pk_arity, Crypto.ecdsa_recover_pk_type, elab_id, Crypto.ecdsa_recover_pk]
-      | Builtin_schnorr_get_address -> [Crypto.schnorr_get_address_arity, Crypto.schnorr_get_address_type, elab_id, Crypto.schnorr_get_address]
-      | Builtin_alt_bn128_G1_add -> [Crypto.alt_bn128_G1_add_arity, Crypto.alt_bn128_G1_add_type, elab_id, Crypto.alt_bn128_G1_add]
-      | Builtin_alt_bn128_G1_mul -> [Crypto.alt_bn128_G1_mul_arity, Crypto.alt_bn128_G1_mul_type, elab_id, Crypto.alt_bn128_G1_mul]
-      | Builtin_alt_bn128_pairing_product -> [Crypto.alt_bn128_pairing_product_arity, 
-                                              Crypto.alt_bn128_pairing_product_type, elab_id, Crypto.alt_bn128_pairing_product]
+      (* CryptoBuiltins *)
+      | Builtin_sha256hash -> [CryptoBuiltins.hash_arity, CryptoBuiltins.hash_type,CryptoBuiltins.hash_elab]
+      | Builtin_keccak256hash -> [CryptoBuiltins.hash_arity, CryptoBuiltins.hash_type,CryptoBuiltins.hash_elab]
+      | Builtin_ripemd160hash -> [CryptoBuiltins.hash_arity, CryptoBuiltins.ripemd160hash_type,CryptoBuiltins.hash_elab]
+      | Builtin_to_bystr -> [CryptoBuiltins.to_bystr_arity, CryptoBuiltins.to_bystr_type, CryptoBuiltins.to_bystr_elab]
+      | Builtin_bech32_to_bystr20 -> [CryptoBuiltins.bech32_to_bystr20_arity, CryptoBuiltins.bech32_to_bystr20_type, elab_id]
+      | Builtin_bystr20_to_bech32 -> [CryptoBuiltins.bystr20_to_bech32_arity, CryptoBuiltins.bystr20_to_bech32_type, elab_id]
+      | Builtin_schnorr_verify -> [CryptoBuiltins.schnorr_verify_arity, CryptoBuiltins.schnorr_verify_type, elab_id]
+      | Builtin_ecdsa_verify -> [CryptoBuiltins.ecdsa_verify_arity, CryptoBuiltins.ecdsa_verify_type, elab_id]
+      | Builtin_ecdsa_recover_pk -> [CryptoBuiltins.ecdsa_recover_pk_arity, CryptoBuiltins.ecdsa_recover_pk_type, elab_id]
+      | Builtin_schnorr_get_address -> [CryptoBuiltins.schnorr_get_address_arity, CryptoBuiltins.schnorr_get_address_type, elab_id]
+      | Builtin_alt_bn128_G1_add -> [CryptoBuiltins.alt_bn128_G1_add_arity, CryptoBuiltins.alt_bn128_G1_add_type, elab_id]
+      | Builtin_alt_bn128_G1_mul -> [CryptoBuiltins.alt_bn128_G1_mul_arity, CryptoBuiltins.alt_bn128_G1_mul_type, elab_id]
+      | Builtin_alt_bn128_pairing_product -> [CryptoBuiltins.alt_bn128_pairing_product_arity, 
+                                              CryptoBuiltins.alt_bn128_pairing_product_type, elab_id]
     
       (* Maps *)
-      | Builtin_contains -> [Maps.contains_arity, Maps.contains_type, Maps.contains_elab, Maps.contains]
-      | Builtin_put -> [Maps.put_arity, Maps.put_type, Maps.put_elab, Maps.put]
-      | Builtin_get -> [Maps.get_arity, Maps.get_type, Maps.get_elab, Maps.get]
-      | Builtin_remove -> [Maps.remove_arity, Maps.remove_type, Maps.remove_elab, Maps.remove]
-      | Builtin_to_list -> [Maps.to_list_arity, Maps.to_list_type, Maps.to_list_elab, Maps.to_list]
-      | Builtin_size -> [Maps.size_arity, Maps.size_type, Maps.size_elab, Maps.size]
+      | Builtin_contains -> [MapBuiltins.contains_arity, MapBuiltins.contains_type, MapBuiltins.contains_elab]
+      | Builtin_put -> [MapBuiltins.put_arity, MapBuiltins.put_type, MapBuiltins.put_elab]
+      | Builtin_get -> [MapBuiltins.get_arity, MapBuiltins.get_type, MapBuiltins.get_elab]
+      | Builtin_remove -> [MapBuiltins.remove_arity, MapBuiltins.remove_type, MapBuiltins.remove_elab]
+      | Builtin_to_list -> [MapBuiltins.to_list_arity, MapBuiltins.to_list_type, MapBuiltins.to_list_elab]
+      | Builtin_size -> [MapBuiltins.size_arity, MapBuiltins.size_type, MapBuiltins.size_elab]
     
       (* Integers *)
-      | Builtin_lt -> [Int.eq_arity, Int.eq_type, Int.eq_elab, Int.lt;
-                       Uint.eq_arity, Uint.eq_type, Uint.eq_elab, Uint.lt]
-      | Builtin_add -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.add;
-                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.add]
-      | Builtin_sub -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.sub;
-                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.sub]
-      | Builtin_mul -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.mul;
-                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.mul]
-      | Builtin_div -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.div;
-                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.div]
-      | Builtin_rem -> [Int.binop_arity, Int.binop_type, Int.binop_elab, Int.rem;
-                        Uint.binop_arity, Uint.binop_type, Uint.binop_elab, Uint.rem]
-      | Builtin_pow -> [Int.pow_arity, Int.pow_type, Int.pow_elab, Int.pow;
-                        Uint.pow_arity, Uint.pow_type, Uint.pow_elab, Uint.pow]
-      | Builtin_isqrt -> [Uint.isqrt_arity, Uint.isqrt_type, Uint.isqrt_elab, Uint.isqrt]
+      | Builtin_lt -> [IntBuiltins.eq_arity, IntBuiltins.eq_type, IntBuiltins.eq_elab;
+                       UintBuiltins.eq_arity, UintBuiltins.eq_type, UintBuiltins.eq_elab]
+      | Builtin_add -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_sub -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_mul -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_div -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_rem -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_pow -> [IntBuiltins.pow_arity, IntBuiltins.pow_type, IntBuiltins.pow_elab;
+                        UintBuiltins.pow_arity, UintBuiltins.pow_type, UintBuiltins.pow_elab]
+      | Builtin_isqrt -> [UintBuiltins.isqrt_arity, UintBuiltins.isqrt_type, UintBuiltins.isqrt_elab]
     
       (* Signed integers specific builtins *)
-      | Builtin_to_int32 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits32, Int.to_int32]
-      | Builtin_to_int64 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits64, Int.to_int64]
-      | Builtin_to_int128 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits128, Int.to_int128]
-      | Builtin_to_int256 -> [Int.to_int_arity, Int.to_int_type, Int.to_int_elab Bits256, Int.to_int256]
+      | Builtin_to_int32 -> [IntBuiltins.to_int_arity, IntBuiltins.to_int_type, IntBuiltins.to_int_elab Bits32]
+      | Builtin_to_int64 -> [IntBuiltins.to_int_arity, IntBuiltins.to_int_type, IntBuiltins.to_int_elab Bits64]
+      | Builtin_to_int128 -> [IntBuiltins.to_int_arity, IntBuiltins.to_int_type, IntBuiltins.to_int_elab Bits128]
+      | Builtin_to_int256 -> [IntBuiltins.to_int_arity, IntBuiltins.to_int_type, IntBuiltins.to_int_elab Bits256]
     
       (* Unsigned integers specific builtins *)
       | Builtin_to_uint32 -> [
-          Crypto.to_uint_arity, Crypto.to_uint_type Bits32, Crypto.to_uint_elab Bits32, Crypto.to_uint Bits32;
-          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits32, Uint.to_uint32
+          CryptoBuiltins.to_uint_arity, CryptoBuiltins.to_uint_type Bits32, CryptoBuiltins.to_uint_elab Bits32;
+          UintBuiltins.to_uint_arity, UintBuiltins.to_uint_type, UintBuiltins.to_uint_elab Bits32
         ]
       | Builtin_to_uint64 -> [
-          Crypto.to_uint_arity, Crypto.to_uint_type Bits64, Crypto.to_uint_elab Bits64, Crypto.to_uint Bits64;
-          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits64, Uint.to_uint64
+          CryptoBuiltins.to_uint_arity, CryptoBuiltins.to_uint_type Bits64, CryptoBuiltins.to_uint_elab Bits64;
+          UintBuiltins.to_uint_arity, UintBuiltins.to_uint_type, UintBuiltins.to_uint_elab Bits64
         ]
       | Builtin_to_uint128 -> [
-          Crypto.to_uint_arity, Crypto.to_uint_type Bits128, Crypto.to_uint_elab Bits128, Crypto.to_uint Bits128;
-          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits128, Uint.to_uint128
+          CryptoBuiltins.to_uint_arity, CryptoBuiltins.to_uint_type Bits128, CryptoBuiltins.to_uint_elab Bits128;
+          UintBuiltins.to_uint_arity, UintBuiltins.to_uint_type, UintBuiltins.to_uint_elab Bits128
         ]
       | Builtin_to_uint256 -> [
-          Crypto.to_uint_arity, Crypto.to_uint_type Bits256, Crypto.to_uint_elab Bits256, Crypto.to_uint Bits256;
-          Uint.to_uint_arity, Uint.to_uint_type, Uint.to_uint_elab Bits256, Uint.to_uint256
+          CryptoBuiltins.to_uint_arity, CryptoBuiltins.to_uint_type Bits256, CryptoBuiltins.to_uint_elab Bits256;
+          UintBuiltins.to_uint_arity, UintBuiltins.to_uint_type, UintBuiltins.to_uint_elab Bits256
         ]
-      | Builtin_to_nat -> [Uint.to_nat_arity, Uint.to_nat_type, elab_id, Uint.to_nat]
+      | Builtin_to_nat -> [UintBuiltins.to_nat_arity, UintBuiltins.to_nat_type, elab_id]
 
     [@@@ocamlformat "enable"]
 
     (* Dictionary lookup based on the operation name and type *)
-    let find_builtin_op (op, rep) argtypes =
+    let find_builtin_op (op, rep) ~targtypes ~vargtypes =
       let finder = function
-        | arity, optype, elab, exec ->
-            if arity = List.length argtypes then
+        | arity, optype, elab ->
+            if arity = List.length vargtypes then
               (* First: elaborate based on argument types *)
-              let%bind type_elab = elab optype argtypes in
+              let%bind type_elab = elab optype targtypes vargtypes in
               (* Second: check applicability *)
               let%bind res_type =
-                fun_type_applies type_elab argtypes ~lc:(ER.get_loc rep)
+                fun_type_applies type_elab vargtypes ~lc:(ER.get_loc rep)
               in
-              pure (type_elab, res_type, exec)
+              pure res_type
             else fail0 @@ "Name or arity don't match"
       in
       let dict = built_in_multidict op in
-      let%bind _, (type_elab, res_type, exec) =
+      let%bind _, res_type =
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
               (sprintf
                  "Type error: cannot apply \"%s\" built-in to argument(s) of \
-                  type(s) %s."
+                  type(s) %s%s."
                  (pp_builtin op)
-                 (pp_typ_list_error argtypes))
+                 ( if List.is_empty targtypes then ""
+                 else sprintf "{%s} " (pp_typ_list_error targtypes) )
+                 (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
-      pure (type_elab, res_type, exec)
+      pure res_type
   end
 end

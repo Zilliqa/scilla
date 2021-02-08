@@ -26,7 +26,7 @@ open Stdint
 open ContractUtil
 open PrettyPrinters
 open TypeUtil
-open BuiltIns
+open EvalBuiltins
 open Gas
 module SR = ParserRep
 module ER = ParserRep
@@ -34,7 +34,7 @@ module EvalGas = ScillaGas (SR) (ER)
 module EvalSyntax = EvalGas.GasSyntax
 module EvalLiteral = EvalSyntax.SLiteral
 module EvalTypeUtilities = TypeUtilities
-module EvalBuiltIns = ScillaBuiltIns (SR) (ER)
+module EvalBuiltIns = ScillaEvalBuiltIns (SR) (ER)
 module EvalType = EvalSyntax.SType
 module EvalIdentifier = EvalSyntax.SIdentifier
 module EvalName = EvalIdentifier.Name
