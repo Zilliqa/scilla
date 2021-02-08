@@ -145,9 +145,9 @@ let builtin_executor env f targs args_id =
     mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
   let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
-  let%bind _, ret_typ, op =
+  let%bind ret_typ, op =
     fromR
-    @@ EvalBuiltIns.BuiltInDictionary.find_builtin_op f ~targtypes:targs
+    @@ EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
          ~vargtypes:tps
   in
   let%bind cost = fromR @@ builtin_cost env f targs tps args_id in

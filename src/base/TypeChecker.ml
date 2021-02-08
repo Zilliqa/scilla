@@ -314,7 +314,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     | Builtin (b, ts, actuals) ->
         let%bind _ = mapM ts ~f:(fun t -> fromR_TE @@ TEnv.is_wf_type tenv t) in
         let%bind targs, typed_actuals = type_actuals tenv actuals in
-        let%bind _, ret_typ, _ =
+        let%bind ret_typ =
           fromR_TE
           @@ BuiltInDictionary.find_builtin_op b ~targtypes:ts ~vargtypes:targs
         in
