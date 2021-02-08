@@ -628,7 +628,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
+        ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
@@ -658,8 +659,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); kt' ] when type_assignable ~expected:kt ~actual:kt'
-        ->
+      | [], [ MapType (kt, vt); kt' ]
+        when type_assignable ~expected:kt ~actual:kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
@@ -672,7 +673,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u ->
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
+        ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
