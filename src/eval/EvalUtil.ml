@@ -183,10 +183,15 @@ module Configuration = struct
                (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
-  let remote_load _st _adr k =
-    (* TODO - maybe useful to refactor load to avoid code duplicateion *)
-    (* Note that adr has already been typechecked, so we know the field k is there. *)
-    fail1 "Remote load not implemented." (ER.get_loc (get_rep k))
+  let remote_load caddr k =
+      let%bind fval = fromR @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] in
+      match fval with
+      | Some v, v_t -> pure (v, v_t)
+      | _ ->
+          fail1
+            (Printf.sprintf "Error loading field %s"
+               (EvalName.as_error_string (get_id k)))
+            (ER.get_loc (get_rep k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =

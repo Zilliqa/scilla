@@ -330,11 +330,16 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
-      | RemoteLoad (x, adr, r) ->
+      | RemoteLoad (x, adr, r) -> (
           let%bind a = fromR @@ Configuration.lookup conf adr in
-          let%bind l = Configuration.remote_load conf a r in
-          let conf' = Configuration.bind conf (get_id x) l in
-          stmt_eval conf' sts
+          match a with
+          | ByStrX s' when Bystrx.width s' = Type.address_length ->
+              let%bind l, _l_t = (* TODO: Assert that l_t is a compatible type. *)
+                Configuration.remote_load (Bystrx.hex_encoding s') r
+              in
+              let conf' = Configuration.bind conf (get_id x) l in
+              stmt_eval conf' sts
+          | _ -> fail0 "Expected remote load address to be ByStr20 value" )
       | Store (x, r) ->
           let%bind v = fromR @@ Configuration.lookup conf r in
           let%bind () = Configuration.store x v in

@@ -177,12 +177,12 @@ let fetch ~socket_addr ~fname ~keys ~tp =
 (* Fetch from another contract's field. "keys" is empty when fetching non-map fields
  * or an entire Map field. If a map key is not found, then None is returned, otherwise
  * (Some value) is returned. *)
-let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
+let external_fetch ~socket_addr ~caddr ~fname ~keys =
   let open Ipcmessage_types in
   let q =
     {
       name = IPCCIdentifier.as_string fname;
-      mapdepth = TypeUtilities.map_depth tp;
+      mapdepth = -1;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
     }
@@ -197,10 +197,10 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~tp =
   in
   match res with
   | true, res', field_typ ->
-      let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
+      let%bind stored_typ = FEParser.parse_type field_typ in
+      let%bind tp' = TypeUtilities.map_access_type stored_typ (List.length keys) in
       let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
       let%bind res'' = deserialize_value decoded_pb tp' in
-      let%bind stored_typ = FEParser.parse_type field_typ in
       pure @@ (Some res'', stored_typ)
   | false, _, field_typ ->
       let%bind stored_typ = FEParser.parse_type field_typ in

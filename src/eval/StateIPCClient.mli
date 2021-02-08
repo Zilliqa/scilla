@@ -40,7 +40,6 @@ val external_fetch :
   caddr:string ->
   fname:'a IPCCIdentifier.t ->
   keys:IPCCLiteral.t list ->
-  tp:IPCCType.t ->
   (IPCCLiteral.t option * IPCCType.t, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
