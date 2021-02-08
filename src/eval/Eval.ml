@@ -334,7 +334,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l, _l_t = (* TODO: Assert that l_t is a compatible type. *)
+              let%bind l, _ =
                 Configuration.remote_load (Bystrx.hex_encoding s') r
               in
               let conf' = Configuration.bind conf (get_id x) l in

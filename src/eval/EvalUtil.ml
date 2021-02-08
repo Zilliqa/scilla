@@ -184,14 +184,24 @@ module Configuration = struct
             (ER.get_loc (get_rep k))
 
   let remote_load caddr k =
-      let%bind fval = fromR @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] in
-      match fval with
-      | Some v, v_t -> pure (v, v_t)
-      | _ ->
-          fail1
-            (Printf.sprintf "Error loading field %s"
-               (EvalName.as_error_string (get_id k)))
-            (ER.get_loc (get_rep k))
+    let%bind fval =
+      fromR
+      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
+    in
+    match fval with
+    | Some v, v_t -> pure (v, v_t)
+    | _ ->
+        fail1
+          (Printf.sprintf "Error loading field %s"
+             (EvalName.as_error_string (get_id k)))
+          (ER.get_loc (get_rep k))
+
+  let remote_field_type caddr k =
+    let%bind fval =
+      fromR
+      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:true
+    in
+    pure (snd fval)
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =

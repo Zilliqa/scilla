@@ -175,16 +175,24 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   | false, _ -> pure None
 
 (* Fetch from another contract's field. "keys" is empty when fetching non-map fields
- * or an entire Map field. If a map key is not found, then None is returned, otherwise
- * (Some value) is returned. *)
-let external_fetch ~socket_addr ~caddr ~fname ~keys =
+ * or an entire Map field. 
+ * (None, type) is returned when:
+ *  - A map key is not found OR
+ *  - ignoreval is set (fetch type only)
+ * Otherwise (Some value, type) is returned.
+ *)
+
+let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
   let open Ipcmessage_types in
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      (* We don't have the type information (and hence map depth) for
+         remote state reads. The blockchain does. It'll take care of it.
+      *)
       mapdepth = -1;
       indices = List.map keys ~f:serialize_literal;
-      ignoreval = false;
+      ignoreval;
     }
   in
   let%bind q' = encode_serialized_query q in
@@ -198,7 +206,9 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys =
   match res with
   | true, res', field_typ ->
       let%bind stored_typ = FEParser.parse_type field_typ in
-      let%bind tp' = TypeUtilities.map_access_type stored_typ (List.length keys) in
+      let%bind tp' =
+        TypeUtilities.map_access_type stored_typ (List.length keys)
+      in
       let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
       let%bind res'' = deserialize_value decoded_pb tp' in
       pure @@ (Some res'', stored_typ)

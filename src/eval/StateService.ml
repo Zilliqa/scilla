@@ -153,12 +153,13 @@ module MakeStateService () = struct
           | Some _res' -> pure @@ res )
     | Local -> fetch_local ~fname ~keys fields
 
-  let external_fetch ~caddr ~fname ~keys =
+  let external_fetch ~caddr ~fname ~keys ~ignoreval =
     let%bind sm, _fields, estates = assert_init () in
     match sm with
     | IPC socket_addr -> (
         let%bind res, stored_tp =
           StateIPCClient.external_fetch ~socket_addr ~caddr ~fname ~keys
+            ~ignoreval
         in
         if not @@ List.is_empty keys then pure @@ (res, stored_tp)
         else
