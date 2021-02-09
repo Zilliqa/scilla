@@ -40,7 +40,7 @@ type ss_field = {
   fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
 
-type external_state = { caddr : string; cstate : ss_field list }
+type external_state = { caddr : SSLiteral.Bystrx.t; cstate : ss_field list }
 
 type service_mode =
   | IPC of string
@@ -155,10 +155,11 @@ module MakeStateService () = struct
 
   let external_fetch ~caddr ~fname ~keys ~ignoreval =
     let%bind sm, _fields, estates = assert_init () in
+    let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
     | IPC socket_addr -> (
         let%bind res, stored_tp =
-          StateIPCClient.external_fetch ~socket_addr ~caddr ~fname ~keys
+          StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~keys
             ~ignoreval
         in
         if not @@ List.is_empty keys then pure @@ (res, stored_tp)
@@ -173,7 +174,7 @@ module MakeStateService () = struct
     | Local -> (
         match
           List.find_map estates ~f:(fun estate ->
-              if String.equal caddr estate.caddr then Some estate.cstate
+              if SSLiteral.Bystrx.equal caddr estate.caddr then Some estate.cstate
               else None)
         with
         | Some fields -> (
@@ -189,11 +190,11 @@ module MakeStateService () = struct
             | None ->
                 fail1
                   (sprintf "Unable to fetch %s from contract at address %s"
-                     (as_error_string fname) caddr)
+                     (as_error_string fname) caddr_hex)
                   (ER.get_loc (get_rep fname)) )
         | None ->
             fail1
-              (sprintf "Unable to fetch from contract at address %s" caddr)
+              (sprintf "Unable to fetch from contract at address %s" caddr_hex)
               (ER.get_loc (get_rep fname)) )
 
   let update_local ~fname ~keys vopt fields =

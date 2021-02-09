@@ -339,7 +339,7 @@ let rec stmt_eval conf stmts =
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
               let%bind l, _ =
-                Configuration.remote_load (Bystrx.hex_encoding s') r
+                Configuration.remote_load s' r
               in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts

@@ -39,6 +39,12 @@ open JSONIdentifier
 open JSONType
 open JSONLiteral
 
+type json_parsed_field =
+  (* A field belonging to this contract. *)
+  | ThisContr of string * JSONLiteral.t
+  (* External contracts and their fields. *)
+  | ExtrContrs of (Bystrx.t * (string * JSONLiteral.t) list) list
+
 (****************************************************************)
 (*                    Exception wrappers                        *)
 (****************************************************************)
@@ -230,13 +236,36 @@ and json_to_lit_exn t v =
       let exn () = mk_invalid_json ("Invalid type " ^ pp_typ t ^ " in JSON") in
       raise (exn ())
 
-let jobj_to_statevar json =
+let rec jobj_to_statevar json =
   let n = member_exn "vname" json |> to_string_exn in
-  let tstring = member_exn "type" json |> to_string_exn in
-  let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () then (n, json_to_lit_exn t v)
-  else (n, JSONParser.parse_json t v)
+  if String.equal n "_external" then
+    (* We have a list of external addresses, each with their own fields. *)
+    let exts = v |> to_list_exn in
+    let exts' =
+      List.fold exts ~init:[] ~f:(fun acc ext ->
+          let addr =
+            member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
+          in
+          let state = member_exn "state" ext |> to_list_exn in
+          let state' =
+            List.map state ~f:(fun s ->
+                match jobj_to_statevar s with
+                | ThisContr (n, l) -> (n, l)
+                | _ ->
+                    raise
+                    @@ mk_invalid_json
+                         "External contract fields cannot contain other \
+                          external fields")
+          in
+          (addr, state') :: acc)
+    in
+    ExtrContrs exts'
+  else
+    let tstring = member_exn "type" json |> to_string_exn in
+    let t = parse_typ_exn tstring in
+    if GlobalConfig.validate_json () then ThisContr (n, json_to_lit_exn t v)
+    else ThisContr (n, JSONParser.parse_json t v)
 
 (****************************************************************)
 (*                    JSON printing                             *)
@@ -281,7 +310,13 @@ module ContractState = struct
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:jobj_to_statevar
+    let curstates, extstates =
+      List.partition_map jlist ~f:(fun j ->
+          match jobj_to_statevar j with
+          | ThisContr (n, v) -> First (n, v)
+          | ExtrContrs extlist -> Second extlist)
+    in
+    (curstates, List.concat extstates)
 
   (* Get a json object from given states *)
   let state_to_json states =
@@ -343,7 +378,7 @@ module ContractState = struct
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
   let get_init_this_address_and_extlibs filename =
-    let init_data = get_json_data filename in
+    let init_data, _ = get_json_data filename in
     let extlibs = get_init_extlibs init_data in
     let this_address_init_opt =
       match
@@ -406,7 +441,14 @@ module Message = struct
     let pjlist = member_exn "params" json |> to_list_exn in
     let params =
       List.map pjlist ~f:(fun f ->
-          let name, v = jobj_to_statevar f in
+          let name, v =
+            match jobj_to_statevar f with
+            | ThisContr (name, v) -> (name, v)
+            | ExtrContrs _ ->
+                raise
+                  (mk_invalid_json
+                     "_external cannot be present in a message JSON")
+          in
           (name, v))
     in
     tag :: amount :: origin :: sender :: params
@@ -464,7 +506,12 @@ module BlockChainState = struct
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:jobj_to_statevar
+    List.map jlist ~f:(fun j ->
+        match jobj_to_statevar j with
+        | ThisContr (name, v) -> (name, v)
+        | ExtrContrs _ ->
+            raise
+              (mk_invalid_json "_external cannot be present in a message JSON"))
 
   (* Validation against pre-defined block state variables
      is done in `Eval.check_blockchain_entries` *)

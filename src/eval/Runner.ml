@@ -97,8 +97,12 @@ let map_json_input_strings_to_names map =
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
   let open JSON.ContractState in
-  let states_str = get_json_data filename in
+  let states_str, estates_str = get_json_data filename in
   let states = map_json_input_strings_to_names states_str in
+  let estates =
+    List.map estates_str ~f:(fun (addr, states_str) ->
+        (addr, map_json_input_strings_to_names states_str))
+  in
   let bal_lit =
     match
       List.Assoc.find states balance_label ~equal:[%equal: RunnerName.t]
@@ -119,7 +123,7 @@ let input_state_json filename =
   let no_bal_states =
     List.Assoc.remove states balance_label ~equal:[%equal: RunnerName.t]
   in
-  (no_bal_states, bal_int)
+  (no_bal_states, bal_int, estates)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
@@ -144,7 +148,7 @@ let output_event_json elist =
 
 let validate_get_init_json init_file gas_remaining source_ver =
   (* Retrieve initial parameters *)
-  let initargs_str =
+  let initargs_str, _ =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
       fatal_error_gas_scale Gas.scale_factor
@@ -396,7 +400,7 @@ let run_with_args args =
                   let field_vals' =
                     if args.reinit then
                       (* Retrieve state variables *)
-                      try fst @@ input_state_json args.input_state
+                      try fst3 @@ input_state_json args.input_state
                       with Invalid_json s ->
                         fatal_error_gas
                           ( s
@@ -467,7 +471,7 @@ let run_with_args args =
                     (cstate, gas_remaining')
                   else
                     (* Retrieve state variables *)
-                    let curargs, cur_bal =
+                    let curargs, cur_bal, ext_states =
                       try input_state_json args.input_state
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
@@ -498,8 +502,31 @@ let run_with_args args =
                           in
                           { fname = s; ftyp = t; fval = Some l })
                     in
+                    let ext_states =
+                      let open StateService in
+                      List.map ext_states ~f:(fun (addr, fields) ->
+                          let fields' =
+                            List.map fields ~f:(fun (n, l) ->
+                                let t =
+                                  match
+                                    TypeUtil.TypeUtilities.literal_type l
+                                  with
+                                  | Ok t -> t
+                                  | Error s ->
+                                      fatal_error_gas_scale Gas.scale_factor
+                                        ( s
+                                        @ mk_error0
+                                            (sprintf
+                                               "Failed to determine type of \
+                                                value in JSON\n") )
+                                        gas_remaining
+                                in
+                                { fname = n; ftyp = t; fval = Some l })
+                          in
+                          { caddr = addr; cstate = fields' })
+                    in
                     let () =
-                      StateService.initialize ~sm:Local ~fields ~ext_states:[]
+                      StateService.initialize ~sm:Local ~fields ~ext_states
                     in
                     (cstate, gas_remaining')
                 in
