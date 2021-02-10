@@ -703,6 +703,30 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 "Failed to elaborate"
   end
 
+  (***********************************************************)
+  (*                       Addresses                         *)
+  (***********************************************************)
+  module AddressBuiltins = struct
+    open Datatypes.DataTypeDictionary
+
+    let to_addr_arity = 1
+
+    let to_addr_type =
+      tfun_typ "'K"
+      @@ fun_typ (bystrx_typ Type.address_length)
+      @@ option_typ (tvar "'K")
+
+    let to_addr_elab sc targs ts =
+      match (targs, ts) with
+      | [ Address _ ], [ bstyp ]
+        when type_assignable
+               ~expected:(bystrx_typ Type.address_length)
+               ~actual:bstyp ->
+          (* Instantiate type variable with the given address type *)
+          elab_tfun_with_args_no_gas sc targs
+      | _, _ -> fail0 @@ "Failed to elaborate"
+  end
+
   (* Identity elaborator *)
   let elab_id t _ _ = pure t
 
@@ -814,6 +838,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           UintBuiltins.to_uint_arity, UintBuiltins.to_uint_type, UintBuiltins.to_uint_elab Bits256
         ]
       | Builtin_to_nat -> [UintBuiltins.to_nat_arity, UintBuiltins.to_nat_type, elab_id]
+      | Builtin_to_addr -> [AddressBuiltins.to_addr_arity, AddressBuiltins.to_addr_type, AddressBuiltins.to_addr_elab]
 
     [@@@ocamlformat "enable"]
 

@@ -310,6 +310,14 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
     val size_elab : elaborator
   end
 
+  module AddressBuiltins : sig
+    val to_addr_arity : int
+
+    val to_addr_type : BIType.t
+
+    val to_addr_elab : elaborator
+  end
+
   module BuiltInDictionary : sig
     (* Returns the result type for given argument types, e.g., Bool *)
     val find_builtin_op :

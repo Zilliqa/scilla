@@ -26,7 +26,6 @@ open Stdint
 open ContractUtil
 open PrettyPrinters
 open TypeUtil
-open EvalBuiltins
 open Gas
 module SR = ParserRep
 module ER = ParserRep
@@ -34,7 +33,6 @@ module EvalGas = ScillaGas (SR) (ER)
 module EvalSyntax = EvalGas.GasSyntax
 module EvalLiteral = EvalSyntax.SLiteral
 module EvalTypeUtilities = TypeUtilities
-module EvalBuiltIns = ScillaEvalBuiltIns (SR) (ER)
 module EvalType = EvalSyntax.SType
 module EvalIdentifier = EvalSyntax.SIdentifier
 module EvalName = EvalIdentifier.Name
@@ -415,4 +413,21 @@ module ContractState = struct
        %s\n\
        Balance = %s\n"
       pp_params pp_fields pp_balance
+end
+
+(*****************************************************)
+(*                Dynamic typechecks                 *)
+(*****************************************************)
+
+module EvalTypecheck = struct
+  open EvalType
+
+  let typecheck_remote_fields_no_err caddr fts =
+    (* Catch errors and return a boolean - errors should be thrown by the caller *)
+    List.for_all fts ~f:(fun (f, t) ->
+        match
+          Configuration.remote_field_type caddr f (fun x _y -> x) (fun x -> x)
+        with
+        | Ok remote_t -> type_assignable ~expected:t ~actual:remote_t
+        | Error _ -> false)
 end

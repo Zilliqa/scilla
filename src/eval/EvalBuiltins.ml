@@ -28,6 +28,7 @@ open Big_int
 open Stdint
 open Integer256
 open TypeUtilities
+open EvalUtil
 
 module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
   module BaseBuiltins = ScillaBuiltIns (SR) (ER)
@@ -879,6 +880,28 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | _ -> builtin_fail "Map.size" ls
   end
 
+  (***********************************************************)
+  (*                       Addresses                         *)
+  (***********************************************************)
+
+  module EvalAddressBuiltins = struct
+    include AddressBuiltins
+    open EvalTypecheck
+
+    let to_addr targs ls res_val_typ =
+      match (targs, ls) with
+      | [ Address fts ], [ (ByStrX bstr as varg) ]
+        when Bystrx.width bstr = Type.address_length ->
+          if typecheck_remote_fields_no_err (Bystrx.hex_encoding bstr) fts then
+            pure (build_some_lit varg res_val_typ)
+          else
+            (* Failure results in a None value *)
+            pure (build_none_lit res_val_typ)
+      | _, _ ->
+          (* Failure results in a None value *)
+          pure (build_none_lit res_val_typ)
+  end
+
   module EvalBuiltInDictionary = struct
     (* Elaborates the operation type based on the arguments types *)
     type elaborator = BaseBuiltins.elaborator
@@ -996,6 +1019,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           EvalUintBuiltins.to_uint_arity, EvalUintBuiltins.to_uint_type, EvalUintBuiltins.to_uint_elab Bits256, EvalUintBuiltins.to_uint256
         ]
       | Builtin_to_nat -> [EvalUintBuiltins.to_nat_arity, EvalUintBuiltins.to_nat_type, elab_id, EvalUintBuiltins.to_nat]
+      | Builtin_to_addr -> [EvalAddressBuiltins.to_addr_arity, EvalAddressBuiltins.to_addr_type, EvalAddressBuiltins.to_addr_elab, EvalAddressBuiltins.to_addr]
 
     [@@@ocamlformat "enable"]
 

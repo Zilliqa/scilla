@@ -35,7 +35,11 @@ open EvalIdentifier
 open EvalType
 open EvalLiteral
 open EvalSyntax
-module CU = ScillaContractUtil (ParserRep) (ParserRep)
+open EvalBuiltins
+module SR = ParserRep
+module ER = ParserRep
+module CU = ScillaContractUtil (SR) (ER)
+module EvalBuiltins = ScillaEvalBuiltIns (SR) (ER)
 
 (***************************************************)
 (*                    Utilities                    *)
@@ -147,7 +151,7 @@ let builtin_executor env f targs args_id =
   let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
   let%bind ret_typ, op =
     fromR
-    @@ EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
+    @@ EvalBuiltins.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
          ~vargtypes:tps
   in
   let%bind cost = fromR @@ builtin_cost env f targs tps args_id in

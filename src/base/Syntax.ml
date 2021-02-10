@@ -85,6 +85,7 @@ type builtin =
   | Builtin_to_uint128
   | Builtin_to_nat
   | Builtin_schnorr_get_address
+  | Builtin_to_addr
 [@@deriving sexp, equal]
 
 type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
@@ -138,6 +139,7 @@ let pp_builtin b =
   | Builtin_to_uint64 -> "to_uint64"
   | Builtin_to_uint128 -> "to_uint128"
   | Builtin_to_nat -> "to_nat"
+  | Builtin_to_addr -> "to_addr"
 
 let parse_builtin s loc =
   match s with
@@ -187,6 +189,7 @@ let parse_builtin s loc =
   | "to_uint64" -> Builtin_to_uint64
   | "to_uint128" -> Builtin_to_uint128
   | "to_nat" -> Builtin_to_nat
+  | "to_addr" -> Builtin_to_addr
   | _ -> (
       try
         let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
