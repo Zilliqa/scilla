@@ -150,6 +150,24 @@ let update ~fname ~value =
   translate_res
   @@ IPCClient.update_state_value (binary_rpc ~sock_addr) q' value'
 
+(* Update full state variable (of another contract) to server (no indexing). *)
+let update_ext ~caddr ~fname ~value ~tp =
+  let open Ipcmessage_types in
+  let sock_addr, _ = assert_init () in
+  let q =
+    {
+      name = fname;
+      mapdepth = TypeUtilities.map_depth tp;
+      indices = [];
+      ignoreval = false;
+    }
+  in
+  let q' = encode_serialized_query q in
+  let value' = encode_serialized_value value in
+  translate_res
+  @@ IPCClient.set_ext_state_value (binary_rpc ~sock_addr) caddr q' value' (Type.pp_typ tp)
+
+
 let fetch_all () =
   let _, fields = assert_init () in
   List.map fields ~f:(fun (fname, tp) -> (fname, tp, fetch ~fname))

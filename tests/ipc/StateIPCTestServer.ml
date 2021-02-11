@@ -30,11 +30,17 @@ open StateIPCIdl
 open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
-type hashtable = (string, value_type) Hashtbl.t
+type value_table = (string, value_type) Hashtbl.t
 
-and value_type = NonMapVal of string | MapVal of hashtable
+and value_type = NonMapVal of string | MapVal of value_table
 
-let thread_pool : (string, hashtable) Hashtbl.t = Hashtbl.create 4
+type type_table = (string, string) Hashtbl.t
+
+(* State of the full blockchain, i.e., for all addresses.
+ * None indicates *this* address and Some indicates "external state". *)
+type blockchain_state = (string option, (value_table * type_table)) Hashtbl.t
+
+let thread_pool : (string, blockchain_state) Hashtbl.t = Hashtbl.create 4
 
 let num_pending_requests = 5
 
@@ -108,7 +114,7 @@ module MakeServer () = struct
             Hashtbl.replace new_table str (deserialize_value v));
         MapVal new_table
 
-  let fetch_state_value query =
+  let fetch_state_value_helper addr_opt query =
     let rec recurser value indices =
       match indices with
       | [] -> pure (Some value)
@@ -119,18 +125,25 @@ module MakeServer () = struct
               let vopt = Hashtbl.find_opt m head in
               match vopt with Some v -> recurser v tail | None -> pure None ) )
     in
-    let query = decode_serialized_query query in
-    match query with
-    | { name; indices; ignoreval; _ } -> (
-        let string_indices_list = name :: List.map indices ~f:Bytes.to_string in
-        let%bind vopt = recurser (MapVal table) string_indices_list in
-        match vopt with
-        | Some v ->
-            if ignoreval then pure @@ (true, "")
-            else pure @@ (true, encode_serialized_value (serialize_value v))
-        | None -> pure @@ (false, "") )
+    let contr_state = Hashtbl.find_opt table addr_opt in
+    match contr_state with
+    | Some (vt, tt) ->
+      let query = decode_serialized_query query in
+      let t = Hashtbl.find_opt tt query.name in
+      (match query with
+      | { name; indices; ignoreval; _ } -> (
+          let string_indices_list = name :: List.map indices ~f:Bytes.to_string in
+          let%bind vopt = recurser (MapVal vt) string_indices_list in
+          match vopt with
+          | Some v ->
+              if ignoreval then pure @@ (true, "", t)
+              else pure @@ (true, encode_serialized_value (serialize_value v), t)
+          | None -> pure @@ (false, "", t) )
+      )
+    | None ->
+      fail RPCError.{ code = 0; message = fetch_message }
 
-  let update_state_value query value =
+  let set_value_helper addr_opt query value ty_opt =
     let rec recurser_update ?(new_val = None) map indices =
       match indices with
       | [] -> fail RPCError.{ code = 0; message = update_message }
@@ -158,18 +171,47 @@ module MakeServer () = struct
               | MapVal m -> recurser_update ~new_val m tail ) )
     in
     let query = decode_serialized_query query in
+    let (vt, tt) = 
+      match Hashtbl.find_opt table addr_opt with
+      | Some (vt, tt) -> (vt, tt)
+      | None ->
+        let (vt, tt) = (Hashtbl.create 8, Hashtbl.create 8) in
+        Hashtbl.replace table addr_opt (vt, tt);
+        (vt, tt)
+    in
+    (* Update type if provided *)
+    let () =
+      match ty_opt with
+      | Some ty -> Hashtbl.replace tt query.name ty
+      | None -> ()
+    in
+    (* Update value *)
     match query with
     | { name; indices; ignoreval; _ } -> (
         let string_indices_list = List.map indices ~f:Bytes.to_string in
         match ignoreval with
-        | true -> recurser_update table (name :: string_indices_list)
+        | true -> recurser_update vt (name :: string_indices_list)
         | false ->
             let new_val = deserialize_value (decode_serialized_value value) in
-            recurser_update ~new_val:(Some new_val) table
+            recurser_update ~new_val:(Some new_val) vt
               (name :: string_indices_list) )
 
-  let fetch_ext_state_value _caddr _query =
-    fail RPCError.{ code = 0; message = "Unimplimented" }
+  let fetch_state_value query =
+    let%bind (f, v, _t) = fetch_state_value_helper None query in
+    pure (f, v)
+
+  let fetch_ext_state_value caddr query =
+    let%bind (f, v, t) = fetch_state_value_helper (Some caddr) query in
+    match t with
+    | Some t' -> pure (f, v, t')
+    | None -> fail RPCError.{ code = 0; message = fetch_message }
+
+  let update_state_value query value =
+    set_value_helper None query value None
+  
+  let set_ext_state_value caddr query value scilla_type =
+    set_value_helper (Some caddr) query value (Some scilla_type)
+
 end
 
 let start_server ~sock_addr =
@@ -182,6 +224,8 @@ let start_server ~sock_addr =
           IDL.T.return @@ ServerModule.fetch_state_value q);
       ServerModule.IPCTestServer.update_state_value (fun q v ->
           IDL.T.return @@ ServerModule.update_state_value q v);
+      ServerModule.IPCTestServer.set_ext_state_value (fun addr q v t ->
+          IDL.T.return @@ ServerModule.set_ext_state_value addr q v t);
       ServerModule.IPCTestServer.fetch_ext_state_value (fun a q ->
           IDL.T.return @@ ServerModule.fetch_ext_state_value a q);
       let server = ServerModule.prepare_server sock_addr in
