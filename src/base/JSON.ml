@@ -214,7 +214,10 @@ and mapvalues_from_json m kt vt l =
       let kjson = member_exn "key" first in
       let keylit =
         match kt with
-        | PrimType _ -> build_prim_lit_exn kt (to_string_exn kjson)
+        | PrimType _
+        | Address _ ->
+            (* Addresses are handled as ByStr20 *)
+            build_prim_lit_exn kt (to_string_exn kjson)
         | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
       in
       let vjson = member_exn "val" first in
