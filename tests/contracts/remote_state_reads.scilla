@@ -1,0 +1,88 @@
+scilla_version 0
+
+library RRLib
+
+(* Tests various aspects of address types and remote state reads *)
+
+contract RRContract ()
+
+field remote_reads_test_res_1_1 : Uint128 = Uint128 0  (* _balance of remote1 *)
+field remote_reads_test_res_2_1 : Uint128 = Uint128 0  (* _balance of remote2 *)
+field remote_reads_test_res_2_2 : ByStr20 = 0xabfeccdc9012345678901234567890f777567890 (* _this_address of remote2 *)
+field remote_reads_test_res_3_1 : Uint128 = Uint128 0  (* _balance of remote3 *)
+field remote_reads_test_res_3_2 : ByStr20 = 0xabfeccdc9012345678901234567890f777567890 (* _this_address of remote3 *)
+field remote_reads_test_res_3_3 : Uint32 = Uint32 0 (* transactionCount of remote3 *)
+field remote_reads_test_res_3_4 : ByStr20 with end = 0xabfeccdc9012345678901234567890f777567890 (* admin of remote3 *)
+field remote_reads_test_res_3_5 : Uint128 = Uint128 0 (* _balance of admin of remote3 *)
+field remote_reads_test_res_3_6 : Map (ByStr20 with end) Bool = Emp (ByStr20 with end) Bool (* owners of remote3 *)
+field remote_reads_test_res_3_7 : Bool = True (* exists of owners[key] in remote3 *)
+field remote_reads_test_res_3_8 : Option Bool = let x = True in Some {Bool} x (* owners[key] in remote3 *)
+field remote_reads_test_res_3_9 : Map Uint32 (Map (ByStr20 with end) Bool) = Emp Uint32 (Map (ByStr20 with end) Bool) (* signatures of remote3 *)
+field remote_reads_test_res_3_10 : Bool = False (* exists of signatures[key] of remote3 *)
+field remote_reads_test_res_3_11 : Option (Map (ByStr20 with end) Bool) = None {Map (ByStr20 with end) Bool} (* signatures[key] of remote3 *)
+field remote_reads_test_res_3_12 : Bool = False (* exists signatures[key1][key2] of remote3 *)
+field remote_reads_test_res_3_13 : Option Bool = None {Bool} (* signatures[key1][key2] of remote3 *)
+
+
+transition RemoteReadsTest(
+  (* Any address in use - _balance is defined, but not _this_address *)
+  remote1: ByStr20 with end,
+  (* Any contract address - _this_address is only defined for addresses *)
+  remote2: ByStr20 with (* _this_address : ByStr20 *)
+                   end,
+  (* Address with various fields *)
+  remote3: ByStr20 with transactionCount : Uint32,
+                        admin : ByStr20 with end,       
+                        owners : Map (ByStr20 with end) Bool,
+                        signatures : Map Uint32 (Map (ByStr20 with end) Bool)
+                   end)
+  tmp_1_1 <-- remote1._balance;
+  remote_reads_test_res_1_1 := tmp_1_1;
+
+  tmp_2_1 <-- remote2._balance;
+  remote_reads_test_res_2_1 := tmp_2_1;
+  
+(*  tmp_2_2 <-- remote2._this_address; 
+  remote_reads_test_res_2_2 := tmp_2_2; *)
+  
+  tmp_3_1 <-- remote3._balance;
+  remote_reads_test_res_3_1 := tmp_3_1;
+
+(*  tmp_3_2 <-- remote3._this_address;
+  remote_reads_test_res_3_2 := tmp_3_2; *)
+
+  tmp_3_3 <-- remote3.transactionCount;
+  remote_reads_test_res_3_3 := tmp_3_3;
+
+  tmp_3_4 <-- remote3.admin;
+  remote_reads_test_res_3_4 := tmp_3_4;
+
+  tmp_3_5 <-- tmp_3_4._balance;
+  remote_reads_test_res_3_5 := tmp_3_5;
+
+  tmp_3_6 <-- remote3.owners;
+  remote_reads_test_res_3_6 := tmp_3_6;
+
+(*  tmp_3_7 <-- exists remote3.owners[_sender];
+  remote_reads_test_res_3_7 := tmp_3_7; *)
+
+(*  tmp_3_8 <-- remote3.owners[_sender];
+  remote_reads_test_res_3_8 := tmp_3_8; *)
+
+  tmp_3_9 <-- remote3.signatures;
+  remote_reads_test_res_3_9 := tmp_3_9;
+
+  x = Uint32 0
+(*  tmp_3_10 <-- exists remote3.signatures[x];
+  remote_reads_test_res_3_10 := tmp_3_10; *)
+
+(*  tmp_3_11 <-- remote3.signatures[x];
+  remote_reads_test_res_3_11 := tmp_3_11; *)
+
+(*   tmp_3_12 <-- exists remote3.signatures[x][_origin];
+  remote_reads_test_res_3_12 := tmp_3_12; *)
+
+(*   tmp_3_13 <-- remote3.signatures[x][_origin];
+  remote_reads_test_res_3_13 := tmp_3_13 *)
+
+end
