@@ -214,6 +214,9 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
       let%bind stored_typ = FEParser.parse_type field_typ in
       if ignoreval then pure (None, Some stored_typ)
       else
+        (* We compute the type of the accessed value because `stored_typ`
+         * is the type of the field, and not the accessed value.
+         * (i.e., there can be a difference when map fields are accessed). *)
         let%bind tp' =
           TypeUtilities.map_access_type stored_typ (List.length keys)
         in
