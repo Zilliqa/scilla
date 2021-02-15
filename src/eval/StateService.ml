@@ -153,28 +153,24 @@ module MakeStateService () = struct
           | Some _res' -> pure @@ res )
     | Local -> fetch_local ~fname ~keys fields
 
+  (* Common function for external state lookup. 
+  * If the caddr+fname+keys combination exists:
+  *     If ~ignoreval is true: (None, Some type) is returned
+  *     if ~ignoreval is false: (Some val, Some type) is returned
+  * Else: (None, None) is returned
+  *)
   let external_fetch ~caddr ~fname ~keys ~ignoreval =
     let%bind sm, _fields, estates = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
-    | IPC socket_addr -> (
-        let%bind res, stored_tp =
-          StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~keys
-            ~ignoreval
-        in
-        if not @@ List.is_empty keys then pure @@ (res, stored_tp)
-        else
-          match res with
-          | None ->
-              fail1
-                (sprintf "StateService: Field %s not found on IPC server."
-                   (as_error_string fname))
-                (ER.get_loc (get_rep fname))
-          | Some _ -> pure @@ (res, stored_tp) )
+    | IPC socket_addr ->
+        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~keys
+          ~ignoreval
     | Local -> (
         match
           List.find_map estates ~f:(fun estate ->
-              if SSLiteral.Bystrx.equal caddr estate.caddr then Some estate.cstate
+              if SSLiteral.Bystrx.equal caddr estate.caddr then
+                Some estate.cstate
               else None)
         with
         | Some fields -> (
@@ -186,16 +182,9 @@ module MakeStateService () = struct
             with
             | Some stored_tp ->
                 let%bind res = fetch_local ~fname ~keys fields in
-                pure (res, stored_tp)
-            | None ->
-                fail1
-                  (sprintf "Unable to fetch %s from contract at address %s"
-                     (as_error_string fname) caddr_hex)
-                  (ER.get_loc (get_rep fname)) )
-        | None ->
-            fail1
-              (sprintf "Unable to fetch from contract at address %s" caddr_hex)
-              (ER.get_loc (get_rep fname)) )
+                pure (res, Option.map res ~f:(fun _ -> stored_tp))
+            | None -> pure (None, None))
+        | None -> pure (None, None) )
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in

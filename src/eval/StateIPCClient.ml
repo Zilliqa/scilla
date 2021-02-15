@@ -182,6 +182,12 @@ let fetch ~socket_addr ~fname ~keys ~tp =
  * Otherwise (Some value, type) is returned.
  *)
 
+(* Common function for external state lookup. 
+ * If the caddr+fname+keys combination exists:
+ *     If ~ignoreval is true: (None, Some type) is returned
+ *     if ~ignoreval is false: (Some val, Some type) is returned
+ * Else: (None, None) is returned
+ *)
 let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
   let open Ipcmessage_types in
   let q =
@@ -206,15 +212,15 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
   match res with
   | true, res', field_typ ->
       let%bind stored_typ = FEParser.parse_type field_typ in
-      let%bind tp' =
-        TypeUtilities.map_access_type stored_typ (List.length keys)
-      in
-      let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
-      let%bind res'' = deserialize_value decoded_pb tp' in
-      pure @@ (Some res'', stored_typ)
-  | false, _, field_typ ->
-      let%bind stored_typ = FEParser.parse_type field_typ in
-      pure (None, stored_typ)
+      if ignoreval then pure (None, Some stored_typ)
+      else
+        let%bind tp' =
+          TypeUtilities.map_access_type stored_typ (List.length keys)
+        in
+        let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+        let%bind res'' = deserialize_value decoded_pb tp' in
+        pure @@ (Some res'', Some stored_typ)
+  | false, _, _ -> pure (None, None)
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 let update ~socket_addr ~fname ~keys ~value ~tp =
@@ -257,27 +263,6 @@ let is_member ~socket_addr ~fname ~keys ~tp =
     ipcclient_exn_wrapper thunk
   in
   pure @@ fst res
-
-(* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
-let external_is_member ~socket_addr ~caddr ~fname ~keys ~tp =
-  let open Ipcmessage_types in
-  let q =
-    {
-      name = IPCCIdentifier.as_string fname;
-      mapdepth = TypeUtilities.map_depth tp;
-      indices = List.map keys ~f:serialize_literal;
-      ignoreval = true;
-    }
-  in
-  let%bind q' = encode_serialized_query q in
-  let%bind found, _, field_type =
-    let thunk () =
-      translate_res
-      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
-    in
-    ipcclient_exn_wrapper thunk
-  in
-  pure @@ (found, field_type)
 
 (* Remove a key from a map. keys must be non-empty. *)
 let remove ~socket_addr ~fname ~keys ~tp =

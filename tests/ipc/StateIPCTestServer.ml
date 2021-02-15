@@ -141,7 +141,7 @@ module MakeServer () = struct
           | None -> pure @@ (false, "", t) )
       )
     | None ->
-      fail RPCError.{ code = 0; message = fetch_message }
+      pure (false, "", None)
 
   let set_value_helper addr_opt query value ty_opt =
     let rec recurser_update ?(new_val = None) map indices =

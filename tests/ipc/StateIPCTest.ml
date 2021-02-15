@@ -249,7 +249,7 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
   let fields =
     List.filter_map state ~f:(fun (addr_opt, (s, t, _)) ->
         if
-          Option.is_none addr_opt && String.(s = CUName.as_string balance_label)
+          Option.is_some addr_opt || String.(s = CUName.as_string balance_label)
         then None
         else Some (s, t))
   in

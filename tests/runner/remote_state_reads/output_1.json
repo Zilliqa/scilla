@@ -1,10 +1,49 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7880",
+  "gas_remaining": "7873",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "remote_reads_test_res_3_13",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "remote_reads_test_res_3_12",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "remote_reads_test_res_3_11",
+      "type": "Option (Map (ByStr20 with end) (Bool))",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Map (ByStr20 with end) (Bool)" ],
+        "arguments": [
+          [
+            {
+              "key": "0xabfeccdc9012345678901234567890f777564326",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "vname": "remote_reads_test_res_3_10",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
     {
       "vname": "remote_reads_test_res_3_9",
       "type": "Map (Uint32) (Map (ByStr20 with end) (Bool))",
@@ -23,6 +62,20 @@
           ]
         }
       ]
+    },
+    {
+      "vname": "remote_reads_test_res_3_8",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "remote_reads_test_res_3_7",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
     },
     {
       "vname": "remote_reads_test_res_3_6",
@@ -69,52 +122,6 @@
       "vname": "remote_reads_test_res_3_2",
       "type": "ByStr20",
       "value": "0xabfeccdc9012345678901234567890f777567890"
-    },
-    {
-      "vname": "remote_reads_test_res_3_7",
-      "type": "Bool",
-      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
-    },
-    {
-      "vname": "remote_reads_test_res_3_8",
-      "type": "Option (Bool)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "Bool" ],
-        "arguments": [
-          { "constructor": "True", "argtypes": [], "arguments": [] }
-        ]
-      }
-    },
-    {
-      "vname": "remote_reads_test_res_3_10",
-      "type": "Bool",
-      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
-    },
-    {
-      "vname": "remote_reads_test_res_3_11",
-      "type": "Option (Map (ByStr20 with end) (Bool))",
-      "value": {
-        "constructor": "None",
-        "argtypes": [ "Map (ByStr20 with end) (Bool)" ],
-        "arguments": []
-      }
-    },
-    {
-      "vname": "remote_reads_test_res_3_12",
-      "type": "Bool",
-      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
-    },
-    {
-      "vname": "remote_reads_test_res_3_13",
-      "type": "Option (Bool)",
-      "value": {
-        "constructor": "Some",
-        "argtypes": [ "Bool" ],
-        "arguments": [
-          { "constructor": "True", "argtypes": [], "arguments": [] }
-        ]
-      }
     }
   ],
   "events": []

@@ -41,7 +41,7 @@ val external_fetch :
   fname:'a IPCCIdentifier.t ->
   keys:IPCCLiteral.t list ->
   ignoreval:bool ->
-  (IPCCLiteral.t option * IPCCType.t, scilla_error list) result
+  (IPCCLiteral.t option * IPCCType.t option, scilla_error list) result
 
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
@@ -59,15 +59,6 @@ val is_member :
   keys:IPCCLiteral.t list ->
   tp:IPCCType.t ->
   (bool, scilla_error list) result
-
-(* Does field fname exist in caddr? If yes and it's a map, do keys exist? *)
-val external_is_member :
-  socket_addr:string ->
-  caddr:string ->
-  fname:loc IPCCIdentifier.t ->
-  keys:IPCCLiteral.t list ->
-  tp:IPCCType.t ->
-  (bool * string, scilla_error list) result
 
 (* Remove a key from a map. keys must be non-empty. *)
 val remove :

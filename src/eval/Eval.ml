@@ -338,7 +338,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l, _ =
+              let%bind l =
                 Configuration.remote_load s' r
               in
               let conf' = Configuration.bind conf (get_id x) l in
@@ -374,12 +374,16 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | RemoteMapGet (x, adr, m, klist, fetchval) ->
           let%bind a = fromR @@ Configuration.lookup conf adr in
-          let%bind klist' =
-            mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
-          in
-          let%bind l = Configuration.remote_map_get conf a m klist' fetchval in
-          let conf' = Configuration.bind conf (get_id x) l in
-          stmt_eval conf' sts
+          (match a with
+          | ByStrX abystr when Bystrx.width abystr = Type.address_length->
+            let%bind klist' =
+              mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
+            in
+            let%bind l = Configuration.remote_map_get abystr m klist' fetchval in
+            let conf' = Configuration.bind conf (get_id x) l in
+            stmt_eval conf' sts
+          | _ -> fail0 "Expected address to be ByStr20 value"
+          )
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in

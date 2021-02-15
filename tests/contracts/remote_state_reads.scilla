@@ -42,7 +42,7 @@ transition RemoteReadsTest(
   tmp_2_1 <-- remote2._balance;
   remote_reads_test_res_2_1 := tmp_2_1;
   
-(*  tmp_2_2 <-- remote2._this_address; 
+(*  tmp_2_2 <-- remote2._this_address;
   remote_reads_test_res_2_2 := tmp_2_2; *)
   
   tmp_3_1 <-- remote3._balance;
@@ -63,26 +63,26 @@ transition RemoteReadsTest(
   tmp_3_6 <-- remote3.owners;
   remote_reads_test_res_3_6 := tmp_3_6;
 
-(*  tmp_3_7 <-- exists remote3.owners[_sender];
-  remote_reads_test_res_3_7 := tmp_3_7; *)
+  tmp_3_7 <-- exists remote3.owners[_sender];
+  remote_reads_test_res_3_7 := tmp_3_7;
 
-(*  tmp_3_8 <-- remote3.owners[_sender];
-  remote_reads_test_res_3_8 := tmp_3_8; *)
+  tmp_3_8 <-- remote3.owners[_sender];
+  remote_reads_test_res_3_8 := tmp_3_8;
 
   tmp_3_9 <-- remote3.signatures;
   remote_reads_test_res_3_9 := tmp_3_9;
 
-  x = Uint32 0
-(*  tmp_3_10 <-- exists remote3.signatures[x];
-  remote_reads_test_res_3_10 := tmp_3_10; *)
+  x = Uint32 0;
+  tmp_3_10 <-- exists remote3.signatures[x];
+  remote_reads_test_res_3_10 := tmp_3_10;
 
-(*  tmp_3_11 <-- remote3.signatures[x];
-  remote_reads_test_res_3_11 := tmp_3_11; *)
+  tmp_3_11 <-- remote3.signatures[x];
+  remote_reads_test_res_3_11 := tmp_3_11;
 
-(*   tmp_3_12 <-- exists remote3.signatures[x][_origin];
-  remote_reads_test_res_3_12 := tmp_3_12; *)
+  tmp_3_12 <-- exists remote3.signatures[x][_origin];
+  remote_reads_test_res_3_12 := tmp_3_12;
 
-(*   tmp_3_13 <-- remote3.signatures[x][_origin];
-  remote_reads_test_res_3_13 := tmp_3_13 *)
+  tmp_3_13 <-- remote3.signatures[x][_origin];
+  remote_reads_test_res_3_13 := tmp_3_13
 
 end
