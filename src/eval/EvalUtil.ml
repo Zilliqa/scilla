@@ -423,8 +423,10 @@ module EvalTypecheck = struct
   open EvalType
 
   let typecheck_remote_fields_no_err caddr fts =
+    (* Add _balance to ensure that caddr is in use *)
+    let all_fts = (mk_loc_id balance_label, balance_typ) :: fts in
     (* Catch errors and return a boolean - errors should be thrown by the caller *)
-    List.for_all fts ~f:(fun (f, t) ->
+    List.for_all all_fts ~f:(fun (f, t) ->
         match
           Configuration.remote_field_type caddr f (fun x _y -> x) (fun x -> x)
         with
