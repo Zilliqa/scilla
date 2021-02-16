@@ -240,7 +240,10 @@ address_type_field:
 | ft = id_with_typ { ft }
 (* Allow _this_address as well *)
 | n = SPID; t = type_annot
-  { ( to_loc_id n (toLoc $startpos(n)), t) }
+    { let loc = toLoc $startpos(n) in
+      if n = "_this_address"
+      then to_loc_id n loc, t
+      else raise (SyntaxError ("Invalid field name " ^ n ^ " in address type", loc)) }
 
 (***********************************************)
 (*                 Expressions                 *)
