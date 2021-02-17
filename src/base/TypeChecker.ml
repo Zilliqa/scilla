@@ -1038,7 +1038,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           in
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
-            let _ = TEnv.addT fields_env fn actual in
+            let _ = TEnv.addT fields_env fn (mk_qual_tp ft).tp in
             pure @@ ((typed_fs, ft, typed_expr) :: acc)
           else
             fail

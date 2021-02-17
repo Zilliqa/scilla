@@ -183,7 +183,6 @@ type_annot:
 id_with_typ :
 | n = ID; t = type_annot { (to_loc_id n (toLoc $startpos(n)), t) }
 
-
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
@@ -211,7 +210,7 @@ t_map_value :
 | LPAREN; t = t_map_value; RPAREN; { t }
 
 address_typ :
-| d = CID; WITH; fs = separated_list(COMMA, address_field_type); END;
+| d = CID; WITH; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
       then Address fs
       else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
@@ -237,9 +236,14 @@ targ:
 | t = address_typ; { t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
-address_field_type:
+address_type_field:
 | ft = id_with_typ { ft }
-
+(* Allow _this_address as well *)
+| n = SPID; t = type_annot
+    { let loc = toLoc $startpos(n) in
+      if n = "_this_address"
+      then to_loc_id n loc, t
+      else raise (SyntaxError ("Invalid field name " ^ n ^ " in address type", loc)) }
 
 (***********************************************)
 (*                 Expressions                 *)
