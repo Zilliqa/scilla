@@ -342,9 +342,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l, _ =
-                Configuration.remote_load (Bystrx.hex_encoding s') r
-              in
+              let%bind l = Configuration.remote_load s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ -> fail0 "Expected remote load address to be ByStr20 value" )
@@ -376,14 +374,19 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
-      | RemoteMapGet (x, adr, m, klist, fetchval) ->
+      | RemoteMapGet (x, adr, m, klist, fetchval) -> (
           let%bind a = fromR @@ Configuration.lookup conf adr in
-          let%bind klist' =
-            mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
-          in
-          let%bind l = Configuration.remote_map_get conf a m klist' fetchval in
-          let conf' = Configuration.bind conf (get_id x) l in
-          stmt_eval conf' sts
+          match a with
+          | ByStrX abystr when Bystrx.width abystr = Type.address_length ->
+              let%bind klist' =
+                mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
+              in
+              let%bind l =
+                Configuration.remote_map_get abystr m klist' fetchval
+              in
+              let conf' = Configuration.bind conf (get_id x) l in
+              stmt_eval conf' sts
+          | _ -> fail0 "Expected address to be ByStr20 value" )
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
@@ -504,16 +507,18 @@ and try_apply_as_procedure conf proc proc_rest actuals =
 (*******************************************************)
 
 let check_blockchain_entries entries =
-  let expected = [ (TypeUtil.blocknum_name, BNum "0") ] in
+  let expected = [ (TypeUtil.blocknum_name, bnum_typ, BNum "0") ] in
   (* every entry must be expected *)
   let c1 =
-    List.for_all entries ~f:(fun (s, _) ->
-        List.Assoc.mem expected s ~equal:String.( = ))
+    List.for_all entries ~f:(fun (s, t, _) ->
+        List.exists expected ~f:(fun (x, xt, _) ->
+            String.(x = s) && type_assignable ~expected:xt ~actual:t))
   in
   (* everything expected must be entered *)
   let c2 =
-    List.for_all expected ~f:(fun (s, _) ->
-        List.Assoc.mem entries s ~equal:String.( = ))
+    List.for_all expected ~f:(fun (x, xt, _) ->
+        List.exists entries ~f:(fun (s, t, _) ->
+            String.(x = s) && type_assignable ~expected:xt ~actual:t))
   in
   if c1 && c2 then pure entries
   else
@@ -524,7 +529,8 @@ let check_blockchain_entries entries =
           %s\n\
           provided:\n\
           %s\n"
-         (pp_literal_map expected) (pp_literal_map entries)
+         (pp_literal_type_map expected)
+         (pp_literal_type_map entries)
 
 (*******************************************************)
 (*              Contract initialization                *)
@@ -616,10 +622,10 @@ let init_libraries clibs elibs =
 (* Initialize fields in a constant environment *)
 let init_fields env fs =
   (* Initialize a field in a constant environment *)
-  let init_field fname _t fexp =
+  let init_field fname t fexp =
     let%bind v, _ = exp_eval_wrapper_no_cps fexp env in
     match v with
-    | l when is_pure_literal l -> pure (fname, l)
+    | l when is_pure_literal l -> pure (fname, t, l)
     | _ ->
         fail0
         @@ sprintf "Closure cannot be stored in a field %s."
@@ -632,7 +638,9 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
   let cparams = CU.append_implict_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
-  let args = CU.remove_noneval_args args' in
+  let args'' = CU.remove_noneval_args args' in
+  (* Strip types - we rely on the type determined by from the literal *)
+  let args = List.map args'' ~f:(fun (x, _t, v) -> (x, v)) in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)
@@ -692,7 +700,7 @@ let create_cur_state_fields initcstate curcstate =
      flag it as invalid input state *)
   let%bind () =
     forallM
-      ~f:(fun (s, lc) ->
+      ~f:(fun (s, _t, lc) ->
         let%bind t_lc = fromR @@ literal_type lc in
         let emsg () =
           mk_error0
@@ -702,10 +710,9 @@ let create_cur_state_fields initcstate curcstate =
         in
         let%bind _, ex =
           tryM
-            ~f:(fun (t, li) ->
-              let%bind t1 = fromR @@ literal_type lc in
+            ~f:(fun (t, _t, li) ->
               let%bind t2 = fromR @@ literal_type li in
-              if [%equal: EvalName.t] s t && [%equal: EvalType.t] t1 t2 then
+              if [%equal: EvalName.t] s t && [%equal: EvalType.t] t_lc t2 then
                 pure ()
               else fail0 "")
             initcstate ~msg:emsg
@@ -716,9 +723,10 @@ let create_cur_state_fields initcstate curcstate =
   (* Each entry name is unique *)
   let%bind () =
     forallM
-      ~f:(fun (e, _) ->
+      ~f:(fun (e, _, _) ->
         if
-          List.count curcstate ~f:(fun (e', _) -> [%equal: EvalName.t] e e') > 1
+          List.count curcstate ~f:(fun (e', _, _) -> [%equal: EvalName.t] e e')
+          > 1
         then
           fail0
             (sprintf "Field %s occurs more than once in input.\n"
@@ -728,8 +736,9 @@ let create_cur_state_fields initcstate curcstate =
   in
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
-    List.filter initcstate ~f:(fun (s, _) ->
-        not (List.Assoc.mem curcstate s ~equal:[%equal: EvalName.t]))
+    List.filter initcstate ~f:(fun (s, _, _) ->
+        not
+          (List.exists curcstate ~f:(fun x -> [%equal: EvalName.t] s (fst3 x))))
   in
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
@@ -882,7 +891,7 @@ let handle_message contr cstate bstate m =
       fields;
       balance;
       accepted = false;
-      blockchain_state = bstate;
+      blockchain_state = List.map bstate ~f:(fun x -> (fst3 x, trd3 x));
       incoming_funds;
       procedures;
       component_stack = [ tname ];

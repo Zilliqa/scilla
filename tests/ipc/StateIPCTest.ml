@@ -96,16 +96,34 @@ let rec pb_to_json pb =
 let json_file_to_state path =
   let j = json_from_file path in
 
-  let svars =
-    List.map (json_to_list j) ~f:(fun sv ->
+  let rec jlist_to_states js =
+    List.map js ~f:(fun sv ->
         let fname = json_member "vname" sv |> json_to_string in
-        let ftyp =
-          json_member "type" sv |> json_to_string |> parse_typ_wrapper
-        in
-        let fval = json_to_pb ftyp (json_member "value" sv) in
-        (fname, ftyp, fval))
+        let jval = json_member "value" sv in
+        if String.equal fname "_external" then
+          let exts = json_to_list jval in
+          let addr_states =
+            List.map exts ~f:(fun addr_states ->
+                let addr =
+                  json_member "address" addr_states |> json_to_string
+                in
+                let state = json_member "state" addr_states |> json_to_list in
+                let state' = jlist_to_states state in
+                List.map state' ~f:(function
+                  | [ (None, s) ] -> (Some addr, s)
+                  | _ ->
+                      assert_failure
+                        "External state cannot contain nested external states"))
+          in
+          List.concat addr_states
+        else
+          let ftyp =
+            json_member "type" sv |> json_to_string |> parse_typ_wrapper
+          in
+          let fval = json_to_pb ftyp jval in
+          [ (None, (fname, ftyp, fval)) ])
   in
-  svars
+  List.concat @@ jlist_to_states (json_to_list j)
 
 let state_to_json s =
   let open IPCTestType in
@@ -229,20 +247,27 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
   if start_mock_server then StateIPCTestServer.start_server ~sock_addr;
 
   let fields =
-    List.filter_map state ~f:(fun (s, t, _) ->
-        if String.(s = CUName.as_string balance_label) then None else Some (s, t))
+    List.filter_map state ~f:(fun (addr_opt, (s, t, _)) ->
+        if
+          Option.is_some addr_opt || String.(s = CUName.as_string balance_label)
+        then None
+        else Some (s, t))
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
   (* Update the server (via the test client) with the state values we want. *)
-  List.iter state ~f:(fun (fname, _, value) ->
-      if String.(fname <> CUName.as_string balance_label) then
-        StateIPCTestClient.update ~fname ~value);
+  List.iter state ~f:(fun (addr_opt, (fname, tp, value)) ->
+      match addr_opt with
+      | Some caddr -> StateIPCTestClient.update_ext ~caddr ~fname ~value ~tp
+      | None ->
+          if String.(fname <> CUName.as_string balance_label) then
+            StateIPCTestClient.update ~fname ~value);
   (* Find the balance from state and return it. *)
   match
-    List.find state ~f:(fun (fname, _, _) ->
-        String.(fname = CUName.as_string balance_label))
+    List.find state ~f:(fun (addr_opt, (fname, _, _)) ->
+        Option.is_none addr_opt
+        && String.(fname = CUName.as_string balance_label))
   with
-  | Some (_, _, balpb) -> (
+  | Some (_, (_, _, balpb)) -> (
       match balpb with
       | Ipcmessage_types.Bval bal ->
           json_from_string (Bytes.to_string bal) |> json_to_string
