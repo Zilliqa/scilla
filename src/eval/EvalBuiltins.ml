@@ -892,7 +892,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ls) with
       | [ Address fts ], [ (ByStrX bstr as varg) ]
         when Bystrx.width bstr = Type.address_length ->
-          if typecheck_remote_fields_no_err (Bystrx.hex_encoding bstr) fts then
+          if typecheck_remote_fields_no_err bstr fts then
             pure (build_some_lit varg res_val_typ)
           else
             (* Failure results in a None value *)
