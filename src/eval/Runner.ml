@@ -89,9 +89,9 @@ let check_after_step res gas_limit =
       ((cstate, outs, events, accepted_b), remaining_gas)
 
 let map_json_input_strings_to_names map =
-  List.map map ~f:(fun (x, l) ->
+  List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
-      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 (* Parse the input state json and extract out _balance separately *)
@@ -105,7 +105,7 @@ let input_state_json filename =
   in
   let bal_lit =
     match
-      List.Assoc.find states balance_label ~equal:[%equal: RunnerName.t]
+      List.find states ~f:(fun x -> [%equal: RunnerName.t] balance_label (fst3 x))
     with
     | Some v -> v
     | None ->
@@ -115,19 +115,19 @@ let input_state_json filename =
   in
   let bal_int =
     match bal_lit with
-    | UintLit (Uint128L x) -> x
+    | _, t, UintLit (Uint128L x) when [%equal: RunnerSyntax.SType.t] t balance_typ -> x
     | _ ->
         raise
           (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:[%equal: RunnerName.t]
+    List.filter states ~f:(fun x -> not @@ [%equal: RunnerName.t] (fst3 x) balance_label)
   in
   (no_bal_states, bal_int, estates)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
+  let bal_lit = (balance_label, balance_typ, JSON.JSONLiteral.UintLit (Uint128L balance)) in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
@@ -162,12 +162,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
   let init_json_scilla_version =
-    List.Assoc.find initargs ~equal:[%equal: RunnerName.t]
-      ContractUtil.scilla_version_label
+    List.find initargs ~f:(fun x -> [%equal: RunnerName.t] (fst3 x) ContractUtil.scilla_version_label)
   in
   let () =
     match init_json_scilla_version with
-    | Some (UintLit (Uint32L v)) ->
+    | Some (_, t, UintLit (Uint32L v)) when [%equal: RunnerSyntax.SType.t] t RunnerSyntax.SType.uint32_typ ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
         if v' <> mver || mver <> source_ver then
@@ -414,7 +413,7 @@ let run_with_args args =
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
                       Result.ignore_m
-                      @@ mapM field_vals' ~f:(fun (s, v) ->
+                      @@ mapM field_vals' ~f:(fun (s, _t, v) ->
                              update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
                                ~value:v)
                     in
@@ -445,7 +444,7 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-                let m = JSON.JSONLiteral.Msg mmsg in
+                let m = JSON.JSONLiteral.Msg (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x))) in
 
                 let cstate, gas_remaining' =
                   if is_ipc then
@@ -494,33 +493,15 @@ let run_with_args args =
 
                     (* Initialize the state server. *)
                     let fields =
-                      List.map field_vals ~f:(fun (s, l) ->
+                      List.map field_vals ~f:(fun (s, t, l) ->
                           let open StateService in
-                          let t =
-                            List.Assoc.find_exn cstate.fields s
-                              ~equal:[%equal: RunnerName.t]
-                          in
                           { fname = s; ftyp = t; fval = Some l })
                     in
                     let ext_states =
                       let open StateService in
                       List.map ext_states ~f:(fun (addr, fields) ->
                           let fields' =
-                            List.map fields ~f:(fun (n, l) ->
-                                let t =
-                                  match
-                                    TypeUtil.TypeUtilities.literal_type l
-                                  with
-                                  | Ok t -> t
-                                  | Error s ->
-                                      fatal_error_gas_scale Gas.scale_factor
-                                        ( s
-                                        @ mk_error0
-                                            (sprintf
-                                               "Failed to determine type of \
-                                                value in JSON\n") )
-                                        gas_remaining
-                                in
+                            List.map fields ~f:(fun (n, t, l) ->
                                 { fname = n; ftyp = t; fval = Some l })
                           in
                           { caddr = addr; cstate = fields' })
@@ -536,10 +517,10 @@ let run_with_args args =
 
                 plog
                   (sprintf "Executing message:\n%s\n"
-                     (JSON.Message.message_to_jstring mmsg));
+                     (JSON.Message.message_to_jstring (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))));
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_literal_map bstate));
+                     (pp_literal_type_map bstate));
                 let step_result = handle_message ctr cstate bstate m in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining'
