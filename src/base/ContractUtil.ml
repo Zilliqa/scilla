@@ -142,7 +142,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let remove_noneval_args args =
     let nonevalargs = [ extlibs_label ] in
     List.filter args ~f:(fun a ->
-        not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
+        not (List.mem nonevalargs (fst3 a) ~equal:[%equal: CUName.t]))
 
   let append_implict_comp_params cparams =
     let open CUType in

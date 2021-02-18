@@ -189,7 +189,7 @@ module Configuration = struct
       @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
     in
     match fval with
-    | Some v, v_t -> pure (v, v_t)
+    | Some v, _ -> pure v
     | _ ->
         fail1
           (Printf.sprintf "Error loading field %s"
@@ -201,7 +201,13 @@ module Configuration = struct
       fromR
       @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:true
     in
-    pure (snd fval)
+    match fval with
+    | _, Some ty -> pure ty
+    | _ ->
+        fail0
+          (sprintf "Unable to fetch type for field %s at address %s"
+             (EvalLiteral.Bystrx.hex_encoding caddr)
+             (as_error_string k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
@@ -237,10 +243,32 @@ module Configuration = struct
       in
       pure @@ EvalLiteral.build_bool_lit is_member
 
-  let remote_map_get _st _adr m _klist _fetchval =
-    (* TODO - probably useful to refactor map_get to avoid code duplicateion *)
-    (* Note that adr has already been typechecked, so we know the map m is there. *)
-    fail1 "Remote map get not implemented." (ER.get_loc (get_rep m))
+  let remote_map_get caddr m keys fetchval =
+    let open BuiltIns.UsefulLiterals in
+    if fetchval then
+      (* We need to fetch the type in advance because the type-option returned
+       * by the actual call may be None if the key(s) wasn't found,
+       * (but the map map field itself still exists). *)
+      let%bind mt = remote_field_type caddr m in
+      let%bind vt =
+        fromR @@ EvalTypeUtilities.map_access_type mt (List.length keys)
+      in
+      let%bind vopt, _ =
+        fromR
+        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:false
+      in
+      (* Need to wrap the result in a Scilla Option. *)
+      match vopt with
+      | Some v ->
+          let%bind v_lit = fromR @@ some_lit v in
+          pure v_lit
+      | None -> pure (none_lit vt)
+    else
+      let%bind _, topt =
+        fromR
+        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:true
+      in
+      pure @@ EvalLiteral.build_bool_lit (Option.is_some topt)
 
   let bind st k v =
     let e = st.env in

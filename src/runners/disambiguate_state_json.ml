@@ -822,12 +822,29 @@ let run_with_args args =
           let () = init_lib_entries clib_entries this_address in
 
           (* parse_json reads, parses and disambiguates the json file *)
-          let init = parse_json args.input_init this_address in
-
+          let init =
+            let untyped_state = parse_json args.input_init this_address in
+            List.map untyped_state ~f:(fun x ->
+                match TypeUtil.TypeUtilities.literal_type (snd x) with
+                | Ok t -> (fst x, t, snd x)
+                | Error _ ->
+                    fatal_error
+                      (mk_error0
+                         (sprintf "Unable to determine type of literal %s"
+                            (pp_literal (snd x)))))
+          in
           let state =
             if String.is_empty args.ipc_address then
               (* Use the provided state json. *)
-              parse_json args.input_state this_address
+              let untyped_state = parse_json args.input_state this_address in
+              List.map untyped_state ~f:(fun x ->
+                  match TypeUtil.TypeUtilities.literal_type (snd x) with
+                  | Ok t -> (fst x, t, snd x)
+                  | Error _ ->
+                      fatal_error
+                        (mk_error0
+                           (sprintf "Unable to determine type of literal %s"
+                              (pp_literal (snd x)))))
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
@@ -892,11 +909,11 @@ let run_with_args args =
                   let state_from_file =
                     parse_json args.input_state this_address
                   in
-                  let balance =
+                  let balance_nm, balance_v =
                     List.find_exn state_from_file ~f:(fun (fname, _) ->
                         OutputName.equal fname ContractUtil.balance_label)
                   in
-                  balance :: state
+                  (balance_nm, ContractUtil.balance_typ, balance_v) :: state
               | Error e -> fatal_error e
           in
           (init, state)

@@ -344,6 +344,9 @@ let contract_tests env =
                 >::: build_contract_tests env "listiter" succ_code 1 1 [];
                 "polynetwork"
                 >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
+                "remote_state_reads"
+                >::: build_contract_tests env "remote_state_reads" succ_code 1 1
+                       [];
               ];
          "these_tests_must_FAIL"
          >::: [
