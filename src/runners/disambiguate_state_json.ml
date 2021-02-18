@@ -830,7 +830,8 @@ let run_with_args args =
                 | Error _ ->
                     fatal_error
                       (mk_error0
-                         (sprintf "Unable to determine type of literal %s" (pp_literal (snd x)))))
+                         (sprintf "Unable to determine type of literal %s"
+                            (pp_literal (snd x)))))
           in
           let state =
             if String.is_empty args.ipc_address then
@@ -842,7 +843,8 @@ let run_with_args args =
                   | Error _ ->
                       fatal_error
                         (mk_error0
-                          (sprintf "Unable to determine type of literal %s" (pp_literal (snd x)))))
+                           (sprintf "Unable to determine type of literal %s"
+                              (pp_literal (snd x)))))
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
@@ -907,7 +909,7 @@ let run_with_args args =
                   let state_from_file =
                     parse_json args.input_state this_address
                   in
-                  let (balance_nm, balance_v) =
+                  let balance_nm, balance_v =
                     List.find_exn state_from_file ~f:(fun (fname, _) ->
                         OutputName.equal fname ContractUtil.balance_label)
                   in

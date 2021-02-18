@@ -251,7 +251,7 @@ module Configuration = struct
        * (but the map map field itself still exists). *)
       let%bind mt = remote_field_type caddr m in
       let%bind vt =
-          fromR @@ EvalTypeUtilities.map_access_type mt (List.length keys)
+        fromR @@ EvalTypeUtilities.map_access_type mt (List.length keys)
       in
       let%bind vopt, _ =
         fromR

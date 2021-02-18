@@ -38,7 +38,7 @@ type type_table = (string, string) Hashtbl.t
 
 (* State of the full blockchain, i.e., for all addresses.
  * None indicates *this* address and Some indicates "external state". *)
-type blockchain_state = (string option, (value_table * type_table)) Hashtbl.t
+type blockchain_state = (string option, value_table * type_table) Hashtbl.t
 
 let thread_pool : (string, blockchain_state) Hashtbl.t = Hashtbl.create 4
 
@@ -127,21 +127,22 @@ module MakeServer () = struct
     in
     let contr_state = Hashtbl.find_opt table addr_opt in
     match contr_state with
-    | Some (vt, tt) ->
-      let query = decode_serialized_query query in
-      let t = Hashtbl.find_opt tt query.name in
-      (match query with
-      | { name; indices; ignoreval; _ } -> (
-          let string_indices_list = name :: List.map indices ~f:Bytes.to_string in
-          let%bind vopt = recurser (MapVal vt) string_indices_list in
-          match vopt with
-          | Some v ->
-              if ignoreval then pure @@ (true, "", t)
-              else pure @@ (true, encode_serialized_value (serialize_value v), t)
-          | None -> pure @@ (false, "", t) )
-      )
-    | None ->
-      pure (false, "", None)
+    | Some (vt, tt) -> (
+        let query = decode_serialized_query query in
+        let t = Hashtbl.find_opt tt query.name in
+        match query with
+        | { name; indices; ignoreval; _ } -> (
+            let string_indices_list =
+              name :: List.map indices ~f:Bytes.to_string
+            in
+            let%bind vopt = recurser (MapVal vt) string_indices_list in
+            match vopt with
+            | Some v ->
+                if ignoreval then pure @@ (true, "", t)
+                else
+                  pure @@ (true, encode_serialized_value (serialize_value v), t)
+            | None -> pure @@ (false, "", t) ) )
+    | None -> pure (false, "", None)
 
   let set_value_helper addr_opt query value ty_opt =
     let rec recurser_update ?(new_val = None) map indices =
@@ -171,13 +172,13 @@ module MakeServer () = struct
               | MapVal m -> recurser_update ~new_val m tail ) )
     in
     let query = decode_serialized_query query in
-    let (vt, tt) = 
+    let vt, tt =
       match Hashtbl.find_opt table addr_opt with
       | Some (vt, tt) -> (vt, tt)
       | None ->
-        let (vt, tt) = (Hashtbl.create 8, Hashtbl.create 8) in
-        Hashtbl.replace table addr_opt (vt, tt);
-        (vt, tt)
+          let vt, tt = (Hashtbl.create 8, Hashtbl.create 8) in
+          Hashtbl.replace table addr_opt (vt, tt);
+          (vt, tt)
     in
     (* Update type if provided *)
     let () =
@@ -197,21 +198,19 @@ module MakeServer () = struct
               (name :: string_indices_list) )
 
   let fetch_state_value query =
-    let%bind (f, v, _t) = fetch_state_value_helper None query in
+    let%bind f, v, _t = fetch_state_value_helper None query in
     pure (f, v)
 
   let fetch_ext_state_value caddr query =
-    let%bind (f, v, t) = fetch_state_value_helper (Some caddr) query in
+    let%bind f, v, t = fetch_state_value_helper (Some caddr) query in
     match t with
     | Some t' -> pure (f, v, t')
     | None -> fail RPCError.{ code = 0; message = fetch_message }
 
-  let update_state_value query value =
-    set_value_helper None query value None
-  
+  let update_state_value query value = set_value_helper None query value None
+
   let set_ext_state_value caddr query value scilla_type =
     set_value_helper (Some caddr) query value (Some scilla_type)
-
 end
 
 let start_server ~sock_addr =

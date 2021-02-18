@@ -338,9 +338,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l =
-                Configuration.remote_load s' r
-              in
+              let%bind l = Configuration.remote_load s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ -> fail0 "Expected remote load address to be ByStr20 value" )
@@ -372,18 +370,19 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
-      | RemoteMapGet (x, adr, m, klist, fetchval) ->
+      | RemoteMapGet (x, adr, m, klist, fetchval) -> (
           let%bind a = fromR @@ Configuration.lookup conf adr in
-          (match a with
-          | ByStrX abystr when Bystrx.width abystr = Type.address_length->
-            let%bind klist' =
-              mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
-            in
-            let%bind l = Configuration.remote_map_get abystr m klist' fetchval in
-            let conf' = Configuration.bind conf (get_id x) l in
-            stmt_eval conf' sts
-          | _ -> fail0 "Expected address to be ByStr20 value"
-          )
+          match a with
+          | ByStrX abystr when Bystrx.width abystr = Type.address_length ->
+              let%bind klist' =
+                mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
+              in
+              let%bind l =
+                Configuration.remote_map_get abystr m klist' fetchval
+              in
+              let conf' = Configuration.bind conf (get_id x) l in
+              stmt_eval conf' sts
+          | _ -> fail0 "Expected address to be ByStr20 value" )
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
@@ -508,12 +507,14 @@ let check_blockchain_entries entries =
   (* every entry must be expected *)
   let c1 =
     List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists expected ~f:(fun (x, xt, _) -> String.( x = s ) && type_assignable ~expected:xt ~actual:t))
+        List.exists expected ~f:(fun (x, xt, _) ->
+            String.(x = s) && type_assignable ~expected:xt ~actual:t))
   in
   (* everything expected must be entered *)
   let c2 =
     List.for_all expected ~f:(fun (x, xt, _) ->
-        List.exists entries ~f:(fun (s, t, _) -> String.( x = s ) && type_assignable ~expected:xt ~actual:t))
+        List.exists entries ~f:(fun (s, t, _) ->
+            String.(x = s) && type_assignable ~expected:xt ~actual:t))
   in
   if c1 && c2 then pure entries
   else
@@ -524,7 +525,8 @@ let check_blockchain_entries entries =
           %s\n\
           provided:\n\
           %s\n"
-         (pp_literal_type_map expected) (pp_literal_type_map entries)
+         (pp_literal_type_map expected)
+         (pp_literal_type_map entries)
 
 (*******************************************************)
 (*              Contract initialization                *)
@@ -719,7 +721,8 @@ let create_cur_state_fields initcstate curcstate =
     forallM
       ~f:(fun (e, _, _) ->
         if
-          List.count curcstate ~f:(fun (e', _, _) -> [%equal: EvalName.t] e e') > 1
+          List.count curcstate ~f:(fun (e', _, _) -> [%equal: EvalName.t] e e')
+          > 1
         then
           fail0
             (sprintf "Field %s occurs more than once in input.\n"
@@ -730,7 +733,8 @@ let create_cur_state_fields initcstate curcstate =
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
     List.filter initcstate ~f:(fun (s, _, _) ->
-        not (List.exists curcstate ~f:(fun x -> [%equal: EvalName.t] s (fst3 x))))
+        not
+          (List.exists curcstate ~f:(fun x -> [%equal: EvalName.t] s (fst3 x))))
   in
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)

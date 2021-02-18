@@ -84,8 +84,11 @@ module IPCIdl (R : RPC) = struct
    * It isn't part of the Zilliqa<->Scilla IPC protocol. *)
   let set_ext_state_value =
     declare "setExternalStateValue"
-      [ "Set state value and field type of another contract from the blockchain" ]
-      (addr @-> query @-> value @-> scilla_type @-> returning return_update RPCError.err)
+      [
+        "Set state value and field type of another contract from the blockchain";
+      ]
+      ( addr @-> query @-> value @-> scilla_type
+      @-> returning return_update RPCError.err )
 
   let update_state_value =
     declare "updateStateValue"

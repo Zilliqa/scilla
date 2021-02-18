@@ -165,8 +165,8 @@ let update_ext ~caddr ~fname ~value ~tp =
   let q' = encode_serialized_query q in
   let value' = encode_serialized_value value in
   translate_res
-  @@ IPCClient.set_ext_state_value (binary_rpc ~sock_addr) caddr q' value' (Type.pp_typ tp)
-
+  @@ IPCClient.set_ext_state_value (binary_rpc ~sock_addr) caddr q' value'
+       (Type.pp_typ tp)
 
 let fetch_all () =
   let _, fields = assert_init () in

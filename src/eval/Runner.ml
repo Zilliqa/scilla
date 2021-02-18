@@ -105,7 +105,8 @@ let input_state_json filename =
   in
   let bal_lit =
     match
-      List.find states ~f:(fun x -> [%equal: RunnerName.t] balance_label (fst3 x))
+      List.find states ~f:(fun x ->
+          [%equal: RunnerName.t] balance_label (fst3 x))
     with
     | Some v -> v
     | None ->
@@ -115,19 +116,24 @@ let input_state_json filename =
   in
   let bal_int =
     match bal_lit with
-    | _, t, UintLit (Uint128L x) when [%equal: RunnerSyntax.SType.t] t balance_typ -> x
+    | _, t, UintLit (Uint128L x)
+      when [%equal: RunnerSyntax.SType.t] t balance_typ ->
+        x
     | _ ->
         raise
           (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.filter states ~f:(fun x -> not @@ [%equal: RunnerName.t] (fst3 x) balance_label)
+    List.filter states ~f:(fun x ->
+        not @@ [%equal: RunnerName.t] (fst3 x) balance_label)
   in
   (no_bal_states, bal_int, estates)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (balance_label, balance_typ, JSON.JSONLiteral.UintLit (Uint128L balance)) in
+  let bal_lit =
+    (balance_label, balance_typ, JSON.JSONLiteral.UintLit (Uint128L balance))
+  in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
@@ -162,11 +168,13 @@ let validate_get_init_json init_file gas_remaining source_ver =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
   let init_json_scilla_version =
-    List.find initargs ~f:(fun x -> [%equal: RunnerName.t] (fst3 x) ContractUtil.scilla_version_label)
+    List.find initargs ~f:(fun x ->
+        [%equal: RunnerName.t] (fst3 x) ContractUtil.scilla_version_label)
   in
   let () =
     match init_json_scilla_version with
-    | Some (_, t, UintLit (Uint32L v)) when [%equal: RunnerSyntax.SType.t] t RunnerSyntax.SType.uint32_typ ->
+    | Some (_, t, UintLit (Uint32L v))
+      when [%equal: RunnerSyntax.SType.t] t RunnerSyntax.SType.uint32_typ ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
         if v' <> mver || mver <> source_ver then
@@ -444,7 +452,10 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-                let m = JSON.JSONLiteral.Msg (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x))) in
+                let m =
+                  JSON.JSONLiteral.Msg
+                    (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))
+                in
 
                 let cstate, gas_remaining' =
                   if is_ipc then
@@ -517,7 +528,8 @@ let run_with_args args =
 
                 plog
                   (sprintf "Executing message:\n%s\n"
-                     (JSON.Message.message_to_jstring (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))));
+                     (JSON.Message.message_to_jstring
+                        (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))));
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
                      (pp_literal_type_map bstate));

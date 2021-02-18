@@ -214,8 +214,7 @@ and mapvalues_from_json m kt vt l =
       let kjson = member_exn "key" first in
       let keylit =
         match kt with
-        | PrimType _
-        | Address _ ->
+        | PrimType _ | Address _ ->
             (* Addresses are handled as ByStr20 *)
             build_prim_lit_exn kt (to_string_exn kjson)
         | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
@@ -429,9 +428,15 @@ module Message = struct
     let senders = member_exn sender_label json |> to_string_exn in
     let origins = member_exn origin_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
-    let tag = (tag_label, JSONType.string_typ, build_prim_lit_exn JSONType.string_typ tags) in
+    let tag =
+      ( tag_label,
+        JSONType.string_typ,
+        build_prim_lit_exn JSONType.string_typ tags )
+    in
     let amount =
-      (amount_label, JSONType.uint128_typ, build_prim_lit_exn JSONType.uint128_typ amounts)
+      ( amount_label,
+        JSONType.uint128_typ,
+        build_prim_lit_exn JSONType.uint128_typ amounts )
     in
     let sender =
       ( sender_label,
@@ -482,12 +487,14 @@ module Message = struct
       List.filter_map message ~f:(fun (x, v) ->
           if String.(x = tag_label || x = amount_label || x = recipient_label)
           then None
-          else match literal_type v with
+          else
+            match literal_type v with
             | Ok t -> Some (x, t, v)
             | Error _ ->
                 fatal_error
                   (mk_error0
-                     (sprintf "Unable to determine type of literal %s" (pp_literal v))))
+                     (sprintf "Unable to determine type of literal %s"
+                        (pp_literal v))))
     in
     `Assoc
       [
@@ -649,14 +656,15 @@ module Event = struct
     (* Get a list without the extracted components *)
     let filtered_list =
       List.filter_map e ~f:(fun (x, v) ->
-          if String.(x = eventname_label)
-          then None
-          else match literal_type v with
+          if String.(x = eventname_label) then None
+          else
+            match literal_type v with
             | Ok t -> Some (x, t, v)
             | Error _ ->
                 fatal_error
                   (mk_error0
-                     (sprintf "Unable to determine type literal %s" (pp_literal v))))
+                     (sprintf "Unable to determine type literal %s"
+                        (pp_literal v))))
     in
     `Assoc
       [

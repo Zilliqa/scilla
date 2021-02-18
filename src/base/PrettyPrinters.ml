@@ -304,7 +304,8 @@ let pp_literal_map s =
 
 let pp_literal_type_map s =
   let ps =
-    List.map s ~f:(fun (k, t, v) -> sprintf " [%s : %s -> %s]" k (PPType.pp_typ t) (pp_literal v))
+    List.map s ~f:(fun (k, t, v) ->
+        sprintf " [%s : %s -> %s]" k (PPType.pp_typ t) (pp_literal v))
   in
   let cs = String.concat ~sep:",\n " ps in
   sprintf "{%s }" cs
