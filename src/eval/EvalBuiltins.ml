@@ -36,7 +36,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
   open BILiteral
   open BIType
 
-  (* TODO *)
   let print_literal_list ls = PrettyPrinters.pp_literal_list ls
 
   let builtin_fail name ls =
