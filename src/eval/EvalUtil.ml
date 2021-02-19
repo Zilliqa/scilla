@@ -244,7 +244,7 @@ module Configuration = struct
       pure @@ EvalLiteral.build_bool_lit is_member
 
   let remote_map_get caddr m keys fetchval =
-    let open BuiltIns.UsefulLiterals in
+    let open EvalLiteral in
     if fetchval then
       (* We need to fetch the type in advance because the type-option returned
        * by the actual call may be None if the key(s) wasn't found,
@@ -259,10 +259,8 @@ module Configuration = struct
       in
       (* Need to wrap the result in a Scilla Option. *)
       match vopt with
-      | Some v ->
-          let%bind v_lit = fromR @@ some_lit v in
-          pure v_lit
-      | None -> pure (none_lit vt)
+      | Some v -> pure @@ build_some_lit v vt
+      | None -> pure (build_none_lit vt)
     else
       let%bind _, topt =
         fromR
