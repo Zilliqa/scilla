@@ -25,22 +25,7 @@ module BIType = BILiteral.LType
 module BIIdentifier = BIType.TIdentifier
 module BIName = BIIdentifier.Name
 
-module UsefulLiterals : sig
-  val some_lit :
-    BILiteral.t -> (BILiteral.t, ErrorUtils.scilla_error list) result
-
-  val none_lit : BIType.t -> BILiteral.t
-
-  val pair_lit :
-    BILiteral.t ->
-    BILiteral.t ->
-    (BILiteral.t, ErrorUtils.scilla_error list) result
-end
-
 module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
-  val builtin_fail :
-    string -> BILiteral.t list -> ('a, ErrorUtils.scilla_error list) result
-
   val bstring_from_int_lit : BILiteral.int_lit -> string
 
   val bstring_from_uint_lit : BILiteral.uint_lit -> string
