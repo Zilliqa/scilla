@@ -16,23 +16,23 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
 open Scilla_base
 open Syntax
 open ErrorUtils
 open BuiltIns
+open MonadUtil
 
 module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) : sig
   module EvalBuiltInDictionary : sig
     (* Takes the expected type as an argument to elaborate the result *)
-    type built_in_executor =
+    type ('a, 'b) built_in_executor =
       BIType.t list ->
       (* type arguments *)
       BILiteral.t list ->
       (* value arguments *)
       BIType.t ->
       (* result type *)
-      (BILiteral.t, scilla_error list) result
+      (BILiteral.t, scilla_error list, 'a -> 'b) CPSMonad.t
 
     (* Returns a pair:
      * - The result type for given argument types, e.g., Bool
@@ -44,6 +44,9 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) : sig
       (* type arguments *)
       vargtypes:BIType.t list ->
       (* types of value arguments *)
-      (BIType.t * built_in_executor, scilla_error list) result
+      ( BIType.t * ('a, 'b) built_in_executor,
+        scilla_error list,
+        'a -> 'b )
+      CPSMonad.t
   end
 end
