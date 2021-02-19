@@ -33,19 +33,6 @@ module BIName = BIIdentifier.Name
 open BIType
 open BILiteral
 
-module UsefulLiterals = struct
-  let some_lit l =
-    let%bind t = literal_type l in
-    pure @@ build_some_lit l t
-
-  let none_lit t = build_none_lit t
-
-  let pair_lit l1 l2 =
-    let%bind t1 = literal_type l1 in
-    let%bind t2 = literal_type l2 in
-    pure @@ build_pair_lit l1 t1 l2 t2
-end
-
 module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   let print_literal_list ls = PrettyPrinters.pp_literal_list ls
 
@@ -373,7 +360,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
   (******************** Crypto Builtins *************************)
   (***********************************************************)
   module CryptoBuiltins = struct
-    open UsefulLiterals
     open Datatypes.DataTypeDictionary
     open Scilla_crypto.Schnorr
 
@@ -474,24 +460,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         (pair_typ (bystrx_typ privkey_len) (bystrx_typ pubkey_len))
 
     let[@warning "-32"] ec_gen_key_pair_arity = 0
-
-    let[@warning "-32"] ec_gen_key_pair ls _ =
-      match ls with
-      | [] -> (
-          match genKeyPair () with
-          | Some (privK, pubK) -> (
-              let privK_lit_o = Bystrx.of_raw_bytes privkey_len privK in
-              let pubK_lit_o = Bystrx.of_raw_bytes pubkey_len pubK in
-              match (privK_lit_o, pubK_lit_o) with
-              | Some privK', Some pubK' ->
-                  pair_lit (ByStrX privK') (ByStrX pubK')
-              | _ ->
-                  builtin_fail
-                    "ec_gen_key_pair: internal error, invalid private/public \
-                     key(s)."
-                    ls )
-          | None -> builtin_fail "ec_gen_key_pair: internal error." ls )
-      | _ -> builtin_fail "ec_gen_key_pair" ls
 
     let[@warning "-32"] schnorr_sign_type =
       fun_typ (bystrx_typ privkey_len)
