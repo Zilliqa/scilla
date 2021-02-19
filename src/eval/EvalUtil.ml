@@ -215,7 +215,7 @@ module Configuration = struct
 
   (* Fetch from a map. If "fetchval" is true, fetch the value, else just query if the key exists. *)
   let map_get st m klist fetchval =
-    let open BuiltIns.UsefulLiterals in
+    let open EvalLiteral in
     if fetchval then
       let%bind vopt = fromR @@ StateService.fetch ~fname:m ~keys:klist in
       match
@@ -228,9 +228,9 @@ module Configuration = struct
           (* Need to wrap the result in a Scilla Option. *)
           match vopt with
           | Some v ->
-              let%bind v_lit = fromR @@ some_lit v in
+              let%bind v_lit = pure @@ build_some_lit v vt in
               pure v_lit
-          | None -> pure (none_lit vt) )
+          | None -> pure (build_none_lit vt) )
       | None ->
           fail1
             (sprintf "Unable to fetch from map field %s" (as_error_string m))
@@ -242,7 +242,7 @@ module Configuration = struct
       pure @@ EvalLiteral.build_bool_lit is_member
 
   let remote_map_get caddr m keys fetchval =
-    let open BuiltIns.UsefulLiterals in
+    let open EvalLiteral in
     if fetchval then
       (* We need to fetch the type in advance because the type-option returned
        * by the actual call may be None if the key(s) wasn't found,
@@ -257,10 +257,8 @@ module Configuration = struct
       in
       (* Need to wrap the result in a Scilla Option. *)
       match vopt with
-      | Some v ->
-          let%bind v_lit = fromR @@ some_lit v in
-          pure v_lit
-      | None -> pure (none_lit vt)
+      | Some v -> pure @@ build_some_lit v vt
+      | None -> pure (build_none_lit vt)
     else
       let%bind _, topt =
         fromR

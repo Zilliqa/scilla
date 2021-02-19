@@ -150,13 +150,12 @@ let builtin_executor env f targs args_id =
   in
   let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
   let%bind ret_typ, op =
-    fromR
-    @@ EvalBuiltins.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
-         ~vargtypes:tps
+    EvalBuiltins.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
+      ~vargtypes:tps
   in
   let%bind cost = fromR @@ builtin_cost env f targs tps args_id in
   let res () = op targs arg_lits ret_typ in
-  checkwrap_opR res (Uint64.of_int cost)
+  checkwrap_op res (Uint64.of_int cost) []
 
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
