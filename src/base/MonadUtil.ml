@@ -309,6 +309,16 @@ module EvalMonad = struct
       | _ -> k (Error (msg ())) remaining_cost
     in
     fun k remaining_cost -> doTry ls k remaining_cost
+
+  let allM ~f ls =
+    let rec recurser ls =
+      match ls with
+      | x :: ls' ->
+          let%bind res = f x in
+          if res then recurser ls' else pure false
+      | [] -> pure true
+    in
+    recurser ls
 end
 
 (* module EvalMonad *)
