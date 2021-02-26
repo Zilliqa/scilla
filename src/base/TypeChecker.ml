@@ -1020,21 +1020,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind () =
             fromR_TE
             @@
-            match ft with
-            | Address _ ->
-                (* Address field.
-                   Initialiser must be assignable to ByStr20.
-                   Dynamic typecheck ensures that the byte string
-                   refers to an address with the correct shape. *)
-                assert_type_assignable
-                  ~expected:(bystrx_typ Type.address_length)
-                  ~actual
-                  ~lc:(ER.get_loc (get_rep fn))
-            | _ ->
-                (* Non-address field.
-                   Initialiser must be assignable to field type. *)
-                assert_type_assignable ~expected:ft ~actual
-                  ~lc:(ER.get_loc (get_rep fn))
+            assert_type_assignable ~expected:ft ~actual
+              ~lc:(ER.get_loc (get_rep fn))
           in
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then

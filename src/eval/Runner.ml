@@ -161,7 +161,8 @@ let validate_get_init_json init_file gas_remaining source_ver =
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
-  let initargs = map_json_input_strings_to_names initargs_str in
+  (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
+  let initargs = map_json_input_strings_to_names initargs_str |> List.map ~f:(fun (n, _t, l) -> (n, l)) in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
   let rgas =
@@ -169,12 +170,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   let init_json_scilla_version =
     List.find initargs ~f:(fun x ->
-        [%equal: RunnerName.t] (fst3 x) ContractUtil.scilla_version_label)
+        [%equal: RunnerName.t] (fst x) ContractUtil.scilla_version_label)
   in
   let () =
     match init_json_scilla_version with
-    | Some (_, t, UintLit (Uint32L v))
-      when [%equal: RunnerSyntax.SType.t] t RunnerSyntax.SType.uint32_typ ->
+    | Some (_, UintLit (Uint32L v)) ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
         if v' <> mver || mver <> source_ver then

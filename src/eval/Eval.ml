@@ -628,14 +628,12 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
+let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implict_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
-  let args'' = CU.remove_noneval_args args' in
-  (* Strip types - we rely on the type determined by from the literal *)
-  let args = List.map args'' ~f:(fun (x, _t, v) -> (x, v)) in
+  let initargs = CU.remove_noneval_args initargs' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)
@@ -653,23 +651,22 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
         let%bind _, mp =
           tryM
             ~f:(fun (ps, pt) ->
-              let%bind at = fromR @@ literal_type (snd a) in
               if
                 [%equal: EvalName.t] (get_id ps) (fst a)
-                && type_assignable ~expected:pt ~actual:at
+                && type_assignable ~expected:pt ~actual:atyp
               then pure ()
               else fail0 "")
             cparams ~msg:emsg
         in
         pure mp)
-      args
+      initargs
   in
   let%bind () =
     forallM
       ~f:(fun (p, _) ->
         (* For each parameter there should be exactly one argument. *)
         if
-          List.count args ~f:(fun a -> [%equal: EvalName.t] (get_id p) (fst a))
+          List.count initargs ~f:(fun a -> [%equal: EvalName.t] (get_id p) (fst a))
           <> 1
         then
           fail0
@@ -679,7 +676,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
       cparams
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
-  let env = Env.bind_all libenv args in
+  let env = Env.bind_all libenv initargs in
   (* Evaluate constraint, and abort if false *)
   let%bind () = eval_constraint cconstraint' env in
   let%bind field_values = init_fields env cfields in

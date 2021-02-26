@@ -379,6 +379,7 @@ module ContractState = struct
 
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
+  (* NOTE: The types in init files must be ignored due to backward compatibility - only the names and literals can be relied upon *)
   let get_init_this_address_and_extlibs filename =
     let init_data, _ = get_json_data filename in
     let extlibs = get_init_extlibs init_data in
