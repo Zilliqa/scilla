@@ -79,8 +79,10 @@ let rec is_pure_literal l =
 let sanitize_literal l =
   let open MonadUtil in
   let open Result.Let_syntax in
-  let%bind t = literal_type l in
-  if is_legal_message_field_type t then pure l
+  let%bind t, dyn_checks = literal_type l in
+  if List.is_empty dyn_checks &&
+     is_legal_message_field_type t
+  then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let eval_gas_charge env g =
@@ -144,7 +146,12 @@ let builtin_executor env f targs args_id =
   let%bind arg_lits =
     mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
-  let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
+  let%bind tps = mapM arg_lits ~f:(fun l ->
+      let%bind t, dyn_checks = fromR @@ literal_type l in
+      if not @@ List.is_empty dyn_checks then
+        fail0 "Dynamic typecheck required for application of builtin"
+      else pure t)
+  in
   let%bind ret_typ, op =
     EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
       ~vargtypes:tps
@@ -637,29 +644,30 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)
-  let%bind () =
-    forallM
-      ~f:(fun a ->
-        let%bind atyp = fromR @@ literal_type (snd a) in
+  let%bind pending_dyn_checks =
+    foldrM
+      initargs
+      ~init:[]
+      ~f:(fun acc_dyn_checks (n, l) ->
         let emsg () =
           mk_error0
-            (sprintf "Parameter %s : %s is not specified in the contract.\n"
-               (EvalName.as_error_string (fst a))
-               (pp_typ atyp))
+            (sprintf "Parameter %s is not specified in the contract.\n"
+               (EvalName.as_error_string n))
         in
         (* For each argument there should be a parameter *)
-        let%bind _, mp =
+        let%bind _, pt =
           tryM
             ~f:(fun (ps, pt) ->
               if
-                [%equal: EvalName.t] (get_id ps) (fst a)
-                && type_assignable ~expected:pt ~actual:atyp
-              then pure ()
+                [%equal: EvalName.t] (get_id ps) n
+              then pure pt
               else fail0 "")
             cparams ~msg:emsg
         in
-        pure mp)
-      initargs
+        (* Typecheck the literal against the parameter type *)
+        let%bind _ltyp, dyn_checks = fromR @@ literal_type ~expected:(Some pt) l in
+        (* StateService not yet initialised - return pending dynamic typechecks *)
+        pure @@ dyn_checks @ acc_dyn_checks)
   in
   let%bind () =
     forallM
@@ -684,7 +692,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   let balance = init_bal in
   let open ContractState in
   let cstate = { env; fields; balance } in
-  pure (cstate, field_values)
+  pure (cstate, field_values, pending_dyn_checks)
 
 (* Combine initialized state with infro from current state *)
 let create_cur_state_fields initcstate curcstate =
@@ -693,23 +701,29 @@ let create_cur_state_fields initcstate curcstate =
   let%bind () =
     forallM
       ~f:(fun (s, _t, lc) ->
-        let%bind t_lc = fromR @@ literal_type lc in
-        let emsg () =
-          mk_error0
-            (sprintf "Field %s : %s not defined in the contract\n"
-               (EvalName.as_error_string s)
-               (pp_typ t_lc))
-        in
-        let%bind _, ex =
-          tryM
-            ~f:(fun (t, _t, li) ->
-              let%bind t2 = fromR @@ literal_type li in
-              if [%equal: EvalName.t] s t && [%equal: EvalType.t] t_lc t2 then
-                pure ()
-              else fail0 "")
-            initcstate ~msg:emsg
-        in
-        pure ex)
+          let%bind t_lc, dyn_checks = fromR @@ literal_type lc in
+          if not @@ List.is_empty dyn_checks then
+            fail0 (sprintf "State of field %s requires dynamic typechecks." (EvalName.as_error_string s))
+          else 
+            let emsg () =
+              mk_error0
+                (sprintf "Field %s : %s not defined in the contract\n"
+                   (EvalName.as_error_string s)
+                   (pp_typ t_lc))
+            in
+            let%bind _, ex =
+              tryM
+                ~f:(fun (t, _t, li) ->
+                    let%bind t2, dyn_checks = fromR @@ literal_type li in
+                    if [%equal: EvalName.t] s t && [%equal: EvalType.t] t_lc t2 then
+                      if not @@ List.is_empty dyn_checks then
+                        fail0 (sprintf "Initial value of field %s requires dynamic typechecks." (EvalName.as_error_string t))
+                      else 
+                        pure ()
+                    else fail0 "")
+                initcstate ~msg:emsg
+            in
+            pure ex)
       curcstate
   in
   (* Each entry name is unique *)
@@ -739,14 +753,14 @@ let create_cur_state_fields initcstate curcstate =
 let init_module md initargs curargs init_bal bstate elibs =
   let { libs; contr; _ } = md in
   let { cconstraint; cparams; cfields; _ } = contr in
-  let%bind initcstate, field_vals =
+  let%bind initcstate, field_vals, pending_dyn_checks =
     init_contract libs elibs cconstraint cparams cfields initargs init_bal
   in
   let%bind curfield_vals = create_cur_state_fields field_vals curargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
-  pure (contr, cstate, curfield_vals)
+  pure (contr, cstate, curfield_vals, pending_dyn_checks)
 
 (*******************************************************)
 (*               Message processing                    *)

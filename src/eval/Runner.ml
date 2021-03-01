@@ -67,9 +67,9 @@ let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((_, cstate, field_vals), remaining_gas) ->
+  | Ok ((_, cstate, field_vals, dyn_checks), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
-      (cstate, remaining_gas, field_vals)
+      (cstate, remaining_gas, field_vals, dyn_checks)
 
 (*****************************************************)
 (*   Running the simulation and printing results     *)
@@ -387,7 +387,7 @@ let run_with_args args =
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
-                let cstate', remaining_gas', field_vals =
+                let cstate', remaining_gas', field_vals, dyn_checks =
                   check_extract_cstate args.input init_res gas_remaining
                 in
                 (* If the data store is not local, we must update the store with the initial field values.
@@ -409,13 +409,32 @@ let run_with_args args =
                       (* Retrieve state variables *)
                       try fst3 @@ input_state_json args.input_state
                       with Invalid_json s ->
-                        fatal_error_gas
+                        fatal_error_gas_scale Gas.scale_factor
                           ( s
                           @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
                                  args.input_state) )
                           gas_remaining
                     else field_vals
+                  in
+                  (* Do the dynamic typecheck *)
+                  let () = List.iter dyn_checks ~f:(fun (t, caddr) ->
+                      match t with
+                      | Address fts -> (
+                          match EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts with
+                          | Ok true -> ()
+                          | Ok false ->
+                              fatal_error_gas_scale Gas.scale_factor
+                                (mk_error0 (sprintf "Address %s does not satisfy type %s\n"
+                                              (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
+                                              (RunnerSyntax.SType.pp_typ t)))
+                                gas_remaining
+                          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
+                      | _ -> 
+                          fatal_error_gas_scale Gas.scale_factor
+                            (mk_error0 (sprintf "Unable to perform dynamic typecheck on type %s\n"
+                                          (RunnerSyntax.SType.pp_typ t)))
+                            gas_remaining)
                   in
                   match
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
@@ -429,7 +448,14 @@ let run_with_args args =
                   with
                   | Error s ->
                       fatal_error_gas_scale Gas.scale_factor s remaining_gas'
-                  | Ok _ -> () );
+                  | Ok _ -> ()
+                  else (* not is_ipc *)
+                  if not @@ List.is_empty dyn_checks then
+                    plog
+                      (sprintf "\n\
+                                [Deployment] Dynamic typecheck of contract parameters (%s) required, but disabled outside IPC mode.\n"
+                         (List.map dyn_checks ~f:(fun (_, x) -> RunnerSyntax.SLiteral.Bystrx.hex_encoding x) |> String.concat ~sep:", "));
+                );
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
                 let field_vals' = if is_ipc then [] else field_vals in
@@ -463,9 +489,10 @@ let run_with_args args =
                     let init_res =
                       init_module dis_cmod initargs [] cur_bal bstate elibs
                     in
-                    let cstate, gas_remaining', _ =
+                    let cstate, gas_remaining', _, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+                    (* Ignore dynamic typechecks - contract already deployed *)
 
                     (* Initialize the state server. *)
                     let fields =
@@ -498,7 +525,7 @@ let run_with_args args =
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
-                    let cstate, gas_remaining', field_vals =
+                    let cstate, gas_remaining', field_vals, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
 

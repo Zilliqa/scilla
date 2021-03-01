@@ -132,12 +132,36 @@ let rec forallM ~f ls =
       forallM ~f ls'
   | [] -> pure ()
 
+(* Return the first error applying f to elements of ls.
+ * Returns () if all elements satisfy f. *)
+let forall2M ~f ls1 ls2 ~msg =
+  let rec recurser ls1 ls2 =
+    match ls1, ls2 with
+    | x1 :: ls1', x2 :: ls2' ->
+        let%bind () = f x1 x2 in
+        recurser ls1' ls2'
+    | [], [] -> pure ()
+    | _, _ -> fail @@ msg ()
+  in
+  recurser ls1 ls2
+
 (* Try all variants in the list, pick the first successful one *)
 let rec tryM ~f ls ~msg =
   match ls with
   | x :: ls' -> (
       match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
+
+(* True if all elements in a list satisfy the predicate f *)
+let allM ~f ls =
+  let rec recurser ls =
+    match ls with
+    | x :: ls' ->
+        let%bind res = f x in
+        if res then recurser ls' else pure false
+    | [] -> pure true
+  in
+  recurser ls
 
 (* Monadic Option.map for error *)
 let option_mapM ~f opt_val =
@@ -310,15 +334,6 @@ module EvalMonad = struct
     in
     fun k remaining_cost -> doTry ls k remaining_cost
 
-  let allM ~f ls =
-    let rec recurser ls =
-      match ls with
-      | x :: ls' ->
-          let%bind res = f x in
-          if res then recurser ls' else pure false
-      | [] -> pure true
-    in
-    recurser ls
 end
 
 (* module EvalMonad *)

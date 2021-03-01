@@ -446,72 +446,19 @@ end
 (*****************************************************)
 (*          Dynamic typecheck of addresses           *)
 (*****************************************************)
+module EvalTypecheck = struct
+  open MonadUtil
+  open Result.Let_syntax
+  
+  let typecheck_remote_field_types ~caddr fts =
+    let open EvalType in
+    (* Add _balance to fields list, to ensure that caddr is in use *)
+    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_typ) :: fts in
+    (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+    allM all_fts ~f:(fun (f, t) ->
+        let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
+        match res with
+        | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
+        | (_, None) -> pure false)
 
-let typecheck_remote_field_types ~caddr fts =
-  let open EvalType in
-  
-  (* Add _balance to fields list, to ensure that caddr is in use *)
-  let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_typ) :: fts in
-  (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-  allM all_fts ~f:(fun (f, t) ->
-      let%bind res = fromR @@ StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
-      match res with
-      | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
-      | (_, None) -> pure false)
-  
-(* Check that all address values satisfy their address types. 
-     Note that the static typecheck treats address types as ByStr20 in field initialisers, 
-     so we can't rely on any type information in the literal, e.g., for maps. *)
-let typecheck_address_initialiser ~fname ~ftyp ~fval =
-  let open EvalType in
-  let open EvalLiteral in
-  
-  let rec recurser typ v =
-    match typ, v with
-    | PrimType _, _
-    | Unit, _ -> pure ()
-    | Address fts, ByStrX caddr ->
-        let%bind res = typecheck_remote_field_types ~caddr fts in
-        if res
-        then pure () else
-          fail0
-            (sprintf "Incompatible address types in field %s: Expected %s at address %s\n"
-               (EvalIdentifier.as_error_string fname)
-               (pp_typ_error typ)
-               (Bystrx.hex_encoding caddr))
-    | MapType (kt, vt), Map (_, v_map) ->
-        let keys, values = Caml.Hashtbl.fold (fun k v (acc_k, acc_v) ->
-            (k :: acc_k, v :: acc_v))
-            v_map
-            ([], [])
-        in
-        let%bind () = forallM keys ~f:(fun k -> recurser kt k) in
-        forallM values ~f:(fun v -> recurser vt v)
-    | ADT (_, targs), ADTValue (c_name, _, c_args) ->
-        let%bind c_fun_typ = fromR @@ TypeUtilities.elab_constr_type ~lc:ErrorUtils.dummy_loc c_name targs in
-        let rec fun_typ_recurser fun_typ args =
-          match fun_typ, args with
-          | FunType (t, res_t), arg :: rest ->
-              let%bind () = recurser t arg in
-              fun_typ_recurser res_t rest
-          | _, _ -> 
-              fail0
-                (sprintf "Malformed value for constructor %s\n"
-                   (EvalName.as_error_string c_name))
-        in
-        fun_typ_recurser c_fun_typ c_args
-    | FunType _, _
-    | TypeVar _, _
-    | PolyFun _, _ ->
-        fail0
-          (sprintf "Unexpected type of field %s : %s\n"
-             (EvalIdentifier.as_error_string fname)
-             (pp_typ_error ftyp))
-    | _, _ ->
-        fail0
-          (sprintf "Type and value mismatch for field %s : %s = %s\n"
-             (EvalIdentifier.as_error_string fname)
-             (pp_typ_error ftyp)
-             (pp_literal fval))
-  in
-  recurser ftyp fval
+end

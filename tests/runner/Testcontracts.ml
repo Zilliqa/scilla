@@ -384,6 +384,8 @@ let contract_tests env =
                 "crowdfunding_proc"
                 >: build_contract_init_test env fail_code "crowdfunding_proc"
                      "init_goal_is_zero" false;
+                "remote_state_reads"
+                >: build_contract_init_test env fail_code "remote_state_reads" "init" false;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

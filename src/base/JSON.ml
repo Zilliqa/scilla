@@ -76,11 +76,6 @@ let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
 
-(* Given a literal, return its full type name *)
-let literal_type_exn l =
-  let t = literal_type l in
-  match t with Error emsg -> raise (Invalid_json emsg) | Ok s -> pp_typ s
-
 let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
@@ -490,7 +485,10 @@ module Message = struct
           then None
           else
             match literal_type v with
-            | Ok t -> Some (x, t, v)
+            | Ok (t, []) ->
+                (* No dynamic typechecks should be required for outgoing messages *)
+                Some (x, t, v) 
+            | Ok _
             | Error _ ->
                 fatal_error
                   (mk_error0
@@ -660,7 +658,10 @@ module Event = struct
           if String.(x = eventname_label) then None
           else
             match literal_type v with
-            | Ok t -> Some (x, t, v)
+            | Ok (t, []) ->
+                (* No dynamic typechecks should be required for emitted events *)
+                Some (x, t, v)
+            | Ok _
             | Error _ ->
                 fatal_error
                   (mk_error0
