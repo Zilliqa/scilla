@@ -31,6 +31,46 @@ let succ_code : UnixLabels.process_status = WEXITED 0
 
 let fail_code : UnixLabels.process_status = WEXITED 1
 
+let do_start_mock_server env test_ctxt = String.is_empty (env.ext_ipc_server test_ctxt)
+
+let build_ipc_addr_thread env test_ctxt start_mock_server =
+  if start_mock_server then ipc_socket_addr ^ get_shard_id test_ctxt
+  (* TODO: assert that "-runner sequential" CLI is provided to testsuite. *)
+  else env.ext_ipc_server test_ctxt
+
+let build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path =
+  if ipc_mode then
+    let balance =
+      StateIPCTest.setup_and_initialize ~start_mock_server
+        ~sock_addr:ipc_addr_thread ~state_json_path
+    in
+    [ "-ipcaddress"; ipc_addr_thread; "-balance"; balance ]
+  else [ "-istate"; state_json_path ]
+
+let foutput exit_code env test_ctxt output_file ipc_mode ipc_addr_thread goldoutput_file test_name msg s =
+  (* if the test is supposed to succeed we read the output from a file,
+       otherwise we read from the output stream *)
+  let interpreter_output =
+    if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
+      In_channel.read_all output_file
+    else stream_to_string s
+  in
+  (*  let out = interpreter_output in *)
+  let out = (* if ipc_mode then StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread else [] *)
+    if ipc_mode then
+      (* The output of the interpreter in IPC mode will only contain "_balance" as
+       * the state. The remaining have to be gotten from the server and appended. *)
+      let final = StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread in
+      if Poly.(exit_code = succ_code) then 
+        StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output final
+      else interpreter_output
+    else interpreter_output
+  in
+  if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
+  then output_updater goldoutput_file test_name out
+  else
+    output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
+
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
@@ -76,23 +116,11 @@ let rec build_contract_tests_with_init_file env name exit_code i n
 
       (* If an external IPC server is provided, we'll use that, otherwise
        * we'll have an in-testsuite mock server setup based on the shard-id. *)
-      let start_mock_server = String.is_empty (env.ext_ipc_server test_ctxt) in
-      let ipc_addr_thread =
-        if start_mock_server then ipc_socket_addr ^ get_shard_id test_ctxt
-          (* TODO: assert that "-runner sequential" CLI is provided to testsuite. *)
-        else env.ext_ipc_server test_ctxt
-      in
+      let start_mock_server = do_start_mock_server env test_ctxt in
+      let ipc_addr_thread = build_ipc_addr_thread env test_ctxt start_mock_server in
       let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
-      let args_state =
-        if ipc_mode then
-          let balance =
-            StateIPCTest.setup_and_initialize ~start_mock_server
-              ~sock_addr:ipc_addr_thread ~state_json_path
-          in
-          args_basic @ [ "-ipcaddress"; ipc_addr_thread; "-balance"; balance ]
-        else args_basic @ [ "-istate"; state_json_path ]
+      let args_state = args_basic @ (build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path)
       in
-
       let args' =
         List.fold_right additional_libs ~init:args_state
           ~f:(fun lib_name cur_args ->
@@ -114,26 +142,26 @@ let rec build_contract_tests_with_init_file env name exit_code i n
       in
       assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt runner args
         ~foutput:(fun s ->
-          (* if the test is supposed to succeed we read the output from a file,
-                 otherwise we read from the output stream *)
-          let interpreter_output =
-            if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
-              In_channel.read_all output_file
-            else stream_to_string s
-          in
-          let out =
-            if ipc_mode then
-              (* The output of the interpreter in IPC mode will only contain "_balance" as
-               * the state. The remaining have to be gotten from the server and appended. *)
-              StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
-              |> StateIPCTest.append_full_state ~goldoutput_file
-                   ~interpreter_output
-            else interpreter_output
-          in
-          if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
-          then output_updater goldoutput_file test_name out
-          else
-            output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+            (* if the test is supposed to succeed we read the output from a file,
+               otherwise we read from the output stream *)
+            let interpreter_output =
+              if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
+                In_channel.read_all output_file
+              else stream_to_string s
+            in
+            let out =
+              if ipc_mode then
+                (* The output of the interpreter in IPC mode will only contain "_balance" as
+                 * the state. The remaining have to be gotten from the server and appended. *)
+                StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
+                |> StateIPCTest.append_full_state ~goldoutput_file
+                  ~interpreter_output
+              else interpreter_output
+            in
+            if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
+            then output_updater goldoutput_file test_name out
+            else
+              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -141,11 +169,11 @@ let rec build_contract_tests_with_init_file env name exit_code i n
     if Poly.(exit_code = succ_code) then
       test ~ipc_mode:true :: test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
-           additional_libs init_name
+        additional_libs init_name
     else
       test ~ipc_mode:false
       :: build_contract_tests_with_init_file env name exit_code (i + 1) n
-           additional_libs init_name
+        additional_libs init_name
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -156,7 +184,7 @@ let build_contract_tests env name exit_code i n additional_libs =
   build_contract_tests_with_init_file env name exit_code i n additional_libs
     "init"
 
-let build_contract_init_test env exit_code name init_name is_library =
+let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode =
   name ^ "_init" >:: fun test_ctxt ->
   let tests_dir =
     FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
@@ -169,8 +197,8 @@ let build_contract_init_test env exit_code name init_name is_library =
     else GlobalConfig.StdlibTracker.file_extn_contract
   in
   let tmpdir = bracket_tmpdir test_ctxt in
-  let output_file = tmpdir ^/ name ^ "_" ^ init_name ^ "_output" ^. "json" in
-  let args =
+  let output_file = tmpdir ^/ name ^ "_" ^ init_name ^ (if ipc_mode then "_ipc" else "") ^ "_output" ^. "json" in
+  let basic_args =
     [
       "-init";
       dir ^/ init_name ^. "json";
@@ -188,22 +216,22 @@ let build_contract_init_test env exit_code name init_name is_library =
       dir ^/ "blockchain_1" ^. "json";
     ]
   in
+  let start_mock_server = do_start_mock_server env test_ctxt in
+  let ipc_addr_thread = build_ipc_addr_thread env test_ctxt start_mock_server in
+  let args =
+    if ipc_mode then
+      (* A state json with _balance is required *)
+      let state_json_path = dir ^/ init_name ^ "_state" ^. "json" in
+      basic_args @ (build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path)
+    else basic_args
+  in
   let scillabin = "scilla-runner" in
   print_cli_usage (env.print_cli test_ctxt) scillabin args;
   let test_name = name ^ "_" ^ init_name in
-  let goldoutput_file = dir ^/ init_name ^ "_output" ^. "json" in
+  let goldoutput_file = dir ^/ init_name ^ (if ipc_mode then "_ipc" else "") ^ "_output" ^. "json" in
   let msg = cli_usage_on_err scillabin args in
   assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
-    ~foutput:(fun s ->
-      (* if the test is supposed to succeed we read the output from a file,
-           otherwise we read from the output stream *)
-      let out =
-        if Poly.(exit_code = succ_code) then In_channel.read_all output_file
-        else stream_to_string s
-      in
-      if env.update_gold test_ctxt && not (env.server test_ctxt) then
-        output_updater goldoutput_file test_name out
-      else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+    ~foutput:(foutput exit_code env test_ctxt output_file ipc_mode ipc_addr_thread goldoutput_file test_name msg)
 
 let build_misc_tests env =
   let scillabin = "scilla-runner" in
@@ -247,7 +275,7 @@ let contract_tests env =
                 >::: build_contract_tests env "crowdfunding" succ_code 1 6 [];
                 "crowdfunding_init"
                 >: build_contract_init_test env succ_code "crowdfunding" "init"
-                     false;
+                     ~is_library:false ~ipc_mode:false;
                 "crowdfunding_proc"
                 >::: build_contract_tests env "crowdfunding_proc" succ_code 1 6
                        [];
@@ -255,15 +283,15 @@ let contract_tests env =
                 >::: build_contract_tests env "zil-game" succ_code 1 9 [];
                 "zil-game_init"
                 >: build_contract_init_test env succ_code "zil-game" "init"
-                     false;
+                     ~is_library:false ~ipc_mode:false;
                 "creationtest_init"
                 >: build_contract_init_test env succ_code "creationtest" "init"
-                     false;
+                     ~is_library:false ~ipc_mode:false;
                 "testlib2_init"
-                >: build_contract_init_test env succ_code "TestLib2" "init" true;
+                >: build_contract_init_test env succ_code "TestLib2" "init" ~is_library:true ~ipc_mode:false;
                 "testlib3_init"
                 >: build_contract_init_test env succ_code
-                     "0x111256789012345678901234567890123456abef" "init" true;
+                     "0x111256789012345678901234567890123456abef" "init" ~is_library:true ~ipc_mode:false;
                 "import-test-lib"
                 >::: build_contract_tests env "import-test-lib" succ_code 1 3 [];
                 "import-test-lib2"
@@ -347,6 +375,10 @@ let contract_tests env =
                 "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" succ_code 1 1
                        [];
+                "remote_state_reads"
+                >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
+(*                 "remote_state_reads"   <- Failing due to a bug in type_assignable 
+                   >: build_contract_init_test env fail_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true; *)
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -365,27 +397,35 @@ let contract_tests env =
                 >::: build_contract_tests env "UintParam" fail_code 1 3 [];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
-                     "0x565556789012345678901234567890123456abcd" "init" true;
+                     "0x565556789012345678901234567890123456abcd" "init" ~is_library:true ~ipc_mode:false;
                 "testlib2_bad_init"
                 >: build_contract_init_test env fail_code "TestLib2"
-                     "init_wrong_version" true;
+                     "init_wrong_version" ~is_library:true ~ipc_mode:false;
                 "constraint_test"
                 >: build_contract_init_test env fail_code "constraint" "init"
-                     false;
+                     ~is_library:false ~ipc_mode:false;
                 "wallet_2_no_owners"
                 >: build_contract_init_test env fail_code "wallet_2"
-                     "init_no_owners" false;
+                     "init_no_owners" ~is_library:false ~ipc_mode:false;
                 "wallet_2_req_sigs_zero"
                 >: build_contract_init_test env fail_code "wallet_2"
-                     "init_req_sigs_zero" false;
+                     "init_req_sigs_zero" ~is_library:false ~ipc_mode:false;
                 "wallet_2_not_enough_owners"
                 >: build_contract_init_test env fail_code "wallet_2"
-                     "init_not_enough_owners" false;
+                     "init_not_enough_owners" ~is_library:false ~ipc_mode:false;
                 "crowdfunding_proc"
                 >: build_contract_init_test env fail_code "crowdfunding_proc"
-                     "init_goal_is_zero" false;
+                     "init_goal_is_zero" ~is_library:false ~ipc_mode:false;
                 "remote_state_reads"
-                >: build_contract_init_test env fail_code "remote_state_reads" "init" false;
+                  >: build_contract_init_test env fail_code "remote_state_reads" "init_no_address" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
+                  >: build_contract_init_test env fail_code "remote_state_reads" "init_missing_field" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
+                  >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_field_type" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
+                  >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_address_field_type" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
+                  >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_map_type" ~is_library:false ~ipc_mode:true;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

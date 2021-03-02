@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7873",
+  "gas_remaining": "7872",
   "_accepted": "false",
   "messages": [],
   "states": [
@@ -112,6 +112,26 @@
       "vname": "remote_reads_test_res_1_1",
       "type": "Uint128",
       "value": "42"
+    },
+    {
+      "vname": "assign_test_1",
+      "type": "ByStr20 with end",
+      "value": "0x1234567890123456789012345678901234567890"
+    },
+    {
+      "vname": "assign_test_2",
+      "type": "ByStr20 with transactionCount : Uint32 end",
+      "value": "0x1234567890123456789012345678901234567890"
+    },
+    {
+      "vname": "assign_test_3",
+      "type": "ByStr20 with admin : ByStr20 with end end",
+      "value": "0x1234567890123456789012345678901234567890"
+    },
+    {
+      "vname": "assign_test_4",
+      "type": "ByStr20 with admin : ByStr20 end",
+      "value": "0x1234567890123456789012345678901234567890"
     },
     {
       "vname": "remote_reads_test_res_2_2",

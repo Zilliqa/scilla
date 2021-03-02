@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7315",
+  "errors": [
+    {
+      "error_message":
+        "StateIPCClient: Error in IPC access: (code:0, message:Fetching state value failed).",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
