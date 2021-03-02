@@ -47,29 +47,49 @@ let build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path 
     [ "-ipcaddress"; ipc_addr_thread; "-balance"; balance ]
   else [ "-istate"; state_json_path ]
 
-let foutput exit_code env test_ctxt output_file ipc_mode ipc_addr_thread goldoutput_file test_name msg s =
-  (* if the test is supposed to succeed we read the output from a file,
-       otherwise we read from the output stream *)
-  let interpreter_output =
-    if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
-      In_channel.read_all output_file
-    else stream_to_string s
-  in
-  (*  let out = interpreter_output in *)
-  let out = (* if ipc_mode then StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread else [] *)
-    if ipc_mode then
-      (* The output of the interpreter in IPC mode will only contain "_balance" as
-       * the state. The remaining have to be gotten from the server and appended. *)
-      let final = StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread in
-      if Poly.(exit_code = succ_code) then 
-        StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output final
-      else interpreter_output
-    else interpreter_output
-  in
+let get_interpreter_output env test_ctxt exit_code output_file s =
+  if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
+    In_channel.read_all output_file
+  else stream_to_string s
+
+let output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out =
   if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
   then output_updater goldoutput_file test_name out
   else
     output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
+      
+let foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code output_file goldoutput_file msg s =
+  (* if the test is supposed to succeed we read the output from a file,
+     otherwise we read from the output stream *)
+  let interpreter_output = get_interpreter_output env test_ctxt exit_code output_file s in
+  let out =
+    if ipc_mode then
+      (* The output of the interpreter in IPC mode will only contain "_balance" as
+       * the state. The remaining have to be gotten from the server and appended. *)
+      StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
+      |> StateIPCTest.append_full_state ~goldoutput_file
+        ~interpreter_output
+    else interpreter_output
+  in
+  output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
+  
+let foutput_deploy env test_ctxt test_name ipc_mode ipc_addr_thread exit_code output_file goldoutput_file msg s =
+  (* if the test is supposed to succeed we read the output from a file,
+       otherwise we read from the output stream *)
+  let interpreter_output = get_interpreter_output env test_ctxt exit_code output_file s in
+  let out =
+    if ipc_mode then
+      (* The output of the interpreter in IPC mode will only contain "_balance" as
+       * the state. The remaining have to be gotten from the server and appended. *)
+      let final = StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread in
+      if Poly.(exit_code = succ_code) then
+        (* If deployment failed, then the output will not contain a "states" part, 
+           so only append if deployment succeeded *)
+        StateIPCTest.append_full_state ~goldoutput_file ~interpreter_output final
+      else interpreter_output
+    else interpreter_output
+  in
+  output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -141,27 +161,7 @@ let rec build_contract_tests_with_init_file env name exit_code i n
         else args
       in
       assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt runner args
-        ~foutput:(fun s ->
-            (* if the test is supposed to succeed we read the output from a file,
-               otherwise we read from the output stream *)
-            let interpreter_output =
-              if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
-                In_channel.read_all output_file
-              else stream_to_string s
-            in
-            let out =
-              if ipc_mode then
-                (* The output of the interpreter in IPC mode will only contain "_balance" as
-                 * the state. The remaining have to be gotten from the server and appended. *)
-                StateIPCTest.get_final_finish ~sock_addr:ipc_addr_thread
-                |> StateIPCTest.append_full_state ~goldoutput_file
-                  ~interpreter_output
-              else interpreter_output
-            in
-            if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt)
-            then output_updater goldoutput_file test_name out
-            else
-              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+        ~foutput:(foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code output_file goldoutput_file msg)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
@@ -231,7 +231,7 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode 
   let goldoutput_file = dir ^/ init_name ^ (if ipc_mode then "_ipc" else "") ^ "_output" ^. "json" in
   let msg = cli_usage_on_err scillabin args in
   assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt scillabin args
-    ~foutput:(foutput exit_code env test_ctxt output_file ipc_mode ipc_addr_thread goldoutput_file test_name msg)
+    ~foutput:(foutput_deploy env test_ctxt test_name ipc_mode ipc_addr_thread exit_code output_file goldoutput_file msg)
 
 let build_misc_tests env =
   let scillabin = "scilla-runner" in
