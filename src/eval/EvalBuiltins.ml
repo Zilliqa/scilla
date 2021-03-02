@@ -649,8 +649,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                 match Bystrx.of_raw_bytes 20 bys20 with
                 | Some b ->
                     pure
-                    @@ build_some_lit (ByStrX b)
-                         (bystrx_typ Type.address_length)
+                    @@ build_some_lit (ByStrX b) (bystrx_typ Type.address_length)
                 | None -> fail0 "Invalid bech32 decode" )
             | None -> fail0 "bech32 decoding failed" )
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
