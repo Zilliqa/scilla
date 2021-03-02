@@ -35,6 +35,7 @@ module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module RunnerSyntax = Dis.PostDisSyntax
 module RunnerName = RunnerSyntax.SIdentifier.Name
+module SCU = ContractUtil.ScillaContractUtil (ParserRep) (ParserRep)
 
 (****************************************************)
 (*          Checking initialized libraries          *)
@@ -390,12 +391,30 @@ let run_with_args args =
                 let cstate', remaining_gas', field_vals =
                   check_extract_cstate args.input init_res gas_remaining
                 in
-                (* If the data store is not local, we must update the store with the initial field values.
+                (* If the data store is not local, we must update the store with the initial field
+                 * and contract parameter values.
                  * Refer to the details comments at [Initialization of StateService]. *)
                 ( if is_ipc then
                   let open StateService in
                   let open MonadUtil in
                   let open Result.Let_syntax in
+                  let cparams, cparams' =
+                    List.unzip
+                    @@
+                    let implicit_params =
+                      List.map (SCU.append_implict_contract_params [])
+                        ~f:(fun (id, _) -> SSIdentifier.as_string id)
+                    in
+                    (* Ignore implicit parameters. They need special handling. *)
+                    List.filter_map initargs ~f:(fun (s, t, v) ->
+                        if
+                          List.mem implicit_params
+                            (Identifier.GlobalName.as_string s)
+                            ~equal:String.equal
+                        then None
+                        else
+                          Some ({ fname = s; ftyp = t; fval = None }, (s, t, v)))
+                  in
                   (* We push all fields except _balance. *)
                   let fields =
                     List.filter_map cstate'.fields ~f:(fun (s, t) ->
@@ -403,7 +422,9 @@ let run_with_args args =
                         else Some { fname = s; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
-                  let () = initialize ~sm ~fields ~ext_states:[] in
+                  let () =
+                    initialize ~sm ~fields:(cparams @ fields) ~ext_states:[]
+                  in
                   let field_vals' =
                     if args.reinit then
                       (* Retrieve state variables *)
@@ -421,7 +442,7 @@ let run_with_args args =
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
                       Result.ignore_m
-                      @@ mapM field_vals' ~f:(fun (s, _t, v) ->
+                      @@ mapM (cparams' @ field_vals') ~f:(fun (s, _t, v) ->
                              update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
                                ~value:v)
                     in
