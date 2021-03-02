@@ -33,8 +33,6 @@ module OutputLiteral = GlobalLiteral
 module OutputType = OutputLiteral.LType
 module OutputIdentifier = OutputType.TIdentifier
 module OutputName = OutputIdentifier.Name
-module SCU =
-  ContractUtil.ScillaContractUtil (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 
 module OutputStateService = Scilla_eval.StateService.MakeStateService ()
 
@@ -877,29 +875,14 @@ let run_with_args args =
                       fval = v;
                     })
               in
-              let open Scilla_eval.StateService in
-              let cparams =
-                let implicit_params =
-                  List.map (SCU.append_implict_contract_params [])
-                    ~f:(fun (id, _) -> SSIdentifier.as_string id)
-                in
-                (* Ignore implicit parameters. They need special handling. *)
-                List.filter_map init ~f:(fun (s, t, v) ->
-                    if
-                      List.mem implicit_params
-                        (Identifier.GlobalName.as_string s)
-                        ~equal:String.equal
-                    then None
-                    else Some { fname = s; ftyp = t; fval = Some v })
-              in
               (* Initialise with the final values, then update, then finalise. *)
               (* ~ext_states not initialised, since they are not supported anyway *)
               let () =
-                OutputStateService.initialize ~sm
-                  ~fields:(cparams @ outputfields) ~ext_states:[]
+                OutputStateService.initialize ~sm ~fields:outputfields
+                  ~ext_states:[]
               in
               let () =
-                List.iter (cparams @ outputfields) ~f:(fun ssf ->
+                List.iter outputfields ~f:(fun ssf ->
                     let open Scilla_eval.StateService in
                     let { fname; fval; _ } = ssf in
                     match fval with
@@ -918,15 +901,20 @@ let run_with_args args =
                         | Error e -> fatal_error e ))
               in
               let _ = OutputStateService.finalize () in
-              (* Return the output state for JSON printing. *)
-              let state_from_file = parse_json args.input_state this_address in
-              let balance_nm, balance_v =
-                List.find_exn state_from_file ~f:(fun (fname, _) ->
-                    OutputName.equal fname ContractUtil.balance_label)
-              in
-              (balance_nm, ContractUtil.balance_typ, balance_v)
-              :: List.map outputfields ~f:(fun f ->
-                     (f.fname, f.ftyp, Option.value_exn f.fval))
+
+              (* TODO: Make sure the ipc-generated state have the correct form for state output *)
+              match OutputStateService.get_full_state () with
+              | Ok state ->
+                  (* _balance is not availabe from IPC server, so use the one from the state file *)
+                  let state_from_file =
+                    parse_json args.input_state this_address
+                  in
+                  let balance_nm, balance_v =
+                    List.find_exn state_from_file ~f:(fun (fname, _) ->
+                        OutputName.equal fname ContractUtil.balance_label)
+                  in
+                  (balance_nm, ContractUtil.balance_typ, balance_v) :: state
+              | Error e -> fatal_error e
           in
           (init, state)
         with Invalid_json s ->
