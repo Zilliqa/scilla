@@ -492,7 +492,7 @@ let run_with_args args =
                     let cstate, gas_remaining', _, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
-                    (* Ignore dynamic typechecks - contract already deployed *)
+                    (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
                     let fields =
@@ -528,6 +528,7 @@ let run_with_args args =
                     let cstate, gas_remaining', field_vals, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+                    (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
                     let fields =
