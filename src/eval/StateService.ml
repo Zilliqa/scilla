@@ -275,13 +275,13 @@ module MakeStateService () = struct
                 fail0
                   (sprintf "StateService: Field %s's value is not known"
                      (SSName.as_error_string f.fname))
-            | Some l -> pure (f.fname, l))
+            | Some l -> pure (f.fname, f.ftyp, l))
     | SS (IPC _, fl) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
               let%bind vopt = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
               match vopt with
-              | Some v -> pure (f.fname, v)
+              | Some v -> pure (f.fname, f.ftyp, v)
               | None ->
                   fail0
                     (sprintf

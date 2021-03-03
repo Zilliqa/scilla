@@ -542,13 +542,13 @@ let jobj_to_statevar this_address json =
   let t = parse_typ_exn tstring in
   let dis_t = disambiguate_type t this_address in
   let v = member_exn "value" json in
-  (n, parse_json dis_t this_address v)
+  (n, dis_t, parse_json dis_t this_address v)
 
 (* Inserted from Runner.ml *)
 let map_json_input_strings_to_names map =
-  List.map map ~f:(fun (x, l) ->
+  List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
-      | [ simple_name ] -> (OutputName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (OutputName.parse_simple_name simple_name, t, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 let get_address_literal = JSON.get_address_literal
@@ -886,7 +886,7 @@ let run_with_args args =
                     parse_json args.input_state this_address
                   in
                   let balance =
-                    List.find_exn state_from_file ~f:(fun (fname, _) ->
+                    List.find_exn state_from_file ~f:(fun (fname, _, _) ->
                         OutputName.equal fname ContractUtil.balance_label)
                   in
                   balance :: state
