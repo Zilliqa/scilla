@@ -13,9 +13,9 @@
     "scilla_major_version": "0",
     "vname": "Crowdfunding",
     "params": [
-      { "vname": "owner", "type": "ByStr20" },
-      { "vname": "max_block", "type": "BNum" },
-      { "vname": "goal", "type": "Uint128" }
+      { "vname": "owner", "type": "ByStr20", "depth": 0 },
+      { "vname": "max_block", "type": "BNum", "depth": 0 },
+      { "vname": "goal", "type": "Uint128", "depth": 0 }
     ],
     "fields": [
       { "vname": "backers", "type": "Map (ByStr20) (Uint128)", "depth": 1 },

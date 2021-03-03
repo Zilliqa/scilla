@@ -24,8 +24,8 @@
     "scilla_major_version": "0",
     "vname": "Wallet",
     "params": [
-      { "vname": "owners_list", "type": "List (ByStr20)" },
-      { "vname": "required_signatures", "type": "Uint32" }
+      { "vname": "owners_list", "type": "List (ByStr20)", "depth": 0 },
+      { "vname": "required_signatures", "type": "Uint32", "depth": 0 }
     ],
     "fields": [
       { "vname": "owners", "type": "Map (ByStr20) (Bool)", "depth": 1 },

@@ -24,8 +24,8 @@
     "scilla_major_version": "0",
     "vname": "Registry",
     "params": [
-      { "vname": "initialOwner", "type": "ByStr20" },
-      { "vname": "rootNode", "type": "ByStr32" }
+      { "vname": "initialOwner", "type": "ByStr20", "depth": 0 },
+      { "vname": "rootNode", "type": "ByStr32", "depth": 0 }
     ],
     "fields": [
       {

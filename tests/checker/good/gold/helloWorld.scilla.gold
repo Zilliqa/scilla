@@ -9,7 +9,7 @@
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "HelloWorld",
-    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "params": [ { "vname": "owner", "type": "ByStr20", "depth": 0 } ],
     "fields": [ { "vname": "welcome_msg", "type": "String", "depth": 0 } ],
     "transitions": [
       {

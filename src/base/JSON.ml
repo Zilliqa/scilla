@@ -550,7 +550,11 @@ module ContractInfo = struct
     let paramlj =
       List.map paraml ~f:(fun (i, t) ->
           `Assoc
-            [ ("vname", `String (as_string i)); ("type", `String (pp_typ t)) ])
+            [
+              ("vname", `String (as_string i));
+              ("type", `String (pp_typ t));
+              ("depth", `Int (JSONTypeUtilities.map_depth t));
+            ])
     in
     let paramj = ("params", `List paramlj) in
     (* 3. fields *)

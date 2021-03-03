@@ -15,11 +15,11 @@
     "scilla_major_version": "0",
     "vname": "FungibleToken",
     "params": [
-      { "vname": "owner", "type": "ByStr20" },
-      { "vname": "total_tokens", "type": "Uint128" },
-      { "vname": "decimals", "type": "Uint32" },
-      { "vname": "name", "type": "String" },
-      { "vname": "symbol", "type": "String" }
+      { "vname": "owner", "type": "ByStr20", "depth": 0 },
+      { "vname": "total_tokens", "type": "Uint128", "depth": 0 },
+      { "vname": "decimals", "type": "Uint32", "depth": 0 },
+      { "vname": "name", "type": "String", "depth": 0 },
+      { "vname": "symbol", "type": "String", "depth": 0 }
     ],
     "fields": [
       { "vname": "balances", "type": "Map (ByStr20) (Uint128)", "depth": 1 },

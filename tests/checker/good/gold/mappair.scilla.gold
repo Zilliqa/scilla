@@ -13,7 +13,7 @@
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Test",
-    "params": [ { "vname": "owner", "type": "ByStr20" } ],
+    "params": [ { "vname": "owner", "type": "ByStr20", "depth": 0 } ],
     "fields": [
       {
         "vname": "gmap",

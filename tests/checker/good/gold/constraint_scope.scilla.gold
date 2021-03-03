@@ -15,7 +15,7 @@
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Constraint",
-    "params": [ { "vname": "param_val", "type": "Bool" } ],
+    "params": [ { "vname": "param_val", "type": "Bool", "depth": 0 } ],
     "fields": [ { "vname": "f", "type": "Bool", "depth": 0 } ],
     "transitions": [],
     "procedures": [],

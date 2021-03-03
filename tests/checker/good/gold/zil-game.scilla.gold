@@ -15,10 +15,10 @@
     "scilla_major_version": "0",
     "vname": "ZilGame",
     "params": [
-      { "vname": "owner", "type": "ByStr20" },
-      { "vname": "player_a", "type": "ByStr20" },
-      { "vname": "player_b", "type": "ByStr20" },
-      { "vname": "puzzle", "type": "ByStr32" }
+      { "vname": "owner", "type": "ByStr20", "depth": 0 },
+      { "vname": "player_a", "type": "ByStr20", "depth": 0 },
+      { "vname": "player_b", "type": "ByStr20", "depth": 0 },
+      { "vname": "puzzle", "type": "ByStr32", "depth": 0 }
     ],
     "fields": [
       { "vname": "player_a_hash", "type": "Option (ByStr32)", "depth": 0 },

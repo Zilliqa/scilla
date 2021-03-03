@@ -27,8 +27,8 @@
     "scilla_major_version": "0",
     "vname": "BookStore",
     "params": [
-      { "vname": "owner", "type": "ByStr20" },
-      { "vname": "store_name", "type": "String" }
+      { "vname": "owner", "type": "ByStr20", "depth": 0 },
+      { "vname": "store_name", "type": "String", "depth": 0 }
     ],
     "fields": [
       {

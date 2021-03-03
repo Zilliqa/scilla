@@ -11,8 +11,8 @@
     "scilla_major_version": "0",
     "vname": "Admin",
     "params": [
-      { "vname": "initialAdmin", "type": "ByStr20" },
-      { "vname": "registry", "type": "ByStr20" }
+      { "vname": "initialAdmin", "type": "ByStr20", "depth": 0 },
+      { "vname": "registry", "type": "ByStr20", "depth": 0 }
     ],
     "fields": [
       { "vname": "admins", "type": "Map (ByStr20) (Bool)", "depth": 1 }

@@ -6,7 +6,7 @@
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "ShadowWarn1",
-    "params": [ { "vname": "p1", "type": "Uint32" } ],
+    "params": [ { "vname": "p1", "type": "Uint32", "depth": 0 } ],
     "fields": [],
     "transitions": [
       { "vname": "Foo", "params": [ { "vname": "p1", "type": "String" } ] }

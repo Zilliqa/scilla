@@ -20,7 +20,7 @@
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "SimpleDex",
-    "params": [ { "vname": "contractOwner", "type": "ByStr20" } ],
+    "params": [ { "vname": "contractOwner", "type": "ByStr20", "depth": 0 } ],
     "fields": [
       {
         "vname": "orderbook",

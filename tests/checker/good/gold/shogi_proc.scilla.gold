@@ -39,8 +39,8 @@
     "scilla_major_version": "0",
     "vname": "ShogiProc",
     "params": [
-      { "vname": "player1", "type": "ByStr20" },
-      { "vname": "player2", "type": "ByStr20" }
+      { "vname": "player1", "type": "ByStr20", "depth": 0 },
+      { "vname": "player2", "type": "ByStr20", "depth": 0 }
     ],
     "fields": [
       {

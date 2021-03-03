@@ -10,8 +10,8 @@
     "scilla_major_version": "0",
     "vname": "CrowdFundingInvoke",
     "params": [
-      { "vname": "cfaddr", "type": "ByStr20" },
-      { "vname": "owner", "type": "ByStr20" }
+      { "vname": "cfaddr", "type": "ByStr20", "depth": 0 },
+      { "vname": "owner", "type": "ByStr20", "depth": 0 }
     ],
     "fields": [],
     "transitions": [

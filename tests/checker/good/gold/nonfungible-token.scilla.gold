@@ -15,9 +15,9 @@
     "scilla_major_version": "0",
     "vname": "NonfungibleToken",
     "params": [
-      { "vname": "contractOwner", "type": "ByStr20" },
-      { "vname": "name", "type": "String" },
-      { "vname": "symbol", "type": "String" }
+      { "vname": "contractOwner", "type": "ByStr20", "depth": 0 },
+      { "vname": "name", "type": "String", "depth": 0 },
+      { "vname": "symbol", "type": "String", "depth": 0 }
     ],
     "fields": [
       {

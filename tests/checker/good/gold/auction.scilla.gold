@@ -15,9 +15,9 @@
     "scilla_major_version": "0",
     "vname": "OpenAuction",
     "params": [
-      { "vname": "auctionStart", "type": "BNum" },
-      { "vname": "biddingTime", "type": "Uint128" },
-      { "vname": "beneficiary", "type": "ByStr20" }
+      { "vname": "auctionStart", "type": "BNum", "depth": 0 },
+      { "vname": "biddingTime", "type": "Uint128", "depth": 0 },
+      { "vname": "beneficiary", "type": "ByStr20", "depth": 0 }
     ],
     "fields": [
       { "vname": "ended", "type": "Bool", "depth": 0 },

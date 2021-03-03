@@ -23,8 +23,8 @@
     "scilla_major_version": "0",
     "vname": "Wallet",
     "params": [
-      { "vname": "initial_owners", "type": "List (ByStr20)" },
-      { "vname": "required_signatures", "type": "Uint32" }
+      { "vname": "initial_owners", "type": "List (ByStr20)", "depth": 0 },
+      { "vname": "required_signatures", "type": "Uint32", "depth": 0 }
     ],
     "fields": [
       { "vname": "validity_checked", "type": "Bool", "depth": 0 },
