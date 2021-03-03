@@ -373,9 +373,6 @@ let contract_tests env =
                 "polynetwork"
                 >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 1
-                       [];
-                "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
 (*                 "remote_state_reads"   <- Failing due to a bug in type_assignable 
                    >: build_contract_init_test env fail_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true; *)
@@ -395,6 +392,9 @@ let contract_tests env =
                        [];
                 "UintParam"
                 >::: build_contract_tests env "UintParam" fail_code 1 3 [];
+                "shogi"
+                >::: build_contract_tests env "shogi" fail_code 5 7
+                       [ "shogi_lib" ];
                 "testlib1_init"
                 >: build_contract_init_test env fail_code
                      "0x565556789012345678901234567890123456abcd" "init" ~is_library:true ~ipc_mode:false;
@@ -415,7 +415,7 @@ let contract_tests env =
                      "init_not_enough_owners" ~is_library:false ~ipc_mode:false;
                 "crowdfunding_proc"
                 >: build_contract_init_test env fail_code "crowdfunding_proc"
-                     "init_goal_is_zero" ~is_library:false ~ipc_mode:false;
+                  "init_goal_is_zero" ~is_library:false ~ipc_mode:false;
                 "remote_state_reads"
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_no_address" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
@@ -426,6 +426,9 @@ let contract_tests env =
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_address_field_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_map_type" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
+                >::: build_contract_tests env "remote_state_reads" fail_code 1 1
+                       [];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

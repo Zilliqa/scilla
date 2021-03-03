@@ -545,13 +545,13 @@ let jobj_to_statevar this_address json =
   let t = parse_typ_exn tstring in
   let dis_t = disambiguate_type t this_address in
   let v = member_exn "value" json in
-  (n, parse_json dis_t this_address v)
+  (n, dis_t, parse_json dis_t this_address v)
 
 (* Inserted from Runner.ml *)
 let map_json_input_strings_to_names map =
-  List.map map ~f:(fun (x, l) ->
+  List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
-      | [ simple_name ] -> (OutputName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (OutputName.parse_simple_name simple_name, t, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 let get_address_literal = JSON.get_address_literal
@@ -825,28 +825,28 @@ let run_with_args args =
           let init =
             let untyped_state = parse_json args.input_init this_address in
             List.map untyped_state ~f:(fun x ->
-                match TypeUtil.TypeUtilities.literal_type (snd x) with
-                | Ok (t, []) -> (fst x, t, snd x)
+                match TypeUtil.TypeUtilities.literal_type (trd3 x) with
+                | Ok (t, []) -> (fst3 x, t, trd3 x)
                 | Ok _
                 | Error _ ->
                     fatal_error
                       (mk_error0
                          (sprintf "Unable to determine type of literal %s"
-                            (pp_literal (snd x)))))
+                            (pp_literal (trd3 x)))))
           in
           let state =
             if String.is_empty args.ipc_address then
               (* Use the provided state json. *)
               let untyped_state = parse_json args.input_state this_address in
               List.map untyped_state ~f:(fun x ->
-                  match TypeUtil.TypeUtilities.literal_type (snd x) with
-                  | Ok (t, []) -> (fst x, t, snd x)
+                  match TypeUtil.TypeUtilities.literal_type (trd3 x) with
+                  | Ok (t, []) -> (fst3 x, t, trd3 x)
                   | Ok _
                   | Error _ ->
                       fatal_error
                         (mk_error0
                            (sprintf "Unable to determine type of literal %s"
-                              (pp_literal (snd x)))))
+                              (pp_literal (trd3 x)))))
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
@@ -911,11 +911,11 @@ let run_with_args args =
                   let state_from_file =
                     parse_json args.input_state this_address
                   in
-                  let balance_nm, balance_v =
-                    List.find_exn state_from_file ~f:(fun (fname, _) ->
+                  let balance =
+                    List.find_exn state_from_file ~f:(fun (fname, _, _) ->
                         OutputName.equal fname ContractUtil.balance_label)
                   in
-                  (balance_nm, ContractUtil.balance_typ, balance_v) :: state
+                  balance :: state
               | Error e -> fatal_error e
           in
           (init, state)

@@ -318,39 +318,24 @@ module Configuration = struct
     in
     finder st.procedures
 
-  (* Check that message is well-formed before adding to the sending pool *)
-  let rec validate_messages ls =
-    let open EvalLiteral in
-    (* Note: We don't need a whole lot of checks as the checker does it. *)
-    let validate_msg_payload pl =
-      let has_tag = List.Assoc.mem pl "tag" ~equal:String.( = ) in
-      if has_tag then pure ()
-      else
-        fail0
-        @@ sprintf "Message contents have no \"tag\" field:\n[%s]"
-             (pp_literal_map pl)
-    in
-    match ls with
-    | Msg pl :: tl ->
-        let%bind () = validate_msg_payload pl in
-        validate_messages tl
-    | [] -> pure ()
-    | m :: _ -> fail0 @@ sprintf "This is not a message:\n%s" (pp_literal m)
-
   let validate_outgoing_message m' =
     let open EvalLiteral in
     let open ContractUtil.MessagePayload in
     match m' with
     | Msg m ->
         (* All outgoing messages must have certain mandatory fields *)
-        let tag_found = List.Assoc.mem m tag_label ~equal:String.( = ) in
-        let amount_found = List.Assoc.mem m amount_label ~equal:String.( = ) in
+        let tag_found =
+          List.exists m ~f:(fun (x, _, _) -> String.(tag_label = x))
+        in
+        let amount_found =
+          List.exists m ~f:(fun (x, _, _) -> String.(amount_label = x))
+        in
         let recipient_found =
-          List.Assoc.mem m recipient_label ~equal:String.( = )
+          List.exists m ~f:(fun (x, _, _) -> String.(recipient_label = x))
         in
         let uniq_entries =
           not
-          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+          @@ List.contains_dup m ~compare:(fun (s, _, _) (t, _, _) ->
                  String.compare s t)
         in
         if tag_found && amount_found && recipient_found && uniq_entries then
@@ -380,11 +365,11 @@ module Configuration = struct
     | Msg m ->
         (* All events must have certain mandatory fields *)
         let eventname_found =
-          List.Assoc.mem m eventname_label ~equal:String.( = )
+          List.exists m ~f:(fun (x, _, _) -> String.(eventname_label = x))
         in
         let uniq_entries =
           not
-          @@ List.contains_dup m ~compare:(fun (s, _) (t, _) ->
+          @@ List.contains_dup m ~compare:(fun (s, _, _) (t, _, _) ->
                  String.compare s t)
         in
         if eventname_found && uniq_entries then pure m'
@@ -453,7 +438,7 @@ module EvalTypecheck = struct
   let typecheck_remote_field_types ~caddr fts =
     let open EvalType in
     (* Add _balance to fields list, to ensure that caddr is in use *)
-    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_typ) :: fts in
+    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_type) :: fts in
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
     allM all_fts ~f:(fun (f, t) ->
         let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in

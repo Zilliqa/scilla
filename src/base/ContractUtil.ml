@@ -36,24 +36,35 @@ module CUName = CUIdentifier.Name
 module MessagePayload = struct
   let tag_label = "_tag"
 
+  let tag_type = CUType.string_typ
+
   let amount_label = "_amount"
+
+  let amount_type = CUType.uint128_typ
 
   let sender_label = "_sender"
 
+  let sender_type = CUType.address_typ []
+
   let origin_label = "_origin"
 
+  let origin_type = CUType.address_typ []
+
   let recipient_label = "_recipient"
+
+  let recipient_type = CUType.bystrx_typ address_length
 
   let eventname_label = "_eventname"
 
   let exception_label = "_exception"
 
   let get_value_for_entry lab f es =
-    match List.Assoc.find es lab ~equal:String.( = ) with
+    match List.find es ~f:(fun (x, _, _) -> String.(x = lab)) with
     | None ->
         fail0
-        @@ sprintf "No field \"%s\" in message [%s]." lab (pp_literal_map es)
-    | Some p ->
+        @@ sprintf "No field \"%s\" in message [%s]." lab
+             (pp_typ_literal_map es)
+    | Some (_, _, p) ->
         f p
         |> Option.value
              ~default:
@@ -96,14 +107,26 @@ module MessagePayload = struct
       | _ -> None)
 
   let get_other_entries es =
-    List.filter es ~f:(fun (l, _) -> String.(l <> tag_label))
+    List.filter es ~f:(fun (l, _, _) -> String.(l <> tag_label))
 end
+
+(*****************************************************************)
+(*               Blockchain component typing                     *)
+(*****************************************************************)
+
+let blocknum_name = "BLOCKNUMBER"
+
+let blocknum_type = CUType.bnum_typ
+
+(*****************************************************************)
+(*           Init and outputjson component typing                *)
+(*****************************************************************)
 
 let label_name_of_string str = CUName.parse_simple_name str
 
 let balance_label = label_name_of_string "_balance"
 
-let balance_typ = CUType.uint128_typ
+let balance_type = CUType.uint128_typ
 
 let creation_block_label = label_name_of_string "_creation_block"
 
@@ -122,7 +145,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   open ContractUtilSyntax
 
   let balance_field =
-    (CUIdentifier.mk_id balance_label ER.uint128_rep, CUType.uint128_typ)
+    (CUIdentifier.mk_id balance_label ER.uint128_rep, balance_type)
 
   let append_implict_contract_params tparams =
     let open CUType in
@@ -145,32 +168,31 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
         not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
   let append_implict_comp_params cparams =
-    let open CUType in
     let sender =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.sender_label)
           ER.address_rep,
-        address_typ [] )
+        MessagePayload.sender_type )
     in
     let origin =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.origin_label)
           ER.address_rep,
-        address_typ [] )
+        MessagePayload.origin_type )
     in
     let amount =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.amount_label)
           ER.uint128_rep,
-        uint128_typ )
+        MessagePayload.amount_type )
     in
     amount :: origin :: sender :: cparams
 
   let msg_mandatory_field_types =
     [
-      (MessagePayload.tag_label, CUType.string_typ);
-      (MessagePayload.amount_label, CUType.uint128_typ);
-      (MessagePayload.recipient_label, CUType.bystrx_typ address_length);
+      (MessagePayload.tag_label, MessagePayload.tag_type);
+      (MessagePayload.amount_label, MessagePayload.amount_type);
+      (MessagePayload.recipient_label, MessagePayload.recipient_type);
     ]
 
   (* Iterate over all messages in the contract, accumuating result. 

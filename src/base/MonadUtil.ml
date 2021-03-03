@@ -334,6 +334,16 @@ module EvalMonad = struct
     in
     fun k remaining_cost -> doTry ls k remaining_cost
 
+  (* True if at least one element in a list satisfies the predicate f *)
+  let existsM ~f ls =
+    let rec recurser ls =
+      match ls with
+      | x :: ls' ->
+          let%bind r = f x in
+          if r then pure true else recurser ls'
+      | [] -> pure false
+    in
+    recurser ls
 end
 
 (* module EvalMonad *)

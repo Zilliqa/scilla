@@ -106,7 +106,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*               Blockchain component typing                     *)
   (*****************************************************************)
 
-  let bc_types = [ (TypeUtil.blocknum_name, bnum_typ) ]
+  let bc_types = [ (blocknum_name, blocknum_type) ]
 
   let lookup_bc_type x =
     match List.Assoc.find bc_types x ~equal:String.( = ) with
@@ -472,7 +472,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         @@ ( TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types),
              (mk_qual_tp res_type, rep) )
     | Message bs ->
-        let%bind msg_typ = fromR_TE @@ get_msgevnt_type bs (ER.get_loc rep) in
+        let%bind msg_typ =
+          fromR_TE
+          @@ get_msgevnt_type
+               (List.map bs ~f:(fun (x, l) -> (x, Unit, l)))
+               (ER.get_loc rep)
+        in
         let payload_type fld pld =
           let check_field_type seen_type =
             match

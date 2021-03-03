@@ -105,8 +105,8 @@ let input_state_json filename =
   in
   let bal_lit =
     match
-      List.find states ~f:(fun x ->
-          [%equal: RunnerName.t] balance_label (fst3 x))
+      List.find states ~f:(fun (x, _, _) ->
+          [%equal: RunnerName.t] x balance_label)
     with
     | Some v -> v
     | None ->
@@ -117,22 +117,22 @@ let input_state_json filename =
   let bal_int =
     match bal_lit with
     | _, t, UintLit (Uint128L x)
-      when [%equal: RunnerSyntax.SType.t] t balance_typ ->
+      when [%equal: RunnerSyntax.SType.t] t balance_type ->
         x
     | _ ->
         raise
           (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.filter states ~f:(fun x ->
-        not @@ [%equal: RunnerName.t] (fst3 x) balance_label)
+    List.filter states ~f:(fun (x, _, _) ->
+        not @@ [%equal: RunnerName.t] x balance_label)
   in
   (no_bal_states, bal_int, estates)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
   let bal_lit =
-    (balance_label, balance_typ, JSON.JSONLiteral.UintLit (Uint128L balance))
+    (balance_label, balance_type, JSON.JSONLiteral.UintLit (Uint128L balance))
   in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
@@ -478,9 +478,7 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-                let m =
-                  JSON.JSONLiteral.Msg
-                    (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))
+                let m = JSON.JSONLiteral.Msg mmsg
                 in
 
                 let cstate, gas_remaining' =
@@ -556,11 +554,10 @@ let run_with_args args =
 
                 plog
                   (sprintf "Executing message:\n%s\n"
-                     (JSON.Message.message_to_jstring
-                        (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))));
+                     (JSON.Message.message_to_jstring mmsg));
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_literal_type_map bstate));
+                     (pp_typ_literal_map bstate));
                 let step_result = handle_message ctr cstate bstate m in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining'

@@ -232,7 +232,7 @@ let rec pp_literal_simplified l =
   | Msg m ->
       let items =
         "["
-        ^ List.fold_left m ~init:"" ~f:(fun a (s, l') ->
+        ^ List.fold_left m ~init:"" ~f:(fun a (s, _t, l') ->
               let t = "(" ^ s ^ " : " ^ pp_literal_simplified l' ^ ")" in
               if String.is_empty a then t else a ^ " ; " ^ t)
         ^ "]"
@@ -302,7 +302,7 @@ let pp_literal_map s =
   let cs = String.concat ~sep:",\n " ps in
   sprintf "{%s }" cs
 
-let pp_literal_type_map s =
+let pp_typ_literal_map s =
   let ps =
     List.map s ~f:(fun (k, t, v) ->
         sprintf " [%s : %s -> %s]" k (PPType.pp_typ t) (pp_literal v))
@@ -315,10 +315,12 @@ let pp_literal_list ls =
   let cs = String.concat ~sep:",\n " ps in
   sprintf "[ %s]" cs
 
-let pp_typ_map s =
+let pp_str_typ_map s =
   let ps =
-    List.map s ~f:(fun (k, v) ->
-        sprintf " [%s : %s]" (PPName.as_string k) (PPType.pp_typ v))
+    List.map s ~f:(fun (k, v) -> sprintf " [%s : %s]" k (PPType.pp_typ v))
   in
   let cs = String.concat ~sep:",\n" ps in
   sprintf "{%s }" cs
+
+let pp_typ_map s =
+  List.map s ~f:(fun (k, v) -> (PPName.as_string k, v)) |> pp_str_typ_map
