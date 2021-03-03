@@ -344,9 +344,6 @@ let contract_tests env =
                 >::: build_contract_tests env "listiter" succ_code 1 1 [];
                 "polynetwork"
                 >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
-                "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 1
-                       [];
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -384,6 +381,12 @@ let contract_tests env =
                 "crowdfunding_proc"
                 >: build_contract_init_test env fail_code "crowdfunding_proc"
                      "init_goal_is_zero" false;
+                "shogi"
+                >::: build_contract_tests env "shogi" fail_code 5 7
+                       [ "shogi_lib" ];
+                "remote_state_reads"
+                >::: build_contract_tests env "remote_state_reads" fail_code 1 1
+                       [];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

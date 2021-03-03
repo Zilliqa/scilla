@@ -68,7 +68,7 @@ let rec is_pure_literal l =
   match l with
   | Clo _ -> false
   | TAbs _ -> false
-  | Msg es -> List.for_all es ~f:(fun (_, l') -> is_pure_literal l')
+  | Msg es -> List.for_all es ~f:(fun (_, _, l') -> is_pure_literal l')
   | ADTValue (_, _, es) -> List.for_all es ~f:(fun e -> is_pure_literal e)
   (* | Map (_, ht) ->
    *     let es = Caml.Hashtbl.to_alist ht in
@@ -187,7 +187,10 @@ let rec exp_eval erep env =
       in
       let%bind payload_resolved =
         (* Make sure we resolve all the payload *)
-        mapM bs ~f:(fun (s, pld) -> liftPair2 s @@ fromR @@ resolve pld)
+        mapM bs ~f:(fun (s, pld) ->
+            let%bind sanitized_lit = fromR @@ resolve pld in
+            let%bind t = fromR @@ literal_type sanitized_lit in
+            pure (s, t, sanitized_lit))
       in
       pure (Msg payload_resolved, env)
   | Fun (formal, _, body) ->
@@ -502,18 +505,19 @@ and try_apply_as_procedure conf proc proc_rest actuals =
 (*******************************************************)
 
 let check_blockchain_entries entries =
-  let expected = [ (TypeUtil.blocknum_name, bnum_typ, BNum "0") ] in
+  let expected = [ (ContractUtil.blocknum_name, ContractUtil.blocknum_type) ] in
   (* every entry must be expected *)
   let c1 =
     List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists expected ~f:(fun (x, xt, _) ->
-            String.(x = s) && type_assignable ~expected:xt ~actual:t))
+        List.exists expected ~f:(fun (x, xt) ->
+            String.(x = s) && [%equal: EvalType.t] xt t))
   in
   (* everything expected must be entered *)
+  (* everything expected must be entered *)
   let c2 =
-    List.for_all expected ~f:(fun (x, xt, _) ->
+    List.for_all expected ~f:(fun (x, xt) ->
         List.exists entries ~f:(fun (s, t, _) ->
-            String.(x = s) && type_assignable ~expected:xt ~actual:t))
+            String.(x = s) && [%equal: EvalType.t] xt t))
   in
   if c1 && c2 then pure entries
   else
@@ -524,8 +528,8 @@ let check_blockchain_entries entries =
           %s\n\
           provided:\n\
           %s\n"
-         (pp_literal_type_map expected)
-         (pp_literal_type_map entries)
+         (pp_str_typ_map expected)
+         (pp_typ_literal_map entries)
 
 (*******************************************************)
 (*              Contract initialization                *)
@@ -633,9 +637,7 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
   let cparams = CU.append_implict_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
-  let args'' = CU.remove_noneval_args args' in
-  (* Strip types - we rely on the type determined by from the literal *)
-  let args = List.map args'' ~f:(fun (x, _t, v) -> (x, v)) in
+  let args = CU.remove_noneval_args args' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
   (* Is there an argument that is not a parameter? *)
@@ -705,7 +707,7 @@ let create_cur_state_fields initcstate curcstate =
         in
         let%bind _, ex =
           tryM
-            ~f:(fun (t, _t, li) ->
+            ~f:(fun (t, _tt, li) ->
               let%bind t2 = fromR @@ literal_type li in
               if [%equal: EvalName.t] s t && [%equal: EvalType.t] t_lc t2 then
                 pure ()
@@ -795,18 +797,20 @@ let check_message_entries cparams_o entries =
   let tparams = CU.append_implict_comp_params cparams_o in
   (* There as an entry for each parameter *)
   let valid_entries =
-    List.for_all tparams ~f:(fun (s, _) ->
-        List.Assoc.mem entries (as_string s) ~equal:String.( = ))
+    List.for_all tparams ~f:(fun (x, xt) ->
+        List.exists entries ~f:(fun (s, t, _) ->
+            String.(as_string x = s) && [%equal: EvalType.t] xt t))
   in
   (* There is a parameter for each entry *)
   let valid_params =
-    List.for_all entries ~f:(fun (s, _) ->
-        List.exists tparams ~f:(fun (i, _) -> String.(s = as_string i)))
+    List.for_all entries ~f:(fun (s, t, _) ->
+        List.exists tparams ~f:(fun (x, xt) ->
+            String.(as_string x = s) && [%equal: EvalType.t] xt t))
   in
   (* Each entry name is unique *)
   let uniq_entries =
     not
-    @@ List.contains_dup entries ~compare:(fun (s, _) (t, _) ->
+    @@ List.contains_dup entries ~compare:(fun (s, _, _) (t, _, _) ->
            String.compare s t)
   in
   if not (valid_entries && uniq_entries && valid_params) then
@@ -815,7 +819,8 @@ let check_message_entries cparams_o entries =
          "Duplicate entries or mismatch b/w message entries:\n\
           %s\n\
           and expected transition parameters%s\n"
-         (pp_literal_map entries) (pp_cparams tparams)
+         (pp_typ_literal_map entries)
+         (pp_cparams tparams)
   else pure entries
 
 (* Get the environment, incoming amount, procedures in scope, and body to execute*)
@@ -859,7 +864,7 @@ let post_process_msgs cstate outs =
 Handle message:
 * contr : Syntax.contract - code of the contract (containing transitions and procedures)
 * cstate : ContractState.t - current contract state
-* bstate : (string * literal) list - blockchain state
+* bstate : (string * type * literal) list - blockchain state
 * m : Syntax.literal - incoming message 
 *)
 let handle_message contr cstate bstate m =
@@ -870,7 +875,7 @@ let handle_message contr cstate bstate m =
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
   let%bind actual_env =
-    foldM tenv ~init:env ~f:(fun e (n, l) ->
+    foldM tenv ~init:env ~f:(fun e (n, _t, l) ->
         (* TODO, Issue #836: Message fields may contain periods, which shouldn't be allowed. *)
         match String.split n ~on:'.' with
         | [ simple_name ] ->

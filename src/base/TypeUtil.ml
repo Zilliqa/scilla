@@ -430,11 +430,12 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure TUType.msg_typ
-    else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
-      pure TUType.event_typ
-    else if List.Assoc.mem m exception_label ~equal:String.( = ) then
-      pure TUType.exception_typ
+    if List.exists m ~f:(fun (x, _, _) -> String.(tag_label = x)) then
+      pure TUType.msg_typ
+    else if List.exists m ~f:(fun (x, _, _) -> String.(eventname_label = x))
+    then pure TUType.event_typ
+    else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
+    then pure TUType.exception_typ
     else
       fail1 "Invalid message construct. Not any of send, event or exception." lc
 
@@ -455,7 +456,7 @@ module TypeUtilities = struct
     match t with
     | Address fts -> (
         if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
-          pure ContractUtil.balance_typ
+          pure ContractUtil.balance_type
         else
           let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
           match
@@ -682,8 +683,15 @@ module TypeUtilities = struct
         let%bind msg_typ = get_msgevnt_type m lc in
         let%bind all_legal =
           foldM
-            ~f:(fun acc (_, l) ->
-              let%bind t = is_wellformed_lit l in
+            ~f:(fun acc (n, t, l) ->
+              let%bind t' = is_wellformed_lit l in
+              if not @@ [%equal: TUType.t] t t' then
+                fail0
+                @@ sprintf
+                     "Message/Event has inconsistent values and types at field \
+                      %s"
+                     n
+              else
               if acc then pure (is_legal_message_field_type t) else pure false)
             ~init:true m
         in
@@ -748,9 +756,3 @@ module TypeUtilities = struct
     | Clo _ -> fail0 @@ "Cannot type-check runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type-check runtime type function."
 end
-
-(*****************************************************************)
-(*               Blockchain component typing                     *)
-(*****************************************************************)
-
-let blocknum_name = "BLOCKNUMBER"
