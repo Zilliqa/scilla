@@ -89,9 +89,9 @@ let check_after_step res gas_limit =
       ((cstate, outs, events, accepted_b), remaining_gas)
 
 let map_json_input_strings_to_names map =
-  List.map map ~f:(fun (x, l) ->
+  List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
-      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, l)
+      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
 (* Parse the input state json and extract out _balance separately *)
@@ -101,7 +101,8 @@ let input_state_json filename =
   let states = map_json_input_strings_to_names states_str in
   let bal_lit =
     match
-      List.Assoc.find states balance_label ~equal:[%equal: RunnerName.t]
+      List.find_map states ~f:(fun (x, _, l) ->
+          if [%equal: RunnerName.t] x balance_label then Some l else None)
     with
     | Some v -> v
     | None ->
@@ -117,13 +118,16 @@ let input_state_json filename =
           (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.Assoc.remove states balance_label ~equal:[%equal: RunnerName.t]
+    List.filter states ~f:(fun (x, _, _) ->
+        not @@ [%equal: RunnerName.t] x balance_label)
   in
   (no_bal_states, bal_int)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
-  let bal_lit = (balance_label, JSON.JSONLiteral.UintLit (Uint128L balance)) in
+  let bal_lit =
+    (balance_label, balance_type, JSON.JSONLiteral.UintLit (Uint128L balance))
+  in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
@@ -151,7 +155,10 @@ let validate_get_init_json init_file gas_remaining source_ver =
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
-  let initargs = map_json_input_strings_to_names initargs_str in
+  let initargs =
+    map_json_input_strings_to_names initargs_str
+    |> List.map ~f:(fun (x, _, l) -> (x, l))
+  in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
   let rgas =
@@ -411,7 +418,7 @@ let run_with_args args =
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
                       Result.ignore_m
-                      @@ mapM field_vals' ~f:(fun (s, v) ->
+                      @@ mapM field_vals' ~f:(fun (s, _t, v) ->
                              update ~fname:(SSIdentifier.mk_loc_id s) ~keys:[]
                                ~value:v)
                     in
@@ -490,12 +497,8 @@ let run_with_args args =
 
                     (* Initialize the state server. *)
                     let fields =
-                      List.map field_vals ~f:(fun (s, l) ->
+                      List.map field_vals ~f:(fun (s, t, l) ->
                           let open StateService in
-                          let t =
-                            List.Assoc.find_exn cstate.fields s
-                              ~equal:[%equal: RunnerName.t]
-                          in
                           { fname = s; ftyp = t; fval = Some l })
                     in
                     let () = StateService.initialize ~sm:Local ~fields in
@@ -510,7 +513,7 @@ let run_with_args args =
                      (JSON.Message.message_to_jstring mmsg));
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_literal_map bstate));
+                     (pp_typ_literal_map bstate));
                 let step_result = handle_message ctr cstate bstate m in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining'

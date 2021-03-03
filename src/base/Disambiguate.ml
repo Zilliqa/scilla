@@ -288,9 +288,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | Msg msg_entries ->
           (* Msg literals are strictly speaking illegal, but the parser should prevent us from ever getting here. *)
           let%bind res_msg_entries =
-            foldrM msg_entries ~init:[] ~f:(fun acc (label, l) ->
+            foldrM msg_entries ~init:[] ~f:(fun acc (label, t, l) ->
                 let%bind res_l = recurser l in
-                pure @@ ((label, res_l) :: acc))
+                let%bind res_t = disambiguate_type dicts.typ_dict t in
+                pure @@ ((label, res_t, res_l) :: acc))
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->

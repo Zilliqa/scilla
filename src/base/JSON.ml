@@ -230,19 +230,19 @@ let jobj_to_statevar json =
   let tstring = member_exn "type" json |> to_string_exn in
   let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () then (n, json_to_lit t v)
-  else (n, JSONParser.parse_json t v)
+  if GlobalConfig.validate_json () then (n, t, json_to_lit t v)
+  else (n, t, JSONParser.parse_json t v)
 
 (****************************************************************)
 (*                    JSON printing                             *)
 (****************************************************************)
 
 let state_to_json state =
-  let vname, lit = state in
+  let vname, typ, lit = state in
   `Assoc
     [
       ("vname", `String vname);
-      ("type", `String (literal_type_exn lit));
+      ("type", `String (pp_typ typ));
       ("value", literal_to_json lit);
     ]
 
@@ -281,7 +281,7 @@ module ContractState = struct
   (* Get a json object from given states *)
   let state_to_json states =
     let states_str =
-      List.map states ~f:(fun (x, v) -> (JSONName.as_string x, v))
+      List.map states ~f:(fun (x, t, v) -> (JSONName.as_string x, t, v))
     in
     let jsonl = slist_to_json states_str in
     `List jsonl
@@ -338,7 +338,10 @@ module ContractState = struct
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
   let get_init_this_address_and_extlibs filename =
-    let init_data = get_json_data filename in
+    (* We filter out type information from init files for the time being *)
+    let init_data =
+      get_json_data filename |> List.map ~f:(fun (x, _, t) -> (x, t))
+    in
     let extlibs = get_init_extlibs init_data in
     let this_address_init_opt =
       match
@@ -386,16 +389,22 @@ module Message = struct
     let senders = member_exn sender_label json |> to_string_exn in
     let origins = member_exn origin_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
-    let tag = (tag_label, build_prim_lit_exn JSONType.string_typ tags) in
+    let tag =
+      (tag_label, tag_type, build_prim_lit_exn JSONType.string_typ tags)
+    in
     let amount =
-      (amount_label, build_prim_lit_exn JSONType.uint128_typ amounts)
+      ( amount_label,
+        amount_type,
+        build_prim_lit_exn JSONType.uint128_typ amounts )
     in
     let sender =
       ( sender_label,
+        sender_type,
         build_prim_lit_exn (JSONType.bystrx_typ address_length) senders )
     in
     let origin =
       ( origin_label,
+        origin_type,
         build_prim_lit_exn (JSONType.bystrx_typ address_length) origins )
     in
     let pjlist = member_exn "params" json |> to_list_exn in
@@ -405,14 +414,19 @@ module Message = struct
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
-    let taglit = List.Assoc.find_exn message tag_label ~equal:String.( = ) in
+    let taglit =
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = tag_label) then Some l else None)
+    in
     let amountlit =
-      List.Assoc.find_exn message amount_label ~equal:String.( = )
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = amount_label) then Some l else None)
     in
     (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
     let toORfrom, tofromlit =
-      List.find_exn message ~f:(fun (x, _) ->
-          String.(x = recipient_label || x = sender_label))
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = recipient_label || x = sender_label) then Some (x, l)
+          else None)
     in
     let tofrom_label =
       if String.(toORfrom = recipient_label) then recipient_label
@@ -423,7 +437,7 @@ module Message = struct
     let tofroms = get_address_literal tofromlit in
     (* Get a list without any of these components *)
     let filtered_list =
-      List.filter message ~f:(fun (x, _) ->
+      List.filter message ~f:(fun (x, _, _) ->
           String.(
             not (x = tag_label || x = amount_label || x = recipient_label)))
     in
@@ -576,12 +590,13 @@ module Event = struct
   let event_to_json e =
     (* extract out "_eventname" from the message *)
     let eventnamelit =
-      List.Assoc.find_exn e eventname_label ~equal:String.( = )
+      List.find_map_exn e ~f:(fun (x, _, l) ->
+          if String.(x = eventname_label) then Some l else None)
     in
     let eventnames = get_string_literal eventnamelit in
     (* Get a list without the extracted components *)
     let filtered_list =
-      List.filter e ~f:(fun (x, _) -> String.(not (x = eventname_label)))
+      List.filter e ~f:(fun (x, _, _) -> String.(not (x = eventname_label)))
     in
     `Assoc
       [

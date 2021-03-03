@@ -1,0 +1,18 @@
+{
+  "gas_remaining": "7868",
+  "errors": [
+    {
+      "error_message":
+        "ADT type Direction does not match constructor ShogiLib.Free",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Failed to parse json tests/runner/shogi/message_6.json:\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
