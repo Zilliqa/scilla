@@ -2,7 +2,7 @@
   "gas_remaining": "7954",
   "errors": [
     {
-      "error_message": "Field welcome_msg occurs more than once in input.\n",
+      "error_message": "Duplicate field entries found",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

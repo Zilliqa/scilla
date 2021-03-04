@@ -71,6 +71,17 @@ let check_extract_cstate name res gas_limit =
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
       (cstate, remaining_gas, field_vals, dyn_checks)
 
+(****************************************************)
+(*           Checking prepared message              *)
+(****************************************************)
+let check_prepare_message res gas_limit =
+  match res Eval.init_gas_kont gas_limit with
+  | Error (err, remaining_gas) ->
+      fatal_error_gas_scale Gas.scale_factor err remaining_gas
+  | Ok ((preppred_msg, dyn_checks), remaining_gas) ->
+      plog "[Preparing message]\nSuccess!\n";
+      (preppred_msg, dyn_checks, remaining_gas)
+
 (*****************************************************)
 (*   Running the simulation and printing results     *)
 (*****************************************************)
@@ -478,8 +489,8 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-                let m = JSON.JSONLiteral.Msg mmsg
-                in
+(*                let m = JSON.JSONLiteral.Msg mmsg
+                  in *)
 
                 let cstate, gas_remaining' =
                   if is_ipc then
@@ -558,9 +569,13 @@ let run_with_args args =
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
                      (pp_typ_literal_map bstate));
-                let step_result = handle_message ctr cstate bstate m in
+                let prepped_message, _pending_dyn_checks, gas_remaining'' =
+                  let pmsg = prepare_for_message ctr mmsg in
+                  check_prepare_message pmsg gas_remaining'
+                in
+                let step_result = handle_message prepped_message cstate bstate in
                 let (cstate', mlist, elist, accepted_b), gas =
-                  check_after_step step_result gas_remaining'
+                  check_after_step step_result gas_remaining''
                 in
 
                 (* If we're using a local state (JSON file) then need to fetch and dump it. *)

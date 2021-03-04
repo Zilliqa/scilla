@@ -2,8 +2,7 @@
   "gas_remaining": "7955",
   "errors": [
     {
-      "error_message":
-        "Duplicate entries or mismatch b/w message entries:\n{ [_amount : Uint128 -> (Uint128 0)],\n  [_origin : ByStr20 with end -> (ByStr20 0xa2345678901234567890123456789012345678ab)],\n  [_sender : ByStr20 with end -> (ByStr20 0xa2345678901234567890123456789012345678ab)],\n  [Unknown : Int32 -> (Int32 0)] }\nand expected transition parameters[_amount : (PrimType Uint128), _origin : (Address()), _sender : (Address())]\n",
+      "error_message": "No parameter found matching message entry Unknown",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

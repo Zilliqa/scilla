@@ -648,45 +648,40 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   let initargs = CU.remove_noneval_args initargs' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
-  (* Is there an argument that is not a parameter? *)
+  (* There as an init arg for each parameter *)
   let%bind pending_dyn_checks =
-    foldrM
-      initargs
-      ~init:[]
-      ~f:(fun acc_dyn_checks (n, l) ->
-        let emsg () =
-          mk_error0
-            (sprintf "Parameter %s is not specified in the contract.\n"
-               (EvalName.as_error_string n))
+    foldM cparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
+        let%bind arg_dyn_checks =
+          find_mapM initargs ~f:(fun (s, l) ->
+              if not @@ EvalName.equal (get_id x) s then
+                (* Not this entry *)
+                pure None
+              else 
+                (* Typecheck the literal against the parameter type *)
+                let%bind _ltyp, dyn_checks = fromR @@ literal_type ~expected:(Some xt) l in
+                pure (Some dyn_checks))
         in
-        (* For each argument there should be a parameter *)
-        let%bind _, pt =
-          tryM
-            ~f:(fun (ps, pt) ->
-              if
-                [%equal: EvalName.t] (get_id ps) n
-              then pure pt
-              else fail0 "")
-            cparams ~msg:emsg
-        in
-        (* Typecheck the literal against the parameter type *)
-        let%bind _ltyp, dyn_checks = fromR @@ literal_type ~expected:(Some pt) l in
-        (* StateService not yet initialised - return pending dynamic typechecks *)
-        pure @@ dyn_checks @ acc_dyn_checks)
+        match arg_dyn_checks with
+        | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
+        | None ->
+            fail0
+            @@ sprintf "No init entry found matching contract parameter %s" (as_error_string x))
   in
+  (* There is a parameter for each init arg *)
   let%bind () =
-    forallM
-      ~f:(fun (p, _) ->
-        (* For each parameter there should be exactly one argument. *)
-        if
-          List.count initargs ~f:(fun a -> [%equal: EvalName.t] (get_id p) (fst a))
-          <> 1
-        then
+    forallM initargs ~f:(fun (s, _l) ->
+        if List.exists cparams ~f:(fun (x, _xt) -> EvalName.equal (get_id x) s) then
+          pure ()
+        else 
           fail0
-            (sprintf "Parameter %s must occur exactly once in input.\n"
-               (as_error_string p))
-        else pure ())
-      cparams
+          @@ sprintf "Parameter %s is not specified in the contract.\n" (EvalName.as_error_string s))
+  in
+  (* Each init arg is unique *)
+  let%bind () =
+    if List.contains_dup initargs ~compare:(fun (s, _) (s', _) ->
+        EvalName.compare s s') then
+      fail0 "Duplicate init arguments entries found"
+    else pure ()
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
   let env = Env.bind_all libenv initargs in
@@ -704,41 +699,34 @@ let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
   let%bind () =
-    forallM
-      ~f:(fun (s, t, lc) ->
-          let%bind ex =
-            existsM ~f:(fun (x, xt, _xl) ->
-                if not @@ [%equal: EvalName.t] s x then pure false
-                else 
-                  let%bind _, _dyn_checks = fromR @@ literal_type ~expected:(Some t) lc in
-                  (* Allow dynamic typechecks - if it's in the current state, then it's already been checked *)
-                  if not @@ [%equal: EvalType.t] xt t
-                  then fail0 (sprintf "State type of field %s : %s does not match the declared type %s" (EvalName.as_error_string s) (pp_typ t) (pp_typ xt))
-                  else pure true)
-              initcstate
-          in
-          if not ex then
-            fail0 
-              (sprintf "Field %s : %s not defined in the contract\n"
-                 (EvalName.as_error_string s)
-                 (pp_typ t))
-          else 
-            pure ())
-      curcstate
-  in
-  (* Each entry name is unique *)
-  let%bind () =
-    forallM
-      ~f:(fun (e, _, _) ->
-        if
-          List.count curcstate ~f:(fun (e', _, _) -> [%equal: EvalName.t] e e')
-          > 1
-        then
-          fail0
-            (sprintf "Field %s occurs more than once in input.\n"
-               (EvalName.as_error_string e))
+    forallM curcstate ~f:(fun (s, t, l) ->
+        let%bind ex = 
+          existsM initcstate ~f:(fun (x, xt, _xl) ->
+              if not @@ [%equal: EvalName.t] s x then
+                (* Not this entry *)
+                pure false
+              else if not @@ [%equal: EvalType.t] xt t then
+                fail0 (sprintf "State type of field %s : %s does not match the declared type %s" (EvalName.as_error_string s) (pp_typ t) (pp_typ xt))
+              else
+                (* Check that the literal matches the stated type *)
+                let%bind _, _dyn_checks = fromR @@ literal_type ~expected:(Some t) l in
+                (* Allow dynamic typechecks - if it's in the current state, then it's already been checked *)
+                pure true)
+        in
+        if not ex then
+          fail0 
+            (sprintf "Field %s : %s not defined in the contract\n"
+               (EvalName.as_error_string s)
+               (pp_typ t))
         else pure ())
-      initcstate
+  in
+  (* We allow fields in initcstate that isn't in curcstate *)
+  (* Each curcstate field is unique *)
+  let%bind () =
+    if List.contains_dup curcstate ~compare:(fun (s, _, _) (s', _, _) ->
+        EvalName.compare s s') then
+      fail0 "Duplicate field entries found"
+    else pure ()
   in
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
@@ -805,44 +793,50 @@ let get_transition_and_procedures ctr tag =
 let check_message_entries cparams_o entries =
   let tparams = CU.append_implict_comp_params cparams_o in
   (* There as an entry for each parameter *)
-  let valid_entries =
-    List.for_all tparams ~f:(fun (x, xt) ->
-        List.exists entries ~f:(fun (s, t, _) ->
-            String.(as_string x = s) && [%equal: EvalType.t] xt t))
+  let%bind pending_dyn_checks =
+    foldM tparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
+        let%bind entry_dyn_checks =
+          find_mapM entries ~f:(fun (s, _t, l) ->
+              if not @@ String.(as_string x = s) then
+                (* Not this entry *)
+                pure None
+              else 
+                (* We ignore the type from the message entry, since that was used to parse the literal, and hence is known to be valid *)
+                let%bind _entry_typ, dyn_checks = fromR @@ literal_type ~expected:(Some xt) l in
+                pure (Some dyn_checks))
+        in
+        match entry_dyn_checks with
+        | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
+        | None ->
+            fail0
+              @@ sprintf "No message entry found matching parameter %s" (as_error_string x))
   in
   (* There is a parameter for each entry *)
-  let valid_params =
-    List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists tparams ~f:(fun (x, xt) ->
-            String.(as_string x = s) && [%equal: EvalType.t] xt t))
+  let%bind () =
+    forallM entries ~f:(fun (s, _t, _l) ->
+        if List.exists tparams ~f:(fun (x, _xt) -> String.(as_string x = s)) then
+          pure ()
+        else 
+          fail0
+          @@ sprintf "No parameter found matching message entry %s" s)
   in
   (* Each entry name is unique *)
-  let uniq_entries =
-    not
-    @@ List.contains_dup entries ~compare:(fun (s, _, _) (t, _, _) ->
-           String.compare s t)
+  let%bind () =
+    if List.contains_dup entries ~compare:(fun (s, _, _) (s', _, _) ->
+        String.compare s s') then
+      fail0 "Duplicate message entries found"
+    else pure ()
   in
-  if not (valid_entries && uniq_entries && valid_params) then
-    fail0
-    @@ sprintf
-         "Duplicate entries or mismatch b/w message entries:\n\
-          %s\n\
-          and expected transition parameters%s\n"
-         (pp_typ_literal_map entries)
-         (pp_cparams tparams)
-  else pure entries
+  pure (entries, pending_dyn_checks)
 
 (* Get the environment, incoming amount, procedures in scope, and body to execute*)
-let prepare_for_message contr m =
-  match m with
-  | Msg entries ->
-      let%bind tag, incoming_amount, other = preprocess_message entries in
-      let%bind tprocedures, tparams, tbody, tname =
-        get_transition_and_procedures contr tag
-      in
-      let%bind tenv = check_message_entries tparams other in
-      pure (tenv, incoming_amount, tprocedures, tbody, tname)
-  | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal m)
+let prepare_for_message contr entries =
+  let%bind tag, incoming_amount, other = preprocess_message entries in
+  let%bind tprocedures, tparams, tbody, tname =
+    get_transition_and_procedures contr tag
+  in
+  let%bind tenv, pending_dyn_checks = check_message_entries tparams other in
+  pure ((tenv, incoming_amount, tprocedures, tbody, tname), pending_dyn_checks)
 
 (* Subtract the amounts to be transferred *)
 let post_process_msgs cstate outs =
@@ -871,15 +865,11 @@ let post_process_msgs cstate outs =
 
 (* 
 Handle message:
-* contr : Syntax.contract - code of the contract (containing transitions and procedures)
+* tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
 * cstate : ContractState.t - current contract state
 * bstate : (string * type * literal) list - blockchain state
-* m : Syntax.literal - incoming message 
 *)
-let handle_message contr cstate bstate m =
-  let%bind tenv, incoming_funds, procedures, stmts, tname =
-    prepare_for_message contr m
-  in
+let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate bstate =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)

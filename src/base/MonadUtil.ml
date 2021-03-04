@@ -344,6 +344,19 @@ module EvalMonad = struct
       | [] -> pure false
     in
     recurser ls
+
+  (* Some z if f x = Some z for some x in ls, None otherwise *)
+  let find_mapM ~f ls =
+    let rec recurser ls =
+      match ls with
+      | x :: ls' -> (
+          let%bind r = f x in
+          match r with
+          | Some z -> pure (Some z)
+          | None -> recurser ls')
+      | [] -> pure None
+    in
+    recurser ls
 end
 
 (* module EvalMonad *)
