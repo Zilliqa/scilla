@@ -88,7 +88,7 @@
   {
     "vname": "remote_reads_test_res_3_11",
     "type": "Option (Map (ByStr20 with end) Bool)",
-    "value": { "constructor": "None", "argtypes": ["Map (ByStr20 with end) Bool"], "arguments": [] }
+    "value": { "constructor": "None", "argtypes": ["Map (ByStr20 with end) (Bool)"], "arguments": [] }
   },
   {
     "vname": "remote_reads_test_res_3_12",
@@ -107,14 +107,33 @@
         {
             "address": "0xabfeccdc9012345678901234567890f777564323",
             "state": [
-                { "vname": "_balance", "type": "Uint128", "value": "42" }
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                { "vname": "f", "type": "Uint128", "value": "0" },
+                { "vname": "g",
+                  "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+                  "value": {
+                      "constructor": "0xabfeccdc9012345678901234567890f777564321.Address2",
+                      "argtypes": [],
+                      "arguments": [ "0xabfeccdc9012345678901234567890f777564324" ]
+                  }
+                }
             ]
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564324",
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "64" },
-                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" }
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" },
+                { "vname": "admin", "type": "ByStr20 with end", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                { "vname": "g",
+                  "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+                  "value": {
+                      "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+                      "argtypes": [],
+                      "arguments": [ "0xabfeccdc9012345678901234567890f777564324" ]
+                  }
+                }
             ]
         },
         {
@@ -122,30 +141,23 @@
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "31" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564325" },
-                { "vname": "transactionCount", "type": "Uint32", "value": "5" },
-                { "vname": "admin", "type": "ByStr20 with end", "value": "0xabfeccdc9012345678901234567890f777564326" },
                 {
-                    "vname": "owners",
-                    "type": "Map (ByStr20 with end) Bool",
-                    "value": [
-                        {
-                            "key" : "0xabfeccdc9012345678901234567890f777564326",
-                            "val" : { "constructor": "True", "argtypes": [], "arguments": [] }
-                        }
-                    ]
-                },
-                {
-                    "vname": "signatures",
-                    "type": "Map Uint32 (Map (ByStr20 with end) Bool)",
+                    "vname": "h",
+                    "type": "Map Uint128 0xabfeccdc9012345678901234567890f777564321.AddressADT",
                     "value": [
                         {
                             "key" : "0",
-                            "val" : [
-                                {
-                                    "key" : "0xabfeccdc9012345678901234567890f777564326",
-                                    "val" : { "constructor": "True", "argtypes": [], "arguments": [] }
-                                }
-                            ]
+                            "val" : {
+                                "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+                                "argtypes": [],
+                                "arguments": [ "0xabfeccdc9012345678901234567890f777564325" ] }
+                        },
+                        {
+                            "key" : "1",
+                            "val" : {
+                                "constructor": "0xabfeccdc9012345678901234567890f777564321.Address2",
+                                "argtypes": [],
+                                "arguments": [ "0xabfeccdc9012345678901234567890f777564326" ] }
                         }
                     ]
                 }
@@ -154,7 +166,9 @@
         {
             "address": "0xabfeccdc9012345678901234567890f777564326",
             "state": [
-                { "vname": "_balance", "type": "Uint128", "value": "128" }
+                { "vname": "_balance", "type": "Uint128", "value": "128" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564326" },
+                { "vname": "admin", "type": "ByStr20 with end", "value": "0xabfeccdc9012345678901234567890f777564326" }
             ]
         }
     ]

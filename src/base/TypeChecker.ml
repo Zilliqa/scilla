@@ -998,7 +998,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (ER.get_loc (get_rep param))))
         comp_params
     in
-    let append_params = CU.append_implict_comp_params comp_params in
+    let append_params = CU.append_implicit_comp_params comp_params in
     let%bind typed_stmts, _ =
       with_extended_env env0 get_tenv_pure append_params []
         (type_stmts comp_body ER.get_loc)
@@ -1319,7 +1319,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
        in
 
        (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
-       let params = CU.append_implict_contract_params cparams in
+       let params = CU.append_implicit_contract_params cparams in
        let _ = TEnv.addTs tenv0 params in
 
        (* Step 4: Typecheck contract constraint. *)

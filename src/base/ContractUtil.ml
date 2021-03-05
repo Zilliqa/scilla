@@ -147,7 +147,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let balance_field =
     (CUIdentifier.mk_id balance_label ER.uint128_rep, balance_type)
 
-  let append_implict_contract_params tparams =
+  let append_implicit_contract_params tparams =
     let open CUType in
     let creation_block =
       (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ)
@@ -167,7 +167,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
     List.filter args ~f:(fun a ->
         not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
-  let append_implict_comp_params cparams =
+  let append_implicit_comp_params cparams =
     let sender =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.sender_label)

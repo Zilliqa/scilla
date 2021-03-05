@@ -642,7 +642,7 @@ let init_fields env fs =
 
 let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   (* All contracts take a few implicit parameters. *)
-  let cparams = CU.append_implict_contract_params cparams' in
+  let cparams = CU.append_implicit_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
   let initargs = CU.remove_noneval_args initargs' in
@@ -791,7 +791,7 @@ let get_transition_and_procedures ctr tag =
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries cparams_o entries =
-  let tparams = CU.append_implict_comp_params cparams_o in
+  let tparams = CU.append_implicit_comp_params cparams_o in
   (* There as an entry for each parameter *)
   let%bind pending_dyn_checks =
     foldM tparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
@@ -800,10 +800,14 @@ let check_message_entries cparams_o entries =
               if not @@ String.(as_string x = s) then
                 (* Not this entry *)
                 pure None
-              else 
+              else
                 (* We ignore the type from the message entry, since that was used to parse the literal, and hence is known to be valid *)
                 let%bind _entry_typ, dyn_checks = fromR @@ literal_type ~expected:(Some xt) l in
-                pure (Some dyn_checks))
+                if String.(s = ContractUtil.MessagePayload.sender_label || s = ContractUtil.MessagePayload.origin_label) then
+                  (* _sender and _origin are known to be valid addresses, so ignore their dynamic typechecks *)
+                  pure (Some [])
+                else 
+                  pure (Some dyn_checks))
         in
         match entry_dyn_checks with
         | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks

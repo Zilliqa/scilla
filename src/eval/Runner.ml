@@ -34,6 +34,7 @@ module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module RunnerSyntax = Dis.PostDisSyntax
+module RunnerType = RunnerSyntax.SType
 module RunnerName = RunnerSyntax.SIdentifier.Name
 
 (****************************************************)
@@ -198,6 +199,26 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   match rewriter anode with
   | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
   | Ok anode' -> anode'
+
+let perform_dynamic_typechecks checks gas_remaining =
+  let open RunnerType in
+  List.iter checks ~f:(fun (t, caddr) ->
+      match t with
+      | Address fts -> (
+          match EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts with
+          | Ok true -> ()
+          | Ok false ->
+              fatal_error_gas_scale Gas.scale_factor
+                (mk_error0 (sprintf "Address %s does not satisfy type %s\n"
+                              (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
+                              (RunnerSyntax.SType.pp_typ t)))
+                gas_remaining
+          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
+      | _ -> 
+          fatal_error_gas_scale Gas.scale_factor
+            (mk_error0 (sprintf "Unable to perform dynamic typecheck on type %s\n"
+                          (RunnerSyntax.SType.pp_typ t)))
+            gas_remaining)
 
 let deploy_library args gas_remaining =
   match FEParser.parse_lmodule args.input with
@@ -429,24 +450,7 @@ let run_with_args args =
                     else field_vals
                   in
                   (* Do the dynamic typecheck *)
-                  let () = List.iter dyn_checks ~f:(fun (t, caddr) ->
-                      match t with
-                      | Address fts -> (
-                          match EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts with
-                          | Ok true -> ()
-                          | Ok false ->
-                              fatal_error_gas_scale Gas.scale_factor
-                                (mk_error0 (sprintf "Address %s does not satisfy type %s\n"
-                                              (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
-                                              (RunnerSyntax.SType.pp_typ t)))
-                                gas_remaining
-                          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
-                      | _ -> 
-                          fatal_error_gas_scale Gas.scale_factor
-                            (mk_error0 (sprintf "Unable to perform dynamic typecheck on type %s\n"
-                                          (RunnerSyntax.SType.pp_typ t)))
-                            gas_remaining)
-                  in
+                  let () = perform_dynamic_typechecks dyn_checks gas_remaining in
                   match
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
@@ -489,9 +493,6 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-(*                let m = JSON.JSONLiteral.Msg mmsg
-                  in *)
-
                 let cstate, gas_remaining' =
                   if is_ipc then
                     let cur_bal = args.balance in
@@ -569,10 +570,11 @@ let run_with_args args =
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
                      (pp_typ_literal_map bstate));
-                let prepped_message, _pending_dyn_checks, gas_remaining'' =
+                let prepped_message, pending_dyn_checks, gas_remaining'' =
                   let pmsg = prepare_for_message ctr mmsg in
                   check_prepare_message pmsg gas_remaining'
                 in
+                let () = perform_dynamic_typechecks pending_dyn_checks gas_remaining'' in
                 let step_result = handle_message prepped_message cstate bstate in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining''

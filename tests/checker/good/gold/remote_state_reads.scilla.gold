@@ -112,6 +112,28 @@
               "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
           }
         ]
+      },
+      {
+        "vname": "RemoteReadsADTTest",
+        "params": [
+          { "vname": "list1", "type": "List (ByStr20 with end)" },
+          { "vname": "list2", "type": "List (ByStr20 with f : Uint128 end)" },
+          {
+            "vname": "list3",
+            "type":
+              "List (ByStr20 with g : remote_state_reads.AddressADT end)"
+          },
+          {
+            "vname": "pair1",
+            "type": "Pair (ByStr20 with end) (remote_state_reads.AddressADT)"
+          },
+          { "vname": "adt1", "type": "remote_state_reads.AddressADT" },
+          {
+            "vname": "remote1",
+            "type":
+              "ByStr20 with h : Map (Uint128) (remote_state_reads.AddressADT) end"
+          }
+        ]
       }
     ],
     "procedures": [],
@@ -123,6 +145,20 @@
         "tmap": [
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "remote_state_reads.AddressADT",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "remote_state_reads.Address1",
+            "argtypes": [ "ByStr20 with end" ]
+          },
+          {
+            "cname": "remote_state_reads.Address2",
+            "argtypes": [ "ByStr20 with admin : ByStr20 with end end" ]
+          }
         ]
       },
       {

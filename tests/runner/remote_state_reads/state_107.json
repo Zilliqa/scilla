@@ -107,7 +107,8 @@
         {
             "address": "0xabfeccdc9012345678901234567890f777564323",
             "state": [
-                { "vname": "_balance", "type": "Uint128", "value": "42" }
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" }
             ]
         },
         {
@@ -126,28 +127,13 @@
                 { "vname": "admin", "type": "ByStr20 with end", "value": "0xabfeccdc9012345678901234567890f777564326" },
                 {
                     "vname": "owners",
-                    "type": "Map (ByStr20 with end) Bool",
-                    "value": [
-                        {
-                            "key" : "0xabfeccdc9012345678901234567890f777564326",
-                            "val" : { "constructor": "True", "argtypes": [], "arguments": [] }
-                        }
-                    ]
+                    "type": "Map (ByStr20 with end) String",
+                    "value": []
                 },
                 {
                     "vname": "signatures",
                     "type": "Map Uint32 (Map (ByStr20 with end) Bool)",
-                    "value": [
-                        {
-                            "key" : "0",
-                            "val" : [
-                                {
-                                    "key" : "0xabfeccdc9012345678901234567890f777564326",
-                                    "val" : { "constructor": "True", "argtypes": [], "arguments": [] }
-                                }
-                            ]
-                        }
-                    ]
+                    "value": []
                 }
             ]
         },
