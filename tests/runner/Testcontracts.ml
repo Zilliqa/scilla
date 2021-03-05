@@ -381,6 +381,9 @@ let contract_tests env =
                 "crowdfunding_proc"
                 >: build_contract_init_test env fail_code "crowdfunding_proc"
                      "init_goal_is_zero" false;
+                "shogi"
+                >::: build_contract_tests env "shogi" fail_code 5 7
+                       [ "shogi_lib" ];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

@@ -106,7 +106,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*               Blockchain component typing                     *)
   (*****************************************************************)
 
-  let bc_types = [ (TypeUtil.blocknum_name, bnum_typ) ]
+  let bc_types = [ (blocknum_name, blocknum_type) ]
 
   let lookup_bc_type x =
     match List.Assoc.find bc_types x ~equal:String.( = ) with
@@ -311,16 +311,18 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         in
         let typed_f = add_type_to_ident f (rr_typ fres) in
         pure @@ (TypedSyntax.App (typed_f, typed_actuals), (apptyp, rep))
-    | Builtin (b, actuals) ->
+    | Builtin (b, ts, actuals) ->
+        let%bind _ = mapM ts ~f:(fun t -> fromR_TE @@ TEnv.is_wf_type tenv t) in
         let%bind targs, typed_actuals = type_actuals tenv actuals in
-        let%bind _, ret_typ, _ =
-          fromR_TE @@ BuiltInDictionary.find_builtin_op b targs
+        let%bind ret_typ =
+          fromR_TE
+          @@ BuiltInDictionary.find_builtin_op b ~targtypes:ts ~vargtypes:targs
         in
         let%bind () = fromR_TE @@ TEnv.is_wf_type tenv ret_typ in
         let q_ret_typ = mk_qual_tp ret_typ in
         let q_ret_tag = ETR.mk_rep rep q_ret_typ in
         pure
-        @@ ( TypedSyntax.Builtin ((fst b, q_ret_tag), typed_actuals),
+        @@ ( TypedSyntax.Builtin ((fst b, q_ret_tag), ts, typed_actuals),
              (q_ret_typ, rep) )
     | Let (i, topt, lhs, rhs) ->
         (* Poor man's error reporting *)
@@ -445,7 +447,12 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         @@ ( TypedSyntax.TApp (add_type_to_ident tf tf_rr, arg_types),
              (mk_qual_tp res_type, rep) )
     | Message bs ->
-        let%bind msg_typ = fromR_TE @@ get_msgevnt_type bs (ER.get_loc rep) in
+        let%bind msg_typ =
+          fromR_TE
+          @@ get_msgevnt_type
+               (List.map bs ~f:(fun (x, l) -> (x, Unit, l)))
+               (ER.get_loc rep)
+        in
         let payload_type fld pld =
           let check_field_type seen_type =
             match

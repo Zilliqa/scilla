@@ -92,7 +92,7 @@ struct
               patternsts @ branchts)
         in
         ots :: List.concat clausets
-    | Builtin (_, il) -> List.map il ~f:calc_ident_locs
+    | Builtin (_, _, il) -> List.map il ~f:calc_ident_locs
     | TFun (i, e) -> calc_ident_locs i :: type_info_expr e
     | GasExpr (_, e) -> type_info_expr e
 

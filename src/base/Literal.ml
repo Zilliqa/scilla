@@ -125,7 +125,7 @@ module type ScillaLiteral = sig
     (* Byte string without a statically known length. *)
     | ByStr of Bystr.t
     (* Message: an associative array *)
-    | Msg of (string * t) list
+    | Msg of (string * LType.t * t) list
     (* A dynamic map of literals *)
     | Map of mtype * (t, t) Hashtbl.t
     (* A constructor in HNF *)
@@ -348,7 +348,7 @@ module MkLiteral (T : ScillaType) = struct
     (* Byte string without a statically known length. *)
     | ByStr of Bystr.t
     (* Message: an associative array *)
-    | Msg of (string * t) list
+    | Msg of (string * LType.t * t) list
     (* A dynamic map of literals *)
     | Map of mtype * (t, t) Hashtbl.t
     (* A constructor in HNF *)

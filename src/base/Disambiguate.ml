@@ -288,9 +288,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | Msg msg_entries ->
           (* Msg literals are strictly speaking illegal, but the parser should prevent us from ever getting here. *)
           let%bind res_msg_entries =
-            foldrM msg_entries ~init:[] ~f:(fun acc (label, l) ->
+            foldrM msg_entries ~init:[] ~f:(fun acc (label, t, l) ->
                 let%bind res_l = recurser l in
-                pure @@ ((label, res_l) :: acc))
+                let%bind res_t = disambiguate_type dicts.typ_dict t in
+                pure @@ ((label, res_t, res_l) :: acc))
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
@@ -446,14 +447,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   pure (dis_p, dis_erep'))
             in
             pure @@ PostDisSyntax.MatchExpr (dis_x, dis_pes)
-        | Builtin (b, args) ->
+        | Builtin (b, targs, args) ->
+            let%bind dis_targs = mapM targs ~f:disambiguate_type_helper in
             let%bind dis_args =
               mapM args
                 ~f:
                   (disambiguate_identifier_helper simp_var_dict
                      (ER.get_loc rep))
             in
-            pure @@ PostDisSyntax.Builtin (b, dis_args)
+            pure @@ PostDisSyntax.Builtin (b, dis_targs, dis_args)
         | TFun (tvar, body) ->
             let%bind dis_tvar = name_def_as_simple_global tvar in
             (* tvar is in scope as a type, but won't affect disambiguation,
