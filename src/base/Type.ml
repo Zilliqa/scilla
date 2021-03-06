@@ -383,8 +383,20 @@ module MkType (I : ScillaIdentifier) = struct
       | PrimType (Bystrx_typ len), Address _ when len = address_length ->
           (* Any address is assignable to ByStr20. *)
           true
+      | MapType (kt1, vt1), MapType (kt2, vt2) ->
+          assignable kt1 kt2 && assignable vt1 vt2
+      | FunType (at1, vt1), FunType (at2, vt2) ->
+          assignable at2 at1   (* Contravariant in argument type! *)
+          && assignable vt1 vt2
+      | ADT (n1, tlist1), ADT (n2, tlist2) ->
+          TIdentifier.equal n1 n2 &&
+          (match List.for_all2 tlist1 tlist2 ~f:assignable with
+           | Ok res -> res
+           | Unequal_lengths -> false)
+      | PolyFun (targ1, vt1), PolyFun (targ2, vt2) ->
+          equal (TypeVar targ1) (TypeVar targ2) && assignable vt1 vt2
       | _, _ ->
-          (* All other cases require equality up to canonicalisation. *)
+          (* PrimType, Unit and TypeVar require equality up to canonicalisation. *)
           equal to_typ from_typ
     in
     assignable to_typ' from_typ'

@@ -375,19 +375,13 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 3
-                       [];
-                "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 6 6
-                       [];
-                "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" succ_code 101 101
                        [];
-(*                "remote_state_reads" <-- Tests 4-5 fails due to bug in type_assignable
+                "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" succ_code 1 6
-                       []; *)
-(*                 "remote_state_reads"   <- Failing due to a bug in type_assignable 
-                   >: build_contract_init_test env fail_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true; *)
+                       [];
+                "remote_state_reads"
+                >: build_contract_init_test env succ_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true;
               ];
          "these_tests_must_FAIL"
          >::: [
