@@ -1,9 +1,9 @@
 {
-  "gas_remaining": "7252",
+  "gas_remaining": "7438",
   "errors": [
     {
       "error_message":
-        "StateIPCClient: Error in IPC access: (code:0, message:Fetching state value failed).",
+        "Address 0xabfeccdc9012345678901234567890f777564324 does not satisfy type ByStr20 with g : 0xabfeccdc9012345678901234567890f777564321.AddressADT end\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

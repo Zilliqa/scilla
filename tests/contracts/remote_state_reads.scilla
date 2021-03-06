@@ -114,9 +114,9 @@ end
 transition RemoteReadsADTTest(
   list1 : List (ByStr20 with end),
   list2 : List (ByStr20 with f : Uint128 end),
-  list3 : List (ByStr20 with g : AddressADT end),
-  pair1 : Pair (ByStr20 with end) AddressADT,
+  list3 : List (ByStr20 with g : AddressADT end),   (* Missing *)
+  pair1 : Pair (ByStr20 with end) AddressADT,       (* Missing *)
   adt1 : AddressADT,
-  remote1: ByStr20 with h : Map Uint128 AddressADT end)
+  remote1: ByStr20 with h : Map Uint128 AddressADT end)  (* Missing *)
   
 end
