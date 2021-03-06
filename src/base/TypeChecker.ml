@@ -296,8 +296,15 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let e, rep = erep in
     match e with
     | Literal l ->
-        let%bind lt = fromR_TE @@ literal_type l ~lc:(ER.get_loc rep) in
-        pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
+        let%bind (lt, dyn_checks) = fromR_TE @@ literal_type l ~lc:(ER.get_loc rep) in
+        if not @@ List.is_empty dyn_checks then
+          fail
+            (mk_type_error1
+               (sprintf "Unable to typecheck literal %s."
+                  (PrettyPrinters.pp_literal l))
+               (ER.get_loc rep))
+        else 
+          pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
     | Var i ->
         let%bind r =
           fromR_TE @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i))
@@ -991,7 +998,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (ER.get_loc (get_rep param))))
         comp_params
     in
-    let append_params = CU.append_implict_comp_params comp_params in
+    let append_params = CU.append_implicit_comp_params comp_params in
     let%bind typed_stmts, _ =
       with_extended_env env0 get_tenv_pure append_params []
         (type_stmts comp_body ER.get_loc)
@@ -1025,21 +1032,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let%bind () =
             fromR_TE
             @@
-            match ft with
-            | Address _ ->
-                (* Address field.
-                   Initialiser must be assignable to ByStr20.
-                   Dynamic typecheck ensures that the byte string
-                   refers to an address with the correct shape. *)
-                assert_type_assignable
-                  ~expected:(bystrx_typ Type.address_length)
-                  ~actual
-                  ~lc:(ER.get_loc (get_rep fn))
-            | _ ->
-                (* Non-address field.
-                   Initialiser must be assignable to field type. *)
-                assert_type_assignable ~expected:ft ~actual
-                  ~lc:(ER.get_loc (get_rep fn))
+            assert_type_assignable ~expected:ft ~actual
+              ~lc:(ER.get_loc (get_rep fn))
           in
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
@@ -1325,7 +1319,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
        in
 
        (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
-       let params = CU.append_implict_contract_params cparams in
+       let params = CU.append_implicit_contract_params cparams in
        let _ = TEnv.addTs tenv0 params in
 
        (* Step 4: Typecheck contract constraint. *)

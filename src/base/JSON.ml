@@ -76,11 +76,6 @@ let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
 
-(* Given a literal, return its full type name *)
-let literal_type_exn l =
-  let t = literal_type l in
-  match t with Error emsg -> raise (Invalid_json emsg) | Ok s -> pp_typ s
-
 let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
@@ -379,6 +374,7 @@ module ContractState = struct
 
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
+  (* NOTE: The types in init files must be ignored due to backward compatibility - only the names and literals can be relied upon *)
   let get_init_this_address_and_extlibs filename =
     (* We filter out type information from init files for the time being *)
     let init_data, _ = get_json_data filename in

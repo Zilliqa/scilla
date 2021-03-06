@@ -826,7 +826,8 @@ let run_with_args args =
             let untyped_state = parse_json args.input_init this_address in
             List.map untyped_state ~f:(fun x ->
                 match TypeUtil.TypeUtilities.literal_type (trd3 x) with
-                | Ok t -> (fst3 x, t, trd3 x)
+                | Ok (t, []) -> (fst3 x, t, trd3 x)
+                | Ok _
                 | Error _ ->
                     fatal_error
                       (mk_error0
@@ -839,7 +840,8 @@ let run_with_args args =
               let untyped_state = parse_json args.input_state this_address in
               List.map untyped_state ~f:(fun x ->
                   match TypeUtil.TypeUtilities.literal_type (trd3 x) with
-                  | Ok t -> (fst3 x, t, trd3 x)
+                  | Ok (t, []) -> (fst3 x, t, trd3 x)
+                  | Ok _
                   | Error _ ->
                       fatal_error
                         (mk_error0

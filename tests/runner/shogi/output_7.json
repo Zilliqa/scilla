@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Duplicate entries or mismatch b/w message entries:\n{ [_amount : Uint128 -> (Uint128 0)],\n  [_origin : ByStr20 with end -> (ByStr20 0x1234567890123456789012345678906784567890)],\n  [_sender : ByStr20 with end -> (ByStr20 0x1234567890123456789012345678906784567890)],\n  [row : Uint32 -> (Uint32 1)],\n  [column : Uint32 -> (Uint32 1)],\n  [direction : ShogiLib.Direction -> (ShogiLib.North)],\n  [distance : Uint32 -> (Uint32 3)],\n  [promote : ShogiLib.Direction -> (ShogiLib.North)] }\nand expected transition parameters[_amount : (PrimType Uint128), _origin : (Address()), _sender : (Address()), row : (PrimType Uint32), column : (PrimType Uint32), direction : (ADT(Ident((QualifiedGlobal ShogiLib Direction)Direction)((fname tests/contracts/shogi.scilla)(lnum 589)(cnum 15)))()), distance : (PrimType Uint32), promote : (ADT(Ident((SimpleGlobal Bool)Bool)((fname tests/contracts/shogi.scilla)(lnum 591)(cnum 13)))())]\n",
+        "Literal constructor ShogiLib.North does not belong to type Bool",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

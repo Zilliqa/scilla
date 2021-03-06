@@ -427,3 +427,23 @@ module ContractState = struct
        Balance = %s\n"
       pp_params pp_fields pp_balance
 end
+
+(*****************************************************)
+(*          Dynamic typecheck of addresses           *)
+(*****************************************************)
+module EvalTypecheck = struct
+  open MonadUtil
+  open Result.Let_syntax
+  
+  let typecheck_remote_field_types ~caddr fts =
+    let open EvalType in
+    (* Add _balance to fields list, to ensure that caddr is in use *)
+    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_type) :: fts in
+    (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+    allM all_fts ~f:(fun (f, t) ->
+        let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
+        match res with
+        | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
+        | (_, None) -> pure false)
+
+end
