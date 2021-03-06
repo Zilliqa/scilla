@@ -221,26 +221,6 @@ type_term: MAP CID LPAREN CID CID TYPE
 
 This is an invalid map type, the map value is likely incorrect. The map value expects a list of valid ADT constructor arguments for the ADT, possibly.
 
-type_term: MAP CID LPAREN CID UNDERSCORE
-##
-## Ends in an error in state: 42.
-##
-## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## scid
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 25, spurious reduction of production scid -> CID 
-##
-# see tests/checker/bad/bad_fields2.scilla
-# see tests/checker/bad/map_value_function.scilla
-
-This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.
-
 type_term: MAP CID LPAREN MAP WITH
 ##
 ## Ends in an error in state: 37.

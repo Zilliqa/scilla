@@ -39,7 +39,7 @@
       {
         "vname": "cparam3",
         "type":
-          "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
+          "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), other_map : Map (Uint128) (ByStr20 with end) end"
       }
     ],
     "fields": [

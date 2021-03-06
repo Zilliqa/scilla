@@ -17,8 +17,8 @@ contract RRContract (  (* Any address in use - _balance is defined, but not _thi
   cparam3: ByStr20 with transactionCount : Uint32,
                         admin : ByStr20 with end,       
                         owners : Map (ByStr20 with end) Bool,
-                        signatures : Map Uint32 (Map (ByStr20 with end) Bool) (* , *)
-                        (* other_map : Map Uint128 (ByStr20 with end) *)
+                        signatures : Map Uint32 (Map (ByStr20 with end) Bool),
+                        other_map : Map Uint128 (ByStr20 with end)
                    end)
 
 field assign_test_1 : ByStr20 with end = cparam3
@@ -57,7 +57,7 @@ transition RemoteReadsTest(
   remote3: ByStr20 with transactionCount : Uint32,
                         admin : ByStr20 with end,       
                         owners : Map (ByStr20 with end) Bool,
-                        signatures : Map Uint32 (Map (ByStr20 with end) Bool)
+                        signatures : Map Uint32 (Map ByStr20 with end Bool)
                    end)
   tmp_1_1 <-- remote1._balance;
   remote_reads_test_res_1_1 := tmp_1_1;
@@ -114,9 +114,9 @@ end
 transition RemoteReadsADTTest(
   list1 : List (ByStr20 with end),
   list2 : List (ByStr20 with f : Uint128 end),
-  list3 : List (ByStr20 with g : AddressADT end),   (* Missing *)
-  pair1 : Pair (ByStr20 with end) AddressADT,       (* Missing *)
+  list3 : List (ByStr20 with g : AddressADT end),
+  pair1 : Pair (ByStr20 with end) AddressADT,
   adt1 : AddressADT,
-  remote1: ByStr20 with h : Map Uint128 AddressADT end)  (* Missing *)
+  remote1: ByStr20 with h : Map Uint128 AddressADT end)
   
 end

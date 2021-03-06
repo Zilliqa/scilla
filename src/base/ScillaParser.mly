@@ -198,8 +198,6 @@ t_map_value_args:
 | LPAREN; t = t_map_value; RPAREN; { t }
 | d = scid; { to_type d (toLoc $startpos(d))}
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
-| LPAREN; kt = address_typ; RPAREN; { kt }
-| vt = address_typ; { vt }
 
 t_map_value :
 | d = scid; targs=list(t_map_value_args)
@@ -208,6 +206,7 @@ t_map_value :
       | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 | LPAREN; t = t_map_value; RPAREN; { t }
+| vt = address_typ; { vt }
 
 address_typ :
 | d = CID; WITH; fs = separated_list(COMMA, address_type_field); END;

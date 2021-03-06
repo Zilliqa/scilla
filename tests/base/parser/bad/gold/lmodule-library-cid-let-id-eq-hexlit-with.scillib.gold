@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error, state number 209",
+      "error_message": "Syntax error, state number 207",
       "start_location": {
         "file":
           "base/parser/bad/lib/lmodule-library-cid-let-id-eq-hexlit-with.scillib",
