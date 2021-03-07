@@ -25,9 +25,9 @@ field assign_test_1 : ByStr20 with end = cparam3
 field assign_test_2 : ByStr20 with transactionCount : Uint32 end = cparam3
 field assign_test_3 : ByStr20 with admin : ByStr20 with end end = cparam3
 field assign_test_4 : ByStr20 with admin : ByStr20 end = cparam3
-(* field assign_test_5 : ByStr20 with owners : Map ByStr20 Bool end = cparam3 *)
-(* field assign_test_6 : ByStr20 with signatures : Map Uint32 (Map ByStr20 Bool) end = cparam3 *)
-(* field assign_test_7 : ByStr20 with other_map : Map Uint128 ByStr20 end = cparam3 *)
+field assign_test_5 : ByStr20 with owners : Map ByStr20 Bool end = cparam3
+field assign_test_6 : ByStr20 with signatures : Map Uint32 (Map ByStr20 Bool) end = cparam3
+field assign_test_7 : ByStr20 with other_map : Map Uint128 ByStr20 end = cparam3
 
 field remote_reads_test_res_1_1 : Uint128 = Uint128 0  (* _balance of remote1 *)
 field remote_reads_test_res_2_1 : Uint128 = Uint128 0  (* _balance of remote2 *)
@@ -51,7 +51,7 @@ transition RemoteReadsTest(
   (* Any address in use - _balance is defined, but not _this_address *)
   remote1: ByStr20 with end,
   (* Any contract address - _this_address is only defined for addresses *)
-  remote2: ByStr20 with (* _this_address : ByStr20 *)
+  remote2: ByStr20 with _this_address : ByStr20
                    end,
   (* Address with various fields *)
   remote3: ByStr20 with transactionCount : Uint32,
@@ -65,14 +65,14 @@ transition RemoteReadsTest(
   tmp_2_1 <-- remote2._balance;
   remote_reads_test_res_2_1 := tmp_2_1;
   
-(*  tmp_2_2 <-- remote2._this_address;
-  remote_reads_test_res_2_2 := tmp_2_2; *)
+  tmp_2_2 <-- remote2._this_address;
+  remote_reads_test_res_2_2 := tmp_2_2;
   
   tmp_3_1 <-- remote3._balance;
   remote_reads_test_res_3_1 := tmp_3_1;
 
-(*  tmp_3_2 <-- remote3._this_address;
-  remote_reads_test_res_3_2 := tmp_3_2; *)
+(*  tmp_3_2 <-- remote3._this_address;  <- _this_address not explicitly defined
+  remote_reads_test_res_3_2 := tmp_3_2;  *) 
 
   tmp_3_3 <-- remote3.transactionCount;
   remote_reads_test_res_3_3 := tmp_3_3;

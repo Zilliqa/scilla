@@ -21,6 +21,22 @@
     "value": "0x1234567890123456789012345678901234567890"
   },
   {
+    "vname": "assign_test_5",
+    "type": "ByStr20 with owners : Map (ByStr20) (Bool) end",
+    "value": "0x1234567890123456789012345678901234567890"
+  },
+  {
+    "vname": "assign_test_6",
+    "type":
+      "ByStr20 with signatures : Map (Uint32) (Map (ByStr20) (Bool)) end",
+    "value": "0x1234567890123456789012345678901234567890"
+  },
+  {
+    "vname": "assign_test_7",
+    "type": "ByStr20 with other_map : Map (Uint128) (ByStr20) end",
+    "value": "0x1234567890123456789012345678901234567890"
+  },
+  {
     "vname": "remote_reads_test_res_1_1",
     "type": "Uint128",
     "value": "0"

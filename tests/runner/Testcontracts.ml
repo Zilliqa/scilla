@@ -375,9 +375,6 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 101 101
-                       [];
-                "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" succ_code 1 6
                        [];
                 "remote_state_reads"
@@ -432,11 +429,8 @@ let contract_tests env =
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_address_field_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_map_type" ~is_library:false ~ipc_mode:true;
-(*                "remote_state_reads" <-- Test 101 succeeds because _this_address is not a legal address field
-                >::: build_contract_tests env "remote_state_reads" fail_code 101 125
-                       []; *)
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" fail_code 102 125
+                >::: build_contract_tests env "remote_state_reads" fail_code 101 125
                        [];
               ];
          "misc_tests" >::: build_misc_tests env;
