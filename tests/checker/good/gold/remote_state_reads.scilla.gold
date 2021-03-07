@@ -156,10 +156,17 @@
               "ByStr20 with h : Map (Uint128) (remote_state_reads.AddressADT) end"
           }
         ]
-      }
+      },
+      { "vname": "OutgoingMsgTest", "params": [] },
+      { "vname": "ExceptionTest", "params": [] }
     ],
     "procedures": [],
-    "events": [],
+    "events": [
+      {
+        "vname": "TestEvent",
+        "params": [ { "vname": "info", "type": "ByStr20" } ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",

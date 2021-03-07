@@ -120,3 +120,28 @@ transition RemoteReadsADTTest(
   remote1: ByStr20 with h : Map Uint128 AddressADT end)
   
 end
+
+(* Test that outgoing messages and events use ByStr20 for type info, and not the full address type
+   Also test that this is the case for EventInfo *)
+transition OutgoingMsgTest()
+  msg = {_tag: "";
+         _recipient : _sender;
+         _amount : Uint128 0;
+         param : cparam3 };
+  msgs = let n = Nil {Message} in
+         Cons {Message} msg n;
+  send msgs;
+  e1 = { _eventname : "TestEvent";
+       info : cparam2 };
+  event e1;
+  e2 = { _eventname : "TestEvent";
+        info : cparam3 };
+  event e2
+end
+
+(* Test that exceptions use ByStr20 for type info, and not the full address type *)
+transition ExceptionTest()
+  e = {_exception : "TestException";
+       value : cparam3 };
+  throw e
+end
