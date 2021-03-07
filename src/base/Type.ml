@@ -386,10 +386,12 @@ module MkType (I : ScillaIdentifier) = struct
       | MapType (kt1, vt1), MapType (kt2, vt2) ->
           assignable kt1 kt2 && assignable vt1 vt2
       | FunType (at1, vt1), FunType (at2, vt2) ->
-          assignable at2 at1   (* Contravariant in argument type! *)
+          (* Contravariant in argument type! *)
+          assignable at2 at1
           && assignable vt1 vt2
       | ADT (n1, tlist1), ADT (n2, tlist2) ->
           TIdentifier.equal n1 n2 &&
+          (* We can assume that type parameters only occur in covariant positions *)
           (match List.for_all2 tlist1 tlist2 ~f:assignable with
            | Ok res -> res
            | Unequal_lengths -> false)
