@@ -430,11 +430,12 @@ module TypeUtilities = struct
 
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
-    if List.Assoc.mem m tag_label ~equal:String.( = ) then pure TUType.msg_typ
-    else if List.Assoc.mem m eventname_label ~equal:String.( = ) then
-      pure TUType.event_typ
-    else if List.Assoc.mem m exception_label ~equal:String.( = ) then
-      pure TUType.exception_typ
+    if List.exists m ~f:(fun (x, _, _) -> String.(tag_label = x)) then
+      pure TUType.msg_typ
+    else if List.exists m ~f:(fun (x, _, _) -> String.(eventname_label = x))
+    then pure TUType.event_typ
+    else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
+    then pure TUType.exception_typ
     else
       fail1 "Invalid message construct. Not any of send, event or exception." lc
 
@@ -455,7 +456,7 @@ module TypeUtilities = struct
     match t with
     | Address fts -> (
         if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
-          pure ContractUtil.balance_typ
+          pure ContractUtil.balance_type
         else
           let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
           match
@@ -631,31 +632,76 @@ module TypeUtilities = struct
   (*                     Typing literals                          *)
   (****************************************************************)
 
-  let literal_type ?(lc = dummy_loc) l =
+  let literal_type ?(lc = dummy_loc) ?(expected = None) l =
     let open TULiteral in
-    match l with
-    | IntLit (Int32L _) -> pure int32_typ
-    | IntLit (Int64L _) -> pure int64_typ
-    | IntLit (Int128L _) -> pure int128_typ
-    | IntLit (Int256L _) -> pure int256_typ
-    | UintLit (Uint32L _) -> pure uint32_typ
-    | UintLit (Uint64L _) -> pure uint64_typ
-    | UintLit (Uint128L _) -> pure uint128_typ
-    | UintLit (Uint256L _) -> pure uint256_typ
-    | StringLit _ -> pure string_typ
-    | BNum _ -> pure bnum_typ
-    | ByStr _ -> pure bystr_typ
-    | ByStrX bs ->
-        (* ByStr20 literals are never considered Address types *)
-        pure (bystrx_typ (Bystrx.width bs))
-    (* Check that messages and events have storable parameters. *)
-    | Msg bs -> get_msgevnt_type bs lc
-    | Map ((kt, vt), _) -> pure (MapType (kt, vt))
-    | ADTValue (cname, ts, _) ->
-        let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-        pure @@ ADT (mk_loc_id adt.tname, ts)
-    | Clo _ -> fail0 @@ "Cannot type runtime closure."
-    | TAbs _ -> fail0 @@ "Cannot type runtime type function."
+    let simple_literal_type l' =
+      match l' with
+      | IntLit (Int32L _) -> pure int32_typ
+      | IntLit (Int64L _) -> pure int64_typ
+      | IntLit (Int128L _) -> pure int128_typ
+      | IntLit (Int256L _) -> pure int256_typ
+      | UintLit (Uint32L _) -> pure uint32_typ
+      | UintLit (Uint64L _) -> pure uint64_typ
+      | UintLit (Uint128L _) -> pure uint128_typ
+      | UintLit (Uint256L _) -> pure uint256_typ
+      | StringLit _ -> pure string_typ
+      | BNum _ -> pure bnum_typ
+      | ByStr _ -> pure bystr_typ
+      | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
+      (* Check that messages and events have storable parameters. *)
+      | Msg bs -> get_msgevnt_type bs lc
+      | Map ((kt, vt), _) -> pure (MapType (kt, vt))
+      | ADTValue (cname, ts, _) ->
+          let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
+          pure @@ ADT (mk_loc_id adt.tname, ts)
+      | Clo _ -> fail0 @@ "Cannot type runtime closure."
+      | TAbs _ -> fail0 @@ "Cannot type runtime type function"
+    in
+    let rec fun_typ_recurser fun_typ args dyn_checks_acc =
+      match (fun_typ, args) with
+      | FunType (t, res_t), arg :: rest ->
+          let%bind _, new_dyn_checks_acc = recurser t arg dyn_checks_acc in
+          fun_typ_recurser res_t rest new_dyn_checks_acc
+      | ADT (_, _), [] -> pure @@ (fun_typ, dyn_checks_acc)
+      | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
+    and recurser expected l dyn_check_acc =
+      match (expected, l) with
+      | ADT (tname, targs), ADTValue (cname, ctargs, cargs) ->
+          let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
+          (* Constructor must belong to ADT *)
+          if not @@ [%equal: TUName.t] (get_id tname) adt.tname then
+            fail0
+            @@ sprintf "Literal constructor %s does not belong to type %s"
+                 (TUName.as_error_string cname)
+                 (TUIdentifier.as_error_string tname)
+          else
+            (* Constructor type arguments must be assignable to ADT type arguments *)
+            let msg () = mk_error0 "Constructor type arguments unassignable" in
+            let%bind () =
+              forall2M targs ctargs
+                ~f:(fun targ carg ->
+                  assert_type_assignable ~expected:targ ~actual:carg ~lc)
+                ~msg
+            in
+            (* Elaborate constructor using expected type arguments (due to assignability) *)
+            let%bind c_fun_typ = elab_constr_type ~lc cname targs in
+            (* Traverse constructor function type and check assignability of value arguments *)
+            fun_typ_recurser c_fun_typ cargs dyn_check_acc
+      | (Address _ as res_t), ByStrX bs
+        when Bystrx.width bs = Type.address_length ->
+          (* ByStr20 literal found, address expected. Trust the dynamic typecheck to validate, and expect the address type *)
+          pure @@ (res_t, (res_t, bs) :: dyn_check_acc)
+      | t, l ->
+          (* Simple case - type literal, and check assignability *)
+          let%bind lit_t = simple_literal_type l in
+          let%bind () = assert_type_assignable ~expected:t ~actual:lit_t ~lc in
+          pure (t, dyn_check_acc)
+    in
+    match expected with
+    | Some t -> recurser t l []
+    | None ->
+        let%bind res_t = simple_literal_type l in
+        pure @@ (res_t, [])
 
   (* Verifies a literal to be wellformed and returns it's type. *)
   let rec is_wellformed_lit ?(lc = dummy_loc) l =
@@ -682,9 +728,16 @@ module TypeUtilities = struct
         let%bind msg_typ = get_msgevnt_type m lc in
         let%bind all_legal =
           foldM
-            ~f:(fun acc (_, l) ->
-              let%bind t = is_wellformed_lit l in
-              if acc then pure (is_legal_message_field_type t) else pure false)
+            ~f:(fun acc (n, t, l) ->
+              let%bind t' = is_wellformed_lit l in
+              if not @@ [%equal: TUType.t] t t' then
+                fail0
+                @@ sprintf
+                     "Message/Event has inconsistent values and types at field \
+                      %s"
+                     n
+              else if acc then pure (is_legal_message_field_type t)
+              else pure false)
             ~init:true m
         in
         if not all_legal then
@@ -748,9 +801,3 @@ module TypeUtilities = struct
     | Clo _ -> fail0 @@ "Cannot type-check runtime closure."
     | TAbs _ -> fail0 @@ "Cannot type-check runtime type function."
 end
-
-(*****************************************************************)
-(*               Blockchain component typing                     *)
-(*****************************************************************)
-
-let blocknum_name = "BLOCKNUMBER"

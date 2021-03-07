@@ -1,0 +1,208 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "cparam1", "tag": "NoInfo" },
+      { "field": "cparam2", "tag": "NoInfo" },
+      { "field": "cparam3", "tag": "NoInfo" },
+      { "field": "assign_test_1", "tag": "NoInfo" },
+      { "field": "assign_test_2", "tag": "NoInfo" },
+      { "field": "assign_test_3", "tag": "NoInfo" },
+      { "field": "assign_test_4", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_1_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_2_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_2_2", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_2", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_3", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_4", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_5", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_6", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_7", "tag": "NotMoney" },
+      { "field": "remote_reads_test_res_3_8", "tag": "(Option NotMoney)" },
+      { "field": "remote_reads_test_res_3_9", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_10", "tag": "NotMoney" },
+      { "field": "remote_reads_test_res_3_11", "tag": "(Option NoInfo)" },
+      { "field": "remote_reads_test_res_3_12", "tag": "NotMoney" },
+      { "field": "remote_reads_test_res_3_13", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "RRContract",
+    "params": [
+      { "vname": "cparam1", "type": "ByStr20 with end", "depth": 0 },
+      {
+        "vname": "cparam2",
+        "type": "ByStr20 with _this_address : ByStr20 end",
+        "depth": 0
+      },
+      {
+        "vname": "cparam3",
+        "type":
+          "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end",
+        "depth": 0
+      }
+    ],
+    "fields": [
+      { "vname": "assign_test_1", "type": "ByStr20 with end", "depth": 0 },
+      {
+        "vname": "assign_test_2",
+        "type": "ByStr20 with transactionCount : Uint32 end",
+        "depth": 0
+      },
+      {
+        "vname": "assign_test_3",
+        "type": "ByStr20 with admin : ByStr20 with end end",
+        "depth": 0
+      },
+      {
+        "vname": "assign_test_4",
+        "type": "ByStr20 with admin : ByStr20 end",
+        "depth": 0
+      },
+      { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_2_1", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_2_2", "type": "ByStr20", "depth": 0 },
+      { "vname": "remote_reads_test_res_3_1", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_3_2", "type": "ByStr20", "depth": 0 },
+      { "vname": "remote_reads_test_res_3_3", "type": "Uint32", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_3_4",
+        "type": "ByStr20 with end",
+        "depth": 0
+      },
+      { "vname": "remote_reads_test_res_3_5", "type": "Uint128", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_3_6",
+        "type": "Map (ByStr20 with end) (Bool)",
+        "depth": 1
+      },
+      { "vname": "remote_reads_test_res_3_7", "type": "Bool", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_3_8",
+        "type": "Option (Bool)",
+        "depth": 0
+      },
+      {
+        "vname": "remote_reads_test_res_3_9",
+        "type": "Map (Uint32) (Map (ByStr20 with end) (Bool))",
+        "depth": 2
+      },
+      { "vname": "remote_reads_test_res_3_10", "type": "Bool", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_3_11",
+        "type": "Option (Map (ByStr20 with end) (Bool))",
+        "depth": 0
+      },
+      { "vname": "remote_reads_test_res_3_12", "type": "Bool", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_3_13",
+        "type": "Option (Bool)",
+        "depth": 0
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "RemoteReadsTest",
+        "params": [
+          { "vname": "remote1", "type": "ByStr20 with end" },
+          { "vname": "remote2", "type": "ByStr20 with end" },
+          {
+            "vname": "remote3",
+            "type":
+              "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadsADTTest",
+        "params": [
+          { "vname": "list1", "type": "List (ByStr20 with end)" },
+          { "vname": "list2", "type": "List (ByStr20 with f : Uint128 end)" },
+          {
+            "vname": "list3",
+            "type":
+              "List (ByStr20 with g : remote_state_reads.AddressADT end)"
+          },
+          {
+            "vname": "pair1",
+            "type": "Pair (ByStr20 with end) (remote_state_reads.AddressADT)"
+          },
+          { "vname": "adt1", "type": "remote_state_reads.AddressADT" },
+          {
+            "vname": "remote1",
+            "type":
+              "ByStr20 with h : Map (Uint128) (remote_state_reads.AddressADT) end"
+          }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "remote_state_reads.AddressADT",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "remote_state_reads.Address1",
+            "argtypes": [ "ByStr20 with end" ]
+          },
+          {
+            "cname": "remote_state_reads.Address2",
+            "argtypes": [ "ByStr20 with admin : ByStr20 with end end" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract RRContract contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

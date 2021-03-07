@@ -76,11 +76,6 @@ let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
 
-(* Given a literal, return its full type name *)
-let literal_type_exn l =
-  let t = literal_type l in
-  match t with Error emsg -> raise (Invalid_json emsg) | Ok s -> pp_typ s
-
 let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
@@ -379,7 +374,9 @@ module ContractState = struct
 
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
+  (* NOTE: The types in init files must be ignored due to backward compatibility - only the names and literals can be relied upon *)
   let get_init_this_address_and_extlibs filename =
+    (* We filter out type information from init files for the time being *)
     let init_data, _ = get_json_data filename in
     let extlibs = get_init_extlibs init_data in
     let this_address_init_opt =
@@ -429,24 +426,16 @@ module Message = struct
     let origins = member_exn origin_label json |> to_string_exn in
     (* Make tag, amount and sender into a literal *)
     let tag =
-      ( tag_label,
-        JSONType.string_typ,
-        build_prim_lit_exn JSONType.string_typ tags )
+      (tag_label, tag_type, build_prim_lit_exn JSONType.string_typ tags)
     in
     let amount =
-      ( amount_label,
-        JSONType.uint128_typ,
-        build_prim_lit_exn JSONType.uint128_typ amounts )
+      (amount_label, amount_type, build_prim_lit_exn amount_type amounts)
     in
     let sender =
-      ( sender_label,
-        JSONType.bystrx_typ Type.address_length,
-        build_prim_lit_exn (JSONType.bystrx_typ Type.address_length) senders )
+      (sender_label, sender_type, build_prim_lit_exn sender_type senders)
     in
     let origin =
-      ( origin_label,
-        JSONType.bystrx_typ Type.address_length,
-        build_prim_lit_exn (JSONType.bystrx_typ Type.address_length) origins )
+      (origin_label, origin_type, build_prim_lit_exn origin_type origins)
     in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params =
@@ -466,14 +455,19 @@ module Message = struct
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
   let message_to_json message =
     (* extract out "_tag", "_amount", "_accepted" and "_recipient" parts of the message *)
-    let taglit = List.Assoc.find_exn message tag_label ~equal:String.( = ) in
+    let taglit =
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = tag_label) then Some l else None)
+    in
     let amountlit =
-      List.Assoc.find_exn message amount_label ~equal:String.( = )
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = amount_label) then Some l else None)
     in
     (* message_to_json may be used to print both output and input message. Choose label accordingly. *)
     let toORfrom, tofromlit =
-      List.find_exn message ~f:(fun (x, _) ->
-          String.(x = recipient_label || x = sender_label))
+      List.find_map_exn message ~f:(fun (x, _, l) ->
+          if String.(x = recipient_label || x = sender_label) then Some (x, l)
+          else None)
     in
     let tofrom_label =
       if String.(toORfrom = recipient_label) then recipient_label
@@ -484,17 +478,9 @@ module Message = struct
     let tofroms = get_address_literal tofromlit in
     (* Get a list without any of these components *)
     let filtered_list =
-      List.filter_map message ~f:(fun (x, v) ->
-          if String.(x = tag_label || x = amount_label || x = recipient_label)
-          then None
-          else
-            match literal_type v with
-            | Ok t -> Some (x, t, v)
-            | Error _ ->
-                fatal_error
-                  (mk_error0
-                     (sprintf "Unable to determine type of literal %s"
-                        (pp_literal v))))
+      List.filter message ~f:(fun (x, _, _) ->
+          String.(
+            not (x = tag_label || x = amount_label || x = recipient_label)))
     in
     `Assoc
       [
@@ -654,21 +640,13 @@ module Event = struct
   let event_to_json e =
     (* extract out "_eventname" from the message *)
     let eventnamelit =
-      List.Assoc.find_exn e eventname_label ~equal:String.( = )
+      List.find_map_exn e ~f:(fun (x, _, l) ->
+          if String.(x = eventname_label) then Some l else None)
     in
     let eventnames = get_string_literal eventnamelit in
     (* Get a list without the extracted components *)
     let filtered_list =
-      List.filter_map e ~f:(fun (x, v) ->
-          if String.(x = eventname_label) then None
-          else
-            match literal_type v with
-            | Ok t -> Some (x, t, v)
-            | Error _ ->
-                fatal_error
-                  (mk_error0
-                     (sprintf "Unable to determine type literal %s"
-                        (pp_literal v))))
+      List.filter e ~f:(fun (x, _, _) -> String.(not (x = eventname_label)))
     in
     `Assoc
       [

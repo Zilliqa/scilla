@@ -562,7 +562,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
             | ByStrX bs -> Bystrx.to_raw_bytes bs
             | Msg entries ->
                 let raw_entries =
-                  List.map entries ~f:(fun (s, v) -> s ^ raw_bytes v)
+                  List.map entries ~f:(fun (s, _t, v) -> s ^ raw_bytes v)
                 in
                 Core_kernel.String.concat ~sep:"" raw_entries
             | Map (_, tbl) ->

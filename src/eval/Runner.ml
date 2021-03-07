@@ -34,6 +34,7 @@ module RG = Gas.ScillaGas (ParserUtil.ParserRep) (ParserUtil.ParserRep)
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module RunnerSyntax = Dis.PostDisSyntax
+module RunnerType = RunnerSyntax.SType
 module RunnerName = RunnerSyntax.SIdentifier.Name
 module SCU = ContractUtil.ScillaContractUtil (ParserRep) (ParserRep)
 
@@ -68,9 +69,20 @@ let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((_, cstate, field_vals), remaining_gas) ->
+  | Ok ((_, cstate, field_vals, dyn_checks), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
-      (cstate, remaining_gas, field_vals)
+      (cstate, remaining_gas, field_vals, dyn_checks)
+
+(****************************************************)
+(*           Checking prepared message              *)
+(****************************************************)
+let check_prepare_message res gas_limit =
+  match res Eval.init_gas_kont gas_limit with
+  | Error (err, remaining_gas) ->
+      fatal_error_gas_scale Gas.scale_factor err remaining_gas
+  | Ok ((preppred_msg, dyn_checks), remaining_gas) ->
+      plog "[Preparing message]\nSuccess!\n";
+      (preppred_msg, dyn_checks, remaining_gas)
 
 (*****************************************************)
 (*   Running the simulation and printing results     *)
@@ -106,8 +118,8 @@ let input_state_json filename =
   in
   let bal_lit =
     match
-      List.find states ~f:(fun x ->
-          [%equal: RunnerName.t] balance_label (fst3 x))
+      List.find states ~f:(fun (x, _, _) ->
+          [%equal: RunnerName.t] x balance_label)
     with
     | Some v -> v
     | None ->
@@ -118,22 +130,22 @@ let input_state_json filename =
   let bal_int =
     match bal_lit with
     | _, t, UintLit (Uint128L x)
-      when [%equal: RunnerSyntax.SType.t] t balance_typ ->
+      when [%equal: RunnerSyntax.SType.t] t balance_type ->
         x
     | _ ->
         raise
           (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
   in
   let no_bal_states =
-    List.filter states ~f:(fun x ->
-        not @@ [%equal: RunnerName.t] (fst3 x) balance_label)
+    List.filter states ~f:(fun (x, _, _) ->
+        not @@ [%equal: RunnerName.t] x balance_label)
   in
   (no_bal_states, bal_int, estates)
 
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
   let bal_lit =
-    (balance_label, balance_typ, JSON.JSONLiteral.UintLit (Uint128L balance))
+    (balance_label, balance_type, JSON.JSONLiteral.UintLit (Uint128L balance))
   in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
@@ -162,7 +174,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
         (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
         gas_remaining
   in
-  let initargs = map_json_input_strings_to_names initargs_str in
+  (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
+  let initargs =
+    map_json_input_strings_to_names initargs_str
+    |> List.map ~f:(fun (n, _t, l) -> (n, l))
+  in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
   let rgas =
@@ -170,12 +186,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   let init_json_scilla_version =
     List.find initargs ~f:(fun x ->
-        [%equal: RunnerName.t] (fst3 x) ContractUtil.scilla_version_label)
+        [%equal: RunnerName.t] (fst x) ContractUtil.scilla_version_label)
   in
   let () =
     match init_json_scilla_version with
-    | Some (_, t, UintLit (Uint32L v))
-      when [%equal: RunnerSyntax.SType.t] t RunnerSyntax.SType.uint32_typ ->
+    | Some (_, UintLit (Uint32L v)) ->
         let mver, _, _ = scilla_version in
         let v' = Uint32.to_int v in
         if v' <> mver || mver <> source_ver then
@@ -188,6 +203,30 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   match rewriter anode with
   | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
   | Ok anode' -> anode'
+
+let perform_dynamic_typechecks checks gas_remaining =
+  let open RunnerType in
+  List.iter checks ~f:(fun (t, caddr) ->
+      match t with
+      | Address fts -> (
+          match
+            EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts
+          with
+          | Ok true -> ()
+          | Ok false ->
+              fatal_error_gas_scale Gas.scale_factor
+                (mk_error0
+                   (sprintf "Address %s does not satisfy type %s\n"
+                      (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
+                      (RunnerSyntax.SType.pp_typ t)))
+                gas_remaining
+          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining )
+      | _ ->
+          fatal_error_gas_scale Gas.scale_factor
+            (mk_error0
+               (sprintf "Unable to perform dynamic typecheck on type %s\n"
+                  (RunnerSyntax.SType.pp_typ t)))
+            gas_remaining)
 
 let deploy_library args gas_remaining =
   match FEParser.parse_lmodule args.input with
@@ -388,13 +427,13 @@ let run_with_args args =
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
-                let cstate', remaining_gas', field_vals =
+                let cstate', remaining_gas', field_vals, dyn_checks =
                   check_extract_cstate args.input init_res gas_remaining
                 in
                 (* If the data store is not local, we must update the store with the initial field
                  * and contract parameter values.
                  * Refer to the details comments at [Initialization of StateService]. *)
-                ( if is_ipc then
+                if is_ipc then
                   let open StateService in
                   let open MonadUtil in
                   let open Result.Let_syntax in
@@ -402,18 +441,31 @@ let run_with_args args =
                     List.unzip
                     @@
                     let implicit_params =
-                      List.map (SCU.append_implict_contract_params [])
+                      List.map (SCU.append_implicit_contract_params [])
                         ~f:(fun (id, _) -> SSIdentifier.as_string id)
                     in
                     (* Ignore implicit parameters. They need special handling. *)
-                    List.filter_map initargs ~f:(fun (s, t, v) ->
+                    List.filter_map initargs ~f:(fun (s, v) ->
                         if
                           List.mem implicit_params
                             (Identifier.GlobalName.as_string s)
                             ~equal:String.equal
                         then None
                         else
-                          Some ({ fname = s; ftyp = t; fval = None }, (s, t, v)))
+                          (* Get the type from contract definition. *)
+                          match
+                            List.find dis_cmod.contr.cparams ~f:(fun (s', _) ->
+                                String.equal
+                                  (SSIdentifier.as_string s')
+                                  (SSName.as_string s))
+                          with
+                          | Some (_, t) ->
+                              Some
+                                ({ fname = s; ftyp = t; fval = None }, (s, t, v))
+                          | None ->
+                              fatal_error_gas_scale Gas.scale_factor
+                                (mk_error0 "Field missing in init JSON")
+                                gas_remaining)
                   in
                   (* We push all fields except _balance. *)
                   let fields =
@@ -430,13 +482,17 @@ let run_with_args args =
                       (* Retrieve state variables *)
                       try fst3 @@ input_state_json args.input_state
                       with Invalid_json s ->
-                        fatal_error_gas
+                        fatal_error_gas_scale Gas.scale_factor
                           ( s
                           @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
                                  args.input_state) )
                           gas_remaining
                     else field_vals
+                  in
+                  (* Do the dynamic typecheck *)
+                  let () =
+                    perform_dynamic_typechecks dyn_checks gas_remaining
                   in
                   match
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
@@ -450,7 +506,17 @@ let run_with_args args =
                   with
                   | Error s ->
                       fatal_error_gas_scale Gas.scale_factor s remaining_gas'
-                  | Ok _ -> () );
+                  | Ok _ -> ()
+                else if (* not is_ipc *)
+                        not @@ List.is_empty dyn_checks then
+                  plog
+                    (sprintf
+                       "\n\
+                        [Deployment] Dynamic typecheck of contract parameters \
+                        (%s) required, but disabled outside IPC mode.\n"
+                       ( List.map dyn_checks ~f:(fun (_, x) ->
+                             RunnerSyntax.SLiteral.Bystrx.hex_encoding x)
+                       |> String.concat ~sep:", " ));
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
                 let field_vals' = if is_ipc then [] else field_vals in
@@ -473,20 +539,17 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
-                let m =
-                  JSON.JSONLiteral.Msg
-                    (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))
-                in
-
                 let cstate, gas_remaining' =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
                       init_module dis_cmod initargs [] cur_bal bstate elibs
                     in
-                    let cstate, gas_remaining', _ =
+                    let cstate, gas_remaining', _, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+
+                    (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
                     let fields =
@@ -519,9 +582,11 @@ let run_with_args args =
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
-                    let cstate, gas_remaining', field_vals =
+                    let cstate, gas_remaining', field_vals, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+
+                    (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
                     let fields =
@@ -549,14 +614,22 @@ let run_with_args args =
 
                 plog
                   (sprintf "Executing message:\n%s\n"
-                     (JSON.Message.message_to_jstring
-                        (List.map mmsg ~f:(fun x -> (fst3 x, trd3 x)))));
+                     (JSON.Message.message_to_jstring mmsg));
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_literal_type_map bstate));
-                let step_result = handle_message ctr cstate bstate m in
+                     (pp_typ_literal_map bstate));
+                let prepped_message, pending_dyn_checks, gas_remaining'' =
+                  let pmsg = prepare_for_message ctr mmsg in
+                  check_prepare_message pmsg gas_remaining'
+                in
+                let () =
+                  perform_dynamic_typechecks pending_dyn_checks gas_remaining''
+                in
+                let step_result =
+                  handle_message prepped_message cstate bstate
+                in
                 let (cstate', mlist, elist, accepted_b), gas =
-                  check_after_step step_result gas_remaining'
+                  check_after_step step_result gas_remaining''
                 in
 
                 (* If we're using a local state (JSON file) then need to fetch and dump it. *)

@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7761",
+  "errors": [
+    {
+      "error_message":
+        "Literal constructor ShogiLib.North does not belong to type Bool",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

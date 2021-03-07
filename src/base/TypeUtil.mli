@@ -118,7 +118,10 @@ module TypeUtilities : sig
   module MakeTEnv : MakeTEnvFunctor
 
   val literal_type :
-    ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
+    ?lc:ErrorUtils.loc ->
+    ?expected:TUType.t option ->
+    TULiteral.t ->
+    (TUType.t * (TUType.t * TULiteral.Bystrx.t) list, scilla_error list) result
 
   val is_wellformed_lit :
     ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
@@ -149,7 +152,7 @@ module TypeUtilities : sig
   val is_ground_type : TUType.t -> bool
 
   val get_msgevnt_type :
-    (string * 'a) list -> loc -> (TUType.t, scilla_error list) result
+    (string * 'a * 'b) list -> loc -> (TUType.t, scilla_error list) result
 
   val map_access_type : TUType.t -> int -> (TUType.t, scilla_error list) result
 
@@ -240,9 +243,3 @@ module TypeUtilities : sig
   val assert_all_same_type :
     lc:ErrorUtils.loc -> TUType.t list -> (unit, scilla_error list) result
 end
-
-(****************************************************************)
-(*                  Built-in typed entities                     *)
-(****************************************************************)
-
-val blocknum_name : string

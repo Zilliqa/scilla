@@ -71,7 +71,16 @@ struct
               ~f:(fun (fname, pl) ->
                 let%bind t =
                   match pl with
-                  | MLit l -> literal_type l ~lc:bloc
+                  | MLit l ->
+                      let%bind t, dyn_checks = literal_type l ~lc:bloc in
+                      if not @@ List.is_empty dyn_checks then
+                        fail1
+                          (Printf.sprintf
+                             "Event type %s requires dynamic typecheck, which \
+                              shouldn't happen\n"
+                             eventname)
+                          bloc
+                      else pure t
                   | MVar v ->
                       let t' = ER.get_type (get_rep v) in
                       pure t'.tp
