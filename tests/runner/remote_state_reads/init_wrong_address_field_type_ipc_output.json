@@ -1,9 +1,9 @@
 {
-  "gas_remaining": "7252",
+  "gas_remaining": "7087",
   "errors": [
     {
       "error_message":
-        "Address 0x1234567890123456789012345678901234567890 does not satisfy type ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end\n",
+        "Address 0x1234567890123456789012345678901234567890 does not satisfy type ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), other_map : Map (Uint128) (ByStr20 with end) end\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

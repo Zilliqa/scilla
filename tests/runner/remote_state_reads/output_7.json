@@ -1,8 +1,21 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7437",
+  "gas_remaining": "7930",
   "_accepted": "false",
-  "messages": [],
+  "messages": [
+    {
+      "_tag": "",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777564322",
+      "params": [
+        {
+          "vname": "param",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        }
+      ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
     {
@@ -138,5 +151,26 @@
       }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "_eventname": "TestEvent",
+      "params": [
+        {
+          "vname": "info",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        }
+      ]
+    },
+    {
+      "_eventname": "TestEvent",
+      "params": [
+        {
+          "vname": "info",
+          "type": "ByStr20",
+          "value": "0x1234567890123456789012345678901234567890"
+        }
+      ]
+    }
+  ]
 }

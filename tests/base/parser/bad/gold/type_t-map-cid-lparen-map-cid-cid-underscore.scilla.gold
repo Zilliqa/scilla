@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value is likely incorrect. If the map value is an ADT in brackets, then we expect valid ADT arguments or a closing bracket.\n",
+        "This map type likely has an invalid map value type.\n",
       "start_location": {
         "file":
           "base/parser/bad/type_t-map-cid-lparen-map-cid-cid-underscore.scilla",
