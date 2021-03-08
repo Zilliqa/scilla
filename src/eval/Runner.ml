@@ -174,7 +174,10 @@ let validate_get_init_json init_file gas_remaining source_ver =
         gas_remaining
   in
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
-  let initargs = map_json_input_strings_to_names initargs_str |> List.map ~f:(fun (n, _t, l) -> (n, l)) in
+  let initargs =
+    map_json_input_strings_to_names initargs_str
+    |> List.map ~f:(fun (n, _t, l) -> (n, l))
+  in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
   let rgas =
@@ -205,19 +208,23 @@ let perform_dynamic_typechecks checks gas_remaining =
   List.iter checks ~f:(fun (t, caddr) ->
       match t with
       | Address fts -> (
-          match EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts with
+          match
+            EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts
+          with
           | Ok true -> ()
           | Ok false ->
               fatal_error_gas_scale Gas.scale_factor
-                (mk_error0 (sprintf "Address %s does not satisfy type %s\n"
-                              (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
-                              (RunnerSyntax.SType.pp_typ t)))
+                (mk_error0
+                   (sprintf "Address %s does not satisfy type %s\n"
+                      (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
+                      (RunnerSyntax.SType.pp_typ t)))
                 gas_remaining
-          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
-      | _ -> 
+          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining )
+      | _ ->
           fatal_error_gas_scale Gas.scale_factor
-            (mk_error0 (sprintf "Unable to perform dynamic typecheck on type %s\n"
-                          (RunnerSyntax.SType.pp_typ t)))
+            (mk_error0
+               (sprintf "Unable to perform dynamic typecheck on type %s\n"
+                  (RunnerSyntax.SType.pp_typ t)))
             gas_remaining)
 
 let deploy_library args gas_remaining =
@@ -424,7 +431,7 @@ let run_with_args args =
                 in
                 (* If the data store is not local, we must update the store with the initial field values.
                  * Refer to the details comments at [Initialization of StateService]. *)
-                ( if is_ipc then
+                if is_ipc then
                   let open StateService in
                   let open MonadUtil in
                   let open Result.Let_syntax in
@@ -450,7 +457,9 @@ let run_with_args args =
                     else field_vals
                   in
                   (* Do the dynamic typecheck *)
-                  let () = perform_dynamic_typechecks dyn_checks gas_remaining in
+                  let () =
+                    perform_dynamic_typechecks dyn_checks gas_remaining
+                  in
                   match
                     (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
@@ -464,13 +473,16 @@ let run_with_args args =
                   | Error s ->
                       fatal_error_gas_scale Gas.scale_factor s remaining_gas'
                   | Ok _ -> ()
-                  else (* not is_ipc *)
-                  if not @@ List.is_empty dyn_checks then
-                    plog
-                      (sprintf "\n\
-                                [Deployment] Dynamic typecheck of contract parameters (%s) required, but disabled outside IPC mode.\n"
-                         (List.map dyn_checks ~f:(fun (_, x) -> RunnerSyntax.SLiteral.Bystrx.hex_encoding x) |> String.concat ~sep:", "));
-                );
+                else if (* not is_ipc *)
+                        not @@ List.is_empty dyn_checks then
+                  plog
+                    (sprintf
+                       "\n\
+                        [Deployment] Dynamic typecheck of contract parameters \
+                        (%s) required, but disabled outside IPC mode.\n"
+                       ( List.map dyn_checks ~f:(fun (_, x) ->
+                             RunnerSyntax.SLiteral.Bystrx.hex_encoding x)
+                       |> String.concat ~sep:", " ));
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
                 let field_vals' = if is_ipc then [] else field_vals in
@@ -502,6 +514,7 @@ let run_with_args args =
                     let cstate, gas_remaining', _, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+
                     (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
@@ -538,6 +551,7 @@ let run_with_args args =
                     let cstate, gas_remaining', field_vals, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
+
                     (* Ignore dynamic typechecks of contract parameters - contract already deployed *)
 
                     (* Initialize the state server. *)
@@ -574,8 +588,12 @@ let run_with_args args =
                   let pmsg = prepare_for_message ctr mmsg in
                   check_prepare_message pmsg gas_remaining'
                 in
-                let () = perform_dynamic_typechecks pending_dyn_checks gas_remaining'' in
-                let step_result = handle_message prepped_message cstate bstate in
+                let () =
+                  perform_dynamic_typechecks pending_dyn_checks gas_remaining''
+                in
+                let step_result =
+                  handle_message prepped_message cstate bstate
+                in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining''
                 in

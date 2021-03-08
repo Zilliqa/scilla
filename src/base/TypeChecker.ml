@@ -296,15 +296,16 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let e, rep = erep in
     match e with
     | Literal l ->
-        let%bind (lt, dyn_checks) = fromR_TE @@ literal_type l ~lc:(ER.get_loc rep) in
+        let%bind lt, dyn_checks =
+          fromR_TE @@ literal_type l ~lc:(ER.get_loc rep)
+        in
         if not @@ List.is_empty dyn_checks then
           fail
             (mk_type_error1
                (sprintf "Unable to typecheck literal %s."
                   (PrettyPrinters.pp_literal l))
                (ER.get_loc rep))
-        else 
-          pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
+        else pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
     | Var i ->
         let%bind r =
           fromR_TE @@ TEnv.resolveT tenv (get_id i) ~lopt:(Some (get_rep i))
@@ -1031,9 +1032,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let actual = ar.tp in
           let%bind () =
             fromR_TE
-            @@
-            assert_type_assignable ~expected:ft ~actual
-              ~lc:(ER.get_loc (get_rep fn))
+            @@ assert_type_assignable ~expected:ft ~actual
+                 ~lc:(ER.get_loc (get_rep fn))
           in
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then

@@ -171,11 +171,18 @@ module Configuration = struct
 
   (* Helper function for remote fetches *)
   let lookup_sender_addr st =
-    let%bind sender = fromR @@ lookup st (mk_loc_id (label_name_of_string MessagePayload.sender_label)) in
+    let%bind sender =
+      fromR
+      @@ lookup st
+           (mk_loc_id (label_name_of_string MessagePayload.sender_label))
+    in
     match sender with
     | EvalLiteral.ByStrX bs -> pure bs
-    | _ -> fail0 (sprintf "Incorrect type of _sender in environment: %s" (pp_literal sender))
-  
+    | _ ->
+        fail0
+          (sprintf "Incorrect type of _sender in environment: %s"
+             (pp_literal sender))
+
   let load st k =
     let i = get_id k in
     if [%equal: EvalName.t] i balance_label then
@@ -201,21 +208,29 @@ module Configuration = struct
     | Some v, _ ->
         (* _sender._balance is a special case if funds have been accepted. _amount must be deducted. *)
         let%bind sender_addr = lookup_sender_addr st in
-        if st.accepted &&
-           EvalLiteral.Bystrx.equal sender_addr caddr &&
-           EvalName.equal (get_id k) balance_label
+        if
+          st.accepted
+          && EvalLiteral.Bystrx.equal sender_addr caddr
+          && EvalName.equal (get_id k) balance_label
         then
-          let%bind amount_lit = fromR @@ lookup st (mk_loc_id (label_name_of_string MessagePayload.amount_label)) in
-          match v, amount_lit with
+          let%bind amount_lit =
+            fromR
+            @@ lookup st
+                 (mk_loc_id (label_name_of_string MessagePayload.amount_label))
+          in
+          match (v, amount_lit) with
           | UintLit (Uint128L sender_balance), UintLit (Uint128L amount)
-            when Uint128.compare sender_balance amount >= 0 -> 
-              pure @@ EvalLiteral.UintLit (Uint128L (Uint128.(sender_balance - amount)))
+            when Uint128.compare sender_balance amount >= 0 ->
+              pure
+              @@ EvalLiteral.UintLit
+                   (Uint128L Uint128.(sender_balance - amount))
           | _ ->
               fail0
-              @@ sprintf "Unexpected sender balance or amount literal: sender balance = %s, amount = %s"
-                (pp_literal v) (pp_literal amount_lit)
-        else 
-          pure v
+              @@ sprintf
+                   "Unexpected sender balance or amount literal: sender \
+                    balance = %s, amount = %s"
+                   (pp_literal v) (pp_literal amount_lit)
+        else pure v
     | _ ->
         fail1
           (Printf.sprintf "Error loading field %s"
@@ -315,35 +330,37 @@ module Configuration = struct
   let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
 
   let accept_incoming st =
-    if st.accepted then
-      (* Do nothing *)
+    if st.accepted then (* Do nothing *)
       pure st
     else
       (* Check that sender balance is sufficient *)
       let%bind sender_addr = lookup_sender_addr st in
-      let%bind sender_balance_l = remote_load st sender_addr (mk_loc_id balance_label) in
+      let%bind sender_balance_l =
+        remote_load st sender_addr (mk_loc_id balance_label)
+      in
       let incoming' = st.incoming_funds in
       match sender_balance_l with
       | UintLit (Uint128L sender_balance) ->
           if Uint128.compare incoming' sender_balance >= 0 then
             fail0 "Insufficient sender balance for acceptance."
-        else
-          (* Although unsigned integer is used, and this check isn't
-           * necessary, we have it just in case, somehow a malformed
-           * Uint128 literal manages to reach here. *)
-        if Uint128.compare incoming' Uint128.zero >= 0 then
-          let balance = Uint128.add st.balance incoming' in
-          let accepted = true in
-          let incoming_funds = Uint128.zero in
-          pure @@ { st with balance; accepted; incoming_funds }
-        else
-          fail0
-          @@ sprintf "Incoming balance is negative (somehow):%s."
-            (Uint128.to_string incoming')
+          else if
+            (* Although unsigned integer is used, and this check isn't
+             * necessary, we have it just in case, somehow a malformed
+             * Uint128 literal manages to reach here. *)
+            Uint128.compare incoming' Uint128.zero >= 0
+          then
+            let balance = Uint128.add st.balance incoming' in
+            let accepted = true in
+            let incoming_funds = Uint128.zero in
+            pure @@ { st with balance; accepted; incoming_funds }
+          else
+            fail0
+            @@ sprintf "Incoming balance is negative (somehow):%s."
+                 (Uint128.to_string incoming')
       | _ ->
           fail0
           @@ sprintf "Unrecognized balance literal at sender: %s"
-            (pp_literal sender_balance_l)
+               (pp_literal sender_balance_l)
 
   (* Finds a procedure proc_name, and returns the procedure and the
      list of procedures in scope for that procedure *)
@@ -474,16 +491,19 @@ end
 module EvalTypecheck = struct
   open MonadUtil
   open Result.Let_syntax
-  
+
   let typecheck_remote_field_types ~caddr fts =
     let open EvalType in
     (* Add _balance to fields list, to ensure that caddr is in use *)
-    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_type) :: fts in
+    let all_fts =
+      (EvalIdentifier.mk_loc_id balance_label, balance_type) :: fts
+    in
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
     allM all_fts ~f:(fun (f, t) ->
-        let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
+        let%bind res =
+          StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true
+        in
         match res with
-        | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
-        | (_, None) -> pure false)
-
+        | _, Some ext_typ -> pure @@ type_assignable ~expected:t ~actual:ext_typ
+        | _, None -> pure false)
 end
