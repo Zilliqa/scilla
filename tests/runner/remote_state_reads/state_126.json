@@ -116,6 +116,9 @@
     "type": "Option Bool",
     "value": { "constructor": "Some", "argtypes": ["Bool"], "arguments": [ { "constructor": "True", "argtypes": [], "arguments": [] } ] }
   },
+  { "vname": "sender_balance_pre", "type": "Uint128", "value": "0" },
+  { "vname": "sender_balance_mid", "type": "Uint128", "value": "0" },
+  { "vname": "sender_balance_post", "type": "Uint128", "value": "0" },
   {
     "vname": "_external",
     "type": "Unit",

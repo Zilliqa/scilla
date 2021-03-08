@@ -27,5 +27,17 @@
     "vname": "owner_signatures",
     "type": "Map (ByStr20) (Map (ByStr20) (Bool))",
     "value": []
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x1234567890123456789012345678906784567890",
+            "state": [
+                { "vname": "_balance", "type": "Uint128", "value": "242" }
+            ]
+        }
+    ]
   }
 ]

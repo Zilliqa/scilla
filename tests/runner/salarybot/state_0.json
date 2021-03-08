@@ -8,5 +8,17 @@
     "vname": "_balance",
     "type": "Uint128",
     "value": "0"
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x1234567890123456789012345678901234567890",
+            "state": [
+                { "vname": "_balance", "type": "Uint128", "value": "100000242" }
+            ]
+        }
+    ]
   }
 ]

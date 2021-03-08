@@ -167,6 +167,15 @@ module Configuration = struct
 
   let store i l = fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
 
+  let lookup st k = Env.lookup st.env k
+
+  (* Helper function for remote fetches *)
+  let lookup_sender_addr st =
+    let%bind sender = fromR @@ lookup st (mk_loc_id (label_name_of_string MessagePayload.sender_label)) in
+    match sender with
+    | EvalLiteral.ByStrX bs -> pure bs
+    | _ -> fail0 (sprintf "Incorrect type of _sender in environment: %s" (pp_literal sender))
+  
   let load st k =
     let i = get_id k in
     if [%equal: EvalName.t] i balance_label then
@@ -183,13 +192,30 @@ module Configuration = struct
                (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
-  let remote_load caddr k =
+  let remote_load st caddr k =
     let%bind fval =
       fromR
       @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
     in
     match fval with
-    | Some v, _ -> pure v
+    | Some v, _ ->
+        (* _sender._balance is a special case if funds have been accepted. _amount must be deducted. *)
+        let%bind sender_addr = lookup_sender_addr st in
+        if st.accepted &&
+           EvalLiteral.Bystrx.equal sender_addr caddr &&
+           EvalName.equal (get_id k) balance_label
+        then
+          let%bind amount_lit = fromR @@ lookup st (mk_loc_id (label_name_of_string MessagePayload.amount_label)) in
+          match v, amount_lit with
+          | UintLit (Uint128L sender_balance), UintLit (Uint128L amount)
+            when Uint128.compare sender_balance amount >= 0 -> 
+              pure @@ EvalLiteral.UintLit (Uint128L (Uint128.(sender_balance - amount)))
+          | _ ->
+              fail0
+              @@ sprintf "Unexpected sender balance or amount literal: sender balance = %s, amount = %s"
+                (pp_literal v) (pp_literal amount_lit)
+        else 
+          pure v
     | _ ->
         fail1
           (Printf.sprintf "Error loading field %s"
@@ -286,24 +312,38 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let lookup st k = Env.lookup st.env k
-
   let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
 
   let accept_incoming st =
-    let incoming' = st.incoming_funds in
-    (* Although unsigned integer is used, and this check isn't
-     * necessary, we have it just in case, somehow a malformed
-     * Uint128 literal manages to reach here. *)
-    if Uint128.compare incoming' Uint128.zero >= 0 then
-      let balance = Uint128.add st.balance incoming' in
-      let accepted = true in
-      let incoming_funds = Uint128.zero in
-      pure @@ { st with balance; accepted; incoming_funds }
+    if st.accepted then
+      (* Do nothing *)
+      pure st
     else
-      fail0
-      @@ sprintf "Incoming balance is negative (somehow):%s."
-           (Uint128.to_string incoming')
+      (* Check that sender balance is sufficient *)
+      let%bind sender_addr = lookup_sender_addr st in
+      let%bind sender_balance_l = remote_load st sender_addr (mk_loc_id balance_label) in
+      let incoming' = st.incoming_funds in
+      match sender_balance_l with
+      | UintLit (Uint128L sender_balance) ->
+          if Uint128.compare incoming' sender_balance >= 0 then
+            fail0 "Insufficient sender balance for acceptance."
+        else
+          (* Although unsigned integer is used, and this check isn't
+           * necessary, we have it just in case, somehow a malformed
+           * Uint128 literal manages to reach here. *)
+        if Uint128.compare incoming' Uint128.zero >= 0 then
+          let balance = Uint128.add st.balance incoming' in
+          let accepted = true in
+          let incoming_funds = Uint128.zero in
+          pure @@ { st with balance; accepted; incoming_funds }
+        else
+          fail0
+          @@ sprintf "Incoming balance is negative (somehow):%s."
+            (Uint128.to_string incoming')
+      | _ ->
+          fail0
+          @@ sprintf "Unrecognized balance literal at sender: %s"
+            (pp_literal sender_balance_l)
 
   (* Finds a procedure proc_name, and returns the procedure and the
      list of procedures in scope for that procedure *)

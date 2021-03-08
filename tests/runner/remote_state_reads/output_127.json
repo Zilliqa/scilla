@@ -1,9 +1,8 @@
 {
-  "gas_remaining": "7020",
+  "gas_remaining": "7965",
   "errors": [
     {
-      "error_message":
-        "StateIPCClient: Error in IPC access: (code:0, message:Fetching state value failed).",
+      "error_message": "Insufficient sender balance for acceptance.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
