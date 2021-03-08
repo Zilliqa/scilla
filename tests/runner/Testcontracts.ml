@@ -375,7 +375,7 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 6
+                >::: build_contract_tests env "remote_state_reads" succ_code 1 7
                        [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true;
@@ -430,7 +430,7 @@ let contract_tests env =
                 "remote_state_reads"
                   >: build_contract_init_test env fail_code "remote_state_reads" "init_wrong_map_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" fail_code 101 125
+                >::: build_contract_tests env "remote_state_reads" fail_code 101 126
                        [];
               ];
          "misc_tests" >::: build_misc_tests env;
