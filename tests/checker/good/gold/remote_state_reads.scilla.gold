@@ -29,7 +29,10 @@
       { "field": "remote_reads_test_res_3_10", "tag": "NotMoney" },
       { "field": "remote_reads_test_res_3_11", "tag": "(Option NoInfo)" },
       { "field": "remote_reads_test_res_3_12", "tag": "NotMoney" },
-      { "field": "remote_reads_test_res_3_13", "tag": "(Option NoInfo)" }
+      { "field": "remote_reads_test_res_3_13", "tag": "(Option NoInfo)" },
+      { "field": "sender_balance_pre", "tag": "NoInfo" },
+      { "field": "sender_balance_mid", "tag": "NoInfo" },
+      { "field": "sender_balance_post", "tag": "NoInfo" }
     ],
     "ADT constructors": []
   },
@@ -136,7 +139,10 @@
         "vname": "remote_reads_test_res_3_13",
         "type": "Option (Bool)",
         "depth": 0
-      }
+      },
+      { "vname": "sender_balance_pre", "type": "Uint128", "depth": 0 },
+      { "vname": "sender_balance_mid", "type": "Uint128", "depth": 0 },
+      { "vname": "sender_balance_post", "type": "Uint128", "depth": 0 }
     ],
     "transitions": [
       {
@@ -178,7 +184,8 @@
       },
       { "vname": "OutgoingMsgTest", "params": [] },
       { "vname": "ExceptionTest", "params": [] },
-      { "vname": "AssignTest", "params": [] }
+      { "vname": "AssignTest", "params": [] },
+      { "vname": "SenderBalanceTest", "params": [] }
     ],
     "procedures": [],
     "events": [
@@ -244,9 +251,17 @@
   "warnings": [
     {
       "warning_message":
-        "No transition in contract RRContract contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 },
+        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:177:3\n  Accept at contracts/remote_state_reads.scilla:181:3\n",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 177,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 181,
+        "column": 9
+      },
       "warning_id": 1
     }
   ],

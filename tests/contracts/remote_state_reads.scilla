@@ -49,6 +49,9 @@ field remote_reads_test_res_3_11 : Option (Map (ByStr20 with end) Bool) = None {
 field remote_reads_test_res_3_12 : Bool = False (* exists signatures[key1][key2] of remote3 *)
 field remote_reads_test_res_3_13 : Option Bool = None {Bool} (* signatures[key1][key2] of remote3 *)
 
+field sender_balance_pre : Uint128 = Uint128 0
+field sender_balance_mid : Uint128 = Uint128 0
+field sender_balance_post : Uint128 = Uint128 0
 
 transition RemoteReadsTest(
   (* Any address in use - _balance is defined, but not _this_address *)
@@ -164,4 +167,18 @@ transition AssignTest()
   k1 = Uint128 1;
   k2 = Uint128 42;
   assign_test_10[k1][k2] := x
+end
+
+(* Check that sender balance is deducted on acceptance *)
+transition SenderBalanceTest()
+  pre <-- _sender._balance;
+  sender_balance_pre := pre;
+  (* First accept should cause sender balance to decrease *)
+  accept;
+  mid <-- _sender._balance;
+  sender_balance_mid := mid;
+  (* Second accept should make no difference *)
+  accept;
+  post <-- _sender._balance;
+  sender_balance_post := post
 end
