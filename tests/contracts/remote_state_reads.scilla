@@ -28,6 +28,9 @@ field assign_test_4 : ByStr20 with admin : ByStr20 end = cparam3
 field assign_test_5 : ByStr20 with owners : Map ByStr20 Bool end = cparam3
 field assign_test_6 : ByStr20 with signatures : Map Uint32 (Map ByStr20 Bool) end = cparam3
 field assign_test_7 : ByStr20 with other_map : Map Uint128 ByStr20 end = cparam3
+field assign_test_8 : AddressADT = Address1 cparam1
+field assign_test_9 : List AddressADT = Nil {AddressADT}
+field assign_test_10 : Map Uint128 (Map Uint128 AddressADT) = Emp Uint128 (Map Uint128 AddressADT)
 
 field remote_reads_test_res_1_1 : Uint128 = Uint128 0  (* _balance of remote1 *)
 field remote_reads_test_res_2_1 : Uint128 = Uint128 0  (* _balance of remote2 *)
@@ -144,4 +147,21 @@ transition ExceptionTest()
   e = {_exception : "TestException";
        value : cparam3 };
   throw e
+end
+
+transition AssignTest()
+  x = Address2 cparam3;
+  assign_test_8 := x;
+  y = let n = Nil {AddressADT} in
+      Cons {AddressADT} x n;
+  assign_test_9 := y;
+  z = let n = Emp Uint128 (Map Uint128 AddressADT) in
+      let sub_n = Emp Uint128 AddressADT in
+      let sub_k = Uint128 0 in
+      let sub_res = builtin put sub_n sub_k x in
+      builtin put n sub_k sub_res;
+  assign_test_10 := z;
+  k1 = Uint128 1;
+  k2 = Uint128 42;
+  assign_test_10[k1][k2] := x
 end

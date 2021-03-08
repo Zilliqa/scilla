@@ -1,12 +1,12 @@
 {
-  "gas_remaining": "7961",
+  "gas_remaining": "7960",
   "errors": [
     {
       "error_message":
         "Exception thrown: (Message [(_exception : (String \"TestException\")) ; (value : (ByStr20 0x1234567890123456789012345678901234567890))])",
       "start_location": {
         "file": "tests/contracts/remote_state_reads.scilla",
-        "line": 146,
+        "line": 149,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
@@ -15,7 +15,7 @@
       "error_message": "Raised from ExceptionTest",
       "start_location": {
         "file": "tests/contracts/remote_state_reads.scilla",
-        "line": 143,
+        "line": 146,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

@@ -11,6 +11,9 @@
       { "field": "assign_test_5", "tag": "NoInfo" },
       { "field": "assign_test_6", "tag": "NoInfo" },
       { "field": "assign_test_7", "tag": "NoInfo" },
+      { "field": "assign_test_8", "tag": "(AddressADT )" },
+      { "field": "assign_test_9", "tag": "(List (AddressADT ))" },
+      { "field": "assign_test_10", "tag": "(Map (Map (AddressADT )))" },
       { "field": "remote_reads_test_res_1_1", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_2_1", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_2_2", "tag": "NoInfo" },
@@ -77,6 +80,22 @@
         "vname": "assign_test_7",
         "type": "ByStr20 with other_map : Map (Uint128) (ByStr20) end",
         "depth": 0
+      },
+      {
+        "vname": "assign_test_8",
+        "type": "remote_state_reads.AddressADT",
+        "depth": 0
+      },
+      {
+        "vname": "assign_test_9",
+        "type": "List (remote_state_reads.AddressADT)",
+        "depth": 0
+      },
+      {
+        "vname": "assign_test_10",
+        "type":
+          "Map (Uint128) (Map (Uint128) (remote_state_reads.AddressADT))",
+        "depth": 2
       },
       { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "depth": 0 },
       { "vname": "remote_reads_test_res_2_1", "type": "Uint128", "depth": 0 },
@@ -158,7 +177,8 @@
         ]
       },
       { "vname": "OutgoingMsgTest", "params": [] },
-      { "vname": "ExceptionTest", "params": [] }
+      { "vname": "ExceptionTest", "params": [] },
+      { "vname": "AssignTest", "params": [] }
     ],
     "procedures": [],
     "events": [

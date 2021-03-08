@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7867",
+  "gas_remaining": "7866",
   "_accepted": "false",
   "messages": [],
   "states": [
@@ -153,6 +153,26 @@
       "vname": "assign_test_7",
       "type": "ByStr20 with other_map : Map (Uint128) (ByStr20) end",
       "value": "0x1234567890123456789012345678901234567890"
+    },
+    {
+      "vname": "assign_test_8",
+      "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+      "value": {
+        "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+        "argtypes": [],
+        "arguments": [ "0x1234567890123456789012345678901234567890" ]
+      }
+    },
+    {
+      "vname": "assign_test_9",
+      "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
+      "value": []
+    },
+    {
+      "vname": "assign_test_10",
+      "type":
+        "Map (Uint128) (Map (Uint128) (0xabfeccdc9012345678901234567890f777564321.AddressADT))",
+      "value": []
     },
     {
       "vname": "remote_reads_test_res_3_2",

@@ -375,7 +375,7 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 7
+                >::: build_contract_tests env "remote_state_reads" succ_code 1 8
                        [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads" "init_assignable_map_types" ~is_library:false ~ipc_mode:true;
