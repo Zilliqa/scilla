@@ -148,9 +148,9 @@
     "type": "Unit",
     "value": [
         {
-            "address": "0xabfeccdc9012345678901234567890f777564322",
+            "address": "0x5c6712c8f3b049e98e733cfdb38a8e37a1c724c0",
             "state": [
-                { "vname": "_balance", "type": "Uint128", "value": "200" }
+                { "vname": "_balance", "type": "Uint128", "value": "1000000" }
             ]
         }
     ]
