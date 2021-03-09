@@ -379,15 +379,21 @@ stmt:
   { Iterate (l, p), toLoc $startpos }
 
 remote_fetch_stmt:
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = sident
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = sident
   { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
 | (* Reading _sender._balance or _origin._balance *)
-  l = ID; REMOTEFETCH; adr = SPID; PERIOD; r = SPID
+  l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
   { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+| (* Adding this production in preparation for remote reads of contract parameters *)
+  _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
+  { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
-| l = ID; REMOTEFETCH; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+| l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+| (* Adding this production in preparation for address type casts *)
+  _l = ID; FETCH; AND; _adr = sident; AS; address_typ
+  { raise (SyntaxError ("Address type casts not yet supported", toLoc $startpos(_adr))) }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

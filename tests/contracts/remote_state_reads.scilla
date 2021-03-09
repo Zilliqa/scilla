@@ -65,53 +65,53 @@ transition RemoteReadsTest(
                         owners : Map (ByStr20 with end) Bool,
                         signatures : Map Uint32 (Map ByStr20 with end Bool)
                    end)
-  tmp_1_1 <-- remote1._balance;
+  tmp_1_1 <-& remote1._balance;
   remote_reads_test_res_1_1 := tmp_1_1;
 
-  tmp_2_1 <-- remote2._balance;
+  tmp_2_1 <-& remote2._balance;
   remote_reads_test_res_2_1 := tmp_2_1;
   
-  tmp_2_2 <-- remote2._this_address;
+  tmp_2_2 <-& remote2._this_address;
   remote_reads_test_res_2_2 := tmp_2_2;
   
-  tmp_3_1 <-- remote3._balance;
+  tmp_3_1 <-& remote3._balance;
   remote_reads_test_res_3_1 := tmp_3_1;
 
-(*  tmp_3_2 <-- remote3._this_address;  <- _this_address not explicitly defined
+(*  tmp_3_2 <-& remote3._this_address;  <- _this_address not explicitly defined
   remote_reads_test_res_3_2 := tmp_3_2;  *) 
 
-  tmp_3_3 <-- remote3.transactionCount;
+  tmp_3_3 <-& remote3.transactionCount;
   remote_reads_test_res_3_3 := tmp_3_3;
 
-  tmp_3_4 <-- remote3.admin;
+  tmp_3_4 <-& remote3.admin;
   remote_reads_test_res_3_4 := tmp_3_4;
 
-  tmp_3_5 <-- tmp_3_4._balance;
+  tmp_3_5 <-& tmp_3_4._balance;
   remote_reads_test_res_3_5 := tmp_3_5;
 
-  tmp_3_6 <-- remote3.owners;
+  tmp_3_6 <-& remote3.owners;
   remote_reads_test_res_3_6 := tmp_3_6;
 
-  tmp_3_7 <-- exists remote3.owners[_sender];
+  tmp_3_7 <-& exists remote3.owners[_sender];
   remote_reads_test_res_3_7 := tmp_3_7;
 
-  tmp_3_8 <-- remote3.owners[_sender];
+  tmp_3_8 <-& remote3.owners[_sender];
   remote_reads_test_res_3_8 := tmp_3_8;
 
-  tmp_3_9 <-- remote3.signatures;
+  tmp_3_9 <-& remote3.signatures;
   remote_reads_test_res_3_9 := tmp_3_9;
 
   x = Uint32 0;
-  tmp_3_10 <-- exists remote3.signatures[x];
+  tmp_3_10 <-& exists remote3.signatures[x];
   remote_reads_test_res_3_10 := tmp_3_10;
 
-  tmp_3_11 <-- remote3.signatures[x];
+  tmp_3_11 <-& remote3.signatures[x];
   remote_reads_test_res_3_11 := tmp_3_11;
 
-  tmp_3_12 <-- exists remote3.signatures[x][_origin];
+  tmp_3_12 <-& exists remote3.signatures[x][_origin];
   remote_reads_test_res_3_12 := tmp_3_12;
 
-  tmp_3_13 <-- remote3.signatures[x][_origin];
+  tmp_3_13 <-& remote3.signatures[x][_origin];
   remote_reads_test_res_3_13 := tmp_3_13
 
 end
@@ -170,14 +170,14 @@ end
 
 (* Check that sender balance is deducted on acceptance *)
 transition SenderBalanceTest()
-  pre <-- _sender._balance;
+  pre <-& _sender._balance;
   sender_balance_pre := pre;
   (* First accept should cause sender balance to decrease *)
   accept;
-  mid <-- _sender._balance;
+  mid <-& _sender._balance;
   sender_balance_mid := mid;
   (* Second accept should make no difference *)
   accept;
-  post <-- _sender._balance;
+  post <-& _sender._balance;
   sender_balance_post := post
 end
