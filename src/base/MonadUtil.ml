@@ -136,7 +136,7 @@ let rec forallM ~f ls =
  * Returns () if all elements satisfy f. *)
 let forall2M ~f ls1 ls2 ~msg =
   let rec recurser ls1 ls2 =
-    match ls1, ls2 with
+    match (ls1, ls2) with
     | x1 :: ls1', x2 :: ls2' ->
         let%bind () = f x1 x2 in
         recurser ls1' ls2'
@@ -351,9 +351,7 @@ module EvalMonad = struct
       match ls with
       | x :: ls' -> (
           let%bind r = f x in
-          match r with
-          | Some z -> pure (Some z)
-          | None -> recurser ls')
+          match r with Some z -> pure (Some z) | None -> recurser ls' )
       | [] -> pure None
     in
     recurser ls

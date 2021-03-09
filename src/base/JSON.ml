@@ -429,19 +429,13 @@ module Message = struct
       (tag_label, tag_type, build_prim_lit_exn JSONType.string_typ tags)
     in
     let amount =
-      ( amount_label,
-        amount_type,
-        build_prim_lit_exn amount_type amounts )
+      (amount_label, amount_type, build_prim_lit_exn amount_type amounts)
     in
     let sender =
-      ( sender_label,
-        sender_type,
-        build_prim_lit_exn sender_type senders )
+      (sender_label, sender_type, build_prim_lit_exn sender_type senders)
     in
     let origin =
-      ( origin_label,
-        origin_type,
-        build_prim_lit_exn origin_type origins )
+      (origin_label, origin_type, build_prim_lit_exn origin_type origins)
     in
     let pjlist = member_exn "params" json |> to_list_exn in
     let params =
