@@ -437,13 +437,23 @@ module EvalTypecheck = struct
   
   let typecheck_remote_field_types ~caddr fts =
     let open EvalType in
-    (* Add _balance to fields list, to ensure that caddr is in use *)
-    let all_fts = (EvalIdentifier.mk_loc_id balance_label, balance_type) :: fts in
-    (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-    allM all_fts ~f:(fun (f, t) ->
-        let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
-        match res with
-        | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
-        | (_, None) -> pure false)
+    (* First check that the address is in use: balance > 0 || nonce > 0 *)
+    let balance_id = EvalIdentifier.mk_loc_id balance_label in
+    let nonce_id = EvalIdentifier.mk_loc_id nonce_label in
+    let%bind balance_lit, _ = StateService.external_fetch ~caddr ~fname:balance_id ~keys:[] ~ignoreval:false in
+    let%bind nonce_lit, _ = StateService.external_fetch ~caddr ~fname:nonce_id ~keys:[] ~ignoreval:false in
+    match balance_lit, nonce_lit with
+    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint128L nonce))
+      when Uint128.compare balance Uint128.zero > 0 ||
+           Uint128.compare nonce Uint128.zero > 0 
+      ->
+        (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+        allM fts ~f:(fun (f, t) ->
+            let%bind res = StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true in
+            match res with
+            | (_, Some ext_typ) -> pure @@ type_assignable ~expected:t ~actual:ext_typ
+            | (_, None) -> pure false)
+    | _ ->
+        fail0 @@ sprintf "Address %s not in use." (EvalLiteral.Bystrx.hex_encoding caddr)
 
 end
