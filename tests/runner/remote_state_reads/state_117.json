@@ -114,9 +114,9 @@
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
                 { "vname": "f", "type": "Uint128", "value": "0" },
                 { "vname": "g",
-                  "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+                  "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
                   "value": {
-                      "constructor": "0xabfeccdc9012345678901234567890f777564321.Address2",
+                      "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                       "argtypes": [],
                       "arguments": [ "0xabfeccdc9012345678901234567890f777564324" ]
                   }
@@ -130,9 +130,9 @@
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" },
                 { "vname": "admin", "type": "ByStr20 with end", "value": "0xabfeccdc9012345678901234567890f777564323" },
                 { "vname": "g",
-                  "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+                  "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
                   "value": {
-                      "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+                      "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address1",
                       "argtypes": [],
                       "arguments": [ "0xabfeccdc9012345678901234567890f777564324" ]
                   }
@@ -146,19 +146,19 @@
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564325" },
                 {
                     "vname": "h",
-                    "type": "Map Uint128 0xabfeccdc9012345678901234567890f777564321.AddressADT",
+                    "type": "Map Uint128 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
                     "value": [
                         {
                             "key" : "0",
                             "val" : {
-                                "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+                                "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address1",
                                 "argtypes": [],
                                 "arguments": [ "0xabfeccdc9012345678901234567890f777564325" ] }
                         },
                         {
                             "key" : "1",
                             "val" : {
-                                "constructor": "0xabfeccdc9012345678901234567890f777564321.Address2",
+                                "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                                 "argtypes": [],
                                 "arguments": [ "0xabfeccdc9012345678901234567890f777564326" ] }
                         }
