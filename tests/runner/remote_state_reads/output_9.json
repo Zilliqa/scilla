@@ -5,9 +5,9 @@
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
-    { "vname": "sender_balance_post", "type": "Uint128", "value": "100" },
-    { "vname": "sender_balance_mid", "type": "Uint128", "value": "100" },
-    { "vname": "sender_balance_pre", "type": "Uint128", "value": "200" },
+    { "vname": "sender_balance_post", "type": "Uint128", "value": "999900" },
+    { "vname": "sender_balance_mid", "type": "Uint128", "value": "999900" },
+    { "vname": "sender_balance_pre", "type": "Uint128", "value": "1000000" },
     {
       "vname": "assign_test_1",
       "type": "ByStr20 with end",
@@ -46,22 +46,28 @@
     },
     {
       "vname": "assign_test_8",
-      "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+      "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
       "value": {
-        "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+        "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address1",
         "argtypes": [],
         "arguments": [ "0x1234567890123456789012345678901234567890" ]
       }
     },
     {
       "vname": "assign_test_9",
-      "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
-      "value": []
+      "type": "List (0x3620c286757a29985cee194eb90064270fb65414.AddressADT)",
+      "value": {
+        "constructor": "Nil",
+        "argtypes": [
+          "0x3620c286757a29985cee194eb90064270fb65414.AddressADT"
+        ],
+        "arguments": []
+      }
     },
     {
       "vname": "assign_test_10",
       "type":
-        "Map (Uint128) (Map (Uint128) (0xabfeccdc9012345678901234567890f777564321.AddressADT))",
+        "Map (Uint128) (Map (Uint128) (0x3620c286757a29985cee194eb90064270fb65414.AddressADT))",
       "value": []
     },
     { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "value": "0" },

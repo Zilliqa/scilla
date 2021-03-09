@@ -185,11 +185,11 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
      * Both should succeed. *)
     if Poly.(exit_code = succ_code) then
       test ~ipc_mode:true :: test ~ipc_mode:false
-      :: build_contract_tests_with_init_file env name exit_code (i + 1) n
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
            additional_libs init_name
     else
       test ~ipc_mode:false
-      :: build_contract_tests_with_init_file env name exit_code (i + 1) n
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
            additional_libs init_name
 
 (*
