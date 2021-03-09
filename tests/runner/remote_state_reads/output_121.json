@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Address 0xabfeccdc9012345678901234567890f777564327 does not satisfy type ByStr20 with end\n",
+        "Address 0xabfeccdc9012345678901234567890f777564327 not in use.",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

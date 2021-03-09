@@ -251,15 +251,15 @@
   "warnings": [
     {
       "warning_message":
-        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:177:3\n  Accept at contracts/remote_state_reads.scilla:181:3\n",
+        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:176:3\n  Accept at contracts/remote_state_reads.scilla:180:3\n",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 177,
+        "line": 176,
         "column": 3
       },
       "end_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 181,
+        "line": 180,
         "column": 9
       },
       "warning_id": 1
