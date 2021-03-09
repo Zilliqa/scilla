@@ -51,20 +51,20 @@
         },
         {
             "vname" : "list3",
-            "type" : "List (ByStr20 with g : 0xabfeccdc9012345678901234567890f777564321.AddressADT end)",
+            "type" : "List (ByStr20 with g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end)",
             "value" : {
                 "constructor" : "Cons",
-                "argtypes"    : [ "ByStr20 with g : 0xabfeccdc9012345678901234567890f777564321.AddressADT end" ],
+                "argtypes"    : [ "ByStr20 with g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564324",
                     {
                         "constructor" : "Cons",
-                        "argtypes"    : [ "ByStr20 with g : 0xabfeccdc9012345678901234567890f777564321.AddressADT end" ],
+                        "argtypes"    : [ "ByStr20 with g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
                         "arguments"   : [
                             "0xabfeccdc9012345678901234567890f777564323",
                             {
                                 "constructor" : "Nil",
-                                "argtypes"    : [ "ByStr20 with g : 0xabfeccdc9012345678901234567890f777564321.AddressADT end" ],
+                                "argtypes"    : [ "ByStr20 with g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
                                 "arguments"   : []
                             }
                         ]
@@ -74,14 +74,14 @@
         },
         {
             "vname" : "pair1",
-            "type" : "Pair (ByStr20 with end) 0xabfeccdc9012345678901234567890f777564321.AddressADT",
+            "type" : "Pair (ByStr20 with end) 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
             "value" : {
                 "constructor" : "Pair",
-                "argtypes"    : [ "ByStr20 with end", "0xabfeccdc9012345678901234567890f777564321.AddressADT" ],
+                "argtypes"    : [ "ByStr20 with end", "0x3620c286757a29985cee194eb90064270fb65414.AddressADT" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564323",
                     {
-                        "constructor" : "0xabfeccdc9012345678901234567890f777564321.Address2",
+                        "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                         "argtypes"    : [],
                         "arguments"   : [ "0xabfeccdc9012345678901234567890f777564326" ]
                     }
@@ -90,10 +90,10 @@
         },
         {
             "vname" : "adt1",
-            "type" : "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+            "type" : "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
             "value" :
             {
-                "constructor" : "0xabfeccdc9012345678901234567890f777564321.Address2",
+                "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                 "argtypes"    : [],
                 "arguments"   : [ "0xabfeccdc9012345678901234567890f777564324" ]
             }
