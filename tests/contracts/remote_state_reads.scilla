@@ -124,7 +124,6 @@ transition RemoteReadsADTTest(
   pair1 : Pair (ByStr20 with end) AddressADT,
   adt1 : AddressADT,
   remote1: ByStr20 with h : Map Uint128 AddressADT end)
-  
 end
 
 (* Test that outgoing messages and events use ByStr20 for type info, and not the full address type
