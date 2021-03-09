@@ -1,66 +1,13 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7954",
-  "_accepted": "false",
+  "gas_remaining": "7957",
+  "_accepted": "true",
   "messages": [],
   "states": [
-    { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "assign_test_10",
-      "type":
-        "Map (Uint128) (Map (Uint128) (0xabfeccdc9012345678901234567890f777564321.AddressADT))",
-      "value": [
-        {
-          "key": "0",
-          "val": [
-            {
-              "key": "0",
-              "val": {
-                "constructor":
-                  "0xabfeccdc9012345678901234567890f777564321.Address2",
-                "argtypes": [],
-                "arguments": [ "0x1234567890123456789012345678901234567890" ]
-              }
-            }
-          ]
-        },
-        {
-          "key": "1",
-          "val": [
-            {
-              "key": "42",
-              "val": {
-                "constructor":
-                  "0xabfeccdc9012345678901234567890f777564321.Address2",
-                "argtypes": [],
-                "arguments": [ "0x1234567890123456789012345678901234567890" ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "vname": "assign_test_9",
-      "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
-      "value": [
-        {
-          "constructor":
-            "0xabfeccdc9012345678901234567890f777564321.Address2",
-          "argtypes": [],
-          "arguments": [ "0x1234567890123456789012345678901234567890" ]
-        }
-      ]
-    },
-    {
-      "vname": "assign_test_8",
-      "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
-      "value": {
-        "constructor": "0xabfeccdc9012345678901234567890f777564321.Address2",
-        "argtypes": [],
-        "arguments": [ "0x1234567890123456789012345678901234567890" ]
-      }
-    },
+    { "vname": "_balance", "type": "Uint128", "value": "100" },
+    { "vname": "sender_balance_post", "type": "Uint128", "value": "100" },
+    { "vname": "sender_balance_mid", "type": "Uint128", "value": "100" },
+    { "vname": "sender_balance_pre", "type": "Uint128", "value": "200" },
     {
       "vname": "assign_test_1",
       "type": "ByStr20 with end",
@@ -96,6 +43,26 @@
       "vname": "assign_test_7",
       "type": "ByStr20 with other_map : Map (Uint128) (ByStr20) end",
       "value": "0x1234567890123456789012345678901234567890"
+    },
+    {
+      "vname": "assign_test_8",
+      "type": "0xabfeccdc9012345678901234567890f777564321.AddressADT",
+      "value": {
+        "constructor": "0xabfeccdc9012345678901234567890f777564321.Address1",
+        "argtypes": [],
+        "arguments": [ "0x1234567890123456789012345678901234567890" ]
+      }
+    },
+    {
+      "vname": "assign_test_9",
+      "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
+      "value": []
+    },
+    {
+      "vname": "assign_test_10",
+      "type":
+        "Map (Uint128) (Map (Uint128) (0xabfeccdc9012345678901234567890f777564321.AddressADT))",
+      "value": []
     },
     { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "value": "0" },
     { "vname": "remote_reads_test_res_2_1", "type": "Uint128", "value": "0" },
@@ -172,10 +139,7 @@
           { "constructor": "True", "argtypes": [], "arguments": [] }
         ]
       }
-    },
-    { "vname": "sender_balance_pre", "type": "Uint128", "value": "0" },
-    { "vname": "sender_balance_mid", "type": "Uint128", "value": "0" },
-    { "vname": "sender_balance_post", "type": "Uint128", "value": "0" }
+    }
   ],
   "events": []
 }

@@ -76,7 +76,7 @@ and literal_to_json lit =
   | ADTValue (n, t, v) as ls ->
       let open Datatypes in
       let a, _ = lookup_constructor_exn n in
-      if is_list_adt_name a.tname then
+      if is_list_adt_name a.tname && GlobalConfig.get_pp_lit () then
         (* We make an exception for Lists and print them as a JSON array. *)
         match Datatypes.scilla_list_to_ocaml_rev ls with
         | Ok ls' ->

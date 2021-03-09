@@ -48,7 +48,11 @@
   {
     "vname": "assign_test_9",
     "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
-    "value": []
+    "value": {
+        "constructor" : "Nil",
+        "argtypes" : ["0xabfeccdc9012345678901234567890f777564321.AddressADT"],
+        "arguments": []
+    }
   },
   {
     "vname": "assign_test_10",
@@ -136,6 +140,9 @@
     "type": "Option Bool",
     "value": { "constructor": "Some", "argtypes": ["Bool"], "arguments": [ { "constructor": "True", "argtypes": [], "arguments": [] } ] }
   },
+  { "vname": "sender_balance_pre", "type": "Uint128", "value": "0" },
+  { "vname": "sender_balance_mid", "type": "Uint128", "value": "0" },
+  { "vname": "sender_balance_post", "type": "Uint128", "value": "0" },
   {
     "vname": "_external",
     "type": "Unit",

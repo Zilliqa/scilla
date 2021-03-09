@@ -653,44 +653,49 @@ module TypeUtilities = struct
       | Map ((kt, vt), _) -> pure (MapType (kt, vt))
       | ADTValue (cname, ts, _) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-          pure @@ (ADT (mk_loc_id adt.tname, ts))
+          pure @@ ADT (mk_loc_id adt.tname, ts)
       | Clo _ -> fail0 @@ "Cannot type runtime closure."
       | TAbs _ -> fail0 @@ "Cannot type runtime type function"
     in
     let rec fun_typ_recurser fun_typ args dyn_checks_acc =
-      match fun_typ, args with
+      match (fun_typ, args) with
       | FunType (t, res_t), arg :: rest ->
           let%bind _, new_dyn_checks_acc = recurser t arg dyn_checks_acc in
           fun_typ_recurser res_t rest new_dyn_checks_acc
-      | ADT (_, _), [] ->
-          pure @@ (fun_typ, dyn_checks_acc)
-      | _, _ -> 
-          fail1
-            (sprintf "Malformed ADT literal %s\n"
-               (pp_literal l)) lc
+      | ADT (_, _), [] -> pure @@ (fun_typ, dyn_checks_acc)
+      | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
     and recurser expected l dyn_check_acc =
-      match expected, l with
+      match (expected, l) with
       | ADT (tname, targs), ADTValue (cname, ctargs, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)
-          if not @@ [%equal: TUName.t] (get_id tname) adt.tname
-          then fail0 @@ sprintf "Literal constructor %s does not belong to type %s" (TUName.as_error_string cname) (TUIdentifier.as_error_string tname)
+          if not @@ [%equal: TUName.t] (get_id tname) adt.tname then
+            fail0
+            @@ sprintf "Literal constructor %s does not belong to type %s"
+                 (TUName.as_error_string cname)
+                 (TUIdentifier.as_error_string tname)
           else
             (* Constructor type arguments must be assignable to ADT type arguments *)
             let msg () = mk_error0 "Constructor type arguments unassignable" in
-            let%bind () = forall2M targs ctargs ~f:(fun targ carg -> assert_type_assignable ~expected:targ ~actual:carg ~lc) ~msg in
+            let%bind () =
+              forall2M targs ctargs
+                ~f:(fun targ carg ->
+                  assert_type_assignable ~expected:targ ~actual:carg ~lc)
+                ~msg
+            in
             (* Elaborate constructor using expected type arguments (due to assignability) *)
             let%bind c_fun_typ = elab_constr_type ~lc cname targs in
             (* Traverse constructor function type and check assignability of value arguments *)
             fun_typ_recurser c_fun_typ cargs dyn_check_acc
-    | (Address _) as res_t, ByStrX bs when Bystrx.width bs = Type.address_length ->
-        (* ByStr20 literal found, address expected. Trust the dynamic typecheck to validate, and expect the address type *)
-        pure @@ (res_t, (res_t, bs) :: dyn_check_acc)
-    | t, l ->
-        (* Simple case - type literal, and check assignability *)
-        let%bind lit_t = simple_literal_type l in
-        let%bind () = assert_type_assignable ~expected:t ~actual:lit_t ~lc in
-        pure (t, dyn_check_acc)
+      | (Address _ as res_t), ByStrX bs
+        when Bystrx.width bs = Type.address_length ->
+          (* ByStr20 literal found, address expected. Trust the dynamic typecheck to validate, and expect the address type *)
+          pure @@ (res_t, (res_t, bs) :: dyn_check_acc)
+      | t, l ->
+          (* Simple case - type literal, and check assignability *)
+          let%bind lit_t = simple_literal_type l in
+          let%bind () = assert_type_assignable ~expected:t ~actual:lit_t ~lc in
+          pure (t, dyn_check_acc)
     in
     match expected with
     | Some t -> recurser t l []
@@ -731,8 +736,8 @@ module TypeUtilities = struct
                      "Message/Event has inconsistent values and types at field \
                       %s"
                      n
-              else
-              if acc then pure (is_legal_message_field_type t) else pure false)
+              else if acc then pure (is_legal_message_field_type t)
+              else pure false)
             ~init:true m
         in
         if not all_legal then

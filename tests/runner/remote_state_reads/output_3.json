@@ -178,7 +178,10 @@
       "vname": "remote_reads_test_res_3_2",
       "type": "ByStr20",
       "value": "0xabfeccdc9012345678901234567890f777567890"
-    }
+    },
+    { "vname": "sender_balance_pre", "type": "Uint128", "value": "0" },
+    { "vname": "sender_balance_mid", "type": "Uint128", "value": "0" },
+    { "vname": "sender_balance_post", "type": "Uint128", "value": "0" }
   ],
   "events": []
 }

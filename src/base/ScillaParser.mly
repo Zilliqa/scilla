@@ -352,22 +352,14 @@ type_term :
 
 stmt:
 | l = ID; FETCH; r = sid   { (Load (to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = sid
-    { (RemoteLoad (to_loc_id l (toLoc $startpos(l)),
-                   to_loc_id adr (toLoc $startpos(adr)),
-                   ParserIdentifier.mk_id r (toLoc $startpos(r))),
-       toLoc $startpos) }
+| r = remote_fetch_stmt { r }
 | l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
 | l = ID; FETCH; AND; c = CID { (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), c), toLoc $startpos) }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
   { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
-| l = ID; REMOTEFETCH; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 | l = ID; keys = nonempty_list(map_access); ASSIGN; r = sid
   { MapUpdate( to_loc_id l (toLoc $startpos(l)), keys, Some (ParserIdentifier.mk_id r (toLoc $startpos(r)))), toLoc $startpos }
 | DELETE; l = ID; keys = nonempty_list(map_access)
@@ -385,6 +377,17 @@ stmt:
 | (* list iterator *)
   FORALL; l = sident; p = component_id
   { Iterate (l, p), toLoc $startpos }
+
+remote_fetch_stmt:
+| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = sident
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
+| (* Reading _sender._balance or _origin._balance *)
+  l = ID; REMOTEFETCH; adr = SPID; PERIOD; r = SPID
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
+| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+| l = ID; REMOTEFETCH; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

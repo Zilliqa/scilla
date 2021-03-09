@@ -827,8 +827,7 @@ let run_with_args args =
             List.map untyped_state ~f:(fun x ->
                 match TypeUtil.TypeUtilities.literal_type (trd3 x) with
                 | Ok (t, []) -> (fst3 x, t, trd3 x)
-                | Ok _
-                | Error _ ->
+                | Ok _ | Error _ ->
                     fatal_error
                       (mk_error0
                          (sprintf "Unable to determine type of literal %s"
@@ -841,8 +840,7 @@ let run_with_args args =
               List.map untyped_state ~f:(fun x ->
                   match TypeUtil.TypeUtilities.literal_type (trd3 x) with
                   | Ok (t, []) -> (fst3 x, t, trd3 x)
-                  | Ok _
-                  | Error _ ->
+                  | Ok _ | Error _ ->
                       fatal_error
                         (mk_error0
                            (sprintf "Unable to determine type of literal %s"

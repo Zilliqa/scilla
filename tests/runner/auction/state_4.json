@@ -21,5 +21,17 @@
       "vname": "ended",
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
-    }
+    },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x12345678901234567890123456789012345678cd",
+            "state": [
+                { "vname": "_balance", "type": "Uint128", "value": "542" }
+            ]
+        }
+    ]
+  }
 ]

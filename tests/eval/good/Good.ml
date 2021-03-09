@@ -148,6 +148,7 @@ let explist =
     "polynetwork_extract_bystr2.scilexp";
     "polynetwork_extract_bystr3.scilexp";
     "polynetwork_getBookKeeper.scilexp";
+    "polynetwork_txparam.scilexp";
     "builtin_type_args.scilexp";
   ]
 
