@@ -48,7 +48,11 @@
   {
     "vname": "assign_test_9",
     "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
-    "value": []
+    "value": {
+        "constructor" : "Nil",
+        "argtypes" : ["0xabfeccdc9012345678901234567890f777564321.AddressADT"],
+        "arguments": []
+    }
   },
   {
     "vname": "assign_test_10",

@@ -43,14 +43,27 @@
     {
       "vname": "assign_test_9",
       "type": "List (0xabfeccdc9012345678901234567890f777564321.AddressADT)",
-      "value": [
-        {
-          "constructor":
-            "0xabfeccdc9012345678901234567890f777564321.Address2",
-          "argtypes": [],
-          "arguments": [ "0x1234567890123456789012345678901234567890" ]
-        }
-      ]
+      "value": {
+        "constructor": "Cons",
+        "argtypes": [
+          "0xabfeccdc9012345678901234567890f777564321.AddressADT"
+        ],
+        "arguments": [
+          {
+            "constructor":
+              "0xabfeccdc9012345678901234567890f777564321.Address2",
+            "argtypes": [],
+            "arguments": [ "0x1234567890123456789012345678901234567890" ]
+          },
+          {
+            "constructor": "Nil",
+            "argtypes": [
+              "0xabfeccdc9012345678901234567890f777564321.AddressADT"
+            ],
+            "arguments": []
+          }
+        ]
+      }
     },
     {
       "vname": "assign_test_8",
