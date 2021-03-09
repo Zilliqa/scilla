@@ -103,8 +103,8 @@ let foutput_deploy env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
  * Build tests to invoke scilla-runner with the right arguments, for
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
-let rec build_contract_tests_with_init_file env name exit_code i n
-    additional_libs init_name =
+let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
+    n additional_libs init_name =
   if i > n then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
@@ -139,6 +139,8 @@ let rec build_contract_tests_with_init_file env name exit_code i n
           "-jsonerrors";
           "-iblockchain";
           dir ^/ "blockchain_" ^ istr ^. "json";
+          "-pplit";
+          Bool.to_string pplit;
         ]
       in
 
@@ -195,9 +197,10 @@ let rec build_contract_tests_with_init_file env name exit_code i n
  * multiple test cases, each suffixed with _i up to _n (both inclusive).
  * The init.json file is fixed as "init.json"
  *)
-let build_contract_tests env name exit_code i n additional_libs =
-  build_contract_tests_with_init_file env name exit_code i n additional_libs
-    "init"
+let build_contract_tests ?(pplit = true) env name exit_code i n additional_libs
+    =
+  build_contract_tests_with_init_file ~pplit env name exit_code i n
+    additional_libs "init"
 
 let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     =
@@ -404,8 +407,8 @@ let contract_tests env =
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
-                >::: build_contract_tests env "remote_state_reads" succ_code 1 9
-                       [];
+                >::: build_contract_tests ~pplit:false env "remote_state_reads"
+                       succ_code 1 9 [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_assignable_map_types" ~is_library:false
