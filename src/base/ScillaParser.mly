@@ -248,19 +248,6 @@ targ:
 
 address_type_field:
 | FIELD; ft = id_with_typ { ft }
-(* Allow _this_address as well *)
-| n = SPID; t = type_annot
-    { let loc = toLoc $startpos(n) in
-      if n = "_this_address"
-      then to_loc_id n loc, t
-      else raise (SyntaxError ("Invalid field name " ^ n ^ " in address type", loc)) }
-
-(* 
-a1 : ByStr20 with end     (* a1 is an address that is in use, either by a contract or a user *)
-a2 : ByStr20 with contract field f1 : Uint128, f2 : Map Uint32 Bool end   (* a2 is the address of a contract containing at least the mentioned mutable fields. *)
-a2_tmp : ByStr20 with contract (param1 : Int32) field f3 : Nat end    (* The way to specify contract parameters. Postponed to the next upgrade, but listed here to show how the syntax can be extended to accomodate contract parameters *)
-a3: ByStr20 with contract end      (* a3 is the address of a contract. Any fields may be declared in that contract. Note that this eliminates the syntactic need for _this_address in address types *)
-*)
 
 (***********************************************)
 (*                 Expressions                 *)
