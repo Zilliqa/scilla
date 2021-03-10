@@ -506,9 +506,9 @@ module EvalTypecheck = struct
         ~ignoreval:false
     in
     match (balance_lit, nonce_lit) with
-    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint128L nonce))
+    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint64L nonce))
       when Uint128.compare balance Uint128.zero > 0
-           || Uint128.compare nonce Uint128.zero > 0 -> (
+           || Uint64.compare nonce Uint64.zero > 0 -> (
         match fts_opt with
         | None ->
             (* Non-contract address - all fields checked *)
