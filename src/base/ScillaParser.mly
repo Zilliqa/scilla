@@ -209,10 +209,21 @@ t_map_value :
 | vt = address_typ; { vt }
 
 address_typ :
-| d = CID; WITH; fs = separated_list(COMMA, address_type_field); END;
+| d = CID; WITH; END;
     { if d = "ByStr20"
-      then Address fs
-      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
+      then Address []
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then
+        (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
+        Address ((to_loc_id "_this_address" (toLoc $startpos(fs)), SType.PrimType (to_prim_type_exn "ByStr20" (toLoc $startpos(fs)))) :: fs)
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| (* Adding this production in preparation for contract parameters *)
+  d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then raise (SyntaxError ("Contract parameters in address types not yet supported", toLoc $startpos(d)))
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 
 typ :
 | d = scid; targs=list(targ)
@@ -236,13 +247,20 @@ targ:
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 address_type_field:
-| ft = id_with_typ { ft }
+| FIELD; ft = id_with_typ { ft }
 (* Allow _this_address as well *)
 | n = SPID; t = type_annot
     { let loc = toLoc $startpos(n) in
       if n = "_this_address"
       then to_loc_id n loc, t
       else raise (SyntaxError ("Invalid field name " ^ n ^ " in address type", loc)) }
+
+(* 
+a1 : ByStr20 with end     (* a1 is an address that is in use, either by a contract or a user *)
+a2 : ByStr20 with contract field f1 : Uint128, f2 : Map Uint32 Bool end   (* a2 is the address of a contract containing at least the mentioned mutable fields. *)
+a2_tmp : ByStr20 with contract (param1 : Int32) field f3 : Nat end    (* The way to specify contract parameters. Postponed to the next upgrade, but listed here to show how the syntax can be extended to accomodate contract parameters *)
+a3: ByStr20 with contract end      (* a3 is the address of a contract. Any fields may be declared in that contract. Note that this eliminates the syntactic need for _this_address in address types *)
+*)
 
 (***********************************************)
 (*                 Expressions                 *)

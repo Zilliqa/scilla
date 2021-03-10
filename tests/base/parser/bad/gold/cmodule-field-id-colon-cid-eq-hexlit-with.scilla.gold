@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error, state number 324",
+      "error_message": "Syntax error, state number 332",
       "start_location": {
         "file":
           "base/parser/bad/cmodule-field-id-colon-cid-eq-hexlit-with.scilla",

@@ -211,16 +211,25 @@ module MkType (I : ScillaIdentifier) = struct
       | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
       | Unit -> sprintf "()"
       | Address fts ->
+          let is_contract, real_fts =
+            match fts with
+            | (f1, _) :: fts'
+              when String.( (TIdentifier.as_string f1) = "_this_address" )
+              -> true, fts'
+            | _ -> false, fts
+          in
           let elems =
-            List.map fts ~f:(fun (f, t) ->
-                sprintf "%s : %s"
+            List.map real_fts ~f:(fun (f, t) ->
+                sprintf "field %s : %s"
                   ( if is_error then TIdentifier.as_error_string f
                   else TIdentifier.as_string f )
                   (recurser t))
             |> String.concat ~sep:", "
           in
-          sprintf "ByStr20 with %s%send" elems
-            (if List.is_empty fts then "" else " ")
+          sprintf "ByStr20 with %s%s%send"
+            (if is_contract then "contract " else "")
+            elems
+            (if List.is_empty real_fts then "" else " ")
     and with_paren t =
       match t with
       | FunType _ | PolyFun _ -> sprintf "(%s)" (recurser t)
@@ -324,8 +333,6 @@ module MkType (I : ScillaIdentifier) = struct
 
   (* Type equality - assumes that the types have been canonicalised first. *)
   let equal t1 t2 =
-    let t1' = canonicalize_tfun t1 in
-    let t2' = canonicalize_tfun t2 in
     let rec equiv t1 t2 =
       match (t1, t2) with
       | PrimType p1, PrimType p2 -> [%equal: PrimType.t] p1 p2
@@ -355,7 +362,7 @@ module MkType (I : ScillaIdentifier) = struct
           && traverse fts1 fts2 && traverse fts2 fts1
       | _ -> false
     in
-    equiv t1' t2'
+    equiv t1 t2
 
   (* Type equivalence *)
   let type_equivalent t1 t2 =
