@@ -94,7 +94,7 @@ module type ScillaType = sig
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of ((loc TIdentifier.t * t) list) option (* Some fts if a contract address, None if any address in use *)
+    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   val pp_typ : t -> string
@@ -192,7 +192,7 @@ module MkType (I : ScillaIdentifier) = struct
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of ((loc TIdentifier.t * t) list) option (* Some fts if a contract address, None if any address in use *)
+    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   let pp_typ_helper is_error t =
@@ -220,8 +220,7 @@ module MkType (I : ScillaIdentifier) = struct
                   (recurser t))
             |> String.concat ~sep:", "
           in
-          sprintf "ByStr20 with contract %s%send"
-            elems
+          sprintf "ByStr20 with contract %s%send" elems
             (if List.is_empty fts then "" else " ")
     and with_paren t =
       match t with
@@ -291,7 +290,8 @@ module MkType (I : ScillaIdentifier) = struct
     | Address None -> tm
     | Address (Some fts) ->
         Address
-          (Some (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t))))
+          (Some
+             (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t))))
 
   (* note: this is sequential substitution of multiple variables,
             _not_ simultaneous substitution *)

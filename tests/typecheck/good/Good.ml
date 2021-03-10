@@ -74,45 +74,54 @@ let equivalent_types =
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
-    ( "ByStr20", "ByStr20");
-    ( "ByStr20 with end", "ByStr20 with end");
-    ( "ByStr20 with contract end", "ByStr20 with contract end");
-    ( "ByStr20 with contract field x : Uint32 end", "ByStr20 with contract field x : Uint32 end");
+    ("ByStr20", "ByStr20");
+    ("ByStr20 with end", "ByStr20 with end");
+    ("ByStr20 with contract end", "ByStr20 with contract end");
+    ( "ByStr20 with contract field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32 end" );
     ( "ByStr20 with contract field x : Uint32, field y : Bool end",
       "ByStr20 with contract field x : Uint32, field y : Bool end" );
     ( "ByStr20 with contract field y : Bool, field x : Uint32 end",
       "ByStr20 with contract field x : Uint32, field y : Bool end" );
     ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with end end",
-      "ByStr20 with contract field x : Uint32, field y : ByStr20 with end end" );
-    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract end end",
-      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract end end" );
-    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract field y2 : ByStr20, field y1 : Option \
-       Int256 end end",
-      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract field y1 : Option Int256, field y2 : \
-       ByStr20 end end" );
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with end end"
+    );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : ByStr20, field y1 : Option Int256 end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y1 : Option Int256, field y2 : ByStr20 end end" );
   ]
 
 let assignable_but_not_equivalent_types =
   [
     (* Addresses *)
-    ( "ByStr20", "ByStr20 with end");
-    ( "ByStr20", "ByStr20 with contract end");
-    ( "ByStr20 with end", "ByStr20 with contract end");
-    ( "ByStr20 with end", "ByStr20 with contract field x : Uint32 end");
-    ( "ByStr20 with contract end", "ByStr20 with contract field x : Uint32 end");
-    ( "ByStr20 with contract field x : Uint32 end", "ByStr20 with contract field x : Uint32, field y : Uint32 end");
+    ("ByStr20", "ByStr20 with end");
+    ("ByStr20", "ByStr20 with contract end");
+    ("ByStr20 with end", "ByStr20 with contract end");
+    ("ByStr20 with end", "ByStr20 with contract field x : Uint32 end");
+    ("ByStr20 with contract end", "ByStr20 with contract field x : Uint32 end");
     ( "ByStr20 with contract field x : Uint32 end",
-      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : ByStr20 with end end" );
+      "ByStr20 with contract field x : Uint32, field y : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : \
+       ByStr20 with end end" );
     ( "ByStr20 with contract field y : Uint32, field x : Uint32 end",
-      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : ByStr20 with end end" );
-    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract field y1 : Int32 end end",
-      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract field y2 : Bool, field y1 : Int32 end end"
-    );
-    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract end end",
-      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract field y2 : Bool, field y1 : Int32 end end"
-    );
+      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : \
+       ByStr20 with end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y1 : Int32 end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : Bool, field y1 : Int32 end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : Bool, field y1 : Int32 end end" );
     ( "ByStr20 with contract field x : ByStr20 with end end",
-      "ByStr20 with contract field x : ByStr20 with contract end end");
+      "ByStr20 with contract field x : ByStr20 with contract end end" );
   ]
 
 let not_assignable_in_either_direction_types =
@@ -125,12 +134,18 @@ let not_assignable_in_either_direction_types =
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
-    ( "ByStr20 with contract field x : Int32 end", "ByStr20 with contract field x : Uint32 end");
-    ( "ByStr20 with contract field x : Int32 end", "ByStr20 with contract field y : Int32 end");
-    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 end end",
-      "ByStr20 with contract field x : ByStr20 with contract field y1 : Uint32 end end" );
-    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 end end",
-      "ByStr20 with contract field x : ByStr20 with contract field y2 : Int32 end end" );
+    ( "ByStr20 with contract field x : Int32 end",
+      "ByStr20 with contract field x : Uint32 end" );
+    ( "ByStr20 with contract field x : Int32 end",
+      "ByStr20 with contract field y : Int32 end" );
+    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 \
+       end end",
+      "ByStr20 with contract field x : ByStr20 with contract field y1 : Uint32 \
+       end end" );
+    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 \
+       end end",
+      "ByStr20 with contract field x : ByStr20 with contract field y2 : Int32 \
+       end end" );
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)

@@ -458,23 +458,20 @@ module TypeUtilities = struct
     let not_declared () =
       fail0
       @@ sprintf "Field %s is not declared in address type %s."
-        (as_error_string f) (pp_typ t) in
+           (as_error_string f) (pp_typ t)
+    in
     match t with
     | Address None ->
-        if is_balance then
-          pure ContractUtil.balance_type
-        else
-          not_declared ()
+        if is_balance then pure ContractUtil.balance_type else not_declared ()
     | Address (Some fts) -> (
-        if is_balance then
-          pure ContractUtil.balance_type
+        if is_balance then pure ContractUtil.balance_type
         else
           let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
           match
             List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
           with
           | Some ft -> pure ft
-          | None -> not_declared ())
+          | None -> not_declared () )
     | _ ->
         fail0
         @@ sprintf "Attempting to read field from non-address type %s."
