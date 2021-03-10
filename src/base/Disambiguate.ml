@@ -205,14 +205,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_t = recurse t in
           pure @@ PostDisType.PolyFun (tvar, dis_t)
       | Unit -> pure @@ PostDisType.Unit
-      | Address fts ->
+      | Address None -> pure @@ PostDisType.Address None
+      | Address (Some fts) ->
           let%bind dis_fts =
             mapM fts ~f:(fun (id, t) ->
                 let%bind dis_id = name_def_as_simple_global id in
                 let%bind dis_t = recurse t in
                 pure @@ (dis_id, dis_t))
           in
-          pure @@ PostDisType.Address dis_fts
+          pure @@ PostDisType.Address (Some dis_fts)
     in
 
     recurse t

@@ -113,17 +113,7 @@
     },
     { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "value": "0" },
     { "vname": "remote_reads_test_res_2_1", "type": "Uint128", "value": "0" },
-    {
-      "vname": "remote_reads_test_res_2_2",
-      "type": "ByStr20",
-      "value": "0xabfeccdc9012345678901234567890f777567890"
-    },
     { "vname": "remote_reads_test_res_3_1", "type": "Uint128", "value": "0" },
-    {
-      "vname": "remote_reads_test_res_3_2",
-      "type": "ByStr20",
-      "value": "0xabfeccdc9012345678901234567890f777567890"
-    },
     { "vname": "remote_reads_test_res_3_3", "type": "Uint32", "value": "0" },
     {
       "vname": "remote_reads_test_res_3_4",

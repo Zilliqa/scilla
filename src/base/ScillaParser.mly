@@ -211,13 +211,13 @@ t_map_value :
 address_typ :
 | d = CID; WITH; END;
     { if d = "ByStr20"
-      then Address []
+      then Address None
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
       then
         (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
-        Address ((to_loc_id "_this_address" (toLoc $startpos(fs)), SType.PrimType (to_prim_type_exn "ByStr20" (toLoc $startpos(fs)))) :: fs)
+        Address (Some fs)
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | (* Adding this production in preparation for contract parameters *)
   d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;

@@ -244,7 +244,8 @@ functor
                 @@ sprintf "Unbound type variable %s in type %s" a
                      (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
-          | Address fts -> (
+          | Address None -> pure ()
+          | Address (Some fts) -> (
               match
                 List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
                     TIdentifier.compare f1 f2)
@@ -401,7 +402,7 @@ module TypeUtilities = struct
                 in
                 adt_serializable
                 && List.for_all ts ~f:(fun t -> recurser t seen_adts) )
-      | Address fts when check_addresses ->
+      | Address (Some fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
           List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
@@ -453,9 +454,19 @@ module TypeUtilities = struct
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
   let address_field_type f t =
+    let is_balance = [%equal: TUName.t] (get_id f) ContractUtil.balance_label in
+    let not_declared () =
+      fail0
+      @@ sprintf "Field %s is not declared in address type %s."
+        (as_error_string f) (pp_typ t) in
     match t with
-    | Address fts -> (
-        if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
+    | Address None ->
+        if is_balance then
+          pure ContractUtil.balance_type
+        else
+          not_declared ()
+    | Address (Some fts) -> (
+        if is_balance then
           pure ContractUtil.balance_type
         else
           let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
@@ -463,10 +474,7 @@ module TypeUtilities = struct
             List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
           with
           | Some ft -> pure ft
-          | None ->
-              fail0
-              @@ sprintf "Field %s is not declared in address type %s."
-                   (as_error_string f) (pp_typ t) )
+          | None -> not_declared ())
     | _ ->
         fail0
         @@ sprintf "Attempting to read field from non-address type %s."
