@@ -209,10 +209,21 @@ t_map_value :
 | vt = address_typ; { vt }
 
 address_typ :
-| d = CID; WITH; fs = separated_list(COMMA, address_type_field); END;
+| d = CID; WITH; END;
     { if d = "ByStr20"
-      then Address fs
-      else raise (SyntaxError ("Invalid primitive type", toLoc $startpos(d))) }
+      then Address None
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then
+        (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
+        Address (Some fs)
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| (* Adding this production in preparation for contract parameters *)
+  d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then raise (SyntaxError ("Contract parameters in address types not yet supported", toLoc $startpos(d)))
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 
 typ :
 | d = scid; targs=list(targ)
@@ -236,13 +247,7 @@ targ:
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
 
 address_type_field:
-| ft = id_with_typ { ft }
-(* Allow _this_address as well *)
-| n = SPID; t = type_annot
-    { let loc = toLoc $startpos(n) in
-      if n = "_this_address"
-      then to_loc_id n loc, t
-      else raise (SyntaxError ("Invalid field name " ^ n ^ " in address type", loc)) }
+| FIELD; ft = id_with_typ { ft }
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -379,15 +384,21 @@ stmt:
   { Iterate (l, p), toLoc $startpos }
 
 remote_fetch_stmt:
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = sident
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = sident
   { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
 | (* Reading _sender._balance or _origin._balance *)
-  l = ID; REMOTEFETCH; adr = SPID; PERIOD; r = SPID
+  l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
   { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
-| l = ID; REMOTEFETCH; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+| (* Adding this production in preparation for remote reads of contract parameters *)
+  _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
+  { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
-| l = ID; REMOTEFETCH; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+| l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+| (* Adding this production in preparation for address type casts *)
+  _l = ID; FETCH; AND; _adr = sident; AS; address_typ
+  { raise (SyntaxError ("Address type casts not yet supported", toLoc $startpos(_adr))) }
 
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;

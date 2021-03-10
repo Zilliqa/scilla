@@ -1,9 +1,9 @@
 {
-  "gas_remaining": "7437",
+  "gas_remaining": "7424",
   "errors": [
     {
       "error_message":
-        "Address 0xabfeccdc9012345678901234567890f777564324 does not satisfy type ByStr20 with g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end\n",
+        "Address 0xabfeccdc9012345678901234567890f777564324 does not satisfy type ByStr20 with contract field g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

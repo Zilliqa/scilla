@@ -94,7 +94,7 @@ module type ScillaType = sig
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of (loc TIdentifier.t * t) list
+    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   val pp_typ : t -> string
@@ -174,7 +174,7 @@ module type ScillaType = sig
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
 
-  val address_typ : (loc TIdentifier.t * t) list -> t
+  val address_typ : (loc TIdentifier.t * t) list option -> t
 end
 
 module MkType (I : ScillaIdentifier) = struct
@@ -192,7 +192,7 @@ module MkType (I : ScillaIdentifier) = struct
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of (loc TIdentifier.t * t) list
+    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   let pp_typ_helper is_error t =
@@ -210,16 +210,17 @@ module MkType (I : ScillaIdentifier) = struct
       | TypeVar tv -> tv
       | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
       | Unit -> sprintf "()"
-      | Address fts ->
+      | Address None -> "ByStr20 with end"
+      | Address (Some fts) ->
           let elems =
             List.map fts ~f:(fun (f, t) ->
-                sprintf "%s : %s"
+                sprintf "field %s : %s"
                   ( if is_error then TIdentifier.as_error_string f
                   else TIdentifier.as_string f )
                   (recurser t))
             |> String.concat ~sep:", "
           in
-          sprintf "ByStr20 with %s%send" elems
+          sprintf "ByStr20 with contract %s%send" elems
             (if List.is_empty fts then "" else " ")
     and with_paren t =
       match t with
@@ -251,7 +252,8 @@ module MkType (I : ScillaIdentifier) = struct
       | PolyFun (arg, bt) ->
           let acc' = go bt acc in
           rem acc' arg
-      | Address fts ->
+      | Address None -> acc
+      | Address (Some fts) ->
           List.fold_left fts ~init:acc ~f:(fun acc (_, t) -> go t acc)
     in
     go tp []
@@ -285,9 +287,11 @@ module MkType (I : ScillaIdentifier) = struct
     | PolyFun (arg, t) ->
         if String.(tvar = arg) then tm
         else PolyFun (arg, subst_type_in_type tvar tp t)
-    | Address fts ->
+    | Address None -> tm
+    | Address (Some fts) ->
         Address
-          (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t)))
+          (Some
+             (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t))))
 
   (* note: this is sequential substitution of multiple variables,
             _not_ simultaneous substitution *)
@@ -310,8 +314,9 @@ module MkType (I : ScillaIdentifier) = struct
           let bt1 = subst_type_in_type arg tv_new bt in
           let bt2 = recursor bt1 (update_taken arg' taken) in
           PolyFun (arg', bt2)
-      | Address fts ->
-          Address (List.map fts ~f:(fun (f, t) -> (f, recursor t taken)))
+      | Address None -> t
+      | Address (Some fts) ->
+          Address (Some (List.map fts ~f:(fun (f, t) -> (f, recursor t taken))))
     in
     recursor
 
@@ -324,8 +329,6 @@ module MkType (I : ScillaIdentifier) = struct
 
   (* Type equality - assumes that the types have been canonicalised first. *)
   let equal t1 t2 =
-    let t1' = canonicalize_tfun t1 in
-    let t2' = canonicalize_tfun t2 in
     let rec equiv t1 t2 =
       match (t1, t2) with
       | PrimType p1, PrimType p2 -> [%equal: PrimType.t] p1 p2
@@ -341,7 +344,8 @@ module MkType (I : ScillaIdentifier) = struct
           equiv t1_1 t2_1 && equiv t1_2 t2_2
       | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
           String.equal v1 v2 && equiv t1'' t2''
-      | Address fts1, Address fts2 ->
+      | Address None, Address None -> true
+      | Address (Some fts1), Address (Some fts2) ->
           let traverse fts_first fts_second =
             List.for_all fts_first ~f:(fun (f1, t1) ->
                 match
@@ -355,7 +359,7 @@ module MkType (I : ScillaIdentifier) = struct
           && traverse fts1 fts2 && traverse fts2 fts1
       | _ -> false
     in
-    equiv t1' t2'
+    equiv t1 t2
 
   (* Type equivalence *)
   let type_equivalent t1 t2 =
@@ -368,7 +372,10 @@ module MkType (I : ScillaIdentifier) = struct
     let from_typ' = canonicalize_tfun actual in
     let rec assignable to_typ from_typ =
       match (to_typ, from_typ) with
-      | Address tfts, Address ffts ->
+      | Address None, Address _ ->
+          (* Any address is assignable to an address in use *)
+          true
+      | Address (Some tfts), Address (Some ffts) ->
           (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
           List.for_all tfts ~f:(fun (tf, tft) ->
               match

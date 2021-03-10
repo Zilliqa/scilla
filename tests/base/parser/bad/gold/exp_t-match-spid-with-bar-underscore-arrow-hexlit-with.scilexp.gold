@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error, state number 199",
+      "error_message": "Syntax error, state number 210",
       "start_location": {
         "file":
           "base/parser/bad/exps/exp_t-match-spid-with-bar-underscore-arrow-hexlit-with.scilexp",

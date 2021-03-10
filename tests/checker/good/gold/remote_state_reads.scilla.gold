@@ -16,9 +16,7 @@
       { "field": "assign_test_10", "tag": "(Map (Map (AddressADT )))" },
       { "field": "remote_reads_test_res_1_1", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_2_1", "tag": "NoInfo" },
-      { "field": "remote_reads_test_res_2_2", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_3_1", "tag": "NoInfo" },
-      { "field": "remote_reads_test_res_3_2", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_3_3", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_3_4", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_3_5", "tag": "NoInfo" },
@@ -41,47 +39,46 @@
     "vname": "RRContract",
     "params": [
       { "vname": "cparam1", "type": "ByStr20 with end" },
-      {
-        "vname": "cparam2",
-        "type": "ByStr20 with _this_address : ByStr20 end"
-      },
+      { "vname": "cparam2", "type": "ByStr20 with contract end" },
       {
         "vname": "cparam3",
         "type":
-          "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), other_map : Map (Uint128) (ByStr20 with end) end"
+          "ByStr20 with contract field transactionCount : Uint32, field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field other_map : Map (Uint128) (ByStr20 with end) end"
       }
     ],
     "fields": [
       { "vname": "assign_test_1", "type": "ByStr20 with end", "depth": 0 },
       {
         "vname": "assign_test_2",
-        "type": "ByStr20 with transactionCount : Uint32 end",
+        "type": "ByStr20 with contract field transactionCount : Uint32 end",
         "depth": 0
       },
       {
         "vname": "assign_test_3",
-        "type": "ByStr20 with admin : ByStr20 with end end",
+        "type": "ByStr20 with contract field admin : ByStr20 with end end",
         "depth": 0
       },
       {
         "vname": "assign_test_4",
-        "type": "ByStr20 with admin : ByStr20 end",
+        "type": "ByStr20 with contract field admin : ByStr20 end",
         "depth": 0
       },
       {
         "vname": "assign_test_5",
-        "type": "ByStr20 with owners : Map (ByStr20) (Bool) end",
+        "type":
+          "ByStr20 with contract field owners : Map (ByStr20) (Bool) end",
         "depth": 0
       },
       {
         "vname": "assign_test_6",
         "type":
-          "ByStr20 with signatures : Map (Uint32) (Map (ByStr20) (Bool)) end",
+          "ByStr20 with contract field signatures : Map (Uint32) (Map (ByStr20) (Bool)) end",
         "depth": 0
       },
       {
         "vname": "assign_test_7",
-        "type": "ByStr20 with other_map : Map (Uint128) (ByStr20) end",
+        "type":
+          "ByStr20 with contract field other_map : Map (Uint128) (ByStr20) end",
         "depth": 0
       },
       {
@@ -102,9 +99,7 @@
       },
       { "vname": "remote_reads_test_res_1_1", "type": "Uint128", "depth": 0 },
       { "vname": "remote_reads_test_res_2_1", "type": "Uint128", "depth": 0 },
-      { "vname": "remote_reads_test_res_2_2", "type": "ByStr20", "depth": 0 },
       { "vname": "remote_reads_test_res_3_1", "type": "Uint128", "depth": 0 },
-      { "vname": "remote_reads_test_res_3_2", "type": "ByStr20", "depth": 0 },
       { "vname": "remote_reads_test_res_3_3", "type": "Uint32", "depth": 0 },
       {
         "vname": "remote_reads_test_res_3_4",
@@ -149,14 +144,11 @@
         "vname": "RemoteReadsTest",
         "params": [
           { "vname": "remote1", "type": "ByStr20 with end" },
-          {
-            "vname": "remote2",
-            "type": "ByStr20 with _this_address : ByStr20 end"
-          },
+          { "vname": "remote2", "type": "ByStr20 with contract end" },
           {
             "vname": "remote3",
             "type":
-              "ByStr20 with transactionCount : Uint32, admin : ByStr20 with end, owners : Map (ByStr20 with end) (Bool), signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
+              "ByStr20 with contract field transactionCount : Uint32, field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
           }
         ]
       },
@@ -164,11 +156,14 @@
         "vname": "RemoteReadsADTTest",
         "params": [
           { "vname": "list1", "type": "List (ByStr20 with end)" },
-          { "vname": "list2", "type": "List (ByStr20 with f : Uint128 end)" },
+          {
+            "vname": "list2",
+            "type": "List (ByStr20 with contract field f : Uint128 end)"
+          },
           {
             "vname": "list3",
             "type":
-              "List (ByStr20 with g : remote_state_reads.AddressADT end)"
+              "List (ByStr20 with contract field g : remote_state_reads.AddressADT end)"
           },
           {
             "vname": "pair1",
@@ -178,7 +173,7 @@
           {
             "vname": "remote1",
             "type":
-              "ByStr20 with h : Map (Uint128) (remote_state_reads.AddressADT) end"
+              "ByStr20 with contract field h : Map (Uint128) (remote_state_reads.AddressADT) end"
           }
         ]
       },
@@ -213,7 +208,9 @@
           },
           {
             "cname": "remote_state_reads.Address2",
-            "argtypes": [ "ByStr20 with admin : ByStr20 with end end" ]
+            "argtypes": [
+              "ByStr20 with contract field admin : ByStr20 with end end"
+            ]
           }
         ]
       },
@@ -251,15 +248,15 @@
   "warnings": [
     {
       "warning_message":
-        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:176:3\n  Accept at contracts/remote_state_reads.scilla:180:3\n",
+        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:169:3\n  Accept at contracts/remote_state_reads.scilla:173:3\n",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 176,
+        "line": 169,
         "column": 3
       },
       "end_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 180,
+        "line": 173,
         "column": 9
       },
       "warning_id": 1

@@ -44,11 +44,11 @@ module MessagePayload = struct
 
   let sender_label = "_sender"
 
-  let sender_type = CUType.address_typ []
+  let sender_type = CUType.address_typ None
 
   let origin_label = "_origin"
 
-  let origin_type = CUType.address_typ []
+  let origin_type = CUType.address_typ None
 
   let recipient_label = "_recipient"
 

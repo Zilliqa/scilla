@@ -7,17 +7,17 @@
   },
   {
     "vname": "assign_test_2",
-    "type": "ByStr20 with transactionCount : Uint32 end",
+    "type": "ByStr20 with contract field transactionCount : Uint32 end",
     "value": "0x1234567890123456789012345678901234567890"
   },
   {
     "vname": "assign_test_3",
-    "type": "ByStr20 with admin : ByStr20 with end end",
+    "type": "ByStr20 with contract field admin : ByStr20 with end end",
     "value": "0x1234567890123456789012345678901234567890"
   },
   {
     "vname": "assign_test_4",
-    "type": "ByStr20 with admin : ByStr20 end",
+    "type": "ByStr20 with contract field admin : ByStr20 end",
     "value": "0x1234567890123456789012345678901234567890"
   },
   {
@@ -31,19 +31,9 @@
     "value": "0"
   },
   {
-    "vname": "remote_reads_test_res_2_2",
-    "type": "ByStr20",
-    "value": "0xabfeccdc9012345678901234567890f777567890"
-  },
-  {
     "vname": "remote_reads_test_res_3_1",
     "type": "Uint128",
     "value": "0"
-  },
-  {
-    "vname": "remote_reads_test_res_3_2",
-    "type": "ByStr20",
-    "value": "0xabfeccdc9012345678901234567890f777567890"
   },
   {
     "vname": "remote_reads_test_res_3_3",

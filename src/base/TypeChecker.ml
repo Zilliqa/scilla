@@ -167,8 +167,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-      | Address fts ->
-          List.fold_left fts ~init:0 ~f:(fun acc (_, t) -> acc + type_size t)
+      | Address None -> 1
+      | Address (Some fts) ->
+          List.fold_left fts ~init:1 ~f:(fun acc (_, t) -> acc + type_size t)
     in
 
     let subst_type_cost tvar tm tp_size =
@@ -181,7 +182,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | PolyFun (_, _) ->
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
-        | Address fts ->
+        | Address None -> 1
+        | Address (Some fts) ->
             max 1
               (List.fold_left fts ~init:0 ~f:(fun acc (_, t) -> acc + cost t))
       in
@@ -214,13 +216,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
-        | Address fts ->
+        | Address None -> pure t
+        | Address (Some fts) ->
             let%bind fts_res =
               mapM fts ~f:(fun (x, t') ->
                   let%bind t'_res = recurser t' in
                   pure (x, t'_res))
             in
-            pure (Address fts_res)
+            pure (Address (Some fts_res))
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
