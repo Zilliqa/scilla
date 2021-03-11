@@ -133,6 +133,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type_t-map-with.scilla";
       "type_t-tid-arrow-tid-with.scilla";
       "type_t-tid-arrow-with.scilla";
+      "address_spid_as_field.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1

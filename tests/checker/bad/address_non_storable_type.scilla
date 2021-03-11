@@ -1,0 +1,14 @@
+scilla_version 0
+
+contract AddressNonStorable(
+  cparam1 : ByStr20 with contract field f : (ByStr20 -> Uint128) end,
+  cparam2 : ByStr20 with contract field f : (forall 'A. 'A) end)
+
+field f : ByStr20 with contract field f : (ByStr20 -> Uint128) end = cparam1
+field g: ByStr20 with contract field f : (forall 'A. 'A) end = cparam2
+
+transition Test6 (param1 : ByStr20 with contract field f : (ByStr20 -> Uint128) end)
+end
+
+transition Test7 (param1 : ByStr20 with contract field f : (forall 'A. 'A) end)
+end

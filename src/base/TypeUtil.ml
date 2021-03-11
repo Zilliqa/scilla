@@ -423,6 +423,10 @@ module TypeUtilities = struct
        since parameters do not need to be serializable. *)
     is_serializable_storable_helper false true true t []
 
+  and is_legal_contract_parameter_type t =
+    (* Like transition parameters. Maps are not allowed. Address values should be checked for storable field types. *)
+    is_serializable_storable_helper false false true t []
+
   and is_legal_field_type t =
     (* Maps are allowed. Address values should be checked for storable field types. *)
     is_serializable_storable_helper true false true t []
