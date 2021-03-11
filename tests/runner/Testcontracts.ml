@@ -427,7 +427,7 @@ let contract_tests env =
                      "init_balance_and_nonce" ~is_library:false ~ipc_mode:true;
                 "address_eq_test"
                 >::: build_contract_tests ~pplit:false env "address_eq_test"
-                       succ_code 1 5 [];
+                       succ_code 1 9 [];
                 "address_list_traversal"
                 >::: build_contract_tests ~pplit:false env "address_list_traversal"
                        succ_code 1 3 [];

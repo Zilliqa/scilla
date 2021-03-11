@@ -6,6 +6,56 @@
     "value": { "constructor": "False", "argtypes": [], "arguments": [] }
   },
   {
+    "vname": "to_bystr_res",
+    "type": "ByStr",
+    "value": "0x12"
+  },
+  {
+    "vname": "to_uint_res",
+    "type": "Uint256",
+    "value": "0"
+  },
+  {
+    "vname": "concat_res",
+    "type": "ByStr40",
+    "value": "0xabfeccdc9012345678901234567890f777564322abfeccdc9012345678901234567890f777564322"
+  },
+  {
+    "vname": "test_map",
+    "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+    "value": []
+  },
+  {
+    "vname": "map_res_1",
+    "type": "Bool",
+    "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+  },
+  {
+    "vname": "map_res_2",
+    "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+    "value": []
+  },
+  {
+    "vname": "map_res_3",
+    "type": "Option (ByStr20 with contract end)",
+    "value": { "constructor": "None", "argtypes": [ "ByStr20 with contract end" ], "arguments": [] }
+  },
+  {
+    "vname": "map_res_4",
+    "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+    "value": []
+  },
+  {
+    "vname": "map_res_5",
+    "type": "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
+    "value": { "constructor": "Nil", "argtypes": [ "Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)" ], "arguments": [] }
+  },
+  {
+    "vname": "map_res_6",
+    "type": "Uint32",
+    "value": "0"
+  },
+  {
     "vname": "_external",
     "type": "Unit",
     "value": [

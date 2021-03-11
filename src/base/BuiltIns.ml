@@ -409,6 +409,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_bystr_elab sc targs ts =
       match (targs, ts) with
       | [], [ t ] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
+      | [], [ t ] when is_address_type t -> elab_tfun_with_args_no_gas sc [bystrx_typ Type.address_length]
       | _, _ -> fail0 "Failed to elaborate"
 
     let substr_arity = 3
@@ -426,6 +427,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType (Bystrx_typ w) ] when w <= int_bit_width_to_int x / 8 ->
           elab_tfun_with_args_no_gas sc ts
+      | [], [ t ] when is_address_type t && Type.address_length <= int_bit_width_to_int x/ 8 ->
+          elab_tfun_with_args_no_gas sc [bystrx_typ Type.address_length]
       | _, _ -> fail0 "Failed to elaborate"
 
     let bech32_to_bystr20_type =
@@ -451,6 +454,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + w2) ])
+      | [], [ t1 ; PrimType (Bystrx_typ w2) ] when is_address_type t1 ->
+          elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (Type.address_length + w2) ])
+      | [], [ PrimType (Bystrx_typ w1); t2 ] when is_address_type t2 ->
+          elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + Type.address_length) ])
+      | [], [ t1; t2 ] when is_address_type t1 && is_address_type t2 ->
+          elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (Type.address_length + Type.address_length) ])
       | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
       | _, _ -> fail0 "Failed to elaborate"
@@ -596,7 +605,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
+      | [], [ MapType (kt, vt); u ]
+        when type_assignable ~expected:kt ~actual:u
         ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"

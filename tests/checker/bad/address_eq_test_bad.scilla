@@ -5,6 +5,7 @@ library AddressEqTestBadLib
 contract AddressEqTestBad()
 
 field eq_test_res : Bool = False
+field test_map : Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end) = Emp (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)
 
 transition Test6 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
   param2 : Int32)
