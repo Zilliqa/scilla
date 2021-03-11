@@ -18,6 +18,11 @@
       "vname": "remote_read_remote_read_res_1",
       "type": "Uint128",
       "value": "0"
+    },
+    {
+      "vname": "remote_read_remote_read_res_3",
+      "type": "ByStr20",
+      "value": "0x1234567890123456789012345678901234567890"
     }
   ],
   "events": []

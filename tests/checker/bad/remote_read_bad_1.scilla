@@ -1,0 +1,19 @@
+scilla_version 0
+
+contract RRContract ()
+
+field remote_read_remote_read_res_1 : Uint32 = Uint32 0
+
+transition RemoteReadsOfRemoteRead(
+  remote: ByStr20 with contract
+                       field admin : ByStr20 with contract
+                                                  field f : ByStr20 with contract
+                                                                         field g : Uint128
+                                                                         end
+                                                  end
+                       end)
+  ad <-& remote.admin;
+  this_f <-& ad.f;
+  this_g <-& this_f.g;
+  remote_read_remote_read_res_1 := this_g
+end
