@@ -1,0 +1,9 @@
+scilla_version 0
+
+import ListUtils as L
+
+contract T ()
+
+transition F ()
+  x <-& L.x.f;  (* We don't allow reads using namespaces at the moment (they don't make sense typewise anyway) *)
+end
