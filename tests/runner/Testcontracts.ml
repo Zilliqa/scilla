@@ -425,6 +425,9 @@ let contract_tests env =
                 "address_eq_test"
                 >::: build_contract_tests ~pplit:false env "address_eq_test"
                        succ_code 1 5 [];
+                "address_list_traversal"
+                >::: build_contract_tests ~pplit:false env "address_list_traversal"
+                       succ_code 1 3 [];
               ];
          "these_tests_must_FAIL"
          >::: [

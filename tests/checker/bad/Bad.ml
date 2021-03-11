@@ -98,6 +98,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "builtin_type_args.scilla";
       "address_eq_test_bad.scilla";
       "address_non_storable_type.scilla";
+      "address_list_traversal_bad.scilla";
       "remote_read_spid.scilla";
     ]
 

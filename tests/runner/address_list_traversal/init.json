@@ -1,0 +1,22 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0x3620c286757a29985cee194eb90064270fb65414"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    },
+    {
+        "vname" : "cparam",
+        "type" : "ByStr20", 
+        "value" : "0x1234567890123456789012345678901234567890"
+    }
+]

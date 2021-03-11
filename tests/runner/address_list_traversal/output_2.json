@@ -1,0 +1,24 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7902",
+  "_accepted": "false",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "res_mem",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "res_list",
+      "type": "List (ByStr20 with end)",
+      "value": {
+        "constructor": "Nil",
+        "argtypes": [ "ByStr20 with end" ],
+        "arguments": []
+      }
+    }
+  ],
+  "events": []
+}
