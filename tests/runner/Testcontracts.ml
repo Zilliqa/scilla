@@ -422,6 +422,9 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_balance_and_nonce" ~is_library:false ~ipc_mode:true;
+                "address_eq_test"
+                >::: build_contract_tests ~pplit:false env "address_eq_test"
+                       succ_code 1 5 [];
               ];
          "these_tests_must_FAIL"
          >::: [

@@ -1,0 +1,129 @@
+{
+  "cashflow_tags": {
+    "State variables": [ { "field": "eq_test_res", "tag": "NotMoney" } ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "AddressEqTest",
+    "params": [],
+    "fields": [ { "vname": "eq_test_res", "type": "Bool", "depth": 0 } ],
+    "transitions": [
+      {
+        "vname": "Test1",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint128, field g : Int32 end"
+          },
+          {
+            "vname": "param2",
+            "type":
+              "ByStr20 with contract field f : Uint128, field h : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "Test2",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          {
+            "vname": "param2",
+            "type":
+              "ByStr20 with contract field f : Uint128, field h : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "Test3",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "Test4",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with end" }
+        ]
+      },
+      {
+        "vname": "Test5",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with contract end" }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract AddressEqTest contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
