@@ -101,6 +101,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "address_list_traversal_bad.scilla";
       "remote_read_spid.scilla";
       "remote_read_non_address.scilla";
+      "remote_read_bad_2.scilla";
+      "remote_read_bad_3.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1
