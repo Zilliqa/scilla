@@ -1,0 +1,100 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "remote_read_remote_read_res_1", "tag": "NoInfo" },
+      { "field": "remote_read_remote_read_res_2", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "RRContract",
+    "params": [],
+    "fields": [
+      {
+        "vname": "remote_read_remote_read_res_1",
+        "type": "Uint128",
+        "depth": 0
+      },
+      {
+        "vname": "remote_read_remote_read_res_2",
+        "type": "Option (Uint128)",
+        "depth": 0
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "RemoteReadsOfRemoteRead",
+        "params": [
+          {
+            "vname": "remote",
+            "type":
+              "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Uint128 end end end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadsOfRemoteMap",
+        "params": [
+          {
+            "vname": "remote",
+            "type":
+              "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Map (Uint128) (Uint128) end end end"
+          }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract RRContract contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

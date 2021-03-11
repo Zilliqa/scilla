@@ -1,0 +1,35 @@
+scilla_version 0
+
+contract RRContract ()
+
+field remote_read_remote_read_res_1 : Uint128 = Uint128 0
+field remote_read_remote_read_res_2 : Option Uint128 = None {Uint128}
+
+transition RemoteReadsOfRemoteRead(
+  remote: ByStr20 with contract
+                       field admin : ByStr20 with contract
+                                                  field f : ByStr20 with contract
+                                                                         field g : Uint128
+                                                                         end
+                                                  end
+                       end)
+  ad <-& remote.admin;
+  this_f <-& ad.f;
+  this_g <-& this_f.g;
+  remote_read_remote_read_res_1 := this_g
+end
+
+transition RemoteReadsOfRemoteMap(
+  remote: ByStr20 with contract
+                       field admin : ByStr20 with contract
+                                                  field f : ByStr20 with contract
+                                                                         field g : Map Uint128 Uint128
+                                                                         end
+                                                  end
+                       end)
+  ad <-& remote.admin;
+  this_f <-& ad.f;
+  remote_key = Uint128 0;
+  this_g <-& this_f.g[remote_key];
+  remote_read_remote_read_res_2 := this_g
+end
