@@ -397,8 +397,9 @@ let rec stmt_eval conf stmts =
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
       | TypeCast (x, r, t) ->
-          let%bind l = Configuration.lookup conf (get_id r) in
-          let
+          let%bind l = fromR @@ Configuration.lookup conf r in
+          (* TODO *)
+          stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
           let%bind v = fromR @@ Env.lookup conf.env x in
           let%bind (_, branch_stmts), bnds =
