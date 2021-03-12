@@ -835,9 +835,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); _u ]
-        when is_address_type kt
-        ->
+      | [], [ MapType (kt, vt); _u ] when is_address_type kt ->
           (* Special case - need to treat kt as a ByStr20 *)
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
       | _, _ -> MapBuiltins.contains_elab sc targs ts
@@ -852,10 +850,15 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let put_elab sc targs ts =
       match (targs, ts) with
       | [], [ MapType (kt, vt); _kt'; _vt' ]
-        when is_address_type kt || is_address_type vt
-        ->
+        when is_address_type kt || is_address_type vt ->
           (* Special case - need to treat kt and vt as a ByStr20 *)
-          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; bystrx_typ Type.address_length ]
+          let new_kt =
+            if is_address_type kt then bystrx_typ Type.address_length else kt
+          in
+          let new_vt =
+            if is_address_type vt then bystrx_typ Type.address_length else vt
+          in
+          elab_tfun_with_args_no_gas sc [ new_kt; new_vt ]
       | _, _ -> MapBuiltins.put_elab sc targs ts
 
     let put _ ls _ =
@@ -869,9 +872,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); _kt' ]
-        when is_address_type kt
-        ->
+      | [], [ MapType (kt, vt); _kt' ] when is_address_type kt ->
           (* Special case - need to treat kt and vt as a ByStr20 *)
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
       | _, _ -> MapBuiltins.get_elab sc targs ts
@@ -889,9 +890,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); _u ]
-        when is_address_type kt
-        ->
+      | [], [ MapType (kt, vt); _u ] when is_address_type kt ->
           (* Special case - need to treat kt and vt as a ByStr20 *)
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
       | _, _ -> MapBuiltins.remove_elab sc targs ts

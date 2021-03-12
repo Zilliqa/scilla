@@ -410,8 +410,8 @@ let contract_tests env =
                 >::: build_contract_tests ~pplit:false env "remote_state_reads"
                        succ_code 1 11 [];
                 "remote_state_reads_2"
-                >::: build_contract_tests ~pplit:false env "remote_state_reads_2"
-                       succ_code 1 3 [];
+                >::: build_contract_tests ~pplit:false env
+                       "remote_state_reads_2" succ_code 1 3 [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_assignable_map_types" ~is_library:false
@@ -427,13 +427,13 @@ let contract_tests env =
                      "init_balance_and_nonce" ~is_library:false ~ipc_mode:true;
                 "address_eq_test"
                 >::: build_contract_tests ~pplit:false env "address_eq_test"
-                       succ_code 1 9 [];
+                       succ_code 1 10 [];
                 "address_list_traversal"
-                >::: build_contract_tests ~pplit:false env "address_list_traversal"
-                       succ_code 1 3 [];
+                >::: build_contract_tests ~pplit:false env
+                       "address_list_traversal" succ_code 1 3 [];
                 "polymorphic_address"
-                >::: build_contract_tests ~pplit:false env "address_list_traversal"
-                       succ_code 1 2 [];
+                >::: build_contract_tests ~pplit:false env
+                       "address_list_traversal" succ_code 1 2 [];
               ];
          "these_tests_must_FAIL"
          >::: [

@@ -1343,15 +1343,17 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
        in
 
        (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
-       let emsgs = List.fold_left cparams ~init:emsgs ~f:(fun acc_err (pname, ptype) ->
-           if not @@ is_legal_contract_parameter_type ptype then
-             let e = mk_error1
-                 (sprintf "Type %s cannot be used as a contract parameter"
-                    (pp_typ_error ptype))
-                 (ER.get_loc (get_rep pname))
-             in
-             acc_err @ e
-           else acc_err)
+       let emsgs =
+         List.fold_left cparams ~init:emsgs ~f:(fun acc_err (pname, ptype) ->
+             if not @@ is_legal_contract_parameter_type ptype then
+               let e =
+                 mk_error1
+                   (sprintf "Type %s cannot be used as a contract parameter"
+                      (pp_typ_error ptype))
+                   (ER.get_loc (get_rep pname))
+               in
+               acc_err @ e
+             else acc_err)
        in
        let params = CU.append_implicit_contract_params cparams in
        let _ = TEnv.addTs tenv0 params in

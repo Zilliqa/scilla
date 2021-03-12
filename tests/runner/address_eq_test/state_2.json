@@ -56,13 +56,23 @@
     "value": "0"
   },
   {
+    "vname": "test_map2",
+    "type": "Map (ByStr20 with contract field f : Uint32 end) Uint128",
+    "value": []
+  },
+  {
+    "vname": "test_map3",
+    "type": "Map Uint128 (ByStr20 with contract end)",
+    "value": []
+  },
+  {
     "vname": "_external",
     "type": "Unit",
     "value": [
         {
             "address": "0xabfeccdc9012345678901234567890f777564323",
             "state": [
-                { "vname": "_nonce", "type": "Uint128", "value": "0" },
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "42" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
                 { "vname": "f", "type": "Uint32", "value": "42" },
@@ -73,7 +83,7 @@
         {
             "address": "0xabfeccdc9012345678901234567890f777564324",
             "state": [
-                { "vname": "_nonce", "type": "Uint128", "value": "0" },
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "42" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
                 { "vname": "f", "type": "Uint128", "value": "42" },
