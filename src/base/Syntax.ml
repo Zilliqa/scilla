@@ -324,6 +324,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         * bool
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep SIdentifier.t * string
+    | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
     | AcceptPayment
     (* forall l p *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
@@ -588,6 +589,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             (as_error_string x) opt
       | ReadFromBC (x, _) ->
           sprintf "Error in reading from blockchain state into `%s`:\n"
+            (as_error_string x)
+      | TypeCast (x, y, t) ->
+          sprintf "Error casting variable %s to type %s into `%s`:\n"
+            (as_error_string y)
+            (SType.pp_typ_error t)
             (as_error_string x)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->

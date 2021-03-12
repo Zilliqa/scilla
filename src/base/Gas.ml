@@ -217,6 +217,18 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               in
               let s' = MatchStmt (x, clauses') in
               pure @@ [ (GasStmt g, srep); (s', srep) ]
+          | TypeCast (_x, _r, t) ->
+              let size =
+                match t with
+                | Address (Some fts) ->
+                    (* look up _this_address and every listed field *)
+                    1 + (List.length fts)
+                | _ -> 0
+              in
+              let cost = 2 + size (* _balance and _nonce must also be looked up *)
+              in
+              let g = GasGasCharge.StaticCost cost in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
           | AcceptPayment ->
               let g = GasStmt (GasGasCharge.StaticCost 1) in
               pure @@ [ (g, srep); (s, srep) ]

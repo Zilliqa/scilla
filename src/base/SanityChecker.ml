@@ -349,6 +349,9 @@ struct
                 | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
+                | TypeCast (x, _, _) ->
+                    check_warn_redef cparams cfields pnames stmt_defs x;
+                    pure (get_id x :: acc_stmt_defs)
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _
                 | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs

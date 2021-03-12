@@ -268,6 +268,8 @@ struct
               pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
           | ReadFromBC (i, s) ->
               pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
+          | TypeCast (x, r, t) ->
+              pure @@ (CheckedPatternSyntax.TypeCast (x, r, t), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
           | Iterate (l, p) -> pure @@ (CheckedPatternSyntax.Iterate (l, p), rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
