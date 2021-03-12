@@ -56,6 +56,16 @@
     "value": "0"
   },
   {
+    "vname": "test_map2",
+    "type": "Map (ByStr20 with contract field f : Uint32 end) Uint128",
+    "value": []
+  },
+  {
+    "vname": "test_map3",
+    "type": "Map Uint128 (ByStr20 with contract end)",
+    "value": []
+  },
+  {
     "vname": "_external",
     "type": "Unit",
     "value": [

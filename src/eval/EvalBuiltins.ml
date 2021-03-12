@@ -855,7 +855,9 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         when is_address_type kt || is_address_type vt
         ->
           (* Special case - need to treat kt and vt as a ByStr20 *)
-          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; bystrx_typ Type.address_length ]
+          let new_kt = if is_address_type kt then bystrx_typ Type.address_length else kt in
+          let new_vt = if is_address_type vt then bystrx_typ Type.address_length else vt in
+          elab_tfun_with_args_no_gas sc [ new_kt; new_vt ]
       | _, _ -> MapBuiltins.put_elab sc targs ts
 
     let put _ ls _ =

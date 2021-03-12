@@ -15,6 +15,9 @@ field map_res_4 : Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with
 field map_res_5 : List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)) = Nil {(Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))}
 field map_res_6 : Uint32 = Uint32 0
 
+field test_map2 : Map (ByStr20 with contract field f : Uint32 end) Uint128 = Emp (ByStr20 with contract field f : Uint32 end) Uint128
+field test_map3 : Map Uint128 (ByStr20 with contract end) = Emp Uint128 (ByStr20 with contract end)
+
 transition Test1 (param1 : ByStr20 with contract field f : Uint128, field g : Int32 end,
   param2 : ByStr20 with contract field f : Uint128, field h : Bool end)
   x = builtin eq param1 param2;
@@ -76,5 +79,15 @@ transition Test9 (param1 : ByStr20 with contract field f : Uint32, field g : Int
   map_res_5 := mp5;
   mp6 = builtin size mp2;
   map_res_6 := mp6
+end
+
+transition Test10 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end)
+  mp <- test_map2;
+  zero = Uint128 0;
+  mp2 = builtin put mp param1 zero;
+  test_map2 := mp2;
+  mp3 <- test_map3;
+  mp4 = builtin put mp3 zero param1;
+  test_map3 := mp4
 end
 

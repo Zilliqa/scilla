@@ -11,7 +11,9 @@
       { "field": "map_res_3", "tag": "(Option NoInfo)" },
       { "field": "map_res_4", "tag": "(Map NoInfo)" },
       { "field": "map_res_5", "tag": "Inconsistent" },
-      { "field": "map_res_6", "tag": "NotMoney" }
+      { "field": "map_res_6", "tag": "NotMoney" },
+      { "field": "test_map2", "tag": "(Map NotMoney)" },
+      { "field": "test_map3", "tag": "(Map NotMoney)" }
     ],
     "ADT constructors": []
   },
@@ -54,7 +56,17 @@
           "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
         "depth": 0
       },
-      { "vname": "map_res_6", "type": "Uint32", "depth": 0 }
+      { "vname": "map_res_6", "type": "Uint32", "depth": 0 },
+      {
+        "vname": "test_map2",
+        "type": "Map (ByStr20 with contract field f : Uint32 end) (Uint128)",
+        "depth": 1
+      },
+      {
+        "vname": "test_map3",
+        "type": "Map (Uint128) (ByStr20 with contract end)",
+        "depth": 1
+      }
     ],
     "transitions": [
       {
@@ -161,6 +173,16 @@
           },
           { "vname": "param2", "type": "ByStr20 with contract end" }
         ]
+      },
+      {
+        "vname": "Test10",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          }
+        ]
       }
     ],
     "procedures": [],
@@ -210,7 +232,27 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
-        "line": 66,
+        "line": 89,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 85,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 69,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
