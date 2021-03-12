@@ -50,3 +50,5 @@ let mk_call name ~sock_path args =
 let run = mk_call "run"
 
 let check = mk_call "check"
+
+let disambiguate = mk_call "disambiguate"
