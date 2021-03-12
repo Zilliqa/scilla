@@ -505,9 +505,9 @@ module EvalTypecheck = struct
         ~ignoreval:false
     in
     match (balance_lit, nonce_lit) with
-    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint128L nonce))
+    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint64L nonce))
       when Uint128.compare balance Uint128.zero > 0
-        || Uint128.compare nonce Uint128.zero > 0 -> pure true
+           || Uint64.compare nonce Uint64.zero > 0 -> pure true
     | _, _ -> pure false        
 
   let is_contract_address ~caddr =
@@ -516,10 +516,23 @@ module EvalTypecheck = struct
       StateService.external_fetch ~caddr ~fname:this_id ~keys:[]
         ~ignoreval:true
     in
-    pure @@ Option.is_none this_typ_opt
-    
-  let typecheck_remote_field_types ~caddr fts_opt =
+    pure @@ Option.is_some this_typ_opt
+
+  let address_fields_ok ~caddr fts =
     let open EvalType in
+    (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+    allM fts ~f:(fun (f, t) ->
+        let%bind res =
+          StateService.external_fetch ~caddr ~fname:f ~keys:[]
+            ~ignoreval:true
+        in
+        match res with
+        | _, Some ext_typ ->
+            pure @@ type_assignable ~expected:t ~actual:ext_typ
+        | _, None -> pure false)
+    
+  
+  let typecheck_remote_field_types ~caddr fts_opt =
     let%bind in_use = is_address_in_use ~caddr in
     if not in_use then
       fail0
@@ -532,19 +545,36 @@ module EvalTypecheck = struct
           pure true
       | Some fts ->
           let%bind is_contract = is_contract_address ~caddr in
-          if not is_contract  then
+          if not is_contract then
             fail0
             @@ sprintf "No contract found at address %s"
               (EvalLiteral.Bystrx.hex_encoding caddr)
           else
-            (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-            allM fts ~f:(fun (f, t) ->
-                let%bind res =
-                  StateService.external_fetch ~caddr ~fname:f ~keys:[]
-                    ~ignoreval:true
-                in
-                match res with
-                | _, Some ext_typ ->
-                    pure @@ type_assignable ~expected:t ~actual:ext_typ
-                | _, None -> pure false)
+            address_fields_ok ~caddr fts
+
+  let address_type_cast addr t =
+    let open EvalType in
+    let open EvalLiteral in
+    match addr, t with
+    | ByStrX caddr, Address fts_opt -> (
+        let%bind in_use = is_address_in_use ~caddr in
+        if not in_use then
+          pure (build_none_lit t)
+        else 
+          match fts_opt with
+          | None ->
+              pure (build_some_lit addr t)
+          | Some fts ->
+              let%bind is_contract = is_contract_address ~caddr in
+              if not is_contract then
+                pure (build_none_lit t)
+              else
+                let%bind fields_ok = address_fields_ok ~caddr fts in
+                if not fields_ok then
+                  pure (build_none_lit t)
+                else 
+                  pure (build_some_lit addr t))
+    | _, _ ->
+        fail0 @@ "Unexpected arguments to address type cast"
+        
 end

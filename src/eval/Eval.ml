@@ -398,7 +398,8 @@ let rec stmt_eval conf stmts =
           stmt_eval conf' sts
       | TypeCast (x, r, t) ->
           let%bind l = fromR @@ Configuration.lookup conf r in
-          (* TODO *)
+          let%bind res = fromR @@ EvalTypecheck.address_type_cast l t in
+          let conf' = Configuration.bind conf (get_id x) res in
           stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
           let%bind v = fromR @@ Env.lookup conf.env x in
