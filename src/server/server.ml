@@ -94,9 +94,16 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
     let output, _ = Runner.run args ~exe_name:"scilla-runner" in
     Yojson.Basic.pretty_to_string output
   in
+  let disambiguator args =
+    let output_init, _, _ =
+      Disambiguator.run args ~exe_name:"scilla-disambiguator"
+    in
+    Yojson.Basic.pretty_to_string output_init
+  in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
+  Server.disambiguator @@ mk_handler disambiguator;
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this
