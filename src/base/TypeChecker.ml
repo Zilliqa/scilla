@@ -1321,7 +1321,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
          | None -> pure ((None, emsgs), remaining_gas)
        in
 
-       (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
+(*       (* Step 3: Adding typed contract parameters (incl. implicit ones) *)
        let emsgs =
          List.fold_left cparams ~init:emsgs ~f:(fun acc_err (pname, ptype) ->
              if not @@ is_legal_contract_parameter_type ptype then
@@ -1333,7 +1333,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                in
                acc_err @ e
              else acc_err)
-       in
+         in *)
        let params = CU.append_implicit_contract_params cparams in
        let _ = TEnv.addTs tenv0 params in
 
