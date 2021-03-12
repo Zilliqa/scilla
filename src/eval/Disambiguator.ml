@@ -916,6 +916,7 @@ let run_with_args args =
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
               | Ok state ->
+                  (*
                   (* _balance is not availabe from IPC server, so use the one from the state file *)
                   let state_from_file =
                     parse_json args.input_state this_address
@@ -924,7 +925,9 @@ let run_with_args args =
                     List.find_exn state_from_file ~f:(fun (fname, _, _) ->
                         OutputName.equal fname ContractUtil.balance_label)
                   in
-                  balance :: state
+                  balance :: 
+*)
+                  state
               | Error e -> fatal_error e
           in
           (init, state)
@@ -936,9 +939,18 @@ let run_with_args args =
       ( JSON.ContractState.state_to_json init,
         JSON.ContractState.state_to_json state )
 
+let output_to_string = Yojson.Basic.pretty_to_string
+
 let run args ~exe_name =
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
   let args = parse args ~exe_name in
   let result_init, result_state = run_with_args args in
-  (result_init, result_state, args)
+  let init_str = output_to_string result_init in
+  let state_str = output_to_string result_state in
+  Out_channel.with_file args.output_init ~f:(fun ch ->
+      Out_channel.output_string ch init_str);
+  if not (String.is_empty args.output_state) then
+    Out_channel.with_file args.output_state ~f:(fun ch ->
+        Out_channel.output_string ch state_str);
+  "\"Disambiguate successful\""
