@@ -936,9 +936,18 @@ let run_with_args args =
       ( JSON.ContractState.state_to_json init,
         JSON.ContractState.state_to_json state )
 
+let output_to_string = Yojson.Basic.pretty_to_string
+
 let run args ~exe_name =
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
   let args = parse args ~exe_name in
   let result_init, result_state = run_with_args args in
-  (result_init, result_state, args)
+  let init_str = output_to_string result_init in
+  let state_str = output_to_string result_state in
+  Out_channel.with_file args.output_init ~f:(fun ch ->
+      Out_channel.output_string ch init_str);
+  if not (String.is_empty args.output_state) then
+    Out_channel.with_file args.output_state ~f:(fun ch ->
+        Out_channel.output_string ch state_str);
+  "\"Disambiguate successful\""

@@ -95,10 +95,7 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
     Yojson.Basic.pretty_to_string output
   in
   let disambiguator args =
-    let output_init, _, _ =
-      Disambiguator.run args ~exe_name:"scilla-disambiguator"
-    in
-    Yojson.Basic.pretty_to_string output_init
+    Disambiguator.run args ~exe_name:"scilla-disambiguator"
   in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
