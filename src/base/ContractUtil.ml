@@ -126,7 +126,7 @@ let label_name_of_string str = CUName.parse_simple_name str
 
 let nonce_label = label_name_of_string "_nonce"
 
-let nonce_type = CUType.uint128_typ
+let nonce_type = CUType.uint64_typ
 
 let balance_label = label_name_of_string "_balance"
 
