@@ -23,17 +23,8 @@ open ErrorUtils
 
 (* scilla_runner.ml *)
 
-let output_to_string = Yojson.Basic.pretty_to_string
-
 let () =
   try
-    let output_init, output_state, args =
-      Disambiguator.run ~exe_name:(Sys.get_argv ()).(0) None
-    in
-    let init_str = output_to_string output_init in
-    let state_str = output_to_string output_state in
-    Out_channel.with_file args.output_init ~f:(fun ch ->
-        Out_channel.output_string ch init_str);
-    Out_channel.with_file args.output_state ~f:(fun ch ->
-        Out_channel.output_string ch state_str)
+    let _ = Disambiguator.run ~exe_name:(Sys.get_argv ()).(0) None in
+    ()
   with FatalError msg -> exit_with_error msg
