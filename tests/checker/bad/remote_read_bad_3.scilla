@@ -1,0 +1,18 @@
+scilla_version 0
+
+library RRLib
+
+contract RRContract ()
+
+field remote_reads_test_res_3 : Bool = True
+
+transition RemoteReadBool(
+  remote: ByStr20 with contract
+                       field transactionCount : Uint32,
+                       field admin : ByStr20 with end,       
+                       field owners : Map (ByStr20 with end) Bool,
+                       field signatures : Map Uint32 (Map ByStr20 with end Bool)
+                  end)
+  tmp_3_7 <-& remote.owners[_sender];
+  remote_reads_test_res_3 := tmp_3_7
+end

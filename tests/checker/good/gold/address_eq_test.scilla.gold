@@ -1,0 +1,271 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "eq_test_res", "tag": "NotMoney" },
+      { "field": "to_bystr_res", "tag": "NotMoney" },
+      { "field": "to_uint_res", "tag": "Inconsistent" },
+      { "field": "concat_res", "tag": "NotMoney" },
+      { "field": "test_map", "tag": "(Map NoInfo)" },
+      { "field": "map_res_1", "tag": "NotMoney" },
+      { "field": "map_res_2", "tag": "(Map NoInfo)" },
+      { "field": "map_res_3", "tag": "(Option NoInfo)" },
+      { "field": "map_res_4", "tag": "(Map NoInfo)" },
+      { "field": "map_res_5", "tag": "Inconsistent" },
+      { "field": "map_res_6", "tag": "NotMoney" },
+      { "field": "test_map2", "tag": "(Map NotMoney)" },
+      { "field": "test_map3", "tag": "(Map NotMoney)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "AddressEqTest",
+    "params": [],
+    "fields": [
+      { "vname": "eq_test_res", "type": "Bool", "depth": 0 },
+      { "vname": "to_bystr_res", "type": "ByStr", "depth": 0 },
+      { "vname": "to_uint_res", "type": "Uint256", "depth": 0 },
+      { "vname": "concat_res", "type": "ByStr40", "depth": 0 },
+      {
+        "vname": "test_map",
+        "type":
+          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "depth": 1
+      },
+      { "vname": "map_res_1", "type": "Bool", "depth": 0 },
+      {
+        "vname": "map_res_2",
+        "type":
+          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "depth": 1
+      },
+      {
+        "vname": "map_res_3",
+        "type": "Option (ByStr20 with contract end)",
+        "depth": 0
+      },
+      {
+        "vname": "map_res_4",
+        "type":
+          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "depth": 1
+      },
+      {
+        "vname": "map_res_5",
+        "type":
+          "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
+        "depth": 0
+      },
+      { "vname": "map_res_6", "type": "Uint32", "depth": 0 },
+      {
+        "vname": "test_map2",
+        "type": "Map (ByStr20 with contract field f : Uint32 end) (Uint128)",
+        "depth": 1
+      },
+      {
+        "vname": "test_map3",
+        "type": "Map (Uint128) (ByStr20 with contract end)",
+        "depth": 1
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "Test1",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint128, field g : Int32 end"
+          },
+          {
+            "vname": "param2",
+            "type":
+              "ByStr20 with contract field f : Uint128, field h : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "Test2",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          {
+            "vname": "param2",
+            "type":
+              "ByStr20 with contract field f : Uint128, field h : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "Test3",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "Test4",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with end" }
+        ]
+      },
+      {
+        "vname": "Test5",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with contract end" }
+        ]
+      },
+      {
+        "vname": "Test6",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          }
+        ]
+      },
+      {
+        "vname": "Test7",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          }
+        ]
+      },
+      {
+        "vname": "Test8",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with contract end" }
+        ]
+      },
+      {
+        "vname": "Test9",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          },
+          { "vname": "param2", "type": "ByStr20 with contract end" }
+        ]
+      },
+      {
+        "vname": "Test10",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 89,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 85,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 69,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "No transition in contract AddressEqTest contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

@@ -1,0 +1,29 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "res_1",
+    "type": "Uint32",
+    "value": "0"
+  },
+  {
+    "vname": "res_2",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564323",
+            "state": [
+                { "vname": "_nonce", "type": "Uint128", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                { "vname": "f", "type": "Uint32", "value": "3" },
+                { "vname": "x", "type": "Uint128", "value": "0" }
+            ]
+        }
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "Field _this_address is not declared in address type ByStr20 with contract field f : Uint128 end.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

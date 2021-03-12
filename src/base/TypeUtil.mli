@@ -147,6 +147,8 @@ module TypeUtilities : sig
 
   val is_legal_procedure_parameter_type : TUType.t -> bool
 
+  val is_legal_contract_parameter_type : TUType.t -> bool
+
   val is_legal_field_type : TUType.t -> bool
 
   val is_ground_type : TUType.t -> bool

@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Syntax error, state number 284",
+      "start_location": {
+        "file": "base/parser/bad/remote_read_namespace.scilla",
+        "line": 8,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

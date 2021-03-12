@@ -1,0 +1,29 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7967",
+  "_accepted": "false",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "remote_read_remote_read_res_3",
+      "type": "ByStr20",
+      "value": "0xabfeccdc9012345678901234567890f777564324"
+    },
+    {
+      "vname": "remote_read_remote_read_res_1",
+      "type": "Uint128",
+      "value": "0"
+    },
+    {
+      "vname": "remote_read_remote_read_res_2",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    }
+  ],
+  "events": []
+}

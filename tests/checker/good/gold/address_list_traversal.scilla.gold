@@ -1,0 +1,101 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "cparam", "tag": "NoInfo" },
+      { "field": "res_list", "tag": "(List NoInfo)" },
+      { "field": "res_mem", "tag": "NotMoney" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "AddressListTraversal",
+    "params": [ { "vname": "cparam", "type": "ByStr20 with end" } ],
+    "fields": [
+      { "vname": "res_list", "type": "List (ByStr20 with end)", "depth": 0 },
+      { "vname": "res_mem", "type": "Bool", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "Test1",
+        "params": [
+          {
+            "vname": "param1",
+            "type": "ByStr20 with contract field f : Uint32 end"
+          },
+          {
+            "vname": "param2",
+            "type": "ByStr20 with contract field g : Uint128 end"
+          },
+          { "vname": "param3", "type": "ByStr20 with contract end" }
+        ]
+      },
+      {
+        "vname": "Test2",
+        "params": [
+          {
+            "vname": "param1",
+            "type": "ByStr20 with contract field f : Uint32 end"
+          },
+          {
+            "vname": "param2",
+            "type": "ByStr20 with contract field g : Uint128 end"
+          },
+          { "vname": "param3", "type": "ByStr20 with contract end" }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract AddressListTraversal contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7913"
+}
+
