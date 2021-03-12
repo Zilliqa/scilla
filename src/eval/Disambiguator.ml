@@ -916,7 +916,7 @@ let run_with_args args =
               (* TODO: Make sure the ipc-generated state have the correct form for state output *)
               match OutputStateService.get_full_state () with
               | Ok state ->
-(*
+                  (*
                   (* _balance is not availabe from IPC server, so use the one from the state file *)
                   let state_from_file =
                     parse_json args.input_state this_address
