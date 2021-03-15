@@ -836,9 +836,10 @@ let run_with_args args =
           let init =
             let untyped_state = parse_json args.input_init this_address in
             List.map untyped_state ~f:(fun x ->
+                (* We've been ignoring the type info in the init files, so just trust literal_type *)
                 match TypeUtil.TypeUtilities.literal_type (trd3 x) with
-                | Ok (t, []) -> (fst3 x, t, trd3 x)
-                | Ok _ | Error _ ->
+                | Ok t -> (fst3 x, t, trd3 x)
+                | Error _ ->
                     fatal_error
                       (mk_error0
                          (sprintf "Unable to determine type of literal %s"
@@ -847,15 +848,8 @@ let run_with_args args =
           let state =
             if String.is_empty args.ipc_address then
               (* Use the provided state json. *)
-              let untyped_state = parse_json args.input_state this_address in
-              List.map untyped_state ~f:(fun x ->
-                  match TypeUtil.TypeUtilities.literal_type (trd3 x) with
-                  | Ok (t, []) -> (fst3 x, t, trd3 x)
-                  | Ok _ | Error _ ->
-                      fatal_error
-                        (mk_error0
-                           (sprintf "Unable to determine type of literal %s"
-                              (pp_literal (trd3 x)))))
+              (* We control the state files, so we can assume the type info is correct *)
+              parse_json args.input_state this_address
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
