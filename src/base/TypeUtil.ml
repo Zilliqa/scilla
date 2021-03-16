@@ -674,8 +674,8 @@ module TypeUtilities = struct
     let rec fun_typ_recurser fun_typ args dyn_checks_acc =
       match (fun_typ, args) with
       | FunType (t, res_t), arg :: rest ->
-          let%bind new_dyn_checks_acc = recurser t arg dyn_checks_acc in
-          fun_typ_recurser res_t rest new_dyn_checks_acc
+          let%bind dyn_checks_acc' = recurser t arg dyn_checks_acc in
+          fun_typ_recurser res_t rest dyn_checks_acc'
       | ADT (_, _), [] -> pure @@ dyn_checks_acc
       | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
     and recurser expected l dyn_check_acc =

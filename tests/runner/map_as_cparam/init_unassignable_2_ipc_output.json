@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7860",
+  "errors": [
+    {
+      "error_message":
+        "Type unassignable: ByStr20 with contract field g : Bool end expected, but ByStr20 with contract end provided.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
