@@ -435,8 +435,8 @@ let contract_tests env =
                 >::: build_contract_tests ~pplit:false env
                        "address_list_traversal" succ_code 1 2 [];
                 "map_as_cparam"
-                >: build_contract_init_test env succ_code "map_as_cparam"
-                     "init" ~is_library:false ~ipc_mode:true;
+                >: build_contract_init_test env succ_code "map_as_cparam" "init"
+                     ~is_library:false ~ipc_mode:true;
               ];
          "these_tests_must_FAIL"
          >::: [

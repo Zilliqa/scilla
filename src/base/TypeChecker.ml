@@ -299,9 +299,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let e, rep = erep in
     match e with
     | Literal l ->
-        let%bind lt =
-          fromR_TE @@ literal_type l ~lc:(ER.get_loc rep)
-        in
+        let%bind lt = fromR_TE @@ literal_type l ~lc:(ER.get_loc rep) in
         pure @@ (TypedSyntax.Literal l, (mk_qual_tp lt, rep))
     | Var i ->
         let%bind r =

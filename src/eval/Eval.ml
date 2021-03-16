@@ -652,7 +652,9 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
                 pure None
               else
                 (* Typecheck the literal against the parameter type *)
-                let%bind dyn_checks = fromR @@ assert_literal_type ~expected:xt l in
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
+                in
                 pure (Some dyn_checks))
         in
         match arg_dyn_checks with
@@ -711,7 +713,9 @@ let create_cur_state_fields initcstate curcstate =
                      (pp_typ t) (pp_typ xt))
               else
                 (* Check that the literal matches the stated type *)
-                let%bind _dyn_checks = fromR @@ assert_literal_type ~expected:t l in
+                let%bind _dyn_checks =
+                  fromR @@ assert_literal_type ~expected:t l
+                in
                 (* Ignore dynamic typechecks - if it's in the current state, then it's already been checked *)
                 pure true)
         in
@@ -805,7 +809,9 @@ let check_message_entries cparams_o entries =
                 pure None
               else
                 (* We ignore the type from the message entry, since that was used to parse the literal, and hence is known to be valid *)
-                let%bind dyn_checks = fromR @@ assert_literal_type ~expected:xt l in
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
+                in
                 if
                   String.(
                     s = ContractUtil.MessagePayload.sender_label

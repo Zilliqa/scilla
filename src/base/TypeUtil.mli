@@ -118,16 +118,14 @@ module TypeUtilities : sig
   module MakeTEnv : MakeTEnvFunctor
 
   val literal_type :
-    ?lc:ErrorUtils.loc ->
-    TULiteral.t ->
-    (TUType.t, scilla_error list) result
+    ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
   val assert_literal_type :
     ?lc:ErrorUtils.loc ->
     expected:TUType.t ->
     TULiteral.t ->
     ((TUType.t * TULiteral.Bystrx.t) list, scilla_error list) result
-  
+
   val is_wellformed_lit :
     ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
