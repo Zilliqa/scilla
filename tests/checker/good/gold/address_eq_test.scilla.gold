@@ -13,7 +13,10 @@
       { "field": "map_res_5", "tag": "Inconsistent" },
       { "field": "map_res_6", "tag": "NotMoney" },
       { "field": "test_map2", "tag": "(Map NotMoney)" },
-      { "field": "test_map3", "tag": "(Map NotMoney)" }
+      { "field": "test_map3", "tag": "(Map NotMoney)" },
+      { "field": "test_to_string", "tag": "NoInfo" },
+      { "field": "test_to_ascii", "tag": "Inconsistent" },
+      { "field": "test_strrev", "tag": "Inconsistent" }
     ],
     "ADT constructors": []
   },
@@ -66,7 +69,10 @@
         "vname": "test_map3",
         "type": "Map (Uint128) (ByStr20 with contract end)",
         "depth": 1
-      }
+      },
+      { "vname": "test_to_string", "type": "String", "depth": 0 },
+      { "vname": "test_to_ascii", "type": "String", "depth": 0 },
+      { "vname": "test_strrev", "type": "String", "depth": 0 }
     ],
     "transitions": [
       {
@@ -183,6 +189,16 @@
               "ByStr20 with contract field f : Uint32, field g : Int32 end"
           }
         ]
+      },
+      {
+        "vname": "Test11",
+        "params": [
+          {
+            "vname": "param1",
+            "type":
+              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+          }
+        ]
       }
     ],
     "procedures": [],
@@ -232,7 +248,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
-        "line": 89,
+        "line": 93,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -242,7 +258,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
-        "line": 85,
+        "line": 89,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -252,7 +268,7 @@
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
-        "line": 69,
+        "line": 73,
         "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
