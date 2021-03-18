@@ -403,6 +403,11 @@ let contract_tests env =
                 >::: build_contract_tests env "listiter" succ_code 1 1 [];
                 "polynetwork"
                 >::: build_contract_tests env "Polynetwork" succ_code 1 4 [];
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam" "init"
+                     ~is_library:false ~ipc_mode:true;
+                "shadow_import"
+                >::: build_contract_tests env "shadow_import" succ_code 1 1 [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init" ~is_library:false ~ipc_mode:true;
@@ -434,9 +439,6 @@ let contract_tests env =
                 "polymorphic_address"
                 >::: build_contract_tests ~pplit:false env
                        "address_list_traversal" succ_code 1 2 [];
-                "map_as_cparam"
-                >: build_contract_init_test env succ_code "map_as_cparam" "init"
-                     ~is_library:false ~ipc_mode:true;
               ];
          "these_tests_must_FAIL"
          >::: [

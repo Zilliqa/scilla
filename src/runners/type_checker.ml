@@ -68,7 +68,7 @@ let disambiguate e (std_lib : GlobalSyntax.libtree list) =
     foldM std_lib ~init:([], [], []) ~f:(fun acc_dicts lt ->
         let ({ libn; _ } : libtree) = lt in
         let lib_address = SIdentifier.as_string libn.lname in
-        amend_ns_dict libn lib_address None acc_dicts
+        amend_imported_ns_dict libn lib_address None acc_dicts
           (SIdentifier.get_rep libn.lname))
   in
   let imp_dicts =
