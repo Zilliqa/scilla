@@ -424,8 +424,8 @@ module TypeUtilities = struct
     is_serializable_storable_helper false true true t []
 
   and is_legal_contract_parameter_type t =
-    (* Like transition parameters. Maps are not allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper false false true t []
+    (* Like fields. Maps are allowed. Address values should be checked for storable field types. *)
+    is_serializable_storable_helper true false true t []
 
   and is_legal_field_type t =
     (* Maps are allowed. Address values should be checked for storable field types. *)
@@ -641,37 +641,42 @@ module TypeUtilities = struct
   (*                     Typing literals                          *)
   (****************************************************************)
 
-  let literal_type ?(lc = dummy_loc) ?(expected = None) l =
+  (* Use when the type of l can be determined without dynamic typechecks or additional information.
+     For example, the value of an IPC fetch of a field can be trusted, since that the value was constructed in a typesafe way.
+     Conversely, the value in a message or an init file cannot be trusted, since that value may have been constructed from outside of Scilla. *)
+  let literal_type ?(lc = dummy_loc) l =
     let open TULiteral in
-    let simple_literal_type l' =
-      match l' with
-      | IntLit (Int32L _) -> pure int32_typ
-      | IntLit (Int64L _) -> pure int64_typ
-      | IntLit (Int128L _) -> pure int128_typ
-      | IntLit (Int256L _) -> pure int256_typ
-      | UintLit (Uint32L _) -> pure uint32_typ
-      | UintLit (Uint64L _) -> pure uint64_typ
-      | UintLit (Uint128L _) -> pure uint128_typ
-      | UintLit (Uint256L _) -> pure uint256_typ
-      | StringLit _ -> pure string_typ
-      | BNum _ -> pure bnum_typ
-      | ByStr _ -> pure bystr_typ
-      | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
-      (* Check that messages and events have storable parameters. *)
-      | Msg bs -> get_msgevnt_type bs lc
-      | Map ((kt, vt), _) -> pure (MapType (kt, vt))
-      | ADTValue (cname, ts, _) ->
-          let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
-          pure @@ ADT (mk_loc_id adt.tname, ts)
-      | Clo _ -> fail0 @@ "Cannot type runtime closure."
-      | TAbs _ -> fail0 @@ "Cannot type runtime type function"
-    in
+    match l with
+    | IntLit (Int32L _) -> pure int32_typ
+    | IntLit (Int64L _) -> pure int64_typ
+    | IntLit (Int128L _) -> pure int128_typ
+    | IntLit (Int256L _) -> pure int256_typ
+    | UintLit (Uint32L _) -> pure uint32_typ
+    | UintLit (Uint64L _) -> pure uint64_typ
+    | UintLit (Uint128L _) -> pure uint128_typ
+    | UintLit (Uint256L _) -> pure uint256_typ
+    | StringLit _ -> pure string_typ
+    | BNum _ -> pure bnum_typ
+    | ByStr _ -> pure bystr_typ
+    | ByStrX bs -> pure (bystrx_typ (Bystrx.width bs))
+    (* Check that messages and events have storable parameters. *)
+    | Msg bs -> get_msgevnt_type bs lc
+    | Map ((kt, vt), _) -> pure (MapType (kt, vt))
+    | ADTValue (cname, ts, _) ->
+        let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
+        pure @@ ADT (mk_loc_id adt.tname, ts)
+    | Clo _ -> fail0 @@ "Cannot type runtime closure."
+    | TAbs _ -> fail0 @@ "Cannot type runtime type function"
+
+  (* Use when the type of l must be verified using dynamic typechecks or otherwise. *)
+  let assert_literal_type ?(lc = dummy_loc) ~expected l =
+    let open TULiteral in
     let rec fun_typ_recurser fun_typ args dyn_checks_acc =
       match (fun_typ, args) with
       | FunType (t, res_t), arg :: rest ->
-          let%bind _, new_dyn_checks_acc = recurser t arg dyn_checks_acc in
-          fun_typ_recurser res_t rest new_dyn_checks_acc
-      | ADT (_, _), [] -> pure @@ (fun_typ, dyn_checks_acc)
+          let%bind dyn_checks_acc' = recurser t arg dyn_checks_acc in
+          fun_typ_recurser res_t rest dyn_checks_acc'
+      | ADT (_, _), [] -> pure @@ dyn_checks_acc
       | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
     and recurser expected l dyn_check_acc =
       match (expected, l) with
@@ -698,19 +703,29 @@ module TypeUtilities = struct
             fun_typ_recurser c_fun_typ cargs dyn_check_acc
       | (Address _ as res_t), ByStrX bs
         when Bystrx.width bs = Type.address_length ->
-          (* ByStr20 literal found, address expected. Trust the dynamic typecheck to validate, and expect the address type *)
-          pure @@ (res_t, (res_t, bs) :: dyn_check_acc)
+          (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
+          pure @@ ((res_t, bs) :: dyn_check_acc)
+      | MapType (kt, vt), Map ((lkt, lvt), tbl) ->
+          (* Key types and value types must be assignable. *)
+          let%bind () = assert_type_assignable ~expected:kt ~actual:lkt ~lc in
+          let%bind () = assert_type_assignable ~expected:vt ~actual:lvt ~lc in
+          (* key/value pairs must be assignable to the stated types in the literal *)
+          let ks, vs =
+            Caml.Hashtbl.fold
+              (fun k v (k_acc, v_acc) -> (k :: k_acc, v :: v_acc))
+              tbl ([], [])
+          in
+          let%bind dyn_check_acc' =
+            foldM ks ~init:dyn_check_acc ~f:(fun acc k -> recurser lkt k acc)
+          in
+          foldM vs ~init:dyn_check_acc' ~f:(fun acc v -> recurser lvt v acc)
       | t, l ->
           (* Simple case - type literal, and check assignability *)
-          let%bind lit_t = simple_literal_type l in
+          let%bind lit_t = literal_type ~lc l in
           let%bind () = assert_type_assignable ~expected:t ~actual:lit_t ~lc in
-          pure (t, dyn_check_acc)
+          pure dyn_check_acc
     in
-    match expected with
-    | Some t -> recurser t l []
-    | None ->
-        let%bind res_t = simple_literal_type l in
-        pure @@ (res_t, [])
+    recurser expected l []
 
   (* Verifies a literal to be wellformed and returns it's type. *)
   let rec is_wellformed_lit ?(lc = dummy_loc) l =

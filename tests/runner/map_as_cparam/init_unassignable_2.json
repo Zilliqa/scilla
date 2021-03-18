@@ -1,0 +1,31 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0x3620c286757a29985cee194eb90064270fb65414"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1"
+    },
+    {
+        "vname" : "x",
+        "type" : "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract end)", 
+        "value" : [
+            {
+                "key" : "0x1234567890123456789012345678901234567890",
+                "val" : "0x1234567890123456789012345678901234567891"
+            },
+            {
+                "key" : "0x1234567890123456789012345678901234567892",
+                "val" : "0x1234567890123456789012345678901234567893"
+            }
+        ]
+    }
+]

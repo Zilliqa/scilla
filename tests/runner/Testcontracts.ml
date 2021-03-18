@@ -434,6 +434,9 @@ let contract_tests env =
                 "polymorphic_address"
                 >::: build_contract_tests ~pplit:false env
                        "address_list_traversal" succ_code 1 2 [];
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam" "init"
+                     ~is_library:false ~ipc_mode:true;
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -494,6 +497,18 @@ let contract_tests env =
                 "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" fail_code 101
                        128 [];
+                "map_as_cparam"
+                >: build_contract_init_test env fail_code "map_as_cparam"
+                     "init_unassignable" ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env fail_code "map_as_cparam"
+                     "init_unassignable_2" ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env fail_code "map_as_cparam"
+                     "init_illegal_key" ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env fail_code "map_as_cparam"
+                     "init_illegal_value" ~is_library:false ~ipc_mode:true;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

@@ -79,8 +79,8 @@ let rec is_pure_literal l =
 let sanitize_literal l =
   let open MonadUtil in
   let open Result.Let_syntax in
-  let%bind t, dyn_checks = literal_type l in
-  if List.is_empty dyn_checks && is_legal_message_field_type t then pure l
+  let%bind t = literal_type l in
+  if is_legal_message_field_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let eval_gas_charge env g =
@@ -144,13 +144,8 @@ let builtin_executor env f targs args_id =
   let%bind arg_lits =
     mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
-  let%bind tps =
-    mapM arg_lits ~f:(fun l ->
-        let%bind t, dyn_checks = fromR @@ literal_type l in
-        if not @@ List.is_empty dyn_checks then
-          fail0 "Dynamic typecheck required for application of builtin"
-        else pure t)
-  in
+  (* Builtin elaborators need to know the literal type of arguments *)
+  let%bind tps = mapM arg_lits ~f:(fun l -> fromR @@ literal_type l) in
   let%bind ret_typ, op =
     EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
       ~vargtypes:tps
@@ -195,8 +190,8 @@ let rec exp_eval erep env =
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) ->
             let%bind sanitized_lit = fromR @@ resolve pld in
-            let%bind t, _dyn_checks = fromR @@ literal_type sanitized_lit in
-            (* Dynamic typechecks are statically known to be empty *)
+            (* Messages should contain simplified types, so use literal_type *)
+            let%bind t = fromR @@ literal_type sanitized_lit in
             pure (s, t, sanitized_lit))
       in
       pure (Msg payload_resolved, env)
@@ -657,8 +652,8 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
                 pure None
               else
                 (* Typecheck the literal against the parameter type *)
-                let%bind _ltyp, dyn_checks =
-                  fromR @@ literal_type ~expected:(Some xt) l
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
                 in
                 pure (Some dyn_checks))
         in
@@ -718,10 +713,10 @@ let create_cur_state_fields initcstate curcstate =
                      (pp_typ t) (pp_typ xt))
               else
                 (* Check that the literal matches the stated type *)
-                let%bind _, _dyn_checks =
-                  fromR @@ literal_type ~expected:(Some t) l
+                let%bind _dyn_checks =
+                  fromR @@ assert_literal_type ~expected:t l
                 in
-                (* Allow dynamic typechecks - if it's in the current state, then it's already been checked *)
+                (* Ignore dynamic typechecks - if it's in the current state, then it's already been checked *)
                 pure true)
         in
         if not ex then
@@ -814,8 +809,8 @@ let check_message_entries cparams_o entries =
                 pure None
               else
                 (* We ignore the type from the message entry, since that was used to parse the literal, and hence is known to be valid *)
-                let%bind _entry_typ, dyn_checks =
-                  fromR @@ literal_type ~expected:(Some xt) l
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
                 in
                 if
                   String.(
