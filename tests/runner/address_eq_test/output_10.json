@@ -76,7 +76,10 @@
         "arguments": []
       }
     },
-    { "vname": "map_res_6", "type": "Uint32", "value": "0" }
+    { "vname": "map_res_6", "type": "Uint32", "value": "0" },
+    { "vname": "test_to_string", "type": "String", "value": "" },
+    { "vname": "test_to_ascii", "type": "String", "value": "" },
+    { "vname": "test_strrev", "type": "String", "value": "" }
   ],
   "events": []
 }

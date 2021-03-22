@@ -72,7 +72,10 @@
       "vname": "test_map3",
       "type": "Map (Uint128) (ByStr20 with contract end)",
       "value": []
-    }
+    },
+    { "vname": "test_to_string", "type": "String", "value": "" },
+    { "vname": "test_to_ascii", "type": "String", "value": "" },
+    { "vname": "test_strrev", "type": "String", "value": "" }
   ],
   "events": []
 }

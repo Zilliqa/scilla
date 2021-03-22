@@ -18,6 +18,10 @@ field map_res_6 : Uint32 = Uint32 0
 field test_map2 : Map (ByStr20 with contract field f : Uint32 end) Uint128 = Emp (ByStr20 with contract field f : Uint32 end) Uint128
 field test_map3 : Map Uint128 (ByStr20 with contract end) = Emp Uint128 (ByStr20 with contract end)
 
+field test_to_string : String = ""
+field test_to_ascii : String = ""
+field test_strrev : String = ""
+
 transition Test1 (param1 : ByStr20 with contract field f : Uint128, field g : Int32 end,
   param2 : ByStr20 with contract field f : Uint128, field h : Bool end)
   x = builtin eq param1 param2;
@@ -91,3 +95,11 @@ transition Test10 (param1 : ByStr20 with contract field f : Uint32, field g : In
   test_map3 := mp4
 end
 
+transition Test11 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end)
+  x = builtin to_string param1;
+  test_to_string := x;
+  y = builtin to_ascii param1;
+  test_to_ascii := y;
+  z = builtin strrev param1;
+  test_strrev := z
+end

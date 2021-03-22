@@ -66,6 +66,21 @@
     "value": []
   },
   {
+    "vname": "test_to_string",
+    "type": "String",
+    "value": ""
+  },
+  {
+    "vname": "test_to_ascii",
+    "type": "String",
+    "value": ""
+  },
+  {
+    "vname": "test_strrev",
+    "type": "String",
+    "value": ""
+  },
+  {
     "vname": "_external",
     "type": "Unit",
     "value": [
