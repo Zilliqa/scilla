@@ -22,6 +22,8 @@ open ErrorUtils
 open DebugMessage
 open PrettyPrinters
 open Literal
+open ContractUtil
+open ParserUtil
 open Yojson
 module InputFEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 module InputSyntax = InputFEParser.FESyntax
@@ -34,6 +36,8 @@ module OutputType = OutputLiteral.LType
 module OutputIdentifier = OutputType.TIdentifier
 module OutputName = OutputIdentifier.Name
 
+module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
+module OutputContractUtil = ScillaContractUtil (ParserRep) (ParserRep)
 module OutputStateService = StateService.MakeStateService ()
 
 (* ************************************************************************ * 
@@ -656,6 +660,19 @@ let init_lib_entries libs this_address =
           ()
       | LibVar _ -> ())
 
+(* Combined init_module and init_contract *)
+let init_module (md : Dis.PostDisSyntax.cmodule) initargs elibs =
+  (* Initialize libraries - ignore gas *)
+  match Eval.init_libraries md.libs elibs (fun x _ -> x) Stdint.Uint64.max_int with
+  | Error s -> fatal_error s
+  | Ok libenv ->
+      (* Fold params into already initialized libraries, possibly shadowing *)
+      let env = EvalUtil.Env.bind_all libenv initargs in
+      (* Evaluate constraint, and abort if false - ignore gas *)
+      match Eval.init_fields env md.contr.cfields (fun x _ -> x) Stdint.Uint64.max_int with
+      | Error s -> fatal_error s
+      | Ok field_values -> field_values
+
 (* StateService.ml *)
 
 module InputStateService = struct
@@ -671,21 +688,21 @@ module InputStateService = struct
     (* Translate JRPC result to our result. *)
     let translate_res res =
       match res |> IDL.T.get |> M.run with
-      | Error (e : IPCUtil.RPCError.err_t) ->
-          fatal_error
+      | Error (_e : IPCUtil.RPCError.err_t) -> None
+(*          fatal_error
             (mk_error0
                (Printf.sprintf
                   "StateIPCClient: Error in IPC access: (code:%d, message:%s)."
-                  e.code e.message))
-      | Ok res' -> res'
+                  e.code e.message)) *)
+      | Ok res' -> Some res'
 
     let ipcclient_exn_wrapper thunk =
       try thunk () with
       | Unix.Unix_error (_, s1, s2) ->
           fatal_error (mk_error0 ("StateIPCClient: Unix error: " ^ s1 ^ s2))
-      | _ ->
+(*      | _ ->
           fatal_error
-            (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call")
+            (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call") *)
 
     let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
       let socket =
@@ -773,11 +790,12 @@ module InputStateService = struct
         ipcclient_exn_wrapper thunk
       in
       match res with
-      | true, res' ->
+      | Some (true, res') ->
           let decoded_pb = decode_serialized_value (Bytes.of_string res') in
           let res'' = deserialize_value decoded_pb tp this_address in
           Some res''
-      | false, _ -> None
+      | Some (false, _)
+      | None -> None
   end
 
   type ss_field = {
@@ -789,26 +807,35 @@ module InputStateService = struct
   }
 
   let fetch ~fname ~tp ~socket_addr ~this_address =
-    let res = InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address in
-    match res with
-    | None ->
-        fatal_error
-          (mk_error0
-             (sprintf "StateService: Field %s not found on IPC server."
-                (InputIdentifier.as_error_string fname)))
-    | Some _ -> res
+    InputStateIPCClient.fetch ~socket_addr ~fname ~tp ~this_address
 
   let get_full_state fl ~socket_addr ~this_address =
     List.map fl ~f:(fun f ->
-        let v =
-          fetch
-            ~fname:(InputIdentifier.mk_loc_id f.fname)
-            ~tp:f.ftyp ~socket_addr ~this_address
-        in
-        (f.fname, f.ftyp, v))
+        match fetch ~fname:(InputIdentifier.mk_loc_id f.fname) ~tp:f.ftyp ~socket_addr ~this_address with
+        | Some v -> (f.fname, f.ftyp, v)
+        | None -> fatal_error
+                    (mk_error0
+                       (sprintf "StateService: Field %s not found on IPC server."
+                          (InputName.as_error_string f.fname))))
 end
 
 (* Runner.ml *)
+(* Formerly validate_get_init_json *)
+let get_init_json init_file this_address =
+  (* Retrieve initial parameters *)
+  let initargs_list =
+    try get_json_data init_file
+    with Invalid_json s ->
+      fatal_error
+        (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
+  in
+  let initargs_str = List.map initargs_list ~f:(jobj_to_statevar this_address) in
+  (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
+  let initargs =
+    map_json_input_strings_to_names initargs_str
+    |> List.map ~f:(fun (n, _t, l) -> (n, l))
+  in
+  initargs
 
 let run_with_args args =
   match InputFEParser.parse_cmodule args.input with
@@ -865,8 +892,35 @@ let run_with_args args =
               in
               (* Fetch state. Parsing the fetched jsons disambiguates *)
               let state =
-                InputStateService.get_full_state inputfields
-                  ~socket_addr:args.ipc_address ~this_address
+                match inputfields with
+                | [] -> [] (* Contract has no state *)
+                | f1 :: _ when
+                    Option.is_none @@
+                    InputStateService.fetch ~fname:(InputIdentifier.mk_loc_id f1.fname) ~tp:f1.ftyp ~socket_addr:args.ipc_address ~this_address
+                  -> 
+                    (* Some contracts do not have their fields in the database. 
+                       If so, we must construct the state from cmod.contr.cfields instead of fetching it from the IPC server.
+                       Go through the usual deployment process (ignoring gas charges).
+                    *)
+                    let open RunnerUtil in
+                    (* No external libraries have been deployed, so no address map should exist in init file *)
+                    let init_address_map = [] in
+                    let elibs = import_libs cmod.elibs init_address_map in
+                    (* Disambiguate contract - we need eval_expr evaluate the field initialisers *)
+                    let dis_cmod =
+                      match Dis.disambiguate_cmodule cmod elibs init_address_map this_address with
+                      | Ok res -> res
+                      | Error s ->
+                          fatal_error @@
+                            (mk_error0
+                               (sprintf "Disambiguation failed for problem contract at address %s\n" this_address)) @ s
+                    in
+                    let initargs = get_init_json args.input_init this_address in
+                    init_module dis_cmod initargs elibs
+                | _ ->
+                    InputStateService.get_full_state inputfields
+                      ~socket_addr:args.ipc_address ~this_address |>
+                    List.map ~f:(fun (n, tp, v) -> (convert_simple_name_to_simple_name n, tp, v))
               in
 
               (* Update using StateService.ml *)
@@ -875,9 +929,9 @@ let run_with_args args =
                 List.map state ~f:(fun (n, tp, v) ->
                     let open StateService in
                     {
-                      fname = convert_simple_name_to_simple_name n;
+                      fname = n;
                       ftyp = tp;
-                      fval = v;
+                      fval = Some v;
                     })
               in
               (* Initialise with the final values, then update, then finalise. *)
