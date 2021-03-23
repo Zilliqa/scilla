@@ -135,8 +135,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_string_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | [], [ t ] when is_address_type t -> 
-          elab_tfun_with_args_no_gas to_string_type [bystrx_typ Type.address_length]
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let to_ascii_arity = 1
@@ -150,8 +151,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_ascii_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | [], [ t ] when is_address_type t -> 
-          elab_tfun_with_args_no_gas to_string_type [bystrx_typ Type.address_length]
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let strrev_arity = 1
@@ -165,8 +167,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | String_typ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas strrev_type ts
           | _ -> fail0 "Failed to elaborate" )
-      | [], [ t ] when is_address_type t -> 
-          elab_tfun_with_args_no_gas to_string_type [bystrx_typ Type.address_length]
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
   end
 
