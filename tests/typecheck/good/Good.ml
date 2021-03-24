@@ -95,31 +95,39 @@ let equivalent_types =
       "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
        field y1 : Option Int256, field y2 : ByStr20 end end" );
     ( "forall 'A. 'A -> ByStr20 with contract field f : 'A end",
-      "forall 'C. 'C -> ByStr20 with contract field f : 'C end");
-    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract field z : 'A end end",
-      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract field z : 'C end end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end");
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'A end end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end" );
     ( "ByStr20 with end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with end -> ByStr20 with contract field y : Bool end");
+      "ByStr20 with end -> ByStr20 with contract field y : Bool end" );
     ( "ByStr20 with contract end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end");
+      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end" );
     ( "ByStr20 -> ByStr20 with contract field y : Bool end",
-      "ByStr20 -> ByStr20 with contract field y : Bool end");
+      "ByStr20 -> ByStr20 with contract field y : Bool end" );
     ( "ByStr20 with contract field y : Bool end -> ByStr20 with end",
-      "ByStr20 with contract field y : Bool end -> ByStr20 with end");
+      "ByStr20 with contract field y : Bool end -> ByStr20 with end" );
     ( "ByStr20 with contract field y : Bool end -> ByStr20 with contract end",
-      "ByStr20 with contract field y : Bool end -> ByStr20 with contract end");
+      "ByStr20 with contract field y : Bool end -> ByStr20 with contract end" );
     ( "ByStr20 with contract field y : Bool end -> ByStr20",
-      "ByStr20 with contract field y : Bool end -> ByStr20");
-    ( "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end end) ByStr20",
-      "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end end) ByStr20");
-    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)",
-      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)");
+      "ByStr20 with contract field y : Bool end -> ByStr20" );
+    ( "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end \
+       end) ByStr20",
+      "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end \
+       end) ByStr20" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
     ( "Map ByStr20 (ByStr20 with contract field x : Uint32 end)",
-      "Map ByStr20 (ByStr20 with contract field x : Uint32 end)");
+      "Map ByStr20 (ByStr20 with contract field x : Uint32 end)" );
   ]
-  
+
 let assignable_but_not_equivalent_types =
   [
     (* Addresses *)
@@ -147,39 +155,59 @@ let assignable_but_not_equivalent_types =
     ( "ByStr20 with contract field x : ByStr20 with end end",
       "ByStr20 with contract field x : ByStr20 with contract end end" );
     ( "forall 'A. 'A -> ByStr20",
-      "forall 'C. 'C -> ByStr20 with contract field f : 'C end");
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
     ( "forall 'A. 'A -> ByStr20 with end",
-      "forall 'C. 'C -> ByStr20 with contract field f : 'C end");
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
     ( "forall 'A. 'A -> ByStr20 with contract end",
-      "forall 'C. 'C -> ByStr20 with contract field f : 'C end");
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
     ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 end",
-      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract field z : 'C end end");
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
     ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with end end",
-      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract field z : 'C end end");
-    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract end end",
-      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract field z : 'C end end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with end -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with end -> ByStr20 with contract field y : Bool, field z : Uint32 end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool, field z : Uint32 end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract end",
-      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool, field z : Uint32 end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with end",
-      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool, field z : Uint32 end");
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract \
+       end end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with end -> ByStr20 with contract field y : Bool, field z : \
+       Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
     ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20",
-      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool, field z : Uint32 end");
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
     ( "Map (ByStr20 with end) (ByStr20 with contract field x : Uint32 end)",
-      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)");
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
     ( "Map (ByStr20 with contract end) (ByStr20 with contract end)",
-      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)");
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
   ]
 
 let not_assignable_in_either_direction_types =
@@ -207,25 +235,41 @@ let not_assignable_in_either_direction_types =
       "ByStr20 with contract field x : ByStr20 with contract field y2 : Int32 \
        end end" );
     ( "forall 'A. 'A -> ByStr20 with contract field f : Uint32 end",
-      "forall 'C. 'C -> ByStr20 with contract field f : 'C end");
-    ( "forall 'A. forall 'B. ByStr20 with contract field f : 'A, field g : 'B end",
-      "forall 'C. forall 'D. ByStr20 with contract field f : 'D, field g : 'C end");
-    ( "forall 'A. forall 'B. 'A -> 'B -> ByStr20 with contract field f : 'A, field g : 'B end",
-      "forall 'C. forall 'D. 'D -> 'C -> ByStr20 with contract field f : 'C, field g : 'D end");
-    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract field x : Uint32, field z : Bool end -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract field y : Bool, field z : Bool end",
-      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract field y : Bool, field w : Bool  end");
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. forall 'B. ByStr20 with contract field f : 'A, field g : 'B \
+       end",
+      "forall 'C. forall 'D. ByStr20 with contract field f : 'D, field g : 'C \
+       end" );
+    ( "forall 'A. forall 'B. 'A -> 'B -> ByStr20 with contract field f : 'A, \
+       field g : 'B end",
+      "forall 'C. forall 'D. 'D -> 'C -> ByStr20 with contract field f : 'C, \
+       field g : 'D end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field z : Bool end -> ByStr20 \
+       with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool, field z : Bool end",
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool, field w : Bool  end" );
     ( "ByStr20 with contract end -> ByStr20 with contract end",
-      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract field y : Bool end");
-    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract field y : Bool end",
-      "ByStr20 with contract end -> ByStr20 with contract end");
-    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)",
-      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract end)");
-    ( "Map (ByStr20 with contract end) (ByStr20 with contract field y : Uint32 end)",
-      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 end)");
-    ( "Map (ByStr20 with contract field y : Uint32 end) (ByStr20 with contract end)",
-      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract end)");
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end",
+      "ByStr20 with contract end -> ByStr20 with contract end" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)",
+      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract \
+       end)" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field y : Uint32 \
+       end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
+    ( "Map (ByStr20 with contract field y : Uint32 end) (ByStr20 with contract \
+       end)",
+      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract \
+       end)" );
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)
