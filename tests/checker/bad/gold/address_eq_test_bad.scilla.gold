@@ -1,0 +1,56 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) [ByStr20 with contract field f : Uint32, field g : Int32 end; Int32].",
+      "start_location": {
+        "file": "checker/bad/address_eq_test_bad.scilla",
+        "line": 12,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) [ByStr20 with contract field f : Uint32, field g : Int32 end; Bool].",
+      "start_location": {
+        "file": "checker/bad/address_eq_test_bad.scilla",
+        "line": 18,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) [Bool; ByStr20 with contract field f : Uint32, field g : Int32 end].",
+      "start_location": {
+        "file": "checker/bad/address_eq_test_bad.scilla",
+        "line": 24,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) [Bool; ByStr20 with contract field f : Uint32, field g : Int32 end].",
+      "start_location": {
+        "file": "checker/bad/address_eq_test_bad.scilla",
+        "line": 30,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) [List (Bool); List (Bool)].",
+      "start_location": {
+        "file": "checker/bad/address_eq_test_bad.scilla",
+        "line": 36,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

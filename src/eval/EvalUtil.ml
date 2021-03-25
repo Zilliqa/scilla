@@ -167,6 +167,22 @@ module Configuration = struct
 
   let store i l = fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
 
+  let lookup st k = Env.lookup st.env k
+
+  (* Helper function for remote fetches *)
+  let lookup_sender_addr st =
+    let%bind sender =
+      fromR
+      @@ lookup st
+           (mk_loc_id (label_name_of_string MessagePayload.sender_label))
+    in
+    match sender with
+    | EvalLiteral.ByStrX bs -> pure bs
+    | _ ->
+        fail0
+          (sprintf "Incorrect type of _sender in environment: %s"
+             (pp_literal sender))
+
   let load st k =
     let i = get_id k in
     if [%equal: EvalName.t] i balance_label then
@@ -182,6 +198,57 @@ module Configuration = struct
             (Printf.sprintf "Error loading field %s"
                (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
+
+  let remote_load st caddr k =
+    let%bind fval =
+      fromR
+      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
+    in
+    match fval with
+    | Some v, _ ->
+        (* _sender._balance is a special case if funds have been accepted. _amount must be deducted. *)
+        let%bind sender_addr = lookup_sender_addr st in
+        if
+          st.accepted
+          && EvalLiteral.Bystrx.equal sender_addr caddr
+          && EvalName.equal (get_id k) balance_label
+        then
+          let%bind amount_lit =
+            fromR
+            @@ lookup st
+                 (mk_loc_id (label_name_of_string MessagePayload.amount_label))
+          in
+          match (v, amount_lit) with
+          | UintLit (Uint128L sender_balance), UintLit (Uint128L amount)
+            when Uint128.compare sender_balance amount >= 0 ->
+              pure
+              @@ EvalLiteral.UintLit
+                   (Uint128L Uint128.(sender_balance - amount))
+          | _ ->
+              fail0
+              @@ sprintf
+                   "Unexpected sender balance or amount literal: sender \
+                    balance = %s, amount = %s"
+                   (pp_literal v) (pp_literal amount_lit)
+        else pure v
+    | _ ->
+        fail1
+          (Printf.sprintf "Error loading field %s"
+             (EvalName.as_error_string (get_id k)))
+          (ER.get_loc (get_rep k))
+
+  let remote_field_type caddr k =
+    let%bind fval =
+      fromR
+      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:true
+    in
+    match fval with
+    | _, Some ty -> pure ty
+    | _ ->
+        fail0
+          (sprintf "Unable to fetch type for field %s at address %s"
+             (EvalLiteral.Bystrx.hex_encoding caddr)
+             (as_error_string k))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
@@ -217,6 +284,31 @@ module Configuration = struct
       in
       pure @@ EvalLiteral.build_bool_lit is_member
 
+  let remote_map_get caddr m keys fetchval =
+    let open EvalLiteral in
+    if fetchval then
+      (* We need to fetch the type in advance because the type-option returned
+       * by the actual call may be None if the key(s) wasn't found,
+       * (but the map map field itself still exists). *)
+      let%bind mt = remote_field_type caddr m in
+      let%bind vt =
+        fromR @@ EvalTypeUtilities.map_access_type mt (List.length keys)
+      in
+      let%bind vopt, _ =
+        fromR
+        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:false
+      in
+      (* Need to wrap the result in a Scilla Option. *)
+      match vopt with
+      | Some v -> pure @@ build_some_lit v vt
+      | None -> pure (build_none_lit vt)
+    else
+      let%bind _, topt =
+        fromR
+        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:true
+      in
+      pure @@ EvalLiteral.build_bool_lit (Option.is_some topt)
+
   let bind st k v =
     let e = st.env in
     { st with env = List.Assoc.add e k v ~equal:[%equal: EvalName.t] }
@@ -235,24 +327,40 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let lookup st k = Env.lookup st.env k
-
   let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
 
   let accept_incoming st =
-    let incoming' = st.incoming_funds in
-    (* Although unsigned integer is used, and this check isn't
-     * necessary, we have it just in case, somehow a malformed
-     * Uint128 literal manages to reach here. *)
-    if Uint128.compare incoming' Uint128.zero >= 0 then
-      let balance = Uint128.add st.balance incoming' in
-      let accepted = true in
-      let incoming_funds = Uint128.zero in
-      pure @@ { st with balance; accepted; incoming_funds }
+    if st.accepted then (* Do nothing *)
+      pure st
     else
-      fail0
-      @@ sprintf "Incoming balance is negative (somehow):%s."
-           (Uint128.to_string incoming')
+      (* Check that sender balance is sufficient *)
+      let%bind sender_addr = lookup_sender_addr st in
+      let%bind sender_balance_l =
+        remote_load st sender_addr (mk_loc_id balance_label)
+      in
+      let incoming' = st.incoming_funds in
+      match sender_balance_l with
+      | UintLit (Uint128L sender_balance) ->
+          if Uint128.compare incoming' sender_balance >= 0 then
+            fail0 "Insufficient sender balance for acceptance."
+          else if
+            (* Although unsigned integer is used, and this check isn't
+             * necessary, we have it just in case, somehow a malformed
+             * Uint128 literal manages to reach here. *)
+            Uint128.compare incoming' Uint128.zero >= 0
+          then
+            let balance = Uint128.add st.balance incoming' in
+            let accepted = true in
+            let incoming_funds = Uint128.zero in
+            pure @@ { st with balance; accepted; incoming_funds }
+          else
+            fail0
+            @@ sprintf "Incoming balance is negative (somehow):%s."
+                 (Uint128.to_string incoming')
+      | _ ->
+          fail0
+          @@ sprintf "Unrecognized balance literal at sender: %s"
+               (pp_literal sender_balance_l)
 
   (* Finds a procedure proc_name, and returns the procedure and the
      list of procedures in scope for that procedure *)
@@ -375,4 +483,59 @@ module ContractState = struct
        %s\n\
        Balance = %s\n"
       pp_params pp_fields pp_balance
+end
+
+(*****************************************************)
+(*          Dynamic typecheck of addresses           *)
+(*****************************************************)
+module EvalTypecheck = struct
+  open MonadUtil
+  open Result.Let_syntax
+
+  let typecheck_remote_field_types ~caddr fts_opt =
+    let open EvalType in
+    (* First check that the address is in use: balance > 0 || nonce > 0 *)
+    let balance_id = EvalIdentifier.mk_loc_id balance_label in
+    let nonce_id = EvalIdentifier.mk_loc_id nonce_label in
+    let%bind balance_lit, _ =
+      StateService.external_fetch ~caddr ~fname:balance_id ~keys:[]
+        ~ignoreval:false
+    in
+    let%bind nonce_lit, _ =
+      StateService.external_fetch ~caddr ~fname:nonce_id ~keys:[]
+        ~ignoreval:false
+    in
+    match (balance_lit, nonce_lit) with
+    | Some (UintLit (Uint128L balance)), Some (UintLit (Uint64L nonce))
+      when Uint128.compare balance Uint128.zero > 0
+           || Uint64.compare nonce Uint64.zero > 0 -> (
+        match fts_opt with
+        | None ->
+            (* Non-contract address - all fields checked *)
+            pure true
+        | Some fts ->
+            let this_id = EvalIdentifier.mk_loc_id this_address_label in
+            let%bind _, this_typ_opt =
+              StateService.external_fetch ~caddr ~fname:this_id ~keys:[]
+                ~ignoreval:true
+            in
+            if Option.is_none this_typ_opt then
+              fail0
+              @@ sprintf "No contract found at address %s"
+                   (EvalLiteral.Bystrx.hex_encoding caddr)
+            else
+              (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+              allM fts ~f:(fun (f, t) ->
+                  let%bind res =
+                    StateService.external_fetch ~caddr ~fname:f ~keys:[]
+                      ~ignoreval:true
+                  in
+                  match res with
+                  | _, Some ext_typ ->
+                      pure @@ type_assignable ~expected:t ~actual:ext_typ
+                  | _, None -> pure false) )
+    | _ ->
+        fail0
+        @@ sprintf "Address %s not in use."
+             (EvalLiteral.Bystrx.hex_encoding caddr)
 end

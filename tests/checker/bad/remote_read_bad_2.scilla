@@ -1,0 +1,23 @@
+scilla_version 0
+
+contract RRContract ()
+
+field remote_reads_test_res_5 : Bool = False
+
+transition RemoteReadBackForth(
+  remote: ByStr20 with contract
+                       field transactionCount : Uint32,
+                       field admin : ByStr20 with end,       
+                       field owners : Map (ByStr20 with end) (ByStr20 with end),
+                       field signatures : Map Uint32 (Map ByStr20 with end Bool)
+                       end)
+  tmp1 <-& remote.admin;
+  tmp_3_7 <-& remote.owners[tmp1];
+  match tmp_3_7 with
+  | None =>
+  | Some adr =>
+    tmp2 = Uint32 0;
+    tmp3 <-& remote.signatures[tmp2][adr];
+    remote_reads_test_res_5 := tmp3
+  end
+end

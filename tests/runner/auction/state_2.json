@@ -19,5 +19,17 @@
       "vname": "pendingReturns",
       "type": "Map (ByStr20) (Uint128)",
       "value": []
-    }
+    },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x12345678901234567890123456789012345678ab",
+            "state": [
+                { "vname": "_balance", "type": "Uint128", "value": "242" }
+            ]
+        }
+    ]
+  }
 ]

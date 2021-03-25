@@ -79,6 +79,10 @@ module StdlibTracker : sig
   (* File extension for Scilla expressions. *)
   val file_extn_expression : string
 
+  val add_deflib_adttyp : string -> string -> unit
+
+  val lookup_deflib_adttyp : string -> string option
+
   (* Reset internal state. *)
   val reset : unit -> unit
 end

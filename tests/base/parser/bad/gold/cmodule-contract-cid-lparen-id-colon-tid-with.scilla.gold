@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Following the declaration of an immutable field, the parser expects another one separated by a comma or the end of the declarations with a right bracket.\n",
+        "This type annotation is not closed properly, or has a missing or misplaced '='.\n",
       "start_location": {
         "file":
           "base/parser/bad/cmodule-contract-cid-lparen-id-colon-tid-with.scilla",

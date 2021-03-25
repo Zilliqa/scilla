@@ -72,6 +72,18 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind () = is_adt_in_scope s in
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
+      | Address None -> pure ()
+      | Address (Some fts) -> (
+          match
+            List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
+                RecIdentifier.compare f1 f2)
+          with
+          | Some (dup_field, _) ->
+              fail1
+                (sprintf "Duplicate field %s in address type."
+                   (as_error_string dup_field))
+                (get_rep dup_field)
+          | None -> forallM fts ~f:(fun (_, t) -> walk t) )
     in
     walk t
 
@@ -179,6 +191,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       let%bind new_s =
         match s with
         | Load (x, f) -> pure @@ RecursionSyntax.Load (x, f)
+        | RemoteLoad (x, adr, f) ->
+            pure @@ RecursionSyntax.RemoteLoad (x, adr, f)
         | Store (f, x) -> pure @@ RecursionSyntax.Store (f, x)
         | Bind (x, e) ->
             let%bind new_e = rec_exp e in
@@ -187,6 +201,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.MapUpdate (m, is, vopt)
         | MapGet (x, m, is, del) ->
             pure @@ RecursionSyntax.MapGet (x, m, is, del)
+        | RemoteMapGet (x, adr, m, is, del) ->
+            pure @@ RecursionSyntax.RemoteMapGet (x, adr, m, is, del)
         | MatchStmt (x, pss) ->
             let%bind new_pss =
               mapM
@@ -270,11 +286,11 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     let rec walk = function
       | PrimType _ | Unit -> pure ()
       | MapType (t1, t2) | FunType (t1, t2) ->
-          let%bind () = walk t1 in
+          let%bind _ = walk t1 in
           walk t2
       | ADT (s, targs) ->
           (* Only allow ADTs that are already in scope. This prevents mutually inductive definitions. *)
-          let%bind () = is_adt_in_scope s in
+          let%bind _ = is_adt_in_scope s in
           forallM targs ~f:walk
       | TypeVar _ ->
           (* Disallow polymorphic definitions for the time being. *)
@@ -282,6 +298,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | PolyFun _ ->
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
+      | Address None -> pure ()
+      | Address (Some fts) -> forallM fts ~f:(fun (_, t) -> walk t)
     in
     walk t
 
@@ -303,7 +321,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         @@ let%bind checked_ctr_defs =
              mapM ctr_defs ~f:(fun ({ cname; c_arg_types } : ctr_def) ->
                  let error_loc = ER.get_loc (get_rep cname) in
-                 let%bind () =
+                 let%bind _ =
                    forallM c_arg_types ~f:(fun c_arg ->
                        recursion_adt_constructor_arg c_arg error_loc)
                  in

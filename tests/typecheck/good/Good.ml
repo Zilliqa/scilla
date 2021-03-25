@@ -28,7 +28,7 @@ module FEParser = FrontEndParser.ScillaFrontEndParser (GlobalLiteral)
 module TestTypeUtils = TypeUtil.TypeUtilities
 module TestTypeType = TypeUtil.TUType
 
-let make_type_equiv_test st1 st2 eq =
+let make_type_assignable_equiv_test st1 st2 eq f_name f =
   let open FEParser in
   let t1, t2 =
     match (parse_type st1, parse_type st2) with
@@ -36,82 +36,274 @@ let make_type_equiv_test st1 st2 eq =
     | _ ->
         raise
           (SyntaxError
-             ( "Error parsing types " ^ st1 ^ " and " ^ st2
-               ^ " in type_equiv tests",
+             ( "Error parsing types " ^ st1 ^ " and " ^ st2 ^ " in " ^ f_name
+               ^ " tests",
                dummy_loc ))
   in
-  let b, bs =
-    if eq then ([%equal: TestTypeType.t] t1 t2, "=")
-    else (not ([%equal: TestTypeType.t] t1 t2), "<>")
-  in
+  let b, bs = if eq then (f t1 t2, "=") else (not (f t1 t2), "<>") in
   let err_msg =
     "Assert " ^ TestTypeType.pp_typ t1 ^ " " ^ bs ^ " " ^ TestTypeType.pp_typ t2
     ^ " test failed"
   in
   test_case (fun _ -> assert_bool err_msg b)
 
-let make_type_equiv_tests tlist =
+let make_type_assignable_test st1 st2 eq =
+  make_type_assignable_equiv_test st1 st2 eq "type_assignable"
+    (fun expected actual -> TestTypeType.type_assignable ~expected ~actual)
+
+let make_all_type_assignable_tests tlist =
+  List.map tlist ~f:(fun (st1, st2, eq) -> make_type_assignable_test st1 st2 eq)
+
+let make_type_equiv_test st1 st2 eq =
+  make_type_assignable_equiv_test st1 st2 eq "type_equiv"
+    TestTypeType.type_equivalent
+
+let make_all_type_equiv_tests tlist =
   List.map tlist ~f:(fun (st1, st2, eq) -> make_type_equiv_test st1 st2 eq)
 
-let type_equiv_tests =
+let equivalent_types =
   [
-    ("Uint32", "Uint32", true);
-    ("Int32", "Uint32", false);
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'B. List ('B) -> List ('B)",
-      true );
-    ( "forall 'A. List ('A) -> List ('A)",
-      "forall 'A. List ('A) -> List ('A) -> List ('A)",
-      false );
+    ("Uint32", "Uint32");
+    ("forall 'A. List ('A) -> List ('A)", "forall 'B. List ('B) -> List ('B)");
     ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      false );
-    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
-      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A",
-      true );
+      "forall 'B. forall 'A. ('A -> 'B -> 'A) -> 'A -> List ('B) -> 'A" );
     ( "forall 'A. 'A -> forall 'B. List ('B)",
-      "forall 'B. 'B -> forall 'A. List ('A)",
-      true );
+      "forall 'B. 'B -> forall 'A. List ('A)" );
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'A",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      true );
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B",
-      false );
-    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
-      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B",
-      true );
+      "forall 'C. 'C -> (forall 'C. List ('C)) -> 'B" );
+    (* Addresses *)
+    ("ByStr20", "ByStr20");
+    ("ByStr20 with end", "ByStr20 with end");
+    ("ByStr20 with contract end", "ByStr20 with contract end");
+    ( "ByStr20 with contract field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end" );
+    ( "ByStr20 with contract field y : Bool, field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with end end"
+    );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : ByStr20, field y1 : Option Int256 end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y1 : Option Int256, field y2 : ByStr20 end end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : 'A end",
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'A end end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end" );
+    ( "ByStr20 with end -> ByStr20 with contract field y : Bool end",
+      "ByStr20 with end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract end -> ByStr20 with contract field y : Bool end",
+      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 -> ByStr20 with contract field y : Bool end",
+      "ByStr20 -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field y : Bool end -> ByStr20 with end",
+      "ByStr20 with contract field y : Bool end -> ByStr20 with end" );
+    ( "ByStr20 with contract field y : Bool end -> ByStr20 with contract end",
+      "ByStr20 with contract field y : Bool end -> ByStr20 with contract end" );
+    ( "ByStr20 with contract field y : Bool end -> ByStr20",
+      "ByStr20 with contract field y : Bool end -> ByStr20" );
+    ( "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end \
+       end) ByStr20",
+      "Map (ByStr20 with contract field x : Uint32, field y : ByStr20 with end \
+       end) ByStr20" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
+    ( "Map ByStr20 (ByStr20 with contract field x : Uint32 end)",
+      "Map ByStr20 (ByStr20 with contract field x : Uint32 end)" );
   ]
 
-let make_ground_type_test ts exp_bool =
-  let open FEParser in
-  let open TestTypeUtils in
-  let t =
-    match parse_type ts with
-    | Ok t -> t
-    | _ ->
-        raise
-          (SyntaxError
-             ("Error parsing type " ^ ts ^ " in type_equiv tests", dummy_loc))
-  in
-  test_case (fun _ ->
-      let b = is_ground_type t in
-      assert_bool "TypeUtil: is_ground_type test failed on type"
-        Bool.(b = exp_bool))
-
-let ground_type_tests =
+let assignable_but_not_equivalent_types =
   [
-    ("'A", false);
-    ("Uint32", true);
-    ("Uint32 -> 'A", false);
-    ("forall 'A. List ('A) -> List ('A)", false);
-    ("List ('A)", false);
-    ("forall 'A. Map Int32 Uint32", false);
-    ("forall 'A. Pair Int32 'A", false);
+    (* Addresses *)
+    ("ByStr20", "ByStr20 with end");
+    ("ByStr20", "ByStr20 with contract end");
+    ("ByStr20 with end", "ByStr20 with contract end");
+    ("ByStr20 with end", "ByStr20 with contract field x : Uint32 end");
+    ("ByStr20 with contract end", "ByStr20 with contract field x : Uint32 end");
+    ( "ByStr20 with contract field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32, field y : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : \
+       ByStr20 with end end" );
+    ( "ByStr20 with contract field y : Uint32, field x : Uint32 end",
+      "ByStr20 with contract field x : Uint32, field y : Uint32, field z : \
+       ByStr20 with end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y1 : Int32 end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : Bool, field y1 : Int32 end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       end end",
+      "ByStr20 with contract field x : Uint32, field y : ByStr20 with contract \
+       field y2 : Bool, field y1 : Int32 end end" );
+    ( "ByStr20 with contract field x : ByStr20 with end end",
+      "ByStr20 with contract field x : ByStr20 with contract end end" );
+    ( "forall 'A. 'A -> ByStr20",
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. 'A -> ByStr20 with end",
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. 'A -> ByStr20 with contract end",
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with end end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : ByStr20 with contract \
+       end end",
+      "forall 'C. 'C -> ByStr20 with contract field f : ByStr20 with contract \
+       field z : 'C end end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with end -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 -> ByStr20 with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with end -> ByStr20 with contract field y : Bool, field z : \
+       Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with end",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20",
+      "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool, field z : Uint32 end" );
+    ( "Map (ByStr20 with end) (ByStr20 with contract field x : Uint32 end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
   ]
 
-let make_ground_type_tests tlist =
-  List.map tlist ~f:(fun (st, eq) -> make_ground_type_test st eq)
+let not_assignable_in_either_direction_types =
+  [
+    ("Int32", "Uint32");
+    ( "forall 'A. List ('A) -> List ('A)",
+      "forall 'A. List ('A) -> List ('A) -> List ('A)" );
+    ( "forall 'A. forall 'B. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B",
+      "forall 'B. forall 'A. ('B -> 'A -> 'B) -> 'B -> List ('A) -> 'B" );
+    ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
+      "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
+    (* Addresses *)
+    ( "ByStr20 with contract field x : Int32 end",
+      "ByStr20 with contract field x : Uint32 end" );
+    ( "ByStr20 with contract field x : Int32 end",
+      "ByStr20 with contract field y : Int32 end" );
+    ( "ByStr20 with contract field x : Int32, field z : Uint32 end",
+      "ByStr20 with contract field y : Int32, field w : Uint32 end" );
+    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 \
+       end end",
+      "ByStr20 with contract field x : ByStr20 with contract field y1 : Uint32 \
+       end end" );
+    ( "ByStr20 with contract field x : ByStr20 with contract field y1 : Int32 \
+       end end",
+      "ByStr20 with contract field x : ByStr20 with contract field y2 : Int32 \
+       end end" );
+    ( "forall 'A. 'A -> ByStr20 with contract field f : Uint32 end",
+      "forall 'C. 'C -> ByStr20 with contract field f : 'C end" );
+    ( "forall 'A. forall 'B. ByStr20 with contract field f : 'A, field g : 'B \
+       end",
+      "forall 'C. forall 'D. ByStr20 with contract field f : 'D, field g : 'C \
+       end" );
+    ( "forall 'A. forall 'B. 'A -> 'B -> ByStr20 with contract field f : 'A, \
+       field g : 'B end",
+      "forall 'C. forall 'D. 'D -> 'C -> ByStr20 with contract field f : 'C, \
+       field g : 'D end" );
+    ( "ByStr20 with contract field x : Uint32, field y : Bool end -> ByStr20 \
+       with contract field y : Bool end",
+      "ByStr20 with contract field x : Uint32, field z : Bool end -> ByStr20 \
+       with contract field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool, field z : Bool end",
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool, field w : Bool  end" );
+    ( "ByStr20 with contract end -> ByStr20 with contract end",
+      "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end" );
+    ( "ByStr20 with contract field x : Uint32 end -> ByStr20 with contract \
+       field y : Bool end",
+      "ByStr20 with contract end -> ByStr20 with contract end" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)",
+      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract \
+       end)" );
+    ( "Map (ByStr20 with contract end) (ByStr20 with contract field y : Uint32 \
+       end)",
+      "Map (ByStr20 with contract end) (ByStr20 with contract field x : Uint32 \
+       end)" );
+    ( "Map (ByStr20 with contract field y : Uint32 end) (ByStr20 with contract \
+       end)",
+      "Map (ByStr20 with contract field x : Uint32 end) (ByStr20 with contract \
+       end)" );
+  ]
+
+let make_test eq (t1, t2) = (t1, t2, eq)
+
+let reverse_test eq (t1, t2) = (t2, t1, eq)
+
+let all_type_equiv_tests =
+  (* Equivalent types *)
+  List.map equivalent_types ~f:(make_test true)
+  (* Equivalence should be reflexive *)
+  @ List.map equivalent_types ~f:(reverse_test true)
+  (* Assignable but not equivalent *)
+  @ List.map assignable_but_not_equivalent_types ~f:(make_test false)
+  (* Non-equivalence is reflexive  *)
+  @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
+  (* Non-assignable implies non-equivalence *)
+  @ List.map not_assignable_in_either_direction_types ~f:(make_test false)
+  (* Non-equivalence is reflexive *)
+  @ List.map not_assignable_in_either_direction_types ~f:(reverse_test false)
+
+let all_type_assignable_tests =
+  (* Equivalence implies assignability *)
+  List.map equivalent_types ~f:(make_test true)
+  (* Equivalence should be reflexive, and implies assignability *)
+  @ List.map equivalent_types ~f:(reverse_test true)
+  (* Assignable but not equivalent *)
+  @ List.map assignable_but_not_equivalent_types ~f:(make_test true)
+  (* Intersection of assignable and non-equivalt is non-reflexive  *)
+  @ List.map assignable_but_not_equivalent_types ~f:(reverse_test false)
+  (* Non-assignable *)
+  @ List.map not_assignable_in_either_direction_types ~f:(make_test false)
+  (* Non-assignable and non-equivalent is reflexive
+     - if it becomes assignable, then it should be place in assignable_but_not_equivalent_types. *)
+  @ List.map not_assignable_in_either_direction_types ~f:(reverse_test false)
 
 let make_map_access_type_test t at nindices =
   let open FEParser in
@@ -155,14 +347,47 @@ let make_map_access_type_tests tlist =
   List.map tlist ~f:(fun (t, at, nindices) ->
       make_map_access_type_test t at nindices)
 
-let type_equiv_tests =
-  "type_equiv_tests" >::: make_type_equiv_tests type_equiv_tests
+let make_ground_type_test ts exp_bool =
+  let open FEParser in
+  let open TestTypeUtils in
+  let t =
+    match parse_type ts with
+    | Ok t -> t
+    | _ ->
+        raise
+          (SyntaxError
+             ("Error parsing type " ^ ts ^ " in type_equiv tests", dummy_loc))
+  in
+  test_case (fun _ ->
+      let b = is_ground_type t in
+      assert_bool "TypeUtil: is_ground_type test failed on type"
+        Bool.(b = exp_bool))
 
 let ground_type_tests =
-  "ground_type_tests" >::: make_ground_type_tests ground_type_tests
+  [
+    ("'A", false);
+    ("Uint32", true);
+    ("Uint32 -> 'A", false);
+    ("forall 'A. List ('A) -> List ('A)", false);
+    ("List ('A)", false);
+    ("forall 'A. Map Int32 Uint32", false);
+    ("forall 'A. Pair Int32 'A", false);
+  ]
+
+let all_ground_type_tests =
+  List.map ground_type_tests ~f:(fun (t, res) -> make_ground_type_test t res)
+
+let type_equiv_tests =
+  "type_equiv_tests" >::: make_all_type_equiv_tests all_type_equiv_tests
+
+let type_assignable_tests =
+  "type_assignable_tests"
+  >::: make_all_type_assignable_tests all_type_assignable_tests
 
 let map_access_type_tests =
   "map_access_type_tests" >::: make_map_access_type_tests map_access_type_tests
+
+let ground_type_tests = "ground_type_tests" >::: all_ground_type_tests
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
@@ -222,6 +447,7 @@ let tests env =
   "good"
   >::: [
          type_equiv_tests;
+         type_assignable_tests;
          Tests.tests env;
          ground_type_tests;
          map_access_type_tests;

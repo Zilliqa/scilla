@@ -57,7 +57,11 @@ let check =
       "Parse a contract and perform a number of static checks including \
        typechecking"
 
+let disambiguate =
+  mk_cmd Client.disambiguate ~summary:"Name disambiguation tool for migration"
+
 let cmd_group =
-  Command.group ~summary:"Scilla client" [ ("run", run); ("check", check) ]
+  Command.group ~summary:"Scilla client"
+    [ ("run", run); ("check", check); ("disambiguate", disambiguate) ]
 
 let () = Command.run cmd_group

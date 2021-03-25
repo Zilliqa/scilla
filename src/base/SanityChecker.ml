@@ -342,7 +342,11 @@ struct
           let rec stmt_iter stmts stmt_defs =
             foldM stmts ~init:stmt_defs ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
-                | Load (x, _) | MapGet (x, _, _, _) | ReadFromBC (x, _) ->
+                | Load (x, _)
+                | RemoteLoad (x, _, _)
+                | MapGet (x, _, _, _)
+                | RemoteMapGet (x, _, _, _, _)
+                | ReadFromBC (x, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _

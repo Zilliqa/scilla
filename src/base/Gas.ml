@@ -169,7 +169,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | (s, srep) :: rem_stmts ->
         let%bind s' =
           match s with
-          | Load (x, _) ->
+          | Load (x, _) | RemoteLoad (x, _, _) ->
               let g =
                 GasStmt
                   (GasGasCharge.SumOf
@@ -198,7 +198,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 | None -> n
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
-          | MapGet (x, _, klist, _) ->
+          | MapGet (x, _, klist, _) | RemoteMapGet (x, _, _, klist, _) ->
               let n = GasGasCharge.StaticCost (List.length klist) in
               let g =
                 GasGasCharge.SumOf
@@ -529,7 +529,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_to_bystr -> [([tvar "'A"], crypto_coster)];
     | Builtin_to_bystrx _ -> [([tvar "'A"], crypto_coster)];
     | Builtin_bech32_to_bystr20 -> [([string_typ;string_typ], crypto_coster)];
-    | Builtin_bystr20_to_bech32 -> [([string_typ;bystrx_typ address_length], crypto_coster)];
+    | Builtin_bystr20_to_bech32 -> [([string_typ;bystrx_typ Type.address_length], crypto_coster)];
     | Builtin_sha256hash -> [([tvar "'A"], crypto_coster)];
     | Builtin_keccak256hash -> [([tvar "'A"], crypto_coster)];
     | Builtin_ripemd160hash -> [([tvar "'A"], crypto_coster)];
@@ -586,13 +586,13 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       if
         List.length types = List.length arg_types
         && List.for_all2_exn
-             ~f:(fun t1 t2 ->
+             ~f:(fun expected actual ->
                (* the types should match *)
-               [%equal: GasType.t] t1 t2
+               type_assignable ~expected ~actual
                ||
                (* or the built-in record is generic *)
-               match t2 with TypeVar _ -> true | _ -> false)
-             arg_types types
+               match expected with TypeVar _ -> true | _ -> false)
+             types arg_types
       then fcoster op targ_types arg_ids arg_types (* this can fail too *)
       else fail0 @@ "Name or arity doesn't match"
     in

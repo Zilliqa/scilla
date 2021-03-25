@@ -74,4 +74,20 @@ module API (R : RPC) = struct
          typechecking";
       ]
       (checker_argv @-> returning checker_return checker_error)
+
+  let disambiguator_argv =
+    Param.mk ~name:"argv"
+      ~description:[ "scilla-disambiguator execution parameters" ]
+      args_t
+
+  (* The return value of this JSON-RPC method will be a JSON,
+     identical to today’s output JSON emitted by scilla-disambiguator. *)
+  let disambiguator_return = Param.mk Rpc.Types.string
+
+  let disambiguator_error = RPCError.err
+
+  let disambiguator =
+    declare "disambiguate"
+      [ "Disambiguate Scilla names" ]
+      (disambiguator_argv @-> returning disambiguator_return disambiguator_error)
 end

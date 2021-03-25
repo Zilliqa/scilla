@@ -100,6 +100,8 @@ struct
     List.fold_right stmts ~init:[] ~f:(fun (stmt, _srep) acc ->
         ( match stmt with
         | Load (x, f) | Store (f, x) -> [ calc_ident_locs x; calc_ident_locs f ]
+        | RemoteLoad (x, adr, f) ->
+            [ calc_ident_locs x; calc_ident_locs adr; calc_ident_locs f ]
         | Bind (x, e) -> calc_ident_locs x :: type_info_expr e
         (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
         | MapUpdate (m, il, vopt) -> (
@@ -109,6 +111,9 @@ struct
         (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
         | MapGet (x, m, il, _) ->
             [ calc_ident_locs x; calc_ident_locs m ]
+            @ List.map il ~f:calc_ident_locs
+        | RemoteMapGet (x, adr, m, il, _) ->
+            [ calc_ident_locs x; calc_ident_locs adr; calc_ident_locs m ]
             @ List.map il ~f:calc_ident_locs
         | MatchStmt (o, clauses) ->
             let ots = calc_ident_locs o in

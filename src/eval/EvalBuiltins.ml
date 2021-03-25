@@ -595,7 +595,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       hash_helper keccak256_hasher "keccak256hash" hash_length ls
 
     let ripemd160hash _ ls _ =
-      hash_helper ripemd160_hasher "ripemd160hash" address_length ls
+      hash_helper ripemd160_hasher "ripemd160hash" Type.address_length ls
 
     let to_bystrx x _ ls _ =
       match ls with
@@ -649,7 +649,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                 match Bystrx.of_raw_bytes 20 bys20 with
                 | Some b ->
                     pure
-                    @@ build_some_lit (ByStrX b) (bystrx_typ address_length)
+                    @@ build_some_lit (ByStrX b)
+                         (bystrx_typ Type.address_length)
                 | None -> fail0 "Invalid bech32 decode" )
             | None -> fail0 "bech32 decoding failed" )
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
@@ -783,7 +784,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let pkh = sha256_hasher pks in
           (* and extract the least significant 20 bytes. *)
           let addr = Core_kernel.String.suffix pkh 20 in
-          match Bystrx.of_raw_bytes address_length addr with
+          match Bystrx.of_raw_bytes Type.address_length addr with
           | Some bs -> pure @@ ByStrX bs
           | None -> builtin_fail "schnorr_get_address: Internal error." ls )
       | _ -> builtin_fail "schnorr_get_address" ls
@@ -832,12 +833,33 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     include MapBuiltins
     open Datatypes.DataTypeDictionary
 
+    let contains_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); _u ] when is_address_type kt ->
+          (* Special case - need to treat kt as a ByStr20 *)
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
+      | _, _ -> MapBuiltins.contains_elab sc targs ts
+
     let contains _ ls _ =
       match ls with
       | [ Map (_, entries); key ] ->
           let res = Caml.Hashtbl.mem entries key in
           pure @@ build_bool_lit res
       | _ -> builtin_fail "Map.contains" ls
+
+    let put_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); _kt'; _vt' ]
+        when is_address_type kt || is_address_type vt ->
+          (* Special case - need to treat kt and vt as a ByStr20 *)
+          let new_kt =
+            if is_address_type kt then bystrx_typ Type.address_length else kt
+          in
+          let new_vt =
+            if is_address_type vt then bystrx_typ Type.address_length else vt
+          in
+          elab_tfun_with_args_no_gas sc [ new_kt; new_vt ]
+      | _, _ -> MapBuiltins.put_elab sc targs ts
 
     let put _ ls _ =
       match ls with
@@ -847,6 +869,13 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let _ = Caml.Hashtbl.replace entries' key value in
           pure @@ Map (tm, entries')
       | _ -> builtin_fail "Map.put" ls
+
+    let get_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); _kt' ] when is_address_type kt ->
+          (* Special case - need to treat kt and vt as a ByStr20 *)
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
+      | _, _ -> MapBuiltins.get_elab sc targs ts
 
     (* Notice that get passes return type *)
     let get _ ls rt =
@@ -858,6 +887,13 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | None -> pure @@ build_none_lit targ
           | Some v -> pure @@ build_some_lit v targ )
       | _ -> builtin_fail "Map.get" ls
+
+    let remove_elab sc targs ts =
+      match (targs, ts) with
+      | [], [ MapType (kt, vt); _u ] when is_address_type kt ->
+          (* Special case - need to treat kt and vt as a ByStr20 *)
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length; vt ]
+      | _, _ -> MapBuiltins.remove_elab sc targs ts
 
     let remove _ ls _ =
       match ls with

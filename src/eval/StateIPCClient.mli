@@ -32,6 +32,17 @@ val fetch :
   tp:IPCCType.t ->
   (IPCCLiteral.t option, scilla_error list) result
 
+(* Fetch from another contract's field. "keys" is empty when fetching non-map fields
+ * or an entire Map field. If a map key is not found, then None is returned, otherwise
+ * (Some value) is returned. *)
+val external_fetch :
+  socket_addr:string ->
+  caddr:string ->
+  fname:'a IPCCIdentifier.t ->
+  keys:IPCCLiteral.t list ->
+  ignoreval:bool ->
+  (IPCCLiteral.t option * IPCCType.t option, scilla_error list) result
+
 (* Update a field. "keys" is empty when updating non-map fields or an entire Map field. *)
 val update :
   socket_addr:string ->

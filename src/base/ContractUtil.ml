@@ -17,6 +17,7 @@
 *)
 
 open Core_kernel
+open Type
 open Literal
 open Syntax
 open MonadUtil
@@ -43,11 +44,11 @@ module MessagePayload = struct
 
   let sender_label = "_sender"
 
-  let sender_type = CUType.bystrx_typ address_length
+  let sender_type = CUType.address_typ None
 
   let origin_label = "_origin"
 
-  let origin_type = CUType.bystrx_typ address_length
+  let origin_type = CUType.address_typ None
 
   let recipient_label = "_recipient"
 
@@ -123,6 +124,10 @@ let blocknum_type = CUType.bnum_typ
 
 let label_name_of_string str = CUName.parse_simple_name str
 
+let nonce_label = label_name_of_string "_nonce"
+
+let nonce_type = CUType.uint64_typ
+
 let balance_label = label_name_of_string "_balance"
 
 let balance_type = CUType.uint128_typ
@@ -146,7 +151,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
   let balance_field =
     (CUIdentifier.mk_id balance_label ER.uint128_rep, balance_type)
 
-  let append_implict_contract_params tparams =
+  let append_implicit_contract_params tparams =
     let open CUType in
     let creation_block =
       (CUIdentifier.mk_id creation_block_label ER.bnum_rep, bnum_typ)
@@ -166,7 +171,7 @@ module ScillaContractUtil (SR : Rep) (ER : Rep) = struct
     List.filter args ~f:(fun a ->
         not (List.mem nonevalargs (fst a) ~equal:[%equal: CUName.t]))
 
-  let append_implict_comp_params cparams =
+  let append_implicit_comp_params cparams =
     let sender =
       ( CUIdentifier.mk_id
           (label_name_of_string MessagePayload.sender_label)

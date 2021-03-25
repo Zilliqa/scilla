@@ -39,6 +39,12 @@ open JSONIdentifier
 open JSONType
 open JSONLiteral
 
+type json_parsed_field =
+  (* A field belonging to this contract. *)
+  | ThisContr of string * JSONType.t * JSONLiteral.t
+  (* External contracts and their fields. *)
+  | ExtrContrs of (Bystrx.t * (string * JSONType.t * JSONLiteral.t) list) list
+
 (****************************************************************)
 (*                    Exception wrappers                        *)
 (****************************************************************)
@@ -70,21 +76,18 @@ let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
 
-(* Given a literal, return its full type name *)
-let literal_type_exn l =
-  let t = literal_type l in
-  match t with Error emsg -> raise (Invalid_json emsg) | Ok s -> pp_typ s
-
 let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
   in
+  let build_prim_literal_of_type t v =
+    match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
+  in
   match t with
-  | PrimType pt -> (
-      match build_prim_literal pt v with
-      | Some v' -> v'
-      | None -> raise (exn ()) )
-  | _ -> raise (exn ())
+  | PrimType pt -> build_prim_literal_of_type pt v
+  | Address _ -> build_prim_literal_of_type (Bystrx_typ 20) v
+  | MapType _ | FunType _ | ADT _ | TypeVar _ | PolyFun _ | Unit ->
+      raise (exn ())
 
 (****************************************************************)
 (*                    JSON parsing                              *)
@@ -121,7 +124,7 @@ let rec json_to_adtargs cname tlist ajs =
     constr_pattern_arg_types_exn (ADT (mk_loc_id dt.tname, tlist)) cname
   in
   verify_args_exn cname (List.length ajs) (List.length tmap);
-  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit t j) in
+  let llist = List.map2_exn tmap ajs ~f:(fun t j -> json_to_lit_exn t j) in
   ADTValue (cname, tlist, llist)
 
 and read_adt_json name j tlist_verify =
@@ -141,7 +144,7 @@ and read_adt_json name j tlist_verify =
         else
           let etyp = List.nth_exn tlist_verify 0 in
           List.fold_right vli
-            ~f:(fun vl acc -> build_cons_lit (json_to_lit etyp vl) etyp acc)
+            ~f:(fun vl acc -> build_cons_lit (json_to_lit_exn etyp vl) etyp acc)
             ~init:(build_nil_lit etyp)
     | `Assoc _ ->
         let constr_str = member_exn "constructor" j |> to_string_exn in
@@ -171,7 +174,7 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-        if type_equiv_list tlist1 tlist2 then ()
+        if type_assignable_list ~to_list:tlist1 ~from_list:tlist2 then ()
         else
           let expected = pp_typ_list_error tlist1 in
           let observed = pp_typ_list_error tlist2 in
@@ -206,14 +209,16 @@ and mapvalues_from_json m kt vt l =
       let kjson = member_exn "key" first in
       let keylit =
         match kt with
-        | PrimType _ -> build_prim_lit_exn kt (to_string_exn kjson)
+        | PrimType _ | Address _ ->
+            (* Addresses are handled as ByStr20 *)
+            build_prim_lit_exn kt (to_string_exn kjson)
         | _ -> raise (mk_invalid_json "Key in Map JSON is not a PrimType")
       in
       let vjson = member_exn "val" first in
-      let vallit = json_to_lit vt vjson in
+      let vallit = json_to_lit_exn vt vjson in
       Caml.Hashtbl.replace m keylit vallit)
 
-and json_to_lit t v =
+and json_to_lit_exn t v =
   match t with
   | MapType (kt, vt) ->
       let vl = read_map_json kt vt v in
@@ -221,17 +226,43 @@ and json_to_lit t v =
   | ADT (name, tlist) ->
       let vl = read_adt_json (get_id name) v tlist in
       vl
-  | _ ->
+  | PrimType _ | Address _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
+  | FunType _ | TypeVar _ | PolyFun _ | Unit ->
+      let exn () = mk_invalid_json ("Invalid type " ^ pp_typ t ^ " in JSON") in
+      raise (exn ())
 
-let jobj_to_statevar json =
+let rec jobj_to_statevar json =
   let n = member_exn "vname" json |> to_string_exn in
-  let tstring = member_exn "type" json |> to_string_exn in
-  let t = parse_typ_exn tstring in
   let v = member_exn "value" json in
-  if GlobalConfig.validate_json () then (n, t, json_to_lit t v)
-  else (n, t, JSONParser.parse_json t v)
+  if String.equal n "_external" then
+    (* We have a list of external addresses, each with their own fields. *)
+    let exts = v |> to_list_exn in
+    let exts' =
+      List.fold exts ~init:[] ~f:(fun acc ext ->
+          let addr =
+            member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
+          in
+          let state = member_exn "state" ext |> to_list_exn in
+          let state' =
+            List.map state ~f:(fun s ->
+                match jobj_to_statevar s with
+                | ThisContr (n, t, l) -> (n, t, l)
+                | _ ->
+                    raise
+                    @@ mk_invalid_json
+                         "External contract fields cannot contain other \
+                          external fields")
+          in
+          (addr, state') :: acc)
+    in
+    ExtrContrs exts'
+  else
+    let tstring = member_exn "type" json |> to_string_exn in
+    let t = parse_typ_exn tstring in
+    if GlobalConfig.validate_json () then ThisContr (n, t, json_to_lit_exn t v)
+    else ThisContr (n, t, JSONParser.parse_json t v)
 
 (****************************************************************)
 (*                    JSON printing                             *)
@@ -261,7 +292,7 @@ let get_uint_literal l =
 
 let get_address_literal l =
   match l with
-  | ByStrX bs when Bystrx.width bs = address_length ->
+  | ByStrX bs when Bystrx.width bs = Type.address_length ->
       Some (Bystrx.hex_encoding bs)
   | _ -> None
 
@@ -276,7 +307,13 @@ module ContractState = struct
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:jobj_to_statevar
+    let curstates, extstates =
+      List.partition_map jlist ~f:(fun j ->
+          match jobj_to_statevar j with
+          | ThisContr (n, t, v) -> First (n, t, v)
+          | ExtrContrs extlist -> Second extlist)
+    in
+    (curstates, List.concat extstates)
 
   (* Get a json object from given states *)
   let state_to_json states =
@@ -298,12 +335,12 @@ module ContractState = struct
   (* Given the json data from an init file, return extlib fields *)
   let get_init_extlibs init_data =
     let extlibs =
-      List.filter init_data ~f:(fun (name, _) ->
+      List.filter init_data ~f:(fun (name, _t, _v) ->
           String.(name = JSONName.as_string ContractUtil.extlibs_label))
     in
     match extlibs with
     | [] -> []
-    | [ (_, lit) ] -> (
+    | [ (_name, _typ, lit) ] -> (
         match Datatypes.scilla_list_to_ocaml lit with
         | Error _ ->
             raise
@@ -319,8 +356,8 @@ module ContractState = struct
                   when is_pair_ctr_name c
                        && [%equal: JSONType.t] t1 JSONType.string_typ
                        && [%equal: JSONType.t] t2
-                            (JSONType.bystrx_typ address_length)
-                       && Bystrx.width bs = address_length ->
+                            (JSONType.bystrx_typ Type.address_length)
+                       && Bystrx.width bs = Type.address_length ->
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
                     raise
@@ -337,18 +374,17 @@ module ContractState = struct
 
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
+  (* NOTE: The types in init files must be ignored due to backward compatibility - only the names and literals can be relied upon *)
   let get_init_this_address_and_extlibs filename =
     (* We filter out type information from init files for the time being *)
-    let init_data =
-      get_json_data filename |> List.map ~f:(fun (x, _, t) -> (x, t))
-    in
+    let init_data, _ = get_json_data filename in
     let extlibs = get_init_extlibs init_data in
     let this_address_init_opt =
       match
-        List.filter init_data ~f:(fun (name, _) ->
+        List.filter init_data ~f:(fun (name, _, _) ->
             String.(name = JSONName.as_string ContractUtil.this_address_label))
       with
-      | [ (_, adr) ] -> Some adr
+      | [ (_, _, adr) ] -> Some adr
       | [] ->
           None
           (* We allow init files without a _this_address entry in scilla-checker *)
@@ -375,7 +411,7 @@ module ContractState = struct
   let jstring_to_literal jstring tp =
     let thunk () = Yojson.Basic.from_string jstring in
     let jobj = json_exn_wrapper ~filename:"ipc_fetch" thunk in
-    json_to_lit tp jobj
+    json_to_lit_exn tp jobj
 end
 
 module Message = struct
@@ -393,22 +429,27 @@ module Message = struct
       (tag_label, tag_type, build_prim_lit_exn JSONType.string_typ tags)
     in
     let amount =
-      ( amount_label,
-        amount_type,
-        build_prim_lit_exn JSONType.uint128_typ amounts )
+      (amount_label, amount_type, build_prim_lit_exn amount_type amounts)
     in
     let sender =
-      ( sender_label,
-        sender_type,
-        build_prim_lit_exn (JSONType.bystrx_typ address_length) senders )
+      (sender_label, sender_type, build_prim_lit_exn sender_type senders)
     in
     let origin =
-      ( origin_label,
-        origin_type,
-        build_prim_lit_exn (JSONType.bystrx_typ address_length) origins )
+      (origin_label, origin_type, build_prim_lit_exn origin_type origins)
     in
     let pjlist = member_exn "params" json |> to_list_exn in
-    let params = List.map pjlist ~f:jobj_to_statevar in
+    let params =
+      List.map pjlist ~f:(fun f ->
+          let name, t, v =
+            match jobj_to_statevar f with
+            | ThisContr (name, t, v) -> (name, t, v)
+            | ExtrContrs _ ->
+                raise
+                  (mk_invalid_json
+                     "_external cannot be present in a message JSON")
+          in
+          (name, t, v))
+    in
     tag :: amount :: origin :: sender :: params
 
   (* Same as message_to_jstring, but instead gives out raw json, not it's string *)
@@ -469,7 +510,12 @@ module BlockChainState = struct
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:jobj_to_statevar
+    List.map jlist ~f:(fun j ->
+        match jobj_to_statevar j with
+        | ThisContr (name, t, v) -> (name, t, v)
+        | ExtrContrs _ ->
+            raise
+              (mk_invalid_json "_external cannot be present in a message JSON"))
 
   (* Validation against pre-defined block state variables
      is done in `Eval.check_blockchain_entries` *)

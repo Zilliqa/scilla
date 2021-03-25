@@ -1,0 +1,63 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "remote_read_remote_read_res_1",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_read_remote_read_res_2",
+    "type": "Option Uint128",
+    "value": { "constructor": "None", "argtypes": ["Uint128"], "arguments": [] }
+  },
+  {
+    "vname": "remote_read_remote_read_res_3",
+    "type": "ByStr20",
+    "value": "0x1234567890123456789012345678901234567890"
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564323",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                { "vname": "admin",
+                  "type": "ByStr20 with contract field f : ByStr20 with contract field g : Map Uint128 Uint128 end end",
+                  "value": "0xabfeccdc9012345678901234567890f777564324" }
+            ]
+        },
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564324",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "64" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" },
+                { "vname": "f",
+                  "type": "ByStr20 with contract field g : Map Uint128 Uint128 end",
+                  "value": "0xabfeccdc9012345678901234567890f777564325" }
+            ]
+        },
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564325",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "31" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564325" },
+                { "vname": "g",
+                  "type": "Map Uint128 Uint128",
+                  "value": [
+                    {
+                        "key" : "0",
+                        "val" : "125216"
+                    }
+                  ]
+                }
+            ]
+        }
+    ]
+  }
+]

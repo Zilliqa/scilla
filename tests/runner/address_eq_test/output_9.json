@@ -1,0 +1,105 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7919",
+  "_accepted": "false",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "map_res_6", "type": "Uint32", "value": "1" },
+    {
+      "vname": "map_res_5",
+      "type":
+        "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
+      "value": {
+        "constructor": "Cons",
+        "argtypes": [
+          "Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)"
+        ],
+        "arguments": [
+          {
+            "constructor": "Pair",
+            "argtypes": [
+              "ByStr20 with contract field f : Uint32 end",
+              "ByStr20 with contract end"
+            ],
+            "arguments": [
+              "0xabfeccdc9012345678901234567890f777564323",
+              "0xabfeccdc9012345678901234567890f777564323"
+            ]
+          },
+          {
+            "constructor": "Nil",
+            "argtypes": [
+              "Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)"
+            ],
+            "arguments": []
+          }
+        ]
+      }
+    },
+    {
+      "vname": "map_res_4",
+      "type":
+        "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+      "value": []
+    },
+    {
+      "vname": "map_res_3",
+      "type": "Option (ByStr20 with contract end)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "ByStr20 with contract end" ],
+        "arguments": [ "0xabfeccdc9012345678901234567890f777564323" ]
+      }
+    },
+    {
+      "vname": "map_res_2",
+      "type":
+        "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+      "value": [
+        {
+          "key": "0xabfeccdc9012345678901234567890f777564323",
+          "val": "0xabfeccdc9012345678901234567890f777564323"
+        }
+      ]
+    },
+    {
+      "vname": "map_res_1",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "eq_test_res",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
+    { "vname": "to_bystr_res", "type": "ByStr", "value": "0x12" },
+    { "vname": "to_uint_res", "type": "Uint256", "value": "0" },
+    {
+      "vname": "concat_res",
+      "type": "ByStr40",
+      "value":
+        "0xabfeccdc9012345678901234567890f777564322abfeccdc9012345678901234567890f777564322"
+    },
+    {
+      "vname": "test_map",
+      "type":
+        "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+      "value": []
+    },
+    {
+      "vname": "test_map2",
+      "type": "Map (ByStr20 with contract field f : Uint32 end) (Uint128)",
+      "value": []
+    },
+    {
+      "vname": "test_map3",
+      "type": "Map (Uint128) (ByStr20 with contract end)",
+      "value": []
+    },
+    { "vname": "test_to_string", "type": "String", "value": "" },
+    { "vname": "test_to_ascii", "type": "String", "value": "" },
+    { "vname": "test_strrev", "type": "String", "value": "" }
+  ],
+  "events": []
+}

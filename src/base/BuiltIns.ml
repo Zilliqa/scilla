@@ -135,6 +135,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_string_type ts
           | _ -> fail0 "Failed to elaborate" )
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let to_ascii_arity = 1
@@ -148,6 +151,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_ascii_type ts
           | _ -> fail0 "Failed to elaborate" )
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let strrev_arity = 1
@@ -161,6 +167,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           | String_typ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas strrev_type ts
           | _ -> fail0 "Failed to elaborate" )
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas to_string_type
+            [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
   end
 
@@ -371,6 +380,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let eq_elab sc targs ts =
       match (targs, ts) with
       | [], [ bstyp1; bstyp2 ]
+        when (* Addresses should be compared as ByStr20 *)
+             is_address_type bstyp1 || is_address_type bstyp2 ->
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
+      | [], [ bstyp1; bstyp2 ]
         when (* We want both types to be ByStr with equal width. *)
              is_bystrx_type bstyp1 && [%equal: BIType.t] bstyp1 bstyp2 ->
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
@@ -390,7 +403,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
     let ripemd160hash_type =
-      tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ address_length)
+      tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ Type.address_length)
 
     (* ByStr -> Option ByStrX *)
     let to_bystrx_type x = fun_typ bystr_typ (option_typ (bystrx_typ x))
@@ -405,6 +418,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_bystr_elab sc targs ts =
       match (targs, ts) with
       | [], [ t ] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
+      | [], [ t ] when is_address_type t ->
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let substr_arity = 3
@@ -422,17 +437,21 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType (Bystrx_typ w) ] when w <= int_bit_width_to_int x / 8 ->
           elab_tfun_with_args_no_gas sc ts
+      | [], [ t ]
+        when is_address_type t
+             && Type.address_length <= int_bit_width_to_int x / 8 ->
+          elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
       | _, _ -> fail0 "Failed to elaborate"
 
     let bech32_to_bystr20_type =
       fun_typ string_typ
-        (fun_typ string_typ (option_typ (bystrx_typ address_length)))
+        (fun_typ string_typ (option_typ (bystrx_typ Type.address_length)))
 
     let bech32_to_bystr20_arity = 2
 
     let bystr20_to_bech32_type =
       fun_typ string_typ
-        (fun_typ (bystrx_typ address_length) (option_typ string_typ))
+        (fun_typ (bystrx_typ Type.address_length) (option_typ string_typ))
 
     let bystr20_to_bech32_arity = 2
 
@@ -447,6 +466,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType (Bystrx_typ w1); PrimType (Bystrx_typ w2) ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystrx_typ (w1 + w2) ])
+      | [], [ t1; PrimType (Bystrx_typ w2) ] when is_address_type t1 ->
+          elab_tfun_with_args_no_gas sc
+            (ts @ [ bystrx_typ (Type.address_length + w2) ])
+      | [], [ PrimType (Bystrx_typ w1); t2 ] when is_address_type t2 ->
+          elab_tfun_with_args_no_gas sc
+            (ts @ [ bystrx_typ (w1 + Type.address_length) ])
+      | [], [ t1; t2 ] when is_address_type t1 && is_address_type t2 ->
+          elab_tfun_with_args_no_gas sc
+            (ts @ [ bystrx_typ (Type.address_length + Type.address_length) ])
       | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
       | _, _ -> fail0 "Failed to elaborate"
@@ -550,7 +578,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         (bystrx_typ Secp256k1Wrapper.uncompressed_pubkey_len)
 
     let schnorr_get_address_type =
-      fun_typ (bystrx_typ pubkey_len) (bystrx_typ address_length)
+      fun_typ (bystrx_typ pubkey_len) (bystrx_typ Type.address_length)
 
     let schnorr_get_address_arity = 1
 
@@ -592,7 +620,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let contains_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); u ] when [%equal: BIType.t] kt u ->
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
+        ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
@@ -607,7 +636,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let put_elab sc targs ts =
       match (targs, ts) with
       | [], [ MapType (kt, vt); kt'; vt' ]
-        when [%equal: BIType.t] kt kt' && [%equal: BIType.t] vt vt' ->
+        when type_assignable ~expected:kt ~actual:kt'
+             && type_assignable ~expected:vt ~actual:vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
@@ -621,7 +651,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let get_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); kt' ] when [%equal: BIType.t] kt kt' ->
+      | [], [ MapType (kt, vt); kt' ]
+        when type_assignable ~expected:kt ~actual:kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 
@@ -634,7 +665,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let remove_elab sc targs ts =
       match (targs, ts) with
-      | [], [ MapType (kt, vt); u ] when [%equal: BIType.t] kt u ->
+      | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
+        ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
       | _, _ -> fail0 "Failed to elaborate"
 

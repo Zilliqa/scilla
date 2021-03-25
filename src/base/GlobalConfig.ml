@@ -123,9 +123,6 @@ module StdlibTracker = struct
   (* File extension for Scilla libraries. *)
   let file_extn_library = "scillib"
 
-  (* Reset internal state. *)
-  let reset () = stdlib_dirs := []
-
   (* File extension for Scilla expressions. *)
   let file_extn_expression = "scilexp"
 
@@ -134,6 +131,19 @@ module StdlibTracker = struct
     let dirs = get_stdlib_dirs () in
     List.find dirs ~f:(fun d ->
         Caml.Sys.file_exists (d ^/ name ^. file_extn_library))
+
+  (* adt.tname -> defining library. *)
+  let adt_deflib_dict = Caml.Hashtbl.create 5
+
+  let add_deflib_adttyp tname libname =
+    Caml.Hashtbl.add adt_deflib_dict tname libname
+
+  let lookup_deflib_adttyp tname = Caml.Hashtbl.find_opt adt_deflib_dict tname
+
+  (* Reset internal state. *)
+  let reset () =
+    stdlib_dirs := [];
+    Caml.Hashtbl.reset adt_deflib_dict
 end
 
 let reset () =

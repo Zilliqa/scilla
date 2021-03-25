@@ -72,7 +72,13 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "ud-proxy.scilla";
       "listiter.scilla";
       "UintParam.scilla";
+      "map_as_cparam.scilla";
       "shadow_import.scilla";
+      "remote_state_reads.scilla";
+      "remote_state_reads_2.scilla";
+      "address_eq_test.scilla";
+      "address_list_traversal.scilla";
+      "polymorphic_address.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0

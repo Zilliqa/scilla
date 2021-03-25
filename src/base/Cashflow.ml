@@ -187,6 +187,11 @@ struct
       match s with
       | Load (x, y) ->
           CFSyntax.Load (add_noinfo_to_ident x, add_noinfo_to_ident y)
+      | RemoteLoad (x, adr, y) ->
+          CFSyntax.RemoteLoad
+            ( add_noinfo_to_ident x,
+              add_noinfo_to_ident adr,
+              add_noinfo_to_ident y )
       | Store (x, y) ->
           CFSyntax.Store (add_noinfo_to_ident x, add_noinfo_to_ident y)
       | Bind (x, e) -> CFSyntax.Bind (add_noinfo_to_ident x, cf_init_tag_expr e)
@@ -200,6 +205,13 @@ struct
       | MapGet (x, m, ks, retrieve) ->
           CFSyntax.MapGet
             ( add_noinfo_to_ident x,
+              add_noinfo_to_ident m,
+              List.map ~f:add_noinfo_to_ident ks,
+              retrieve )
+      | RemoteMapGet (x, adr, m, ks, retrieve) ->
+          CFSyntax.RemoteMapGet
+            ( add_noinfo_to_ident x,
+              add_noinfo_to_ident adr,
               add_noinfo_to_ident m,
               List.map ~f:add_noinfo_to_ident ks,
               retrieve )
@@ -423,6 +435,7 @@ struct
                           new_map
                       | _ -> targ_tag_map )
                   | PrimType _ | PolyFun (_, _) | Unit -> targ_tag_map
+                  | Address _ -> (* TODO *) targ_tag_map
                 in
                 let tvar_tag_map, _ =
                   List.fold_left arg_typs ~init:(init_targ_to_tag_map, arg_tags)
@@ -505,6 +518,7 @@ struct
     | Unit ->
         (* Ignore *)
         false
+    | Address _ -> (* TODO *) false
 
   let init_ctr_tag_map () =
     let open DataTypeDictionary in
@@ -1608,6 +1622,18 @@ struct
             (not @@ [%equal: ECFR.money_tag] (get_id_tag new_x) (get_id_tag x))
             || not
                @@ [%equal: ECFR.money_tag] (get_id_tag new_f) (get_id_tag f) )
+      | RemoteLoad (x, adr, f) ->
+          (* TODO - see Load case for inspiration *)
+          (* x is no longer in scope, so remove from local_env *)
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
+          in
+          ( RemoteLoad (x, adr, f),
+            param_env,
+            field_env,
+            new_local_env,
+            ctr_tag_map,
+            false )
       | Store (f, x) ->
           let new_f, new_x, new_param_env, new_field_env, new_local_env =
             cf_update_tag_for_field_assignment f x param_env field_env local_env
@@ -1734,6 +1760,18 @@ struct
             (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag)
             || (not @@ [%equal: ECFR.money_tag] (get_id_tag m) m_tag)
             || (not @@ [%equal: _] new_ks ks) )
+      | RemoteMapGet (x, adr, m, ks, fetch) ->
+          (* TODO - see MapGet case for inspiration *)
+          (* x is no longer in scope, so remove from local_env *)
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
+          in
+          ( RemoteMapGet (x, adr, m, ks, fetch),
+            param_env,
+            field_env,
+            new_local_env,
+            ctr_tag_map,
+            false )
       | MatchStmt (x, clauses) ->
           let ( res_clauses,
                 new_param_env,

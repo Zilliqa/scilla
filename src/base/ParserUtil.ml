@@ -104,6 +104,10 @@ module type Syn = sig
 
   and stmt =
     | Load of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
+    | RemoteLoad of
+        ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
     | Store of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
     | Bind of ParserRep.rep SIdentifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
@@ -116,6 +120,12 @@ module type Syn = sig
        otherwise as an "exists" query. *)
     | MapGet of
         ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t list
+        * bool
+    | RemoteMapGet of
+        ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t list
         * bool

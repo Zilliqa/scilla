@@ -2,7 +2,8 @@
   "gas_remaining": "7913",
   "errors": [
     {
-      "error_message": "Type mismatch: Int32 expected, but String provided.",
+      "error_message":
+        "Type unassignable: Int32 expected, but String provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 19,
@@ -11,7 +12,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type mismatch: String expected, but Int64 provided.",
+      "error_message":
+        "Type unassignable: String expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 38,
@@ -21,7 +23,7 @@
     },
     {
       "error_message":
-        "Type mismatch: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
+        "Type unassignable: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 45,
@@ -40,7 +42,7 @@
     },
     {
       "error_message":
-        "Type mismatch: String expected, but Map (Int64) (String) provided.",
+        "Type unassignable: String expected, but Map (Int64) (String) provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 70,
@@ -58,7 +60,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type mismatch: String expected, but Int32 provided.",
+      "error_message":
+        "Type unassignable: String expected, but Int32 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 95,
@@ -67,7 +70,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type mismatch: Int32 expected, but Int64 provided.",
+      "error_message":
+        "Type unassignable: Int32 expected, but Int64 provided.",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 102,

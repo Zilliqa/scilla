@@ -80,7 +80,7 @@ let sanitize_literal l =
   let open MonadUtil in
   let open Result.Let_syntax in
   let%bind t = literal_type l in
-  if is_serializable_type t then pure l
+  if is_legal_message_field_type t then pure l
   else fail0 @@ sprintf "Cannot serialize literal %s" (pp_literal l)
 
 let eval_gas_charge env g =
@@ -144,7 +144,8 @@ let builtin_executor env f targs args_id =
   let%bind arg_lits =
     mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
   in
-  let%bind tps = fromR @@ MonadUtil.mapM arg_lits ~f:literal_type in
+  (* Builtin elaborators need to know the literal type of arguments *)
+  let%bind tps = mapM arg_lits ~f:(fun l -> fromR @@ literal_type l) in
   let%bind ret_typ, op =
     EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
       ~vargtypes:tps
@@ -189,6 +190,7 @@ let rec exp_eval erep env =
         (* Make sure we resolve all the payload *)
         mapM bs ~f:(fun (s, pld) ->
             let%bind sanitized_lit = fromR @@ resolve pld in
+            (* Messages should contain simplified types, so use literal_type *)
             let%bind t = fromR @@ literal_type sanitized_lit in
             pure (s, t, sanitized_lit))
       in
@@ -336,6 +338,14 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
+      | RemoteLoad (x, adr, r) -> (
+          let%bind a = fromR @@ Configuration.lookup conf adr in
+          match a with
+          | ByStrX s' when Bystrx.width s' = Type.address_length ->
+              let%bind l = Configuration.remote_load conf s' r in
+              let conf' = Configuration.bind conf (get_id x) l in
+              stmt_eval conf' sts
+          | _ -> fail0 "Expected remote load address to be ByStr20 value" )
       | Store (x, r) ->
           let%bind v = fromR @@ Configuration.lookup conf r in
           let%bind () = Configuration.store x v in
@@ -364,6 +374,19 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
+      | RemoteMapGet (x, adr, m, klist, fetchval) -> (
+          let%bind a = fromR @@ Configuration.lookup conf adr in
+          match a with
+          | ByStrX abystr when Bystrx.width abystr = Type.address_length ->
+              let%bind klist' =
+                mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
+              in
+              let%bind l =
+                Configuration.remote_map_get abystr m klist' fetchval
+              in
+              let conf' = Configuration.bind conf (get_id x) l in
+              stmt_eval conf' sts
+          | _ -> fail0 "Expected address to be ByStr20 value" )
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
@@ -492,6 +515,7 @@ let check_blockchain_entries entries =
             String.(x = s) && [%equal: EvalType.t] xt t))
   in
   (* everything expected must be entered *)
+  (* everything expected must be entered *)
   let c2 =
     List.for_all expected ~f:(fun (x, xt) ->
         List.exists entries ~f:(fun (s, t, _) ->
@@ -549,6 +573,10 @@ let init_lib_entries env libs =
             }
           in
           let _ = add_adt adt (get_rep tname) in
+          let () =
+            GlobalConfig.StdlibTracker.add_deflib_adttyp (as_string tname)
+              (Filename.basename (get_rep tname).fname)
+          in
           eres
       | LibVar (lname, _, lexp) ->
           let%bind env = eres in
@@ -606,56 +634,56 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
+let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   (* All contracts take a few implicit parameters. *)
-  let cparams = CU.append_implict_contract_params cparams' in
+  let cparams = CU.append_implicit_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
-  let args = CU.remove_noneval_args args' in
+  let initargs = CU.remove_noneval_args initargs' in
   (* Initialize libraries *)
   let%bind libenv = init_libraries clibs elibs in
-  (* Is there an argument that is not a parameter? *)
-  let%bind () =
-    forallM
-      ~f:(fun a ->
-        let%bind atyp = fromR @@ literal_type (snd a) in
-        let emsg () =
-          mk_error0
-            (sprintf "Parameter %s : %s is not specified in the contract.\n"
-               (EvalName.as_error_string (fst a))
-               (pp_typ atyp))
+  (* There as an init arg for each parameter *)
+  let%bind pending_dyn_checks =
+    foldM cparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
+        let%bind arg_dyn_checks =
+          find_mapM initargs ~f:(fun (s, l) ->
+              if not @@ EvalName.equal (get_id x) s then
+                (* Not this entry *)
+                pure None
+              else
+                (* Typecheck the literal against the parameter type *)
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
+                in
+                pure (Some dyn_checks))
         in
-        (* For each argument there should be a parameter *)
-        let%bind _, mp =
-          tryM
-            ~f:(fun (ps, pt) ->
-              let%bind at = fromR @@ literal_type (snd a) in
-              if
-                [%equal: EvalName.t] (get_id ps) (fst a)
-                && [%equal: EvalType.t] pt at
-              then pure ()
-              else fail0 "")
-            cparams ~msg:emsg
-        in
-        pure mp)
-      args
+        match arg_dyn_checks with
+        | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
+        | None ->
+            fail0
+            @@ sprintf "No init entry found matching contract parameter %s"
+                 (as_error_string x))
   in
+  (* There is a parameter for each init arg *)
   let%bind () =
-    forallM
-      ~f:(fun (p, _) ->
-        (* For each parameter there should be exactly one argument. *)
-        if
-          List.count args ~f:(fun a -> [%equal: EvalName.t] (get_id p) (fst a))
-          <> 1
-        then
+    forallM initargs ~f:(fun (s, _l) ->
+        if List.exists cparams ~f:(fun (x, _xt) -> EvalName.equal (get_id x) s)
+        then pure ()
+        else
           fail0
-            (sprintf "Parameter %s must occur exactly once in input.\n"
-               (as_error_string p))
-        else pure ())
-      cparams
+          @@ sprintf "Parameter %s is not specified in the contract.\n"
+               (EvalName.as_error_string s))
+  in
+  (* Each init arg is unique *)
+  let%bind () =
+    if
+      List.contains_dup initargs ~compare:(fun (s, _) (s', _) ->
+          EvalName.compare s s')
+    then fail0 "Duplicate init arguments entries found"
+    else pure ()
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
-  let env = Env.bind_all libenv args in
+  let env = Env.bind_all libenv initargs in
   (* Evaluate constraint, and abort if false *)
   let%bind () = eval_constraint cconstraint' env in
   let%bind field_values = init_fields env cfields in
@@ -663,47 +691,49 @@ let init_contract clibs elibs cconstraint' cparams' cfields args' init_bal =
   let balance = init_bal in
   let open ContractState in
   let cstate = { env; fields; balance } in
-  pure (cstate, field_values)
+  pure (cstate, field_values, pending_dyn_checks)
 
 (* Combine initialized state with infro from current state *)
 let create_cur_state_fields initcstate curcstate =
   (* If there's a field in curcstate that isn't in initcstate,
      flag it as invalid input state *)
   let%bind () =
-    forallM
-      ~f:(fun (s, _t, lc) ->
-        let%bind t_lc = fromR @@ literal_type lc in
-        let emsg () =
-          mk_error0
+    forallM curcstate ~f:(fun (s, t, l) ->
+        let%bind ex =
+          existsM initcstate ~f:(fun (x, xt, _xl) ->
+              if not @@ [%equal: EvalName.t] s x then
+                (* Not this entry *)
+                pure false
+              else if not @@ [%equal: EvalType.t] xt t then
+                fail0
+                  (sprintf
+                     "State type of field %s : %s does not match the declared \
+                      type %s"
+                     (EvalName.as_error_string s)
+                     (pp_typ t) (pp_typ xt))
+              else
+                (* Check that the literal matches the stated type *)
+                let%bind _dyn_checks =
+                  fromR @@ assert_literal_type ~expected:t l
+                in
+                (* Ignore dynamic typechecks - if it's in the current state, then it's already been checked *)
+                pure true)
+        in
+        if not ex then
+          fail0
             (sprintf "Field %s : %s not defined in the contract\n"
                (EvalName.as_error_string s)
-               (pp_typ t_lc))
-        in
-        let%bind _, ex =
-          tryM
-            ~f:(fun (t, _tt, li) ->
-              let%bind t2 = fromR @@ literal_type li in
-              if [%equal: EvalName.t] s t && [%equal: EvalType.t] t_lc t2 then
-                pure ()
-              else fail0 "")
-            initcstate ~msg:emsg
-        in
-        pure ex)
-      curcstate
-  in
-  (* Each entry name is unique *)
-  let%bind () =
-    forallM
-      ~f:(fun (e, _, _) ->
-        if
-          List.count curcstate ~f:(fun (e', _, _) -> [%equal: EvalName.t] e e')
-          > 1
-        then
-          fail0
-            (sprintf "Field %s occurs more than once in input.\n"
-               (EvalName.as_error_string e))
+               (pp_typ t))
         else pure ())
-      initcstate
+  in
+  (* We allow fields in initcstate that isn't in curcstate *)
+  (* Each curcstate field is unique *)
+  let%bind () =
+    if
+      List.contains_dup curcstate ~compare:(fun (s, _, _) (s', _, _) ->
+          EvalName.compare s s')
+    then fail0 "Duplicate field entries found"
+    else pure ()
   in
   (* Get only those fields from initcstate that are not in curcstate *)
   let filtered_init =
@@ -718,14 +748,14 @@ let create_cur_state_fields initcstate curcstate =
 let init_module md initargs curargs init_bal bstate elibs =
   let { libs; contr; _ } = md in
   let { cconstraint; cparams; cfields; _ } = contr in
-  let%bind initcstate, field_vals =
+  let%bind initcstate, field_vals, pending_dyn_checks =
     init_contract libs elibs cconstraint cparams cfields initargs init_bal
   in
   let%bind curfield_vals = create_cur_state_fields field_vals curargs in
   (* blockchain input provided is only validated and not used here. *)
   let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
-  pure (contr, cstate, curfield_vals)
+  pure (contr, cstate, curfield_vals, pending_dyn_checks)
 
 (*******************************************************)
 (*               Message processing                    *)
@@ -768,46 +798,61 @@ let get_transition_and_procedures ctr tag =
 
 (* Ensure match b/w transition defined params and passed arguments (entries) *)
 let check_message_entries cparams_o entries =
-  let tparams = CU.append_implict_comp_params cparams_o in
+  let tparams = CU.append_implicit_comp_params cparams_o in
   (* There as an entry for each parameter *)
-  let valid_entries =
-    List.for_all tparams ~f:(fun (x, xt) ->
-        List.exists entries ~f:(fun (s, t, _) ->
-            String.(as_string x = s) && [%equal: EvalType.t] xt t))
+  let%bind pending_dyn_checks =
+    foldM tparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
+        let%bind entry_dyn_checks =
+          find_mapM entries ~f:(fun (s, _t, l) ->
+              if not @@ String.(as_string x = s) then
+                (* Not this entry *)
+                pure None
+              else
+                (* We ignore the type from the message entry, since that was used to parse the literal, and hence is known to be valid *)
+                let%bind dyn_checks =
+                  fromR @@ assert_literal_type ~expected:xt l
+                in
+                if
+                  String.(
+                    s = ContractUtil.MessagePayload.sender_label
+                    || s = ContractUtil.MessagePayload.origin_label)
+                then
+                  (* _sender and _origin are known to be valid addresses, so ignore their dynamic typechecks *)
+                  pure (Some [])
+                else pure (Some dyn_checks))
+        in
+        match entry_dyn_checks with
+        | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
+        | None ->
+            fail0
+            @@ sprintf "No message entry found matching parameter %s"
+                 (as_error_string x))
   in
   (* There is a parameter for each entry *)
-  let valid_params =
-    List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists tparams ~f:(fun (x, xt) ->
-            String.(as_string x = s) && [%equal: EvalType.t] xt t))
+  let%bind () =
+    forallM entries ~f:(fun (s, _t, _l) ->
+        if List.exists tparams ~f:(fun (x, _xt) -> String.(as_string x = s))
+        then pure ()
+        else fail0 @@ sprintf "No parameter found matching message entry %s" s)
   in
   (* Each entry name is unique *)
-  let uniq_entries =
-    not
-    @@ List.contains_dup entries ~compare:(fun (s, _, _) (t, _, _) ->
-           String.compare s t)
+  let%bind () =
+    if
+      List.contains_dup entries ~compare:(fun (s, _, _) (s', _, _) ->
+          String.compare s s')
+    then fail0 "Duplicate message entries found"
+    else pure ()
   in
-  if not (valid_entries && uniq_entries && valid_params) then
-    fail0
-    @@ sprintf
-         "Duplicate entries or mismatch b/w message entries:\n\
-          %s\n\
-          and expected transition parameters%s\n"
-         (pp_typ_literal_map entries)
-         (pp_cparams tparams)
-  else pure entries
+  pure (entries, pending_dyn_checks)
 
 (* Get the environment, incoming amount, procedures in scope, and body to execute*)
-let prepare_for_message contr m =
-  match m with
-  | Msg entries ->
-      let%bind tag, incoming_amount, other = preprocess_message entries in
-      let%bind tprocedures, tparams, tbody, tname =
-        get_transition_and_procedures contr tag
-      in
-      let%bind tenv = check_message_entries tparams other in
-      pure (tenv, incoming_amount, tprocedures, tbody, tname)
-  | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal m)
+let prepare_for_message contr entries =
+  let%bind tag, incoming_amount, other = preprocess_message entries in
+  let%bind tprocedures, tparams, tbody, tname =
+    get_transition_and_procedures contr tag
+  in
+  let%bind tenv, pending_dyn_checks = check_message_entries tparams other in
+  pure ((tenv, incoming_amount, tprocedures, tbody, tname), pending_dyn_checks)
 
 (* Subtract the amounts to be transferred *)
 let post_process_msgs cstate outs =
@@ -836,15 +881,12 @@ let post_process_msgs cstate outs =
 
 (* 
 Handle message:
-* contr : Syntax.contract - code of the contract (containing transitions and procedures)
+* tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
 * cstate : ContractState.t - current contract state
 * bstate : (string * type * literal) list - blockchain state
-* m : Syntax.literal - incoming message 
 *)
-let handle_message contr cstate bstate m =
-  let%bind tenv, incoming_funds, procedures, stmts, tname =
-    prepare_for_message contr m
-  in
+let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
+    bstate =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)

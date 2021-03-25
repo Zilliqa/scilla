@@ -27,8 +27,6 @@ exception SyntaxError of string * loc
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 9, 1)
 
-let address_length = 20
-
 let hash_length = 32
 
 (* Builtins *)
@@ -298,6 +296,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
 
   and stmt =
     | Load of ER.rep SIdentifier.t * ER.rep SIdentifier.t
+    | RemoteLoad of
+        ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t
     | Store of ER.rep SIdentifier.t * ER.rep SIdentifier.t
     | Bind of ER.rep SIdentifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
@@ -310,6 +310,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
        otherwise as an "exists" query. *)
     | MapGet of
         ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        * bool
+    (* v <-- adr.m[k1][k2][...] OR b <- exists adr.m[k1][k2][...] *)
+    (* If the bool is set, then we interpret this as value retrieve,
+       otherwise as an "exists" query. *)
+    | RemoteMapGet of
+        ER.rep SIdentifier.t
+        * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t list
         * bool
@@ -548,6 +557,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | Load (x, f) ->
           sprintf "Type error in reading value of `%s` into `%s`:\n %s"
             (as_error_string f) (as_error_string x) phase
+      | RemoteLoad (x, adr, f) ->
+          sprintf "Type error in reading value of `%s.%s` into `%s`:\n %s"
+            (as_error_string adr) (as_error_string f) (as_error_string x) phase
       | Store (f, r) ->
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
             (as_error_string r) (as_error_string f)
@@ -556,6 +568,12 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             (as_error_string x)
       | MapGet (_, m, keys, _) ->
           sprintf "Type error in getting map value %s" (as_error_string m)
+          ^ List.fold keys ~init:"" ~f:(fun acc k ->
+                acc ^ "[" ^ as_error_string k ^ "]")
+          ^ "\n"
+      | RemoteMapGet (_, adr, m, keys, _) ->
+          sprintf "Type error in getting map value %s.%s" (as_error_string adr)
+            (as_error_string m)
           ^ List.fold keys ~init:"" ~f:(fun acc k ->
                 acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"

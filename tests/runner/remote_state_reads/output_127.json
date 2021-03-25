@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "7966",
+  "errors": [
+    {
+      "error_message": "Insufficient sender balance for acceptance.",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

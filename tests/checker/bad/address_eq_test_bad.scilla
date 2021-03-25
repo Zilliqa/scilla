@@ -1,0 +1,38 @@
+scilla_version 0
+
+library AddressEqTestBadLib
+
+contract AddressEqTestBad()
+
+field eq_test_res : Bool = False
+field test_map : Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end) = Emp (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)
+
+transition Test6 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : Int32)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test7 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : Bool)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test8 (param1 : Bool,
+  param2 : ByStr20 with contract field f : Uint32, field g : Int32 end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test9 (param1 : Bool,
+  param2 : ByStr20 with contract field f : Uint32, field g : Int32 end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test10 (param1 : List Bool,
+  param2 : List Bool)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end

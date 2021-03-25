@@ -1,0 +1,45 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7898",
+  "_accepted": "false",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "res_list",
+      "type": "List (ByStr20 with end)",
+      "value": {
+        "constructor": "Cons",
+        "argtypes": [ "ByStr20 with end" ],
+        "arguments": [
+          "0xabfeccdc9012345678901234567890f777564324",
+          {
+            "constructor": "Cons",
+            "argtypes": [ "ByStr20 with end" ],
+            "arguments": [
+              "0xabfeccdc9012345678901234567890f777564323",
+              {
+                "constructor": "Cons",
+                "argtypes": [ "ByStr20 with end" ],
+                "arguments": [
+                  "0xabfeccdc9012345678901234567890f777564322",
+                  {
+                    "constructor": "Nil",
+                    "argtypes": [ "ByStr20 with end" ],
+                    "arguments": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "vname": "res_mem",
+      "type": "Bool",
+      "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    }
+  ],
+  "events": []
+}

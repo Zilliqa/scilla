@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type mismatch: Event expected, but List (Message) provided.",
+        "Type unassignable: Event expected, but List (Message) provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
         "line": 222,
@@ -13,7 +13,7 @@
     },
     {
       "error_message":
-        "Type mismatch: List (Message) expected, but Event provided.",
+        "Type unassignable: List (Message) expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/send_event1.scilla",
         "line": 247,

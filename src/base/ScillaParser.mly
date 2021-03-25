@@ -108,6 +108,7 @@
 %token EQ
 %token AND
 %token FETCH
+%token REMOTEFETCH
 %token ASSIGN
 (* %token LANGLE
  * %token RANGLE *)
@@ -176,6 +177,12 @@ scid :
 (* This production is necessary because message and state jsons contain global type names *)
 | ns = HEXLIT; PERIOD; name = CID { ParserName.parse_qualified_name ns name }
 
+type_annot:
+| COLON; t = typ { t }
+
+id_with_typ :
+| n = ID; t = type_annot { (to_loc_id n (toLoc $startpos(n)), t) }
+
 (***********************************************)
 (*                  Types                      *)
 (***********************************************)
@@ -183,6 +190,8 @@ scid :
 t_map_key :
 | kt = scid { to_map_key_type_exn kt (toLoc $startpos) }
 | LPAREN; kt = scid; RPAREN; { to_map_key_type_exn kt (toLoc $startpos(kt)) }
+| LPAREN; kt = address_typ; RPAREN; { kt }
+| kt = address_typ; { kt }
 
 (* TODO: This is a temporary fix of issue #261 *)
 t_map_value_args:
@@ -197,6 +206,24 @@ t_map_value :
       | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 | LPAREN; t = t_map_value; RPAREN; { t }
+| vt = address_typ; { vt }
+
+address_typ :
+| d = CID; WITH; END;
+    { if d = "ByStr20"
+      then Address None
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then
+        (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
+        Address (Some fs)
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| (* Adding this production in preparation for contract parameters *)
+  d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
+    { if d = "ByStr20"
+      then raise (SyntaxError ("Contract parameters in address types not yet supported", toLoc $startpos(d)))
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 
 typ :
 | d = scid; targs=list(targ)
@@ -207,6 +234,7 @@ typ :
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 | t1 = typ; TARROW; t2 = typ; { SType.FunType (t1, t2) }
 | LPAREN; t = typ; RPAREN; { t }
+| t = address_typ { t }
 | FORALL; tv = TID; PERIOD; t = typ; {SType.PolyFun (tv, t)}
 %prec TARROW
 | t = TID; { SType.TypeVar t }
@@ -215,7 +243,11 @@ targ:
 | LPAREN; t = typ; RPAREN; { t }
 | d = scid; { to_type d (toLoc $startpos(d))}
 | t = TID; { TypeVar t }
+| t = address_typ; { t }
 | MAP; k=t_map_key; v = t_map_value; { MapType (k, v) }
+
+address_type_field:
+| FIELD; ft = id_with_typ { ft }
 
 (***********************************************)
 (*                 Expressions                 *)
@@ -230,8 +262,9 @@ simple_exp :
   EQ; f = simple_exp; IN; e = exp
   {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
 (* Function *)
-| FUN; LPAREN; i = ID; COLON; t = typ; RPAREN; ARROW; e = exp
-  { (Fun ( to_loc_id i (toLoc $startpos(i)), t, e), toLoc $startpos(e) ) }
+| FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
+    { match iwt with
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
@@ -312,9 +345,6 @@ builtin_args :
 | args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
 
-type_annot:
-| COLON; t = typ { t }
-
 exp_term :
 | e = exp; EOF { e }
 
@@ -327,6 +357,7 @@ type_term :
 
 stmt:
 | l = ID; FETCH; r = sid   { (Load (to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
+| r = remote_fetch_stmt { r }
 | l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
 | l = ID; FETCH; AND; c = CID { (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), c), toLoc $startpos) }
@@ -352,6 +383,23 @@ stmt:
   FORALL; l = sident; p = component_id
   { Iterate (l, p), toLoc $startpos }
 
+remote_fetch_stmt:
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = sident
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
+| (* Reading _sender._balance or _origin._balance *)
+  l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
+| (* Adding this production in preparation for remote reads of contract parameters *)
+  _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
+  { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
+| l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+| l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+| (* Adding this production in preparation for address type casts *)
+  _l = ID; FETCH; AND; _adr = sident; AS; address_typ
+  { raise (SyntaxError ("Address type casts not yet supported", toLoc $startpos(_adr))) }
+
 stmt_pm_clause:
 | BAR ; p = pattern ; ARROW ;
   ss = separated_list(SEMICOLON, stmt) { p, ss }
@@ -366,7 +414,7 @@ stmts_term:
 (***********************************************)
 
 param_pair:
-| n = ID; COLON; t = typ { to_loc_id n (toLoc $startpos(n)), t }
+| iwt = id_with_typ { iwt }
 
 component:
 | t = transition
@@ -405,9 +453,10 @@ component_body:
   { ss }
 
 field:
-| FIELD; f = ID; COLON; t=typ;
+| FIELD; iwt = id_with_typ
   EQ; rhs = exp
-  { to_loc_id f (toLoc $startpos(f)), t, rhs }
+    { match iwt with
+      | (f, t) -> (f, t, rhs) }
 
 with_constraint:
 | WITH; f = exp; ARROW

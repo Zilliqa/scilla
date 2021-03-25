@@ -1,0 +1,23 @@
+{
+    "_tag": "Test2",
+    "_amount": "0",
+    "_sender": "0xabfeccdc9012345678901234567890f777564322",
+    "params": [
+        {
+            "vname" : "param1",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564324"
+        },
+        {
+            "vname" : "param2",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564323"
+        },
+        {
+            "vname" : "param3",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564322"
+        }
+    ],
+    "_origin": "0xabfeccdc9012345678901234567890f777564322"
+}

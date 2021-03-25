@@ -1,0 +1,6 @@
+scilla_version 0
+
+contract AddressSPIDField()
+
+transition Test6 (param1 : ByStr20 with contract field _balance : Uint128 end)
+end

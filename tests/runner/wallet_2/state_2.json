@@ -34,5 +34,17 @@
     "type":
       "Map (Uint32) (0xabfeccdc9012345678901234567890f777567890.Transaction)",
     "value": []
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x1234567890123456789012345678906000000000",
+            "state": [
+                { "vname": "_balance", "type": "Uint128", "value": "242" }
+            ]
+        }
+    ]
   }
 ]

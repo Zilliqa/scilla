@@ -2,7 +2,8 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type mismatch: Bool expected, but Uint128 provided.",
+      "error_message":
+        "Type unassignable: Bool expected, but Uint128 provided.",
       "start_location": {
         "file": "checker/bad/constraint_type_illegal.scilla",
         "line": 9,

@@ -1,0 +1,35 @@
+scilla_version 0
+
+contract AddressEqTest()
+
+field eq_test_res : Bool = False
+
+transition Test1 (param1 : ByStr20 with contract field f : Uint128, field g : Int32 end,
+  param2 : ByStr20 with contract field f : Uint128, field h : Bool end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test2 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : ByStr20 with contract field f : Uint128, field h : Bool end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test3 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : ByStr20)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test4 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : ByStr20 with end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end
+
+transition Test5 (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end,
+  param2 : ByStr20 with contract end)
+  x = builtin eq param1 param2;
+  eq_test_res := x
+end

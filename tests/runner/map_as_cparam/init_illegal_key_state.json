@@ -1,0 +1,47 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+        "vname": "_external",
+        "type": "Unit",
+        "value": [
+            {
+                "address": "0x1234567890123456789012345678901234567890",
+                "state": [
+                    { "vname": "_nonce", "type": "Uint64", "value": "42" },
+                    { "vname": "_balance", "type": "Uint128", "value": "42" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" },
+                    { "vname": "f", "type": "Uint128", "value": "42" },
+                    { "vname": "f2", "type": "Uint128", "value": "6" }
+                ]
+            },
+            {
+                "address": "0x1234567890123456789012345678901234567891",
+                "state": [
+                    { "vname": "_nonce", "type": "Uint64", "value": "42" },
+                    { "vname": "_balance", "type": "Uint128", "value": "42" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" },
+                    { "vname": "g", "type": "Bool", "value": { "constructor": "True", "argtypes": [], "arguments": [] } }
+                ]
+            },
+            {
+                "address": "0x1234567890123456789012345678901234567892",
+                "state": [
+                    { "vname": "_nonce", "type": "Uint64", "value": "42" },
+                    { "vname": "_balance", "type": "Uint128", "value": "42" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" },
+                    { "vname": "f", "type": "Uint128", "value": "6" },
+                    { "vname": "f2", "type": "Uint32", "value": "6" }
+                ]
+            },
+            {
+                "address": "0x1234567890123456789012345678901234567893",
+                "state": [
+                    { "vname": "_nonce", "type": "Uint64", "value": "42" },
+                    { "vname": "_balance", "type": "Uint128", "value": "42" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" },
+                    { "vname": "g", "type": "Bool", "value": { "constructor": "False", "argtypes": [], "arguments": [] } }
+                ]
+            }
+        ]
+    }
+]

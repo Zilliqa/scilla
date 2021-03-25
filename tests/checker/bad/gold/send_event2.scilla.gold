@@ -2,7 +2,8 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type mismatch: Message expected, but Event provided.",
+      "error_message":
+        "Type unassignable: Message expected, but Event provided.",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 178,
@@ -21,7 +22,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type mismatch: Event expected, but Message provided.",
+      "error_message":
+        "Type unassignable: Event expected, but Message provided.",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 247,

@@ -40,10 +40,19 @@ module IPCIdl (R : RPC) = struct
 
   let value = Param.mk ~name:"value" Rpc.Types.string
 
+  let scilla_type = Param.mk ~name:"scilla_type" Rpc.Types.string
+
+  let addr = Param.mk ~name:"addr" Rpc.Types.string
+
   (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)
    * "value" is valid only if "found && !query.ignoreval" *)
   (* TODO: [@warning "-32"] doesn't seem to work for "unused" types. *)
   type _fetch_ret_t = bool * string [@@deriving rpcty]
+
+  (* The return value for `fetchExternalStateValue will be a triple
+   * (found : bool, value : string, type : string). "value" is valid only
+   * if "found && !query.ignoreval" *)
+  type _fetch_ext_ret_t = bool * string * string [@@deriving rpcty]
 
   (* defines `typ_of__fetch_ret_t` *)
 
@@ -51,12 +60,35 @@ module IPCIdl (R : RPC) = struct
     Param.mk
       { name = ""; description = [ "(found,value)" ]; ty = typ_of__fetch_ret_t }
 
+  let return_ext_fetch =
+    Param.mk
+      {
+        name = "";
+        description = [ "(found,value,type)" ];
+        ty = typ_of__fetch_ext_ret_t;
+      }
+
   let return_update = Param.mk Rpc.Types.unit
 
   let fetch_state_value =
     declare "fetchStateValue"
       [ "Fetch state value from blockchain" ]
       (query @-> returning return_fetch RPCError.err)
+
+  let fetch_ext_state_value =
+    declare "fetchExternalStateValue"
+      [ "Fetch state value of another contract from the blockchain" ]
+      (addr @-> query @-> returning return_ext_fetch RPCError.err)
+
+  (* This is a utility to test the testsuite server with JSON data.
+   * It isn't part of the Zilliqa<->Scilla IPC protocol. *)
+  let set_ext_state_value =
+    declare "setExternalStateValue"
+      [
+        "Set state value and field type of another contract from the blockchain";
+      ]
+      ( addr @-> query @-> value @-> scilla_type
+      @-> returning return_update RPCError.err )
 
   let update_state_value =
     declare "updateStateValue"

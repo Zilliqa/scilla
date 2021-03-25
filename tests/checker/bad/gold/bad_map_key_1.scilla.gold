@@ -2,8 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message":
-        "This map type has an invalid key type. A closing bracket or proper separated capital identifier is expected.\n",
+      "error_message": "Syntax error, state number 97",
       "start_location": {
         "file": "checker/bad/bad_map_key_1.scilla",
         "line": 7,

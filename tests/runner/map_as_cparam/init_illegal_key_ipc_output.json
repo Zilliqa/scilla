@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7856",
+  "errors": [
+    {
+      "error_message":
+        "Address 0x1234567890123456789012345678901234567890 does not satisfy type ByStr20 with contract field f : Uint128, field f2 : Uint32 end\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

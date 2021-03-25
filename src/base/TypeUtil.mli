@@ -120,6 +120,12 @@ module TypeUtilities : sig
   val literal_type :
     ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
+  val assert_literal_type :
+    ?lc:ErrorUtils.loc ->
+    expected:TUType.t ->
+    TULiteral.t ->
+    ((TUType.t * TULiteral.Bystrx.t) list, scilla_error list) result
+
   val is_wellformed_lit :
     ?lc:ErrorUtils.loc -> TULiteral.t -> (TUType.t, scilla_error list) result
 
@@ -138,13 +144,17 @@ module TypeUtilities : sig
   (*                       Type sanitization                      *)
   (****************************************************************)
 
-  val is_storable_type : TUType.t -> bool
+  val is_legal_message_field_type : TUType.t -> bool
 
-  val is_serializable_type : TUType.t -> bool
+  val is_legal_transition_parameter_type : TUType.t -> bool
+
+  val is_legal_procedure_parameter_type : TUType.t -> bool
+
+  val is_legal_contract_parameter_type : TUType.t -> bool
+
+  val is_legal_field_type : TUType.t -> bool
 
   val is_ground_type : TUType.t -> bool
-
-  val is_non_map_ground_type : TUType.t -> bool
 
   val get_msgevnt_type :
     (string * 'a * 'b) list -> loc -> (TUType.t, scilla_error list) result
@@ -152,6 +162,9 @@ module TypeUtilities : sig
   val map_access_type : TUType.t -> int -> (TUType.t, scilla_error list) result
 
   val map_depth : TUType.t -> int
+
+  val address_field_type :
+    'a TUIdentifier.t -> TUType.t -> (TUType.t, scilla_error list) result
 
   (****************************************************************)
   (*             Utility function for matching types              *)
@@ -173,10 +186,13 @@ module TypeUtilities : sig
   val mark_error_as_type_error :
     ('a, 'b) result -> ('a, typeCheckerErrorType * 'b) result
 
-  val assert_type_equiv :
+  val type_assignable_list :
+    to_list:TUType.t list -> from_list:TUType.t list -> bool
+
+  val assert_type_assignable :
     ?lc:ErrorUtils.loc ->
-    TUType.t ->
-    TUType.t ->
+    expected:TUType.t ->
+    actual:TUType.t ->
     (unit, scilla_error list) result
 
   (* Applying a function type *)

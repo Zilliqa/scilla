@@ -1,0 +1,56 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message":
+        "Type ByStr20 with contract field f : ByStr20 -> Uint128 end cannot be used as a contract parameter",
+      "start_location": {
+        "file": "checker/bad/address_non_storable_type.scilla",
+        "line": 4,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type ByStr20 with contract field f : forall 'A. 'A end cannot be used as a contract parameter",
+      "start_location": {
+        "file": "checker/bad/address_non_storable_type.scilla",
+        "line": 5,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Values of the type \"ByStr20 with contract field f : ByStr20 -> Uint128 end\" cannot be stored.",
+      "start_location": {
+        "file": "checker/bad/address_non_storable_type.scilla",
+        "line": 7,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type ByStr20 with contract field f : ByStr20 -> Uint128 end cannot be used as transition parameter",
+      "start_location": {
+        "file": "checker/bad/address_non_storable_type.scilla",
+        "line": 10,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message":
+        "Type ByStr20 with contract field f : forall 'A. 'A end cannot be used as transition parameter",
+      "start_location": {
+        "file": "checker/bad/address_non_storable_type.scilla",
+        "line": 13,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

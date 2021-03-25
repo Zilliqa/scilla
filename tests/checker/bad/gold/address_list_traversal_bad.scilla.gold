@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "7914",
+  "errors": [
+    {
+      "error_message":
+        "Type unassignable: List (ByStr20 with contract field f : Uint32 end) expected, but List (ByStr20 with contract end) provided.",
+      "start_location": {
+        "file": "checker/bad/address_list_traversal_bad.scilla",
+        "line": 31,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

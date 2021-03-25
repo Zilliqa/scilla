@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type mismatch: forall 'A. forall 'B. ('A -> Uint128) -> List ('A) -> List (Uint128) expected, but forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B) provided.",
+        "Type unassignable: forall 'A. forall 'B. ('A -> Uint128) -> List ('A) -> List (Uint128) expected, but forall 'A. forall 'B. ('A -> 'B) -> List ('A) -> List ('B) provided.",
       "start_location": {
         "file": "checker/bad/bad_lib_type2.scilla",
         "line": 11,
