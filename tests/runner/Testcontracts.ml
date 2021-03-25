@@ -250,7 +250,14 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
           state_json_path
     else basic_args
   in
-  let scillabin = "scilla-runner" in
+  (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
+  let scillabin =
+    if env.server test_ctxt then "scilla-client" else "scilla-runner"
+  in
+  let args =
+    if env.server test_ctxt then [ "run"; "-argv"; String.concat args ~sep:" " ]
+    else args
+  in
   print_cli_usage (env.print_cli test_ctxt) scillabin args;
   let test_name = name ^ "_" ^ init_name in
   let goldoutput_file =
