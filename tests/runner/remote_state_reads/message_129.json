@@ -5,25 +5,25 @@
     "params": [
         {
             "vname" : "list1",
-            "type" : "List ByStr20",
+            "type" : "List (ByStr20 with end)",
             "value" : {
                 "constructor" : "Cons",
-                "argtypes"    : [ "ByStr20" ],
+                "argtypes"    : [ "ByStr20 with end" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564323",
                     {
                         "constructor" : "Cons",
-                        "argtypes"    : [ "ByStr20" ],
+                        "argtypes"    : [ "ByStr20 with end" ],
                         "arguments"   : [
                             "0xabfeccdc9012345678901234567890f777564324",
                             {
                                 "constructor" : "Cons",
-                                "argtypes"    : [ "ByStr20" ],
+                                "argtypes"    : [ "ByStr20 with end" ],
                                 "arguments"   : [
                                     "0xabfeccdc9012345678901234567890f777564325",
                                     {
                                         "constructor" : "Nil",
-                                        "argtypes"    : [ "ByStr20" ],
+                                        "argtypes"    : [ "ByStr20 with end" ],
                                         "arguments"   : []
                                     }
                                 ]
@@ -83,7 +83,7 @@
                     {
                         "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                         "argtypes"    : [],
-                        "arguments"   : [ "0xabfeccdc9012345678901234567890f777564324" ]
+                        "arguments"   : [ "0xabfeccdc9012345678901234567890f777564326" ]
                     }
                 ]
             }
@@ -93,9 +93,9 @@
             "type" : "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
             "value" :
             {
-                "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address1",
+                "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                 "argtypes"    : [],
-                "arguments"   : [ "0xabfeccdc9012345678901234567890f777564327" ]
+                "arguments"   : [ "0xabfeccdc9012345678901234567890f777564324" ]
             }
         },
         {

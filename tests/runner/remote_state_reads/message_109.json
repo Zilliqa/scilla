@@ -5,25 +5,25 @@
     "params": [
         {
             "vname" : "list1",
-            "type" : "List (ByStr20 with end)",
+            "type" : "List ByStr20",
             "value" : {
                 "constructor" : "Cons",
-                "argtypes"    : [ "ByStr20 with end" ],
+                "argtypes"    : [ "ByStr20" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564323",
                     {
                         "constructor" : "Cons",
-                        "argtypes"    : [ "ByStr20 with end" ],
+                        "argtypes"    : [ "ByStr20" ],
                         "arguments"   : [
                             "0xabfeccdc9012345678901234567890f777564324",
                             {
                                 "constructor" : "Cons",
-                                "argtypes"    : [ "ByStr20 with end" ],
+                                "argtypes"    : [ "ByStr20" ],
                                 "arguments"   : [
                                     "0xabfeccdc9012345678901234567890f777564327",
                                     {
                                         "constructor" : "Nil",
-                                        "argtypes"    : [ "ByStr20 with end" ],
+                                        "argtypes"    : [ "ByStr20" ],
                                         "arguments"   : []
                                     }
                                 ]
@@ -35,15 +35,15 @@
         },
         {
             "vname" : "list2",
-            "type" : "List (ByStr20 with contract field f : Uint128 end)",
+            "type" : "List ByStr20",
             "value" : {
                 "constructor" : "Cons",
-                "argtypes"    : [ "ByStr20 with contract field f : Uint128 end" ],
+                "argtypes"    : [ "ByStr20" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564323",
                     {
                         "constructor" : "Nil",
-                        "argtypes"    : [ "ByStr20 with contract field f : Uint128 end" ],
+                        "argtypes"    : [ "ByStr20" ],
                         "arguments"   : []
                     }
                 ]
@@ -51,20 +51,20 @@
         },
         {
             "vname" : "list3",
-            "type" : "List (ByStr20 with contract field g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end)",
+            "type" : "List ByStr20",
             "value" : {
                 "constructor" : "Cons",
-                "argtypes"    : [ "ByStr20 with contract field g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
+                "argtypes"    : [ "ByStr20" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564324",
                     {
                         "constructor" : "Cons",
-                        "argtypes"    : [ "ByStr20 with contract field g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
+                        "argtypes"    : [ "ByStr20" ],
                         "arguments"   : [
                             "0xabfeccdc9012345678901234567890f777564323",
                             {
                                 "constructor" : "Nil",
-                                "argtypes"    : [ "ByStr20 with contract field g : 0x3620c286757a29985cee194eb90064270fb65414.AddressADT end" ],
+                                "argtypes"    : [ "ByStr20" ],
                                 "arguments"   : []
                             }
                         ]
@@ -74,10 +74,10 @@
         },
         {
             "vname" : "pair1",
-            "type" : "Pair (ByStr20 with end) 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
+            "type" : "Pair ByStr20 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
             "value" : {
                 "constructor" : "Pair",
-                "argtypes"    : [ "ByStr20 with end", "0x3620c286757a29985cee194eb90064270fb65414.AddressADT" ],
+                "argtypes"    : [ "ByStr20", "0x3620c286757a29985cee194eb90064270fb65414.AddressADT" ],
                 "arguments"   : [
                     "0xabfeccdc9012345678901234567890f777564323",
                     {

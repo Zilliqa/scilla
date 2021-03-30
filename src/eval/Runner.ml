@@ -256,6 +256,15 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   initargs
 
+let validate_incoming_message msg_info gas_remaining =
+  List.iter msg_info ~f:(fun (n, t, l) ->
+      (* Address types are illegal in messages, except for _sender, _origin and _recipient *)
+      if String.(n = ContractUtil.MessagePayload.sender_label ||
+                 n = ContractUtil.MessagePayload.origin_label ||
+                 n = ContractUtil.MessagePayload.recipient_label) then () else
+      let () = assert_no_address_type_in_type t gas_remaining in
+      assert_no_address_type_in_literal l gas_remaining)
+
 let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   match rewriter anode with
   | Error e -> fatal_error_gas_scale Gas.scale_factor e gas_remaining
@@ -563,6 +572,7 @@ let run_with_args args =
                              args.input_message) )
                       gas_remaining
                 in
+                let () = validate_incoming_message mmsg gas_remaining in
                 let cstate, gas_remaining' =
                   if is_ipc then
                     let cur_bal = args.balance in
