@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7944",
+  "gas_remaining": "7970",
   "_accepted": "false",
   "messages": [],
   "states": [
@@ -8,7 +8,7 @@
     {
       "vname": "remote_read_remote_read_res_1",
       "type": "Uint128",
-      "value": "51"
+      "value": "0"
     },
     {
       "vname": "remote_read_remote_read_res_2",
@@ -27,7 +27,9 @@
     {
       "vname": "address_type_erasure_test_res_1",
       "type": "Map (Uint128) (ByStr20 with end)",
-      "value": []
+      "value": [
+        { "key": "0", "val": "0x1234567890123456789012345678901234567890" }
+      ]
     }
   ],
   "events": []

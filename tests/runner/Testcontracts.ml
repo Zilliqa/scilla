@@ -432,7 +432,7 @@ let contract_tests env =
                        succ_code 1 11 [];
                 "remote_state_reads_2"
                 >::: build_contract_tests ~pplit:false env
-                       "remote_state_reads_2" succ_code 1 3 [];
+                       "remote_state_reads_2" succ_code 1 5 [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_assignable_map_types" ~is_library:false

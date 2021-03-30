@@ -154,6 +154,35 @@ let builtin_executor env f targs args_id =
   let res () = op targs arg_lits ret_typ in
   checkwrap_op res (Uint64.of_int cost) []
 
+(* Replace address types with ByStr20 in a literal. 
+   This is to ensure that address types are treated as ByStr20 throughout the interpreter.  *)
+let replace_address_types l =
+  let rec replace_in_type t =
+    match t with
+    | PrimType _ | TypeVar _ | PolyFun _ | Unit -> t
+    | Address _ -> bystrx_typ Type.address_length
+    | MapType (kt, vt) ->
+        MapType (replace_in_type kt, replace_in_type vt)
+    | FunType (t1, t2) ->
+        FunType (replace_in_type t1, replace_in_type t2)
+    | ADT (tname, targs) ->
+        ADT (tname, List.map targs ~f:replace_in_type)
+  in
+  let replace_in_literal l =
+    match l with
+    | StringLit _ | IntLit _ | UintLit _ | BNum _ | ByStrX _ | ByStr _ | Clo _ | TAbs _ -> l
+    | Msg _ ->
+        (* Messages are constructed using already sanitised literals, so no action needed *)
+        l
+    | Map ((kt, vt), tbl) ->
+        (* Key/value pairs sanitised when inserted into the map. Only need to handle the types in the empty map *)
+        Map ((replace_in_type kt, replace_in_type vt), tbl)
+    | ADTValue (cname, targs, vargs) ->
+        (* vargs sanitised before ADTValue is constructed. Only need to handle type arguments *)
+        ADTValue (cname, List.map targs ~f:replace_in_type, vargs)
+  in
+  replace_in_literal l
+
 (*******************************************************)
 (* A monadic big-step evaluator for Scilla expressions *)
 (*******************************************************)
@@ -168,7 +197,7 @@ let builtin_executor env f targs args_id =
 let rec exp_eval erep env =
   let e, loc = erep in
   match e with
-  | Literal l -> pure (l, env)
+  | Literal l -> pure (replace_address_types l, env)
   | Var i ->
       let%bind v = fromR @@ Env.lookup env i in
       pure @@ (v, env)
@@ -234,7 +263,7 @@ let rec exp_eval erep env =
         in
         (* Make sure we only pass "pure" literals, not closures *)
         let lit = ADTValue (get_id cname, ts, args) in
-        pure (lit, env)
+        pure (replace_address_types lit, env)
   | MatchExpr (x, clauses) ->
       let%bind v = fromR @@ Env.lookup env x in
       (* Get the branch and the bindings *)
