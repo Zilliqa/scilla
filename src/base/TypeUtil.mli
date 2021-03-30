@@ -170,7 +170,7 @@ module TypeUtilities : sig
   (*             Utility function for matching types              *)
   (****************************************************************)
 
-  val type_equiv_list : TUType.t list -> TUType.t list -> bool
+  val type_equiv_list : to_list:TUType.t list -> from_list:TUType.t list -> bool
 
   type typeCheckerErrorType = TypeError | GasError
 

@@ -413,6 +413,15 @@ let contract_tests env =
                 "map_as_cparam"
                 >: build_contract_init_test env succ_code "map_as_cparam" "init"
                      ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam"
+                     "init_unassignable" ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam"
+                     "init_unassignable_2" ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env succ_code "address_list_as_cparam" "init"
+                     ~is_library:false ~ipc_mode:true;
                 "shadow_import"
                 >::: build_contract_tests env "shadow_import" succ_code 1 1 [];
                 "remote_state_reads"
@@ -508,16 +517,19 @@ let contract_tests env =
                        128 [];
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
-                     "init_unassignable" ~is_library:false ~ipc_mode:true;
-                "map_as_cparam"
-                >: build_contract_init_test env fail_code "map_as_cparam"
-                     "init_unassignable_2" ~is_library:false ~ipc_mode:true;
-                "map_as_cparam"
-                >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_key" ~is_library:false ~ipc_mode:true;
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_value" ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code "address_list_as_cparam" "init_illegal_type"
+                     ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code "address_list_as_cparam" "init_illegal_nested_type"
+                     ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code "address_list_as_cparam" "init_illegal_value"
+                     ~is_library:false ~ipc_mode:true;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]
