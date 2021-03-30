@@ -73,6 +73,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "listiter.scilla";
       "UintParam.scilla";
       "map_as_cparam.scilla";
+      "address_list_as_cparam.scilla";
       "shadow_import.scilla";
       "remote_state_reads.scilla";
       "remote_state_reads_2.scilla";
