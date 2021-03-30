@@ -164,6 +164,30 @@ let output_event_json elist =
     | Msg m -> JSON.Event.event_to_json m
     | _ -> `Null)
 
+let assert_no_address_type_in_type t gas_remaining =
+  let open RunnerType in
+  let rec recurser t =
+    match t with
+    | PrimType _ -> ()
+    | Address _ ->
+        fatal_error_gas_scale Gas.scale_factor
+          (mk_error0 "Address type not allowed in json file")
+          gas_remaining
+    | MapType (kt, vt) ->
+        let () = recurser kt in
+        recurser vt
+    | ADT (_, ts) ->
+        List.iter ts ~f:recurser
+    | FunType _
+    | TypeVar _
+    | PolyFun _
+    | Unit -> 
+        fatal_error_gas_scale Gas.scale_factor
+          (mk_error0 (sprintf "Illegal type in json file: %s" (pp_typ t)))
+          gas_remaining
+  in
+  recurser t
+
 (* No address types are allowed to occur in literals from init or message jsons *)
 let assert_no_address_type_in_literal l gas_remaining =
   let open RunnerSyntax.SLiteral in
@@ -207,7 +231,8 @@ let validate_get_init_json init_file gas_remaining source_ver =
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
   let initargs =
     map_json_input_strings_to_names initargs_str
-    |> List.map ~f:(fun (n, _t, l) ->
+    |> List.map ~f:(fun (n, t, l) ->
+        let () = assert_no_address_type_in_type t gas_remaining in
         let () = assert_no_address_type_in_literal l gas_remaining in
         (n, l))
   in
