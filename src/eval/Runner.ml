@@ -176,12 +176,8 @@ let assert_no_address_type_in_type t gas_remaining =
     | MapType (kt, vt) ->
         let () = recurser kt in
         recurser vt
-    | ADT (_, ts) ->
-        List.iter ts ~f:recurser
-    | FunType _
-    | TypeVar _
-    | PolyFun _
-    | Unit -> 
+    | ADT (_, ts) -> List.iter ts ~f:recurser
+    | FunType _ | TypeVar _ | PolyFun _ | Unit ->
         fatal_error_gas_scale Gas.scale_factor
           (mk_error0 (sprintf "Illegal type in json file: %s" (pp_typ t)))
           gas_remaining
@@ -200,22 +196,22 @@ let assert_no_address_type_in_literal l gas_remaining =
   let rec recurser l =
     match l with
     | StringLit _ | IntLit _ | UintLit _ | BNum _ | ByStrX _ | ByStr _ -> ()
-    | Map ((kt, vt), _)
-      when is_address_type kt || is_address_type vt
-      -> throw_address_type_error ()
-    | Map (_, tbl)
-      ->
-        Caml.Hashtbl.iter (fun k v -> let () = recurser k in recurser v)
+    | Map ((kt, vt), _) when is_address_type kt || is_address_type vt ->
+        throw_address_type_error ()
+    | Map (_, tbl) ->
+        Caml.Hashtbl.iter
+          (fun k v ->
+            let () = recurser k in
+            recurser v)
           tbl
-    | ADTValue (_, ts, _)
-      when List.exists ts ~f:is_address_type
-      -> throw_address_type_error ()
-    | ADTValue (_, _, ls) ->
-        List.iter ls ~f:recurser
+    | ADTValue (_, ts, _) when List.exists ts ~f:is_address_type ->
+        throw_address_type_error ()
+    | ADTValue (_, _, ls) -> List.iter ls ~f:recurser
     | Msg _ | Clo _ | TAbs _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 (sprintf "Unknown literal in json file: %s" (pp_literal l)))
-             gas_remaining
+          (mk_error0
+             (sprintf "Unknown literal in json file: %s" (pp_literal l)))
+          gas_remaining
   in
   recurser l
 
@@ -232,9 +228,9 @@ let validate_get_init_json init_file gas_remaining source_ver =
   let initargs =
     map_json_input_strings_to_names initargs_str
     |> List.map ~f:(fun (n, t, l) ->
-        let () = assert_no_address_type_in_type t gas_remaining in
-        let () = assert_no_address_type_in_literal l gas_remaining in
-        (n, l))
+           let () = assert_no_address_type_in_type t gas_remaining in
+           let () = assert_no_address_type_in_literal l gas_remaining in
+           (n, l))
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
@@ -259,11 +255,15 @@ let validate_get_init_json init_file gas_remaining source_ver =
 let validate_incoming_message msg_info gas_remaining =
   List.iter msg_info ~f:(fun (n, t, l) ->
       (* Address types are illegal in messages, except for _sender, _origin and _recipient *)
-      if String.(n = ContractUtil.MessagePayload.sender_label ||
-                 n = ContractUtil.MessagePayload.origin_label ||
-                 n = ContractUtil.MessagePayload.recipient_label) then () else
-      let () = assert_no_address_type_in_type t gas_remaining in
-      assert_no_address_type_in_literal l gas_remaining)
+      if
+        String.(
+          n = ContractUtil.MessagePayload.sender_label
+          || n = ContractUtil.MessagePayload.origin_label
+          || n = ContractUtil.MessagePayload.recipient_label)
+      then ()
+      else
+        let () = assert_no_address_type_in_type t gas_remaining in
+        assert_no_address_type_in_literal l gas_remaining)
 
 let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   match rewriter anode with
