@@ -533,6 +533,9 @@ let contract_tests env =
                 "address_list_as_cparam"
                 >: build_contract_init_test env fail_code "address_list_as_cparam" "init_illegal_value"
                      ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code "address_list_as_cparam" "init_address_type"
+                     ~is_library:false ~ipc_mode:true;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]
