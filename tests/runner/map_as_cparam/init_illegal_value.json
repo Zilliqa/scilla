@@ -16,7 +16,7 @@
     },
     {
         "vname" : "x",
-        "type" : "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract field g : Bool, field g2 : Uint32 end)", 
+        "type" : "Map ByStr20 (ByStr20 with contract field g : Bool, field g2 : Uint32 end)", 
         "value" : [
             {
                 "key" : "0x1234567890123456789012345678901234567890",

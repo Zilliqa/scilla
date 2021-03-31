@@ -1,9 +1,8 @@
 {
-  "gas_remaining": "7856",
+  "gas_remaining": "7861",
   "errors": [
     {
-      "error_message":
-        "Address 0x1234567890123456789012345678901234567893 does not satisfy type ByStr20 with contract field g : Bool, field g2 : Uint32 end\n",
+      "error_message": "Address type not allowed in json file",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

@@ -335,10 +335,10 @@ module TypeUtilities = struct
 
   (* Return True if corresponding elements are `type_equiv`,
      False otherwise, or if unequal lengths. *)
-  let type_equiv_list tlist1 tlist2 =
-    List.length tlist1 = List.length tlist2
+  let type_equiv_list ~to_list ~from_list =
+    List.length to_list = List.length from_list
     && not
-         (List.exists2_exn tlist1 tlist2 ~f:(fun t1 t2 ->
+         (List.exists2_exn to_list from_list ~f:(fun t1 t2 ->
               not (type_equivalent t1 t2)))
 
   let type_assignable_list ~to_list ~from_list =
@@ -680,7 +680,11 @@ module TypeUtilities = struct
       | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
     and recurser expected l dyn_check_acc =
       match (expected, l) with
-      | ADT (tname, targs), ADTValue (cname, ctargs, cargs) ->
+      | (Address _ as res_t), ByStrX bs
+        when Bystrx.width bs = Type.address_length ->
+          (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
+          pure @@ ((res_t, bs) :: dyn_check_acc)
+      | ADT (tname, targs), ADTValue (cname, _, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)
           if not @@ [%equal: TUName.t] (get_id tname) adt.tname then
@@ -689,36 +693,21 @@ module TypeUtilities = struct
                  (TUName.as_error_string cname)
                  (TUIdentifier.as_error_string tname)
           else
-            (* Constructor type arguments must be assignable to ADT type arguments *)
-            let msg () = mk_error0 "Constructor type arguments unassignable" in
-            let%bind () =
-              forall2M targs ctargs
-                ~f:(fun targ carg ->
-                  assert_type_assignable ~expected:targ ~actual:carg ~lc)
-                ~msg
-            in
-            (* Elaborate constructor using expected type arguments (due to assignability) *)
+            (* Elaborate constructor using expected type arguments *)
             let%bind c_fun_typ = elab_constr_type ~lc cname targs in
             (* Traverse constructor function type and check assignability of value arguments *)
             fun_typ_recurser c_fun_typ cargs dyn_check_acc
-      | (Address _ as res_t), ByStrX bs
-        when Bystrx.width bs = Type.address_length ->
-          (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
-          pure @@ ((res_t, bs) :: dyn_check_acc)
-      | MapType (kt, vt), Map ((lkt, lvt), tbl) ->
-          (* Key types and value types must be assignable. *)
-          let%bind () = assert_type_assignable ~expected:kt ~actual:lkt ~lc in
-          let%bind () = assert_type_assignable ~expected:vt ~actual:lvt ~lc in
-          (* key/value pairs must be assignable to the stated types in the literal *)
+      | MapType (kt, vt), Map (_, tbl) ->
+          (* key/value pairs must be assignable to the expected types *)
           let ks, vs =
             Caml.Hashtbl.fold
               (fun k v (k_acc, v_acc) -> (k :: k_acc, v :: v_acc))
               tbl ([], [])
           in
           let%bind dyn_check_acc' =
-            foldM ks ~init:dyn_check_acc ~f:(fun acc k -> recurser lkt k acc)
+            foldM ks ~init:dyn_check_acc ~f:(fun acc k -> recurser kt k acc)
           in
-          foldM vs ~init:dyn_check_acc' ~f:(fun acc v -> recurser lvt v acc)
+          foldM vs ~init:dyn_check_acc' ~f:(fun acc v -> recurser vt v acc)
       | t, l ->
           (* Simple case - type literal, and check assignability *)
           let%bind lit_t = literal_type ~lc l in

@@ -10,22 +10,22 @@
       "type": "List (ByStr20 with end)",
       "value": {
         "constructor": "Cons",
-        "argtypes": [ "ByStr20 with end" ],
+        "argtypes": [ "ByStr20" ],
         "arguments": [
           "0xabfeccdc9012345678901234567890f777564324",
           {
             "constructor": "Cons",
-            "argtypes": [ "ByStr20 with end" ],
+            "argtypes": [ "ByStr20" ],
             "arguments": [
               "0xabfeccdc9012345678901234567890f777564323",
               {
                 "constructor": "Cons",
-                "argtypes": [ "ByStr20 with end" ],
+                "argtypes": [ "ByStr20" ],
                 "arguments": [
                   "0xabfeccdc9012345678901234567890f777564322",
                   {
                     "constructor": "Nil",
-                    "argtypes": [ "ByStr20 with end" ],
+                    "argtypes": [ "ByStr20" ],
                     "arguments": []
                   }
                 ]

@@ -4,7 +4,8 @@
       { "field": "cparam", "tag": "NoInfo" },
       { "field": "remote_read_remote_read_res_1", "tag": "NoInfo" },
       { "field": "remote_read_remote_read_res_2", "tag": "(Option NoInfo)" },
-      { "field": "remote_read_remote_read_res_3", "tag": "NoInfo" }
+      { "field": "remote_read_remote_read_res_3", "tag": "NoInfo" },
+      { "field": "address_type_erasure_test_res_1", "tag": "(Map NoInfo)" }
     ],
     "ADT constructors": []
   },
@@ -32,6 +33,11 @@
         "vname": "remote_read_remote_read_res_3",
         "type": "ByStr20",
         "depth": 0
+      },
+      {
+        "vname": "address_type_erasure_test_res_1",
+        "type": "Map (Uint128) (ByStr20 with end)",
+        "depth": 1
       }
     ],
     "transitions": [
@@ -55,7 +61,9 @@
           }
         ]
       },
-      { "vname": "RemoteReadsContractParam", "params": [] }
+      { "vname": "RemoteReadsContractParam", "params": [] },
+      { "vname": "AddressTypeErasureTest1", "params": [] },
+      { "vname": "AddressTypeErasureTest2", "params": [] }
     ],
     "procedures": [],
     "events": [],
@@ -100,6 +108,16 @@
     ]
   },
   "warnings": [
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/remote_state_reads_2.scilla",
+        "line": 52,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
     {
       "warning_message":
         "No transition in contract RRContract contains an accept statement\n",

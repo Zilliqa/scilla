@@ -85,7 +85,7 @@ let build_prim_lit_exn t v =
   in
   match t with
   | PrimType pt -> build_prim_literal_of_type pt v
-  | Address _ -> build_prim_literal_of_type (Bystrx_typ 20) v
+  | Address _ -> build_prim_literal_of_type (Bystrx_typ Type.address_length) v
   | MapType _ | FunType _ | ADT _ | TypeVar _ | PolyFun _ | Unit ->
       raise (exn ())
 
@@ -174,7 +174,8 @@ and read_adt_json name j tlist_verify =
   let verify_exn name tlist1 adt =
     match adt with
     | ADTValue (_, tlist2, _) ->
-        if type_assignable_list ~to_list:tlist1 ~from_list:tlist2 then ()
+        (* Type arguments must be identical, not assignable *)
+        if type_equiv_list ~to_list:tlist1 ~from_list:tlist2 then ()
         else
           let expected = pp_typ_list_error tlist1 in
           let observed = pp_typ_list_error tlist2 in

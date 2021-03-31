@@ -413,6 +413,16 @@ let contract_tests env =
                 "map_as_cparam"
                 >: build_contract_init_test env succ_code "map_as_cparam" "init"
                      ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam"
+                     "init_unassignable" ~is_library:false ~ipc_mode:true;
+                "map_as_cparam"
+                >: build_contract_init_test env succ_code "map_as_cparam"
+                     "init_unassignable_2" ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env succ_code
+                     "address_list_as_cparam" "init" ~is_library:false
+                     ~ipc_mode:true;
                 "shadow_import"
                 >::: build_contract_tests env "shadow_import" succ_code 1 1 [];
                 "remote_state_reads"
@@ -423,7 +433,7 @@ let contract_tests env =
                        succ_code 1 11 [];
                 "remote_state_reads_2"
                 >::: build_contract_tests ~pplit:false env
-                       "remote_state_reads_2" succ_code 1 3 [];
+                       "remote_state_reads_2" succ_code 1 5 [];
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_assignable_map_types" ~is_library:false
@@ -504,20 +514,33 @@ let contract_tests env =
                 >: build_contract_init_test env fail_code "remote_state_reads"
                      "init_wrong_map_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
+                >: build_contract_init_test env fail_code "remote_state_reads"
+                     "init_address_type" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" fail_code 101
-                       128 [];
-                "map_as_cparam"
-                >: build_contract_init_test env fail_code "map_as_cparam"
-                     "init_unassignable" ~is_library:false ~ipc_mode:true;
-                "map_as_cparam"
-                >: build_contract_init_test env fail_code "map_as_cparam"
-                     "init_unassignable_2" ~is_library:false ~ipc_mode:true;
+                       129 [];
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_key" ~is_library:false ~ipc_mode:true;
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_value" ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code
+                     "address_list_as_cparam" "init_illegal_type"
+                     ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code
+                     "address_list_as_cparam" "init_illegal_nested_type"
+                     ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code
+                     "address_list_as_cparam" "init_illegal_value"
+                     ~is_library:false ~ipc_mode:true;
+                "address_list_as_cparam"
+                >: build_contract_init_test env fail_code
+                     "address_list_as_cparam" "init_address_type"
+                     ~is_library:false ~ipc_mode:true;
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

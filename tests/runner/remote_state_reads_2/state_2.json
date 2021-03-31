@@ -16,6 +16,11 @@
     "value": "0x1234567890123456789012345678901234567890"
   },
   {
+    "vname": "address_type_erasure_test_res_1",
+    "type": "Map Uint128 (ByStr20 with end)",
+    "value": []
+  },
+  {
     "vname": "_external",
     "type": "Unit",
     "value": [

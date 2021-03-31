@@ -23,6 +23,11 @@
         "argtypes": [ "Uint128" ],
         "arguments": []
       }
+    },
+    {
+      "vname": "address_type_erasure_test_res_1",
+      "type": "Map (Uint128) (ByStr20 with end)",
+      "value": []
     }
   ],
   "events": []

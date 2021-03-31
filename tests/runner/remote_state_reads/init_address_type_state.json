@@ -1,0 +1,22 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+        "vname": "_external",
+        "type": "Unit",
+        "value": [
+            {
+                "address": "0x1234567890123456789012345678901234567890",
+                "state": [
+                    { "vname": "_nonce", "type": "Uint64", "value": "42" },
+                    { "vname": "_balance", "type": "Uint128", "value": "42" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" },
+                    { "vname": "transactionCount", "type": "Uint32", "value": "42" },
+                    { "vname": "admin", "type": "ByStr20 with end", "value": "0x1234567890123456789012345678901234567123" },
+                    { "vname": "owners", "type": "Map (ByStr20 with end) (Bool)", "value": [] },
+                    { "vname": "other_map", "type": "Map Uint128 (ByStr20 with end)", "value": [] },
+                    { "vname": "signatures", "type": "Map Uint32 (Map (ByStr20 with end) Bool)", "value": [] }
+                ]
+            }
+        ]
+    }
+]

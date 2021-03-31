@@ -1,0 +1,108 @@
+{
+    "_tag": "RemoteReadsADTTest",
+    "_amount": "0",
+    "_sender": "0xabfeccdc9012345678901234567890f777564322",
+    "params": [
+        {
+            "vname" : "list1",
+            "type" : "List (ByStr20 with end)",
+            "value" : {
+                "constructor" : "Cons",
+                "argtypes"    : [ "ByStr20 with end" ],
+                "arguments"   : [
+                    "0xabfeccdc9012345678901234567890f777564323",
+                    {
+                        "constructor" : "Cons",
+                        "argtypes"    : [ "ByStr20 with end" ],
+                        "arguments"   : [
+                            "0xabfeccdc9012345678901234567890f777564324",
+                            {
+                                "constructor" : "Cons",
+                                "argtypes"    : [ "ByStr20 with end" ],
+                                "arguments"   : [
+                                    "0xabfeccdc9012345678901234567890f777564325",
+                                    {
+                                        "constructor" : "Nil",
+                                        "argtypes"    : [ "ByStr20 with end" ],
+                                        "arguments"   : []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "vname" : "list2",
+            "type" : "List ByStr20",
+            "value" : {
+                "constructor" : "Cons",
+                "argtypes"    : [ "ByStr20" ],
+                "arguments"   : [
+                    "0xabfeccdc9012345678901234567890f777564323",
+                    {
+                        "constructor" : "Nil",
+                        "argtypes"    : [ "ByStr20" ],
+                        "arguments"   : []
+                    }
+                ]
+            }
+        },
+        {
+            "vname" : "list3",
+            "type" : "List ByStr20",
+            "value" : {
+                "constructor" : "Cons",
+                "argtypes"    : [ "ByStr20" ],
+                "arguments"   : [
+                    "0xabfeccdc9012345678901234567890f777564324",
+                    {
+                        "constructor" : "Cons",
+                        "argtypes"    : [ "ByStr20" ],
+                        "arguments"   : [
+                            "0xabfeccdc9012345678901234567890f777564323",
+                            {
+                                "constructor" : "Nil",
+                                "argtypes"    : [ "ByStr20" ],
+                                "arguments"   : []
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "vname" : "pair1",
+            "type" : "Pair ByStr20 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
+            "value" : {
+                "constructor" : "Pair",
+                "argtypes"    : [ "ByStr20", "0x3620c286757a29985cee194eb90064270fb65414.AddressADT" ],
+                "arguments"   : [
+                    "0xabfeccdc9012345678901234567890f777564323",
+                    {
+                        "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
+                        "argtypes"    : [],
+                        "arguments"   : [ "0xabfeccdc9012345678901234567890f777564326" ]
+                    }
+                ]
+            }
+        },
+        {
+            "vname" : "adt1",
+            "type" : "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
+            "value" :
+            {
+                "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
+                "argtypes"    : [],
+                "arguments"   : [ "0xabfeccdc9012345678901234567890f777564324" ]
+            }
+        },
+        {
+            "vname" : "remote1",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564325"
+        }
+    ],
+    "_origin": "0xabfeccdc9012345678901234567890f777564322"
+}
