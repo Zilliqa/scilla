@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7965",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Test failed as expected\"))])",
+      "start_location": {
+        "file": "tests/contracts/map_corners_test.scilla",
+        "line": 38,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from callback_fail0",
+      "start_location": {
+        "file": "tests/contracts/map_corners_test.scilla",
+        "line": 692,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
