@@ -61,7 +61,12 @@
       { "vname": "t20", "params": [] },
       { "vname": "f3", "params": [] },
       { "vname": "t21", "params": [] },
-      { "vname": "f4", "params": [] }
+      { "vname": "f4", "params": [] },
+      { "vname": "t22", "params": [] },
+      { "vname": "f5", "params": [] },
+      { "vname": "t23", "params": [] },
+      { "vname": "f6", "params": [] },
+      { "vname": "t24", "params": [] }
     ],
     "procedures": [
       {
@@ -87,7 +92,8 @@
         ]
       },
       { "vname": "p1", "params": [ { "vname": "tname", "type": "String" } ] },
-      { "vname": "p2", "params": [ { "vname": "tname", "type": "String" } ] }
+      { "vname": "p2", "params": [ { "vname": "tname", "type": "String" } ] },
+      { "vname": "p3", "params": [ { "vname": "tname", "type": "String" } ] }
     ],
     "events": [],
     "ADTs": [

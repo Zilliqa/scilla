@@ -8947,12 +8947,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 735,
+        "line": 736,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 735,
+        "line": 736,
         "column": 8
       }
     },
@@ -8961,12 +8961,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 736,
+        "line": 737,
         "column": 6
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 736,
+        "line": 737,
         "column": 11
       }
     },
@@ -8975,12 +8975,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 741,
+        "line": 742,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 741,
+        "line": 742,
         "column": 8
       }
     },
@@ -8989,12 +8989,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 742,
+        "line": 743,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 742,
+        "line": 743,
         "column": 6
       }
     },
@@ -9003,12 +9003,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 743,
+        "line": 744,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 743,
+        "line": 744,
         "column": 6
       }
     },
@@ -9017,12 +9017,12 @@
       "type": "Map (String) (String)",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 7
       }
     },
@@ -9031,12 +9031,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 8
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 11
       }
     },
@@ -9045,12 +9045,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 16
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 744,
+        "line": 745,
         "column": 19
       }
     },
@@ -9059,12 +9059,12 @@
       "type": "Message",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 745,
+        "line": 746,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 745,
+        "line": 746,
         "column": 4
       }
     },
@@ -9073,12 +9073,12 @@
       "type": "ByStr20",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 745,
+        "line": 746,
         "column": 55
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 745,
+        "line": 746,
         "column": 68
       }
     },
@@ -9087,12 +9087,12 @@
       "type": "String",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 746,
+        "line": 747,
         "column": 37
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 746,
+        "line": 747,
         "column": 42
       }
     },
@@ -9101,12 +9101,12 @@
       "type": "List (Message)",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 3
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 5
       }
     },
@@ -9115,12 +9115,12 @@
       "type": "Message -> List (Message)",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 8
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 15
       }
     },
@@ -9129,12 +9129,12 @@
       "type": "Message",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 16
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 747,
+        "line": 748,
         "column": 17
       }
     },
@@ -9143,13 +9143,601 @@
       "type": "List (Message)",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 748,
+        "line": 749,
         "column": 8
       },
       "end_location": {
         "file": "contracts/map_corners_test.scilla",
-        "line": 748,
+        "line": 749,
         "column": 10
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 754,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 754,
+        "column": 8
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 755,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 755,
+        "column": 11
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 760,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 760,
+        "column": 8
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 761,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 761,
+        "column": 7
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 762,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 762,
+        "column": 7
+      }
+    },
+    {
+      "vname": "f_m2",
+      "type": "Map (String) (Map (String) (String))",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 14
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 19
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 763,
+        "column": 25
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 764,
+        "column": 17
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 764,
+        "column": 22
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 768,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 768,
+        "column": 20
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 770,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 770,
+        "column": 7
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 771,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 771,
+        "column": 7
+      }
+    },
+    {
+      "vname": "valexp",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 772,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 772,
+        "column": 9
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Option (String)",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 6
+      }
+    },
+    {
+      "vname": "f_m2",
+      "type": "Map (String) (Map (String) (String))",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 14
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 19
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 773,
+        "column": 25
+      }
+    },
+    {
+      "vname": "val",
+      "type": "Option (String)",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 774,
+        "column": 9
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 774,
+        "column": 12
+      }
+    },
+    {
+      "vname": "val",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 775,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 775,
+        "column": 13
+      }
+    },
+    {
+      "vname": "eq",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 5
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 7
+      }
+    },
+    {
+      "vname": "val",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 24
+      }
+    },
+    {
+      "vname": "valexp",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 25
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 776,
+        "column": 31
+      }
+    },
+    {
+      "vname": "eq",
+      "type": "Bool",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 777,
+        "column": 11
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 777,
+        "column": 13
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 780,
+        "column": 12
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 780,
+        "column": 17
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 783,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 783,
+        "column": 15
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 789,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 789,
+        "column": 8
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 790,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 790,
+        "column": 11
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 795,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 795,
+        "column": 8
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 796,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 796,
+        "column": 7
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 797,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 797,
+        "column": 7
+      }
+    },
+    {
+      "vname": "f_m2",
+      "type": "Map (String) (Map (String) (String))",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 10
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 14
+      }
+    },
+    {
+      "vname": "key1",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 15
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 19
+      }
+    },
+    {
+      "vname": "key2",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 21
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 798,
+        "column": 25
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 799,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 799,
+        "column": 4
+      }
+    },
+    {
+      "vname": "_this_address",
+      "type": "ByStr20",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 799,
+        "column": 55
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 799,
+        "column": 68
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 800,
+        "column": 37
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 800,
+        "column": 42
+      }
+    },
+    {
+      "vname": "ms",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 5
+      }
+    },
+    {
+      "vname": "one_msg",
+      "type": "Message -> List (Message)",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 15
+      }
+    },
+    {
+      "vname": "m",
+      "type": "Message",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 16
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 801,
+        "column": 17
+      }
+    },
+    {
+      "vname": "ms",
+      "type": "List (Message)",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 802,
+        "column": 8
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 802,
+        "column": 10
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 807,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 807,
+        "column": 8
+      }
+    },
+    {
+      "vname": "tname",
+      "type": "String",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 808,
+        "column": 6
+      },
+      "end_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 808,
+        "column": 11
       }
     }
   ],
