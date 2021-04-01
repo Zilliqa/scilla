@@ -34,7 +34,7 @@ procedure fail_msg (tname : String, msg : String)
 end
 
 procedure expected_fail (tname : String)
-  e = { _exception : "Test failed as expected" };
+  e = { _exception : "Test failed as expected"; test_name : tname };
   throw e
 end
 
@@ -689,17 +689,17 @@ transition t19 ()
 end
 
 (* A call back transition that fails. *)
-transition callback_fail0 ()
-  tname = "callback_fail0";
+transition callback_expected_fail (tname : String)
   expected_fail tname
 end
 
-(* Set field f_s1 and fail via chaincall to callback_fail0. *)
+(* Set field f_s1 and fail via chaincall to callback_expected_fail. *)
 transition f2 ()
   tname = "f2";
   s = "422";
   f_s1 := s;
-  m = { _tag : "callback_fail0"; _recipient : _this_address; _amount : Uint128 0 };
+  m = { _tag : "callback_expected_fail"; _recipient : _this_address;
+       _amount : Uint128 0; tname : tname };
   ms = one_msg m;
   send ms
 end
@@ -708,4 +708,42 @@ end
 transition t20 ()
   tname = "t20";
   p1 tname
+end
+
+(* Set f_m1["foo1"] and fail. *)
+transition f3 ()
+  tname = "f3";
+  key = "foo1";
+  val = "bar1";
+  f_m1[key] := val;
+  expected_fail tname
+end
+
+(* Ensure f_m1["foo1"] doesn't exist. *)
+procedure p2 (tname : String)
+  
+  key = "foo1";
+  found <- exists f_m1[key];
+  match found with
+  | True =>
+    fail tname
+  | False =>
+  end
+end
+
+transition t21()
+  tname = "t21";
+  p2 tname
+end
+
+(* Set f_m1["foo1"] and fail via chaincall to callback_expected_fail. *)
+transition f4 ()
+  tname = "f3";
+  key = "foo1";
+  val = "bar1";
+  f_m1[key] := val;
+  m = { _tag : "callback_expected_fail"; _recipient : _this_address;
+       _amount : Uint128 0; tname : tname };
+  ms = one_msg m;
+  send ms
 end

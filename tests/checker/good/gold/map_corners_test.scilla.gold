@@ -53,9 +53,15 @@
       { "vname": "t18", "params": [] },
       { "vname": "f1", "params": [] },
       { "vname": "t19", "params": [] },
-      { "vname": "callback_fail0", "params": [] },
+      {
+        "vname": "callback_expected_fail",
+        "params": [ { "vname": "tname", "type": "String" } ]
+      },
       { "vname": "f2", "params": [] },
-      { "vname": "t20", "params": [] }
+      { "vname": "t20", "params": [] },
+      { "vname": "f3", "params": [] },
+      { "vname": "t21", "params": [] },
+      { "vname": "f4", "params": [] }
     ],
     "procedures": [
       {
@@ -80,7 +86,8 @@
           { "vname": "msg", "type": "String" }
         ]
       },
-      { "vname": "p1", "params": [ { "vname": "tname", "type": "String" } ] }
+      { "vname": "p1", "params": [ { "vname": "tname", "type": "String" } ] },
+      { "vname": "p2", "params": [ { "vname": "tname", "type": "String" } ] }
     ],
     "events": [],
     "ADTs": [

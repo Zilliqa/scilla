@@ -402,7 +402,10 @@ let contract_tests env =
                 "earmarked-coin"
                 >::: build_contract_tests env "earmarked-coin" succ_code 1 6 [];
                 "map_corners_test"
-                >::: build_contract_tests env "map_corners_test" succ_code 1 20
+                >::: build_contract_tests env "map_corners_test" succ_code 1 21
+                       [];
+                "map_corners_test_chain"
+                >::: build_contract_tests env "map_corners_test" succ_code 51 52
                        [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
@@ -465,7 +468,7 @@ let contract_tests env =
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 12 14 [];
-                "map_corners_test"
+                "map_corers_test"
                 >::: build_contract_tests env "map_corners_test" fail_code 111 112
                        [];
                 "polynetwork"
