@@ -347,7 +347,7 @@ module TypeUtilities = struct
          (List.exists2_exn to_list from_list ~f:(fun expected actual ->
               not (type_assignable ~expected ~actual)))
 
-  let assert_type_assignable ?(lc = dummy_loc) ~expected ~actual =
+  let [@warning "-16"] assert_type_assignable ?(lc = dummy_loc) ~expected ~actual =
     if type_assignable ~expected ~actual then pure ()
     else
       fail1
