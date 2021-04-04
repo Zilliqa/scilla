@@ -69,7 +69,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
             @@ StringLit
                  (String.sub x ~pos:(Uint32.to_int s) ~len:(Uint32.to_int e))
           with Invalid_argument msg ->
-            builtin_fail ("String.substr: " ^ msg) ls )
+            builtin_fail ("String.substr: " ^ msg) ls)
       | _ -> builtin_fail "String.substr" ls
 
     let strlen _ ls _ =
@@ -469,7 +469,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               (bstring_from_uint_lit nl)
           with
           | Some nlbs -> pure @@ ByStrX nlbs
-          | None -> fail0 "Internal error in converting UintLit to ByStrX" )
+          | None -> fail0 "Internal error in converting UintLit to ByStrX")
       | _ -> builtin_fail "Uint.to_bystrx: unsupported type" ls
   end
 
@@ -519,7 +519,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | None ->
               fail0
               @@ sprintf
-                   "Unable to express result of BNum subtraction in Int256" )
+                   "Unable to express result of BNum subtraction in Int256")
       | _ -> builtin_fail "BNum.bsub" ls
   end
 
@@ -585,7 +585,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | None ->
               builtin_fail
                 ("Crypto." ^ name ^ ": internal error, invalid hash")
-                ls )
+                ls)
       | _ -> builtin_fail ("Crypto." ^ name) ls
 
     let sha256hash _ ls _ =
@@ -602,7 +602,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStr bs ] -> (
           match Bystrx.of_raw_bytes x (Bystr.to_raw_bytes bs) with
           | Some l' -> pure @@ build_some_lit (ByStrX l') (bystrx_typ x)
-          | None -> pure @@ build_none_lit (bystrx_typ x) )
+          | None -> pure @@ build_none_lit (bystrx_typ x))
       | _ -> builtin_fail "Crypto.to_bystr" ls
 
     let to_bystr _ ls _ =
@@ -651,8 +651,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                     pure
                     @@ build_some_lit (ByStrX b)
                          (bystrx_typ Type.address_length)
-                | None -> fail0 "Invalid bech32 decode" )
-            | None -> fail0 "bech32 decoding failed" )
+                | None -> fail0 "Invalid bech32 decode")
+            | None -> fail0 "bech32 decoding failed")
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
 
     let bystr20_to_bech32 _ ls _ =
@@ -666,7 +666,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
             with
             | Some bech32 ->
                 pure @@ build_some_lit (StringLit bech32) string_typ
-            | None -> fail0 "bech32 encoding failed" )
+            | None -> fail0 "bech32 encoding failed")
       | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
 
     let concat _ ls _ =
@@ -691,8 +691,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                   builtin_fail
                     "ec_gen_key_pair: internal error, invalid private/public \
                      key(s)."
-                    ls )
-          | None -> builtin_fail "ec_gen_key_pair: internal error." ls )
+                    ls)
+          | None -> builtin_fail "ec_gen_key_pair: internal error." ls)
       | _ -> builtin_fail "ec_gen_key_pair" ls
 
     let[@warning "-32"] schnorr_sign ls _ =
@@ -711,8 +711,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               | Some bs -> pure @@ ByStrX bs
               | None ->
                   builtin_fail
-                    "schnorr_sign: internal error, invalid signature." ls )
-          | None -> builtin_fail "schnorr_sign: internal error." ls )
+                    "schnorr_sign: internal error, invalid signature." ls)
+          | None -> builtin_fail "schnorr_sign: internal error." ls)
       | _ -> builtin_fail "schnorr_sign" ls
 
     let schnorr_verify _ ls _ =
@@ -727,7 +727,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               (Bystrx.to_raw_bytes signature)
           with
           | Some v -> pure @@ build_bool_lit v
-          | None -> builtin_fail "schnorr_verify: internal error" ls )
+          | None -> builtin_fail "schnorr_verify: internal error" ls)
       | _ -> builtin_fail "schnorr_verify" ls
 
     let[@warning "-32"] ecdsa_sign ls _ =
@@ -741,7 +741,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           match Bystrx.of_raw_bytes signature_len s with
           | Some bs -> pure @@ ByStrX bs
           | None ->
-              builtin_fail "ecdsa_sign: internal error, invalid signature." ls )
+              builtin_fail "ecdsa_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "ecdsa_sign" ls
 
     let ecdsa_verify _ ls _ =
@@ -773,7 +773,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           in
           match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
           | Some pk' -> pure (ByStrX pk')
-          | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls )
+          | None -> builtin_fail "ecdsa_recover_pk: Internal error." ls)
       | _ -> builtin_fail "ecdsa_recover_pk" ls
 
     let schnorr_get_address _ ls _ =
@@ -786,7 +786,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let addr = Core_kernel.String.suffix pkh 20 in
           match Bystrx.of_raw_bytes Type.address_length addr with
           | Some bs -> pure @@ ByStrX bs
-          | None -> builtin_fail "schnorr_get_address: Internal error." ls )
+          | None -> builtin_fail "schnorr_get_address: Internal error." ls)
       | _ -> builtin_fail "schnorr_get_address" ls
 
     open Datatypes.SnarkTypes
@@ -801,7 +801,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | None -> pure @@ build_none_lit g1point_type
           | Some pr ->
               let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
-              pure @@ build_some_lit pr' g1point_type )
+              pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_add" ls
 
     let alt_bn128_G1_mul _ ls _ =
@@ -813,7 +813,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | None -> pure @@ build_none_lit g1point_type
           | Some pr ->
               let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
-              pure @@ build_some_lit pr' g1point_type )
+              pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
 
     let alt_bn128_pairing_product _ ls _ =
@@ -822,7 +822,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let%bind pairs' = fromR @@ scilla_g1g2pairlist_to_ocaml pairs in
           match Snark.alt_bn128_pairing_product pairs' with
           | None -> pure @@ build_none_lit bool_typ
-          | Some b -> pure @@ build_some_lit (build_bool_lit b) bool_typ )
+          | Some b -> pure @@ build_some_lit (build_bool_lit b) bool_typ)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
   end
 
@@ -885,7 +885,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let res = Caml.Hashtbl.find_opt entries key in
           match res with
           | None -> pure @@ build_none_lit targ
-          | Some v -> pure @@ build_some_lit v targ )
+          | Some v -> pure @@ build_some_lit v targ)
       | _ -> builtin_fail "Map.get" ls
 
     let remove_elab sc targs ts =
@@ -1074,8 +1074,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                  "Type error: cannot apply \"%s\" built-in to argument(s) of \
                   type(s) %s%s."
                  (pp_builtin op)
-                 ( if List.is_empty targtypes then ""
-                 else sprintf "{%s} " (pp_typ_list_error targtypes) )
+                 (if List.is_empty targtypes then ""
+                 else sprintf "{%s} " (pp_typ_list_error targtypes))
                  (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in

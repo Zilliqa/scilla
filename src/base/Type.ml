@@ -201,8 +201,8 @@ module MkType (I : ScillaIdentifier) = struct
       | MapType (kt, vt) -> sprintf "Map (%s) (%s)" (recurser kt) (recurser vt)
       | ADT (name, targs) ->
           let elems =
-            ( if is_error then TIdentifier.as_error_string name
-            else TIdentifier.as_string name )
+            (if is_error then TIdentifier.as_error_string name
+            else TIdentifier.as_string name)
             :: List.map targs ~f:(fun t -> sprintf "(%s)" (recurser t))
           in
           String.concat ~sep:" " elems
@@ -215,8 +215,8 @@ module MkType (I : ScillaIdentifier) = struct
           let elems =
             List.map fts ~f:(fun (f, t) ->
                 sprintf "field %s : %s"
-                  ( if is_error then TIdentifier.as_error_string f
-                  else TIdentifier.as_string f )
+                  (if is_error then TIdentifier.as_error_string f
+                  else TIdentifier.as_string f)
                   (recurser t))
             |> String.concat ~sep:", "
           in
@@ -401,7 +401,7 @@ module MkType (I : ScillaIdentifier) = struct
           (* We can assume that type parameters only occur in covariant positions *)
           match List.for_all2 tlist1 tlist2 ~f:assignable with
           | Ok res -> res
-          | Unequal_lengths -> false )
+          | Unequal_lengths -> false)
       | PolyFun (targ1, vt1), PolyFun (targ2, vt2) ->
           equal (TypeVar targ1) (TypeVar targ2) && assignable vt1 vt2
       | _, _ ->

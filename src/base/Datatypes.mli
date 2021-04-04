@@ -42,7 +42,6 @@ type adt = {
   (* type name *)
   tparams : string list;
   (* type parameters *)
-
   (* supported constructors *)
   tconstr : constructor list;
   (* Mapping for constructors' types

@@ -56,7 +56,7 @@ struct
           let%bind eventname =
             match epld with
             | MLit l -> (
-                match l with StringLit s -> pure s | _ -> fail1 emsg bloc )
+                match l with StringLit s -> pure s | _ -> fail1 emsg bloc)
             (* Variables are not allowed for eventname_label to ensure that
                all possible events can be determined statically. *)
             | MVar _ -> fail1 emsg bloc
@@ -92,9 +92,9 @@ struct
               (* verify types match *)
               let printer tplist =
                 "["
-                ^ ( List.map tplist ~f:(fun (n, t) ->
-                        Printf.sprintf "(%s : %s); " n (pp_typ t))
-                  |> String.concat ~sep:"" )
+                ^ (List.map tplist ~f:(fun (n, t) ->
+                       Printf.sprintf "(%s : %s); " n (pp_typ t))
+                  |> String.concat ~sep:"")
                 ^ "]"
               in
               let matcher m_types tlist =
@@ -113,7 +113,7 @@ struct
           | None ->
               (* No entry. *)
               let entry = (eventname, m_types) in
-              pure (entry :: acc) )
+              pure (entry :: acc))
       | None -> (* Not for an event. *) pure acc
     in
 

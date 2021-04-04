@@ -273,14 +273,14 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
           json_from_string (Bytes.to_string bal) |> json_to_string
       | _ ->
           assert_failure
-            ( "Incorrect type of "
+            ("Incorrect type of "
             ^ CUName.as_error_string balance_label
-            ^ " in state.json" ) )
+            ^ " in state.json"))
   | None ->
       assert_failure
-        ( "Unable to find "
+        ("Unable to find "
         ^ CUName.as_error_string balance_label
-        ^ " in state.json" )
+        ^ " in state.json")
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 let get_final_finish ~sock_addr =

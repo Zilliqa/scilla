@@ -258,7 +258,7 @@ functor
                     (get_rep dup_f)
               | None ->
                   (* Check all types of address fields *)
-                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb) )
+                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb))
         in
         is_wf_typ' t []
 
@@ -347,7 +347,8 @@ module TypeUtilities = struct
          (List.exists2_exn to_list from_list ~f:(fun expected actual ->
               not (type_assignable ~expected ~actual)))
 
-  let [@warning "-16"] assert_type_assignable ?(lc = dummy_loc) ~expected ~actual =
+  let[@warning "-16"] assert_type_assignable ?(lc = dummy_loc) ~expected ~actual
+      =
     if type_assignable ~expected ~actual then pure ()
     else
       fail1
@@ -401,7 +402,7 @@ module TypeUtilities = struct
                           recurser carg (tname :: seen_adts)))
                 in
                 adt_serializable
-                && List.for_all ts ~f:(fun t -> recurser t seen_adts) )
+                && List.for_all ts ~f:(fun t -> recurser t seen_adts))
       | Address (Some fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
@@ -475,7 +476,7 @@ module TypeUtilities = struct
             List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
           with
           | Some ft -> pure ft
-          | None -> not_declared () )
+          | None -> not_declared ())
     | _ ->
         fail0
         @@ sprintf "Attempting to read field from non-address type %s."
@@ -635,7 +636,7 @@ module TypeUtilities = struct
             fail1
               (sprintf "Not all types of the branches %s are equivalent."
                  (pp_typ_list_error ts))
-              lc )
+              lc)
 
   (****************************************************************)
   (*                     Typing literals                          *)
@@ -683,7 +684,7 @@ module TypeUtilities = struct
       | (Address _ as res_t), ByStrX bs
         when Bystrx.width bs = Type.address_length ->
           (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
-          pure @@ ((res_t, bs) :: dyn_check_acc)
+          pure @@ (res_t, bs) :: dyn_check_acc
       | ADT (tname, targs), ADTValue (cname, _, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)
@@ -768,8 +769,8 @@ module TypeUtilities = struct
                   let%bind kt' = is_wellformed_lit k in
                   let%bind vt' = is_wellformed_lit v in
                   pure
-                  @@ ( type_assignable ~expected:kt ~actual:kt'
-                     && type_assignable ~expected:vt ~actual:vt' ))
+                  @@ (type_assignable ~expected:kt ~actual:kt'
+                     && type_assignable ~expected:vt ~actual:vt'))
               kv (pure true)
           in
           if not valid then

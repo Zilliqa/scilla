@@ -121,7 +121,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ PrimType pt ] -> (
           match pt with
           | String_typ | Bystr_typ -> elab_tfun_with_args_no_gas strlen_type ts
-          | _ -> fail0 "Failed to elaborate" )
+          | _ -> fail0 "Failed to elaborate")
       | _, _ -> fail0 "Failed to elaborate"
 
     let to_string_arity = 1
@@ -134,7 +134,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_string_type ts
-          | _ -> fail0 "Failed to elaborate" )
+          | _ -> fail0 "Failed to elaborate")
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
@@ -150,7 +150,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_ascii_type ts
-          | _ -> fail0 "Failed to elaborate" )
+          | _ -> fail0 "Failed to elaborate")
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
@@ -166,7 +166,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | String_typ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas strrev_type ts
-          | _ -> fail0 "Failed to elaborate" )
+          | _ -> fail0 "Failed to elaborate")
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
@@ -514,8 +514,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
               | Some bs -> pure @@ ByStrX bs
               | None ->
                   builtin_fail
-                    "schnorr_sign: internal error, invalid signature." ls )
-          | None -> builtin_fail "schnorr_sign: internal error." ls )
+                    "schnorr_sign: internal error, invalid signature." ls)
+          | None -> builtin_fail "schnorr_sign: internal error." ls)
       | _ -> builtin_fail "schnorr_sign" ls
 
     let schnorr_verify_type =
@@ -551,7 +551,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match Bystrx.of_raw_bytes signature_len s with
           | Some bs -> pure @@ ByStrX bs
           | None ->
-              builtin_fail "ecdsa_sign: internal error, invalid signature." ls )
+              builtin_fail "ecdsa_sign: internal error, invalid signature." ls)
       | _ -> builtin_fail "ecdsa_sign" ls
 
     let ecdsa_verify_type =
@@ -831,8 +831,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                  "Type error: cannot apply \"%s\" built-in to argument(s) of \
                   type(s) %s%s."
                  (pp_builtin op)
-                 ( if List.is_empty targtypes then ""
-                 else sprintf "{%s} " (pp_typ_list_error targtypes) )
+                 (if List.is_empty targtypes then ""
+                 else sprintf "{%s} " (pp_typ_list_error targtypes))
                  (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
