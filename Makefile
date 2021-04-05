@@ -167,10 +167,10 @@ coverage :
 	./scripts/build_deps.sh
 	BISECT_ENABLE=YES make
 	dune build @install
-	dune exec -- tests/testsuite.exe
-	bisect-ppx-report -I _build/default/ -html _coverage/ `find . -name 'bisect*.out'`
+	ulimit -n 1024; dune exec -- tests/testsuite.exe
+	bisect-ppx-report html
 	make clean
-	-find . -name 'bisect*.out' | xargs rm
+	-find . -type f -name 'bisect*.coverage' | xargs rm
 
 .PHONY : coveralls
 coveralls:
@@ -179,11 +179,11 @@ coveralls:
 	./scripts/build_deps.sh
 	BISECT_ENABLE=YES make
 	dune build @install
-	dune exec -- tests/testsuite.exe
-	bisect-ppx-report --ignore-missing-files -I _build/ --coveralls coverage.json --service-name travis-ci --service-job-id ${TRAVIS_JOB_ID} `find . -name 'bisect*.out'`
+	ulimit -n 1024; dune exec -- tests/testsuite.exe
+	bisect-ppx-report coveralls coverage.json --ignore-missing-files --service-name travis-ci --service-job-id ${TRAVIS_JOB_ID}
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
-	-find . -name 'bisect*.out' | xargs rm
+	-find . -type f -name 'bisect*.coverage' | xargs rm
 
 
 # Diagnostic builds
