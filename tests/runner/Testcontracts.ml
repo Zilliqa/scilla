@@ -469,8 +469,8 @@ let contract_tests env =
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 12 14 [];
                 "map_corers_test"
-                >::: build_contract_tests env "map_corners_test" fail_code 111 113
-                       [];
+                >::: build_contract_tests env "map_corners_test" fail_code 111
+                       113 [];
                 "polynetwork"
                 >::: build_contract_tests env "Polynetwork" fail_code 25 28 [];
                 "exception-example"
