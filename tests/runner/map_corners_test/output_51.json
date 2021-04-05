@@ -1,16 +1,19 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7938",
+  "gas_remaining": "7949",
   "_accepted": "false",
-  "messages": [],
+  "messages": [
+    {
+      "_tag": "callback_expected_fail",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777567890",
+      "params": [ { "vname": "tname", "type": "String", "value": "f2" } ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    {
-      "vname": "f_m1",
-      "type": "Map (String) (String)",
-      "value": [ { "key": "", "val": "420" } ]
-    },
-    { "vname": "f_s1", "type": "String", "value": "421" },
+    { "vname": "f_s1", "type": "String", "value": "422" },
+    { "vname": "f_m1", "type": "Map (String) (String)", "value": [] },
     {
       "vname": "f_m2",
       "type": "Map (String) (Map (String) (String))",

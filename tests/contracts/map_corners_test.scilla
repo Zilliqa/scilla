@@ -5,7 +5,16 @@ scilla_version 0
 
 import BoolUtils
 
+library MapCornersTest
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+
 (* The test sequence here is based on the unit tests in Test_ScillaIPCServer.cpp. *)
+(* Transitions "t*" are expected to succeed while "f*" are expected to fail. *)
 contract MapCornersTest ()
 
 field f_s1 : String = "420"
@@ -21,6 +30,16 @@ end
 
 procedure fail_msg (tname : String, msg : String)
   e = { _exception : "Test Failed"; test_name : tname; message: msg };
+  throw e
+end
+
+procedure expected_fail (tname : String)
+  e = { _exception : "Test failed as expected"; test_name : tname };
+  throw e
+end
+
+procedure expected_fail_msg (tname : String, msg : String)
+  e = { _exception : "Test failed as expected"; test_name : tname; message: msg };
   throw e
 end
 
@@ -640,4 +659,151 @@ transition t18 ()
     fail tname
   | False =>
   end
+end
+
+(* Set field f_s1 and fail. *)
+transition f1 ()
+  tname = "f1";
+  s = "422";
+  f_s1 := s;
+  expected_fail tname
+end
+
+(* Check no change to f_s1. *)
+procedure p1 (tname : String)
+  s <- f_s1;
+  f_s1_original = "421";
+  not_changed = builtin eq f_s1_original s;
+  match not_changed with
+  | False =>
+    msg = "f_s1 changed in a failing transition f1";
+    fail_msg tname msg
+  | True =>
+  end
+end
+
+(* Ensure no change to f_s1 after f1 *)
+transition t19 ()
+  tname = "t19";
+  p1 tname
+end
+
+(* A call back transition that fails. *)
+transition callback_expected_fail (tname : String)
+  expected_fail tname
+end
+
+(* Set field f_s1 and fail via chaincall to callback_expected_fail. *)
+transition f2 ()
+  tname = "f2";
+  s = "422";
+  f_s1 := s;
+  m = { _tag : "callback_expected_fail"; _recipient : _this_address;
+       _amount : Uint128 0; tname : tname };
+  ms = one_msg m;
+  send ms
+end
+
+(* Ensure no change to f_s1 after f2. *)
+transition t20 ()
+  tname = "t20";
+  p1 tname
+end
+
+(* Set f_m1["foo1"] and fail. *)
+transition f3 ()
+  tname = "f3";
+  key = "foo1";
+  val = "bar1";
+  f_m1[key] := val;
+  expected_fail tname
+end
+
+(* Ensure f_m1["foo1"] doesn't exist. *)
+procedure p2 (tname : String)
+  
+  key = "foo1";
+  found <- exists f_m1[key];
+  match found with
+  | True =>
+    fail tname
+  | False =>
+  end
+end
+
+(* Ensure f3 was reverted. *)
+transition t21 ()
+  tname = "t21";
+  p2 tname
+end
+
+(* Set f_m1["foo1"] and fail via chaincall to callback_expected_fail. *)
+transition f4 ()
+  tname = "f4";
+  key = "foo1";
+  val = "bar1";
+  f_m1[key] := val;
+  m = { _tag : "callback_expected_fail"; _recipient : _this_address;
+       _amount : Uint128 0; tname : tname };
+  ms = one_msg m;
+  send ms
+end
+
+(* Ensure f4 was reverted. *)
+transition t22 ()
+  tname = "t22";
+  p2 tname
+end
+
+(* f_m2["key1a"]["key2a"] has a key, let's delete it and fail. *)
+transition f5 ()
+  tname = "f5";
+  key1 = "key1a";
+  key2 = "key2a";
+  delete f_m2[key1][key2];
+  expected_fail tname
+end
+
+(* Ensure f_m2["key1a"]["key2a"] exists. *)
+procedure p3 (tname : String)
+  
+  key1 = "key1a";
+  key2 = "key2a";
+  valexp = "420";
+  val <- f_m2[key1][key2];
+  match val with
+  | Some val =>
+    eq = builtin eq val valexp;
+    match eq with
+    | True =>
+    | False =>
+      fail tname
+    end
+  | None =>
+    fail tname
+  end
+end
+
+(* Ensure f5 was reverted. *)
+transition t23 ()
+  tname = "t23";
+  p3 tname
+end
+
+(* f_m2["key1a"]["key2a"] has a key, let's delete it and fail via chaincall. *)
+transition f6 ()
+  tname = "f6";
+  key1 = "key1a";
+  key2 = "key2a";
+  delete f_m2[key1][key2];
+  m = { _tag : "callback_expected_fail"; _recipient : _this_address;
+       _amount : Uint128 0; tname : tname };
+  ms = one_msg m;
+  send ms
+end
+
+(* Ensure f6 was reverted. *)
+transition t24 ()
+  tname = "t24";
+  p3 tname
 end
