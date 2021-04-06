@@ -5,6 +5,9 @@ matrix:
   include:
     - os: linux
       dist: xenial
+      env: OCAML_VERSION=4.12.0
+    - os: linux
+      dist: xenial
       env: OCAML_VERSION=4.11.1
     - os: linux
       dist: xenial
@@ -73,4 +76,4 @@ script:
 - make coveralls
 - make lint
 # check Scilla is installable as an opam package
-- opam install .
+- opam install . --yes

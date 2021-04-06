@@ -123,7 +123,7 @@ module MakeServer () = struct
           | NonMapVal _ -> fail RPCError.{ code = 0; message = fetch_message }
           | MapVal m -> (
               let vopt = Hashtbl.find_opt m head in
-              match vopt with Some v -> recurser v tail | None -> pure None ) )
+              match vopt with Some v -> recurser v tail | None -> pure None))
     in
     let contr_state = Hashtbl.find_opt table addr_opt in
     match contr_state with
@@ -141,7 +141,7 @@ module MakeServer () = struct
                 if ignoreval then pure @@ (true, "", t)
                 else
                   pure @@ (true, encode_serialized_value (serialize_value v), t)
-            | None -> pure @@ (false, "", t) ) )
+            | None -> pure @@ (false, "", t)))
     | None -> pure (false, "", None)
 
   let set_value_helper addr_opt query value ty_opt =
@@ -153,7 +153,7 @@ module MakeServer () = struct
           @@
           match new_val with
           | None -> Hashtbl.remove map index
-          | Some v -> Hashtbl.replace map index v )
+          | Some v -> Hashtbl.replace map index v)
       | head :: tail -> (
           let vopt = Hashtbl.find_opt map head in
           match vopt with
@@ -164,12 +164,12 @@ module MakeServer () = struct
               | Some _ ->
                   let m = Hashtbl.create 8 in
                   let () = Hashtbl.replace map head (MapVal m) in
-                  recurser_update ~new_val m tail )
+                  recurser_update ~new_val m tail)
           | Some v -> (
               match v with
               | NonMapVal _ ->
                   fail RPCError.{ code = 0; message = update_message }
-              | MapVal m -> recurser_update ~new_val m tail ) )
+              | MapVal m -> recurser_update ~new_val m tail))
     in
     let query = decode_serialized_query query in
     let vt, tt =
@@ -195,7 +195,7 @@ module MakeServer () = struct
         | false ->
             let new_val = deserialize_value (decode_serialized_value value) in
             recurser_update ~new_val:(Some new_val) vt
-              (name :: string_indices_list) )
+              (name :: string_indices_list))
 
   let fetch_state_value query =
     let%bind f, v, _t = fetch_state_value_helper None query in

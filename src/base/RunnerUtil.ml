@@ -46,7 +46,7 @@ module RUGlobalName = RUGlobalIdentifier.Name
 let get_init_this_address_and_extlibs filename =
   if not (Caml.Sys.file_exists filename) then (
     plog (sprintf "Invalid init json file %s\n" filename);
-    (None, []) )
+    (None, []))
   else
     try
       let this_address, name_addr_pairs =
@@ -130,11 +130,11 @@ let import_libs names_and_namespaces init_address_map =
             with
             | Error s ->
                 fatal_error
-                  ( s
+                  (s
                   @ mk_error1
                       (sprintf "Failed to disambiguate imported library %s.\n"
                          (as_string libname))
-                      (get_rep libname) )
+                      (get_rep libname))
             | Ok dis_lib ->
                 let libnode =
                   {
@@ -151,11 +151,11 @@ let import_libs names_and_namespaces init_address_map =
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
-       ( "A path to Scilla stdlib not found. Please set "
-       ^ StdlibTracker.scilla_stdlib_env
-       ^ " environment variable, or pass through command-line argument for \
-          this script.\n" ^ "Example:\n" ^ exe_name
-       ^ " list_sort.scilla -libdir ./src/stdlib/\n" ))
+       ("A path to Scilla stdlib not found. Please set "
+      ^ StdlibTracker.scilla_stdlib_env
+      ^ " environment variable, or pass through command-line argument for this \
+         script.\n" ^ "Example:\n" ^ exe_name
+      ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
@@ -285,9 +285,9 @@ let parse_cli args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ (exe_name :: argv))
+            (List.to_array @@ exe_name :: argv)
             speclist anon_handler mandatory_usage
-        with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg) )
+        with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in
   if String.is_empty !r_input_file then fatal_error_noformat usage;
   let gas_limit =

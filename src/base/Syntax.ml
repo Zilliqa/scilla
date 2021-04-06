@@ -192,7 +192,7 @@ let parse_builtin s loc =
         let size = String.chop_prefix_exn s ~prefix:"to_bystr" in
         Builtin_to_bystrx (Int.of_string size)
       with Invalid_argument _ | Failure _ ->
-        raise @@ SyntaxError (sprintf "\"%s\" is not a builtin" s, loc) )
+        raise @@ SyntaxError (sprintf "\"%s\" is not a builtin" s, loc))
 
 (*******************************************************)
 (*               Types of components                   *)
@@ -521,7 +521,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     let open SIdentifier in
     let e, rep = erep in
     let sloc = ER.get_loc rep in
-    ( ( match e with
+    ( (match e with
       | Literal _ -> sprintf "Type error in literal. %s\n" phase
       | Var i -> sprintf "Type error in variable `%s`:\n" (as_error_string i)
       | Let (i, _, _, _) ->
@@ -546,14 +546,14 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | GasExpr _ -> "Type error in charging gas :-O, this can't occur.\n"
       | Fixpoint (f, _, _) ->
           sprintf "Type error in fixpoint application with an argument `%s`:\n"
-            (as_error_string f) ),
+            (as_error_string f)),
       sloc )
 
   let get_failure_msg_stmt srep phase opt =
     let open SIdentifier in
     let s, rep = srep in
     let sloc = SR.get_loc rep in
-    ( ( match s with
+    ( (match s with
       | Load (x, f) ->
           sprintf "Type error in reading value of `%s` into `%s`:\n %s"
             (as_error_string f) (as_error_string x) phase
@@ -606,7 +606,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
             | Some id -> "of '" ^ as_error_string id ^ "'"
             | None -> ""
           in
-          sprintf "Error in throw %s:\n" is ),
+          sprintf "Error in throw %s:\n" is),
       sloc )
 
   let wrap_with_info (msg, sloc) res =

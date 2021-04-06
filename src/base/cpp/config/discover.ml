@@ -9,7 +9,7 @@ let () =
         | Some pc -> (
             match C.Pkg_config.query pc ~package:"openssl" with
             | None -> default
-            | Some deps -> deps )
+            | Some deps -> deps)
       in
 
       let lflags =

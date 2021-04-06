@@ -273,7 +273,7 @@ module Configuration = struct
           | Some v ->
               let%bind v_lit = pure @@ build_some_lit v vt in
               pure v_lit
-          | None -> pure (build_none_lit vt) )
+          | None -> pure (build_none_lit vt))
       | None ->
           fail1
             (sprintf "Unable to fetch from map field %s" (as_error_string m))
@@ -533,7 +533,7 @@ module EvalTypecheck = struct
                   match res with
                   | _, Some ext_typ ->
                       pure @@ type_assignable ~expected:t ~actual:ext_typ
-                  | _, None -> pure false) )
+                  | _, None -> pure false))
     | _ ->
         fail0
         @@ sprintf "Address %s not in use."

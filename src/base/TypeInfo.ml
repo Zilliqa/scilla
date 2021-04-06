@@ -98,7 +98,7 @@ struct
 
   let rec type_info_stmts stmts =
     List.fold_right stmts ~init:[] ~f:(fun (stmt, _srep) acc ->
-        ( match stmt with
+        (match stmt with
         | Load (x, f) | Store (f, x) -> [ calc_ident_locs x; calc_ident_locs f ]
         | RemoteLoad (x, adr, f) ->
             [ calc_ident_locs x; calc_ident_locs adr; calc_ident_locs f ]
@@ -107,7 +107,7 @@ struct
         | MapUpdate (m, il, vopt) -> (
             [ calc_ident_locs m ]
             @ List.map il ~f:calc_ident_locs
-            @ match vopt with Some v -> [ calc_ident_locs v ] | None -> [] )
+            @ match vopt with Some v -> [ calc_ident_locs v ] | None -> [])
         (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
         | MapGet (x, m, il, _) ->
             [ calc_ident_locs x; calc_ident_locs m ]
@@ -130,16 +130,16 @@ struct
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
         | Iterate (l, _) -> [ calc_ident_locs l ]
         | Throw iopt -> (
-            match iopt with Some i -> [ calc_ident_locs i ] | None -> [] ) )
+            match iopt with Some i -> [ calc_ident_locs i ] | None -> []))
         @ acc)
 
   let type_info_libentries lentries =
     List.fold_right lentries ~init:[] ~f:(fun lentry acc ->
-        ( match lentry with
+        (match lentry with
         | LibVar (i, _, e) -> calc_ident_locs i :: type_info_expr e
         | LibTyp (i, cdl) ->
             calc_ident_locs i
-            :: List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname) )
+            :: List.map cdl ~f:(fun cd -> calc_ident_locs cd.cname))
         @ acc)
 
   let type_info_library l = type_info_libentries l.lentries
@@ -155,9 +155,9 @@ struct
     @ List.map cmod.contr.cparams ~f:(fun (i, _) -> calc_ident_locs i)
     @ type_info_expr cmod.contr.cconstraint
     (* Contract fields *)
-    @ ( List.concat
+    @ (List.concat
       @@ List.map cmod.contr.cfields ~f:(fun (i, _, e) ->
-             calc_ident_locs i :: type_info_expr e) )
+             calc_ident_locs i :: type_info_expr e))
     (* Components *)
     @ List.concat
     @@ List.map cmod.contr.ccomps ~f:(fun comp ->

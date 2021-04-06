@@ -67,8 +67,8 @@ let sign privKey pubKey msg =
    *)
   let sign_Z =
     foreign "sign_Z"
-      ( ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z
-      @-> returning bool )
+      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z
+     @-> returning bool)
   in
 
   (* Create container for Schnorr inputs *)
@@ -112,8 +112,8 @@ let verify pubKey msg signature =
    *)
   let verify_Z =
     foreign "verify_Z"
-      ( ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int
-      @-> returning bool )
+      (ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr rawBytes_Z @-> ptr int
+     @-> returning bool)
   in
 
   (* Create container for Schnorr inputs *)

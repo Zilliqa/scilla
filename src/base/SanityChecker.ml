@@ -125,8 +125,8 @@ struct
           else
             e
             @ mk_error1
-                ( "Missing " ^ amount_label ^ " or " ^ recipient_label
-                ^ " in Message\n" )
+                ("Missing " ^ amount_label ^ " or " ^ recipient_label
+               ^ " in Message\n")
                 eloc
         else if
           (* It must be an event or an exception. *)
@@ -202,7 +202,7 @@ struct
               (* Recursion basis. *)
               | Load (_, s) | MapGet (s, _, _, _) -> check_typ_warn s
               | MapUpdate (_, _, vopt) -> (
-                  match vopt with Some s -> check_typ_warn s | None -> () )
+                  match vopt with Some s -> check_typ_warn s | None -> ())
               (* Recurse through match statements. *)
               | MatchStmt (_, pat_stmts) ->
                   List.iter pat_stmts ~f:(fun (_, stmts) -> stmt_iter stmts)

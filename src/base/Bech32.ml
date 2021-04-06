@@ -145,11 +145,11 @@ let decode_bech32_addr ~prfx ~addr:str =
                 let chk' = bech32_polymod_step chk lxor c' in
 
                 (* Accumulate the lower 5 bits of c' into our bit buffer *)
-                ( if index < bech32_payload_len then
-                  let shifted_5_bits =
-                    Bytes.make 1 (char_of_ascii (c' lsl (8 - 5)))
-                  in
-                  Buffer.add_bits bitacc shifted_5_bits 5 );
+                (if index < bech32_payload_len then
+                 let shifted_5_bits =
+                   Bytes.make 1 (char_of_ascii (c' lsl (8 - 5)))
+                 in
+                 Buffer.add_bits bitacc shifted_5_bits 5);
 
                 let have_lower' =
                   c' >= ascii_of_char 'a' && c' <= ascii_of_char 'z'

@@ -46,8 +46,7 @@ let json_exn_wrapper ?filename thunk =
           raise
             (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON %s" f))
       | None ->
-          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON"))
-      )
+          raise (mk_invalid_json (Printf.sprintf "Unknown error parsing JSON")))
 
 let member_exn m j =
   let thunk () = Basic.Util.member m j in
@@ -138,7 +137,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
             fun j ->
               UintLit
                 (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
-        | _ -> raise (mk_invalid_json "Invalid primitive type") )
+        | _ -> raise (mk_invalid_json "Invalid primitive type"))
     | MapType (kt, vt) -> (
         let kp = recurser kt in
         let vp = recurser vt in
@@ -153,7 +152,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                   let vallit = vp vjson in
                   Caml.Hashtbl.replace m keylit vallit);
               Map ((kt, vt), m)
-          | _ -> raise (mk_invalid_json "Invalid map in JSON") )
+          | _ -> raise (mk_invalid_json "Invalid map in JSON"))
     | ADT (name, tlist) ->
         (* Add a dummy entry for "t" in our table, to prevent recursive calls. *)
         let _ = add_adt_parser (pp_typ t) Incomplete in

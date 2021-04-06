@@ -158,21 +158,21 @@ let run () =
                   in
                   let output_j =
                     `Assoc
-                      ( if cli.p_type_info then
-                        ( "type_info",
-                          JSON.TypeInfo.type_info_to_json
-                            (TI.type_info_expr typed_erep) )
-                        :: tj
-                      else tj )
+                      (if cli.p_type_info then
+                       ( "type_info",
+                         JSON.TypeInfo.type_info_to_json
+                           (TI.type_info_expr typed_erep) )
+                       :: tj
+                      else tj)
                   in
                   pout (sprintf "%s\n" (Yojson.Basic.pretty_to_string output_j));
                   if cli.gua_flag then
                     match analyze_gas typed_erep with
                     | Ok _ -> ()
-                    | Error el -> fatal_error el )
-              | Error el -> fatal_error el )
-          | Error ((_, el), _remaining_gas) -> fatal_error el )
-      | Error e -> fatal_error e )
+                    | Error el -> fatal_error el)
+              | Error el -> fatal_error el)
+          | Error ((_, el), _remaining_gas) -> fatal_error el)
+      | Error e -> fatal_error e)
   | Error e -> fatal_error e
 
 let () = try run () with FatalError msg -> exit_with_error msg

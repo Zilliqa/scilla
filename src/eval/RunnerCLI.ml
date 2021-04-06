@@ -148,10 +148,10 @@ let validate_main usage =
     if
       String.(
         !f_input_message <> ""
-        && ( !f_input_state <> ""
-             && (!i_ipc_address <> "" || Option.is_some !v_balance)
+        && (!f_input_state <> ""
+            && (!i_ipc_address <> "" || Option.is_some !v_balance)
            || !f_input_state = ""
-              && (!i_ipc_address = "" || Option.is_none !v_balance) ))
+              && (!i_ipc_address = "" || Option.is_none !v_balance)))
     then
       msg
       ^ "Input message provided, but either none or both of input state / (IPC \
@@ -287,10 +287,10 @@ let parse args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ (exe_name :: argv))
+            (List.to_array @@ exe_name :: argv)
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
-          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg) )
+          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in
   let () = process_trace () in
   let () = process_pplit () in
@@ -304,7 +304,8 @@ let parse args ~exe_name =
     input_blockchain = !f_input_blockchain;
     output = !f_output;
     input = !f_input;
-    balance = (match !v_balance with Some v -> v | None -> Stdint.Uint128.zero);
+    balance =
+      (match !v_balance with Some v -> v | None -> Stdint.Uint128.zero);
     libdirs = !d_libs;
     gas_limit = !v_gas_limit;
     pp_json = !b_pp_json;

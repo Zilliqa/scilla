@@ -83,7 +83,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 (sprintf "Duplicate field %s in address type."
                    (as_error_string dup_field))
                 (get_rep dup_field)
-          | None -> forallM fts ~f:(fun (_, t) -> walk t) )
+          | None -> forallM fts ~f:(fun (_, t) -> walk t))
     in
     walk t
 
@@ -364,7 +364,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     @@ let%bind recursion_entries =
          foldM lentries ~init:[] ~f:(fun rec_entries entry ->
              let%bind new_entry = recursion_lib_entry entry in
-             pure @@ (new_entry :: rec_entries))
+             pure @@ new_entry :: rec_entries)
        in
        pure
          {
@@ -394,13 +394,13 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                   recurser ext_lib.deps files_checked_acc
                 in
                 let all_files =
-                  (ext_lib_fname :: dep_files) @ files_checked_acc
+                  ext_lib_fname :: dep_files @ files_checked_acc
                 in
                 match recursion_library ext_lib.libn with
                 | Ok lib ->
                     (Some lib, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs)
                 | Error e ->
-                    (None, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs @ e) )
+                    (None, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs @ e))
           in
           match rec_lib_opt with
           | Some lib ->
