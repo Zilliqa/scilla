@@ -463,7 +463,11 @@ let contract_tests env =
                 "polymorphic_address"
                 >::: build_contract_tests ~pplit:false env
                        "address_list_traversal" succ_code 1 2 [];
-              ];
+                "addfunds_proxy"
+                >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
+                "addfunds"
+                >::: build_contract_tests env "addfunds" succ_code 1 1 [];
+                ];
          "these_tests_must_FAIL"
          >::: [
                 "helloWorld_f"

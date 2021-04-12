@@ -1,0 +1,19 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7944",
+  "_accepted": "true",
+  "messages": [],
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "100" } ],
+  "events": [
+    {
+      "_eventname": "Funds deposit ",
+      "params": [
+        {
+          "vname": "funder",
+          "type": "ByStr20",
+          "value": "0x52345678901234567890123456789012345678ab"
+        }
+      ]
+    }
+  ]
+}

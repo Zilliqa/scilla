@@ -1,0 +1,28 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7951",
+  "_accepted": "true",
+  "messages": [
+    {
+      "_tag": "AddFunds",
+      "_amount": "100",
+      "_recipient": "0xff345678901234567890123456789012345678ab",
+      "params": [
+        {
+          "vname": "initiator",
+          "type": "ByStr20",
+          "value": "0x12345678901234567890123456789012345678ab"
+        }
+      ]
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "implementation",
+      "type": "ByStr20",
+      "value": "0xff345678901234567890123456789012345678ab"
+    }
+  ],
+  "events": []
+}
