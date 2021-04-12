@@ -467,6 +467,12 @@ let contract_tests env =
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"
                 >::: build_contract_tests env "addfunds" succ_code 1 1 [];
+                "chain-call-balance-1"
+                >::: build_contract_tests env "chain-call-balance-1" succ_code 1 1 [];
+                "chain-call-balance-2"
+                >::: build_contract_tests env "chain-call-balance-2" succ_code 1 1 [];
+                "chain-call-balance-3"
+                >::: build_contract_tests env "chain-call-balance-3" succ_code 1 1 [];
                 ];
          "these_tests_must_FAIL"
          >::: [
