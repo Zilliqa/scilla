@@ -1,0 +1,11 @@
+scilla_version 0
+
+library SimpleImpl
+
+contract SimpleImpl()
+
+transition AddFunds(initiator: ByStr20)
+  accept;
+  e = { _eventname : "Funds deposit "; funder : initiator };
+  event e
+end

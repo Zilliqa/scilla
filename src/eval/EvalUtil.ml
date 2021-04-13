@@ -341,8 +341,13 @@ module Configuration = struct
       let incoming' = st.incoming_funds in
       match sender_balance_l with
       | UintLit (Uint128L sender_balance) ->
-          if Uint128.compare incoming' sender_balance >= 0 then
-            fail0 "Insufficient sender balance for acceptance."
+          if Uint128.compare incoming' sender_balance > 0 then
+            fail0
+              ("Insufficient sender balance for acceptance. Incoming vs \
+                sender_balance: "
+              ^ Uint128.to_string incoming'
+              ^ " vs "
+              ^ Uint128.to_string sender_balance)
           else if
             (* Although unsigned integer is used, and this check isn't
              * necessary, we have it just in case, somehow a malformed
