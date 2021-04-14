@@ -150,6 +150,10 @@ let explist =
     "polynetwork_getBookKeeper.scilexp";
     "polynetwork_txparam.scilexp";
     "builtin_type_args.scilexp";
+    "endian_test32.scilexp";
+    "endian_test64.scilexp";
+    "endian_test128.scilexp";
+    "endian_test256.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct

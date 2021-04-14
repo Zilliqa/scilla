@@ -206,7 +206,7 @@ let append_uint128 : IntegerEncoding -> ByStr -> Uint128 -> ByStr =
     let uib_endian =
       match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
     in
-    builtin concat bs uib
+    builtin concat bs uib_endian
 
 (* Append serialized Uint256 value to given byte string *)
 let append_uint256 : IntegerEncoding -> ByStr -> Uint256 -> ByStr =
@@ -218,4 +218,4 @@ let append_uint256 : IntegerEncoding -> ByStr -> Uint256 -> ByStr =
     let uib_endian =
       match endian with | LittleEndian => builtin strrev uib | BigEndian => uib end
     in
-    builtin concat bs uib
+    builtin concat bs uib_endian
