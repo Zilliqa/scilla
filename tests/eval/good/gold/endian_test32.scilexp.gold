@@ -1,0 +1,10 @@
+(Pair (ByStr 0x39300000) (ByStr 0x00003039)),
+{ [ibe -> (ByStr 0x00003039)],
+  [append_uint32_be -> <closure>],
+  [extract_uint32_be -> <closure>],
+  [big_endian -> (Conversions.BigEndian)],
+  [ile -> (ByStr 0x39300000)],
+  [empty -> (ByStr 0x)],
+  [empty_x -> (ByStr0 0x)],
+  [i -> (Uint32 12345)] }
+Gas remaining: 4001180
