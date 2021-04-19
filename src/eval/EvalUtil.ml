@@ -501,11 +501,10 @@ module EvalTypecheck = struct
   let is_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id this_address_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~keys:[]
-        ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
-  
+
   (* Checks that balance > 0 || nonce > 0 *)
   let is_user_addr ~caddr =
     (* First check if the address is a user address with balance > 0 || nonce > 0 *)
@@ -522,7 +521,8 @@ module EvalTypecheck = struct
     match (balance_lit, nonce_lit) with
     | Some (UintLit (Uint128L balance)), Some (UintLit (Uint64L nonce))
       when Uint128.compare balance Uint128.zero > 0
-        || Uint64.compare nonce Uint64.zero > 0 -> pure true
+           || Uint64.compare nonce Uint64.zero > 0 ->
+        pure true
     | _ -> pure false
 
   let typecheck_remote_field_types ~caddr fts_opt =
@@ -536,9 +536,8 @@ module EvalTypecheck = struct
           if not contract_addr then
             fail0
             @@ sprintf "Address %s not in use."
-              (EvalLiteral.Bystrx.hex_encoding caddr)
-          else
-            pure true
+                 (EvalLiteral.Bystrx.hex_encoding caddr)
+          else pure true
         else pure true
     | Some fts ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
@@ -546,8 +545,8 @@ module EvalTypecheck = struct
         if not contract_addr then
           fail0
           @@ sprintf "No contract found at address %s"
-            (EvalLiteral.Bystrx.hex_encoding caddr)
-        else 
+               (EvalLiteral.Bystrx.hex_encoding caddr)
+        else
           (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
           allM fts ~f:(fun (f, t) ->
               let%bind res =
