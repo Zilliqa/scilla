@@ -426,12 +426,9 @@ module MkLiteral (T : ScillaType) = struct
               (Str.regexp "^\\(-?\\)0*\\([1-9][0-9]*\\)")
               "\\1\\2" x
         in
-        (* If x = 0 we have now removed all digits. If this is the case, replace with "0" *)
-        if
-          String.is_empty x_no_leading_zeros
-          || String.(x_no_leading_zeros = "-")
-        then "0"
-        else x_no_leading_zeros
+        (* If the input was +0*, -0* or 0*, then none of the regexps matched, so the string is now empty. Replace with "0".
+           Note that if x was the empty string, then we didn't even reach the regexp matches, so we don't need to handle that case here. *)
+        if String.is_empty x_no_leading_zeros then "0" else x_no_leading_zeros
       in
       try
         match pt with
