@@ -408,48 +408,58 @@ module MkLiteral (T : ScillaType) = struct
   let validate_int_string pt x =
     let open PrimType in
     let open String in
-    if String.is_empty x then false
-    else
-      let x_sanitised =
-        let x_no_leading_zeros =
-          (* Str.regexp seems incapable of matching '+', so it needs to be treated as a special case *)
-          if String.(sub x ~pos:0 ~len:1 = "+") then
-            let x_no_leading_plus = String.drop_prefix x 1 in
-            (* Strip all leading 0s *)
-            Str.replace_first
-              (Str.regexp "^0*\\(\\([1-9][0-9]*\\)?\\)")
-              "\\1" x_no_leading_plus
-          else
-            (* String starts with '-' or no sign *)
-            (* Strip all leading 0s, but keep the '-' sign if it's there *)
-            Str.replace_first
-              (Str.regexp "^\\(-?\\)0*\\(\\([1-9][0-9]*\\)?\\)")
-              "\\1\\2" x
-        in
-        (* If the input was +0*, -0* or 0*, then none of the regexps matched, so the string is now empty. Replace with "0".
-           Note that if x was the empty string, then we didn't even reach the regexp matches, so we don't need to handle that case here. *)
-        if String.is_empty x_no_leading_zeros || String.(=) x "-" then "0" else x_no_leading_zeros
-      in
-      try
-        match pt with
-        | Int_typ Bits32 ->
-            Int32.to_string (Int32.of_string x_sanitised) = x_sanitised
-        | Int_typ Bits64 ->
-            Int64.to_string (Int64.of_string x_sanitised) = x_sanitised
-        | Int_typ Bits128 ->
-            Int128.to_string (Int128.of_string x_sanitised) = x_sanitised
-        | Int_typ Bits256 ->
-            Int256.to_string (Int256.of_string x_sanitised) = x_sanitised
-        | Uint_typ Bits32 ->
-            Uint32.to_string (Uint32.of_string x_sanitised) = x_sanitised
-        | Uint_typ Bits64 ->
-            Uint64.to_string (Uint64.of_string x_sanitised) = x_sanitised
-        | Uint_typ Bits128 ->
-            Uint128.to_string (Uint128.of_string x_sanitised) = x_sanitised
-        | Uint_typ Bits256 ->
-            Uint256.to_string (Uint256.of_string x_sanitised) = x_sanitised
-        | _ -> false
-      with _ -> false
+    let x_sanitised =
+      if String.(sub x ~pos:0 ~len:1 = "+") then
+        (* If x starts with a leading +, and is otherwise a wellformed integer, then remove the + and all leading 0s. *)
+        Str.replace_first
+          (Str.regexp "^\\+0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
+          "\\1" x
+      else if String.(sub x ~pos:0 ~len:1 = "-") then
+        (* If x starts with a leading -, then it must removed if x = "-0+", but kept otherwise *)
+        (* If there are leading 0s, remove all of them except one *)
+        let x_at_most_one_leading_zero =
+          Str.replace_first (Str.regexp "^-0+") "-0" x in
+        (* "-0+" is now "-0", which must be changed to "0". Check for this case before dealing with non-zero *)
+        if String.(=) x_at_most_one_leading_zero "-0" then
+          "0"
+        else
+          (* A non-zero negative number now has the form "-0[1-9][0-9]". 
+             If x has that form, then remove the single leading 0.
+             If x does not have that form, then we may already have removed some but not all the leading 0s, but that makes no difference for the rest of the algorithm.  *)
+          Str.replace_first 
+            (Str.regexp "^-0?\\([1-9][0-9]*\\)$")
+            "-\\1" x_at_most_one_leading_zero
+      else
+        (* x does not start with - or +. Do as with -, except for the leading - *)
+        let x_at_most_one_leading_zero =
+          Str.replace_first (Str.regexp "^0+") "0" x in
+        if String.(=) x_at_most_one_leading_zero "0" then
+          "0"
+        else
+          Str.replace_first 
+            (Str.regexp "^0?\\([1-9][0-9]*\\)$")
+            "\\1" x_at_most_one_leading_zero
+    in
+    try
+      match pt with
+      | Int_typ Bits32 ->
+          Int32.to_string (Int32.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits64 ->
+          Int64.to_string (Int64.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits128 ->
+          Int128.to_string (Int128.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits256 ->
+          Int256.to_string (Int256.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits32 ->
+          Uint32.to_string (Uint32.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits64 ->
+          Uint64.to_string (Uint64.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits128 ->
+          Uint128.to_string (Uint128.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits256 ->
+          Uint256.to_string (Uint256.of_string x_sanitised) = x_sanitised
+      | _ -> false
+    with _ -> false
 
   (* Given an integer type and the value (as string),
      build IntLit or UintLit out of it. *)
