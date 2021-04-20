@@ -408,37 +408,34 @@ module MkLiteral (T : ScillaType) = struct
   let validate_int_string pt x =
     let open PrimType in
     let open String in
+    (* Sanitise x before feeding it to of_string. Remove unnecessary sign and leading 0s.
+       A legal integer matches the regexp [+-]?0*(0|([1-9][0-9]))
+       "-0" is a special case, so we treat a leading '-' sign separately:
+       
+       Leading '-': A legal integer matches the regexp -0*(0|([1-9][0-9])).
+       Remove the 0* part of the string.
+       Then check if the result is "-0". 
+       If it is, then remove the leading '-'. Otherwise we have the result.
+
+       No leading '-': A legal integer matches the regexp +?0*(0|([1-9][0-9])).
+       Remove the 0* part of the string as well as the '+' sign if it's there.
+    *)
     let x_sanitised =
-      if String.(sub x ~pos:0 ~len:1 = "+") then
-        (* If x starts with a leading +, and is otherwise a wellformed integer, then remove the + and all leading 0s. *)
-        Str.replace_first
-          (Str.regexp "^\\+0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
-          "\\1" x
-      else if String.(sub x ~pos:0 ~len:1 = "-") then
-        (* If x starts with a leading -, then it must removed if x = "-0+", but kept otherwise *)
-        (* If there are leading 0s, remove all of them except one *)
-        let x_at_most_one_leading_zero =
-          Str.replace_first (Str.regexp "^-0+") "-0" x in
-        (* "-0+" is now "-0", which must be changed to "0". Check for this case before dealing with non-zero *)
-        if String.(=) x_at_most_one_leading_zero "-0" then
+      if String.(sub x ~pos:0 ~len:1 = "-") then
+        (* Remove unnecessary leading 0s after the sign *)
+        let x_without_leading_0s =
+          Str.replace_first
+            (Str.regexp "^-0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
+            "-\\1" x in
+        (* The result may now be -0. If so, then remove the - *)
+        if String.(=) x_without_leading_0s "-0" then
           "0"
-        else
-          (* A non-zero negative number now has the form "-0[1-9][0-9]". 
-             If x has that form, then remove the single leading 0.
-             If x does not have that form, then we may already have removed some but not all the leading 0s, but that makes no difference for the rest of the algorithm.  *)
-          Str.replace_first 
-            (Str.regexp "^-0?\\([1-9][0-9]*\\)$")
-            "-\\1" x_at_most_one_leading_zero
+        else x_without_leading_0s
       else
-        (* x does not start with - or +. Do as with -, except for the leading - *)
-        let x_at_most_one_leading_zero =
-          Str.replace_first (Str.regexp "^0+") "0" x in
-        if String.(=) x_at_most_one_leading_zero "0" then
-          "0"
-        else
-          Str.replace_first 
-            (Str.regexp "^0?\\([1-9][0-9]*\\)$")
-            "\\1" x_at_most_one_leading_zero
+        (* Remove unnecessary leading 0s and + sign if it's there *)
+        Str.replace_first
+          (Str.regexp "^\\+?0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
+          "\\1" x
     in
     try
       match pt with
