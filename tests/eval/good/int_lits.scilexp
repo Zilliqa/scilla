@@ -9,4 +9,10 @@ let res2 = builtin to_uint32 b in
 let c = Int32 -00012 in
 let d = Int32 900012 in
 
+let empty_string = "" in
+let res3 = builtin to_uint32 empty_string in
+
+let invalid_string = "+-012" in
+let res4 = builtin to_uint32 invalid_string in
+
 True

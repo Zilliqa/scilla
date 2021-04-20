@@ -1,9 +1,13 @@
 (True),
-{ [d -> (Int32 900012)],
+{ [res4 -> (None)],
+  [invalid_string -> (String "+-012")],
+  [res3 -> (None)],
+  [empty_string -> (String "")],
+  [d -> (Int32 900012)],
   [c -> (Int32 -12)],
   [res2 -> (Some (Uint32 12))],
   [b -> (String "+012")],
   [an -> (Int32 11)],
   [res1 -> (Some (Uint32 11))],
   [a -> (String "0011")] }
-Gas remaining: 4001218
+Gas remaining: 4001204
