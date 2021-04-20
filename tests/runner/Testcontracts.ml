@@ -541,7 +541,7 @@ let contract_tests env =
                      "init_address_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" fail_code 101
-                       129 [];
+                       131 [];
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_key" ~is_library:false ~ipc_mode:true;
