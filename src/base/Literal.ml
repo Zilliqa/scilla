@@ -408,47 +408,51 @@ module MkLiteral (T : ScillaType) = struct
   let validate_int_string pt x =
     let open PrimType in
     let open String in
-    let x_sanitised =
-      let x_no_leading_zeros =
-        (* Str.regexp seems incapable of matching '+', so it needs to be treated as a special case *)
-        if String.(sub x ~pos:0 ~len:1 = "+") then
-          let x_no_leading_plus = String.drop_prefix x 1 in
-          (* Strip all leading 0s *)
-          Str.replace_first
-            (Str.regexp "^0*\\([1-9][0-9]*\\)")
-            "\\1" x_no_leading_plus
-        else
-          (* String starts with '-' or no sign *)
-          (* Strip all leading 0s, but keep the '-' sign if it's there *)
-          Str.replace_first
-            (Str.regexp "^\\(-?\\)0*\\([1-9][0-9]*\\)")
-            "\\1\\2" x
+    if String.is_empty x then false
+    else
+      let x_sanitised =
+        let x_no_leading_zeros =
+          (* Str.regexp seems incapable of matching '+', so it needs to be treated as a special case *)
+          if String.(sub x ~pos:0 ~len:1 = "+") then
+            let x_no_leading_plus = String.drop_prefix x 1 in
+            (* Strip all leading 0s *)
+            Str.replace_first
+              (Str.regexp "^0*\\([1-9][0-9]*\\)")
+              "\\1" x_no_leading_plus
+          else
+            (* String starts with '-' or no sign *)
+            (* Strip all leading 0s, but keep the '-' sign if it's there *)
+            Str.replace_first
+              (Str.regexp "^\\(-?\\)0*\\([1-9][0-9]*\\)")
+              "\\1\\2" x
+        in
+        (* If x = 0 we have now removed all digits. If this is the case, replace with "0" *)
+        if
+          String.is_empty x_no_leading_zeros
+          || String.(x_no_leading_zeros = "-")
+        then "0"
+        else x_no_leading_zeros
       in
-      (* If x = 0 we have now removed all digits. If this is the case, replace with "0" *)
-      if String.is_empty x_no_leading_zeros || String.(x_no_leading_zeros = "-")
-      then "0"
-      else x_no_leading_zeros
-    in
-    try
-      match pt with
-      | Int_typ Bits32 ->
-          Int32.to_string (Int32.of_string x_sanitised) = x_sanitised
-      | Int_typ Bits64 ->
-          Int64.to_string (Int64.of_string x_sanitised) = x_sanitised
-      | Int_typ Bits128 ->
-          Int128.to_string (Int128.of_string x_sanitised) = x_sanitised
-      | Int_typ Bits256 ->
-          Int256.to_string (Int256.of_string x_sanitised) = x_sanitised
-      | Uint_typ Bits32 ->
-          Uint32.to_string (Uint32.of_string x_sanitised) = x_sanitised
-      | Uint_typ Bits64 ->
-          Uint64.to_string (Uint64.of_string x_sanitised) = x_sanitised
-      | Uint_typ Bits128 ->
-          Uint128.to_string (Uint128.of_string x_sanitised) = x_sanitised
-      | Uint_typ Bits256 ->
-          Uint256.to_string (Uint256.of_string x_sanitised) = x_sanitised
-      | _ -> false
-    with _ -> false
+      try
+        match pt with
+        | Int_typ Bits32 ->
+            Int32.to_string (Int32.of_string x_sanitised) = x_sanitised
+        | Int_typ Bits64 ->
+            Int64.to_string (Int64.of_string x_sanitised) = x_sanitised
+        | Int_typ Bits128 ->
+            Int128.to_string (Int128.of_string x_sanitised) = x_sanitised
+        | Int_typ Bits256 ->
+            Int256.to_string (Int256.of_string x_sanitised) = x_sanitised
+        | Uint_typ Bits32 ->
+            Uint32.to_string (Uint32.of_string x_sanitised) = x_sanitised
+        | Uint_typ Bits64 ->
+            Uint64.to_string (Uint64.of_string x_sanitised) = x_sanitised
+        | Uint_typ Bits128 ->
+            Uint128.to_string (Uint128.of_string x_sanitised) = x_sanitised
+        | Uint_typ Bits256 ->
+            Uint256.to_string (Uint256.of_string x_sanitised) = x_sanitised
+        | _ -> false
+      with _ -> false
 
   (* Given an integer type and the value (as string),
      build IntLit or UintLit out of it. *)
