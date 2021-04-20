@@ -409,16 +409,20 @@ module MkLiteral (T : ScillaType) = struct
     let open PrimType in
     let open String in
     let x_sanitised =
-      (* Str.regexp seems incapable of matching '+', so just remove it *)
-      let x_no_leading_plus =
-        if String.(sub x ~pos:0 ~len:1 = "+") then String.drop_prefix x 1 else x
-      in
-      (* Strip all leading 0s, but keep the '-' sign if it's there *)
       let x_no_leading_zeros =
-        Str.replace_first
-          (*          (Str.regexp "^\\([-\\+]?\\)0*\\([1-9][0-9]*\\)") *)
-          (Str.regexp "^\\(-?\\)0*\\([1-9][0-9]*\\)")
-          "\\1\\2" x_no_leading_plus
+        (* Str.regexp seems incapable of matching '+', so it needs to be treated as a special case *)
+        if String.(sub x ~pos:0 ~len:1 = "+") then
+          let x_no_leading_plus = String.drop_prefix x 1 in
+          (* Strip all leading 0s *)
+          Str.replace_first
+            (Str.regexp "^0*\\([1-9][0-9]*\\)")
+            "\\1" x_no_leading_plus
+        else
+          (* String starts with '-' or no sign *)
+          (* Strip all leading 0s, but keep the '-' sign if it's there *)
+          Str.replace_first
+            (Str.regexp "^\\(-?\\)0*\\([1-9][0-9]*\\)")
+            "\\1\\2" x
       in
       (* If x = 0 we have now removed all digits. If this is the case, replace with "0" *)
       if String.is_empty x_no_leading_zeros || String.(x_no_leading_zeros = "-")
