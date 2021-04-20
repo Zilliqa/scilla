@@ -1,0 +1,12 @@
+let a = "0011" in
+let res1 = builtin to_uint32 a in
+let an = Int32 0011 in
+
+let b = "+012" in
+let res2 = builtin to_uint32 b in
+(* let bn = Int32 +012 in *)
+
+let c = Int32 -00012 in
+let d = Int32 900012 in
+
+True

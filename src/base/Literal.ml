@@ -408,6 +408,18 @@ module MkLiteral (T : ScillaType) = struct
   let validate_int_string pt x =
     let open PrimType in
     let open String in
+    let x =
+      let x_no_leading_zeros =
+        Str.replace_first
+          (Str.regexp "^\\([-\\+]?\\)0*\\([1-9][0-9]*\\)")
+          "\\1\\2" x
+      in
+      if
+        String.is_empty x_no_leading_zeros
+        || String.(x_no_leading_zeros = "-" || x_no_leading_zeros = "+")
+      then "0"
+      else x_no_leading_zeros
+    in
     try
       match pt with
       | Int_typ Bits32 -> Int32.to_string (Int32.of_string x) = x
