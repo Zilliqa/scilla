@@ -425,7 +425,7 @@ module MkLiteral (T : ScillaType) = struct
         (* Remove unnecessary leading 0s after the sign *)
         let x_without_leading_0s =
           Str.replace_first
-            (Str.regexp "^-0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
+            (Str.regexp "^-0*\\([0-9]+\\)$")
             "-\\1" x
         in
         (* The result may now be -0. If so, then remove the - *)
@@ -433,7 +433,7 @@ module MkLiteral (T : ScillaType) = struct
       else
         (* Remove unnecessary leading 0s and + sign if it's there *)
         Str.replace_first
-          (Str.regexp "^\\+?0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
+          (Str.regexp "^\\+?0*\\([0-9]+\\)$")
           "\\1" x
     in
     try
