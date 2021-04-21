@@ -411,10 +411,10 @@ module MkLiteral (T : ScillaType) = struct
     (* Sanitise x before feeding it to of_string. Remove unnecessary sign and leading 0s.
        A legal integer matches the regexp [+-]?0*(0|([1-9][0-9]))
        "-0" is a special case, so we treat a leading '-' sign separately:
-       
+
        Leading '-': A legal integer matches the regexp -0*(0|([1-9][0-9])).
        Remove the 0* part of the string.
-       Then check if the result is "-0". 
+       Then check if the result is "-0".
        If it is, then remove the leading '-'. Otherwise we have the result.
 
        No leading '-': A legal integer matches the regexp +?0*(0|([1-9][0-9])).
@@ -426,7 +426,8 @@ module MkLiteral (T : ScillaType) = struct
         let x_without_leading_0s =
           Str.replace_first
             (Str.regexp "^-0*\\(0\\|\\([1-9][0-9]*\\)\\)$")
-            "-\\1" x in
+            "-\\1" x
+        in
         (* The result may now be -0. If so, then remove the - *)
         Str.replace_first (Str.regexp "^-0$") "0" x_without_leading_0s
       else
