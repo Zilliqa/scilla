@@ -408,16 +408,48 @@ module MkLiteral (T : ScillaType) = struct
   let validate_int_string pt x =
     let open PrimType in
     let open String in
+    (* Sanitise x before feeding it to of_string. Remove unnecessary sign and leading 0s.
+       A legal integer matches the regexp [+-]?0*(0|([1-9][0-9]))
+       "-0" is a special case, so we treat a leading '-' sign separately:
+
+       Leading '-': A legal integer matches the regexp -0*(0|([1-9][0-9])).
+       Remove the 0* part of the string.
+       Then check if the result is "-0".
+       If it is, then remove the leading '-'. Otherwise we have the result.
+
+       No leading '-': A legal integer matches the regexp +?0*(0|([1-9][0-9])).
+       Remove the 0* part of the string as well as the '+' sign if it's there.
+    *)
+    let x_sanitised =
+      if String.(sub x ~pos:0 ~len:1 = "-") then
+        (* Remove unnecessary leading 0s after the sign *)
+        let x_without_leading_0s =
+          Str.replace_first (Str.regexp "^-0*\\([0-9]+\\)$") "-\\1" x
+        in
+        (* The result may now be -0. If so, then remove the - *)
+        Str.replace_first (Str.regexp "^-0$") "0" x_without_leading_0s
+      else
+        (* Remove unnecessary leading 0s and + sign if it's there *)
+        Str.replace_first (Str.regexp "^\\+?0*\\([0-9]+\\)$") "\\1" x
+    in
     try
       match pt with
-      | Int_typ Bits32 -> Int32.to_string (Int32.of_string x) = x
-      | Int_typ Bits64 -> Int64.to_string (Int64.of_string x) = x
-      | Int_typ Bits128 -> Int128.to_string (Int128.of_string x) = x
-      | Int_typ Bits256 -> Int256.to_string (Int256.of_string x) = x
-      | Uint_typ Bits32 -> Uint32.to_string (Uint32.of_string x) = x
-      | Uint_typ Bits64 -> Uint64.to_string (Uint64.of_string x) = x
-      | Uint_typ Bits128 -> Uint128.to_string (Uint128.of_string x) = x
-      | Uint_typ Bits256 -> Uint256.to_string (Uint256.of_string x) = x
+      | Int_typ Bits32 ->
+          Int32.to_string (Int32.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits64 ->
+          Int64.to_string (Int64.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits128 ->
+          Int128.to_string (Int128.of_string x_sanitised) = x_sanitised
+      | Int_typ Bits256 ->
+          Int256.to_string (Int256.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits32 ->
+          Uint32.to_string (Uint32.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits64 ->
+          Uint64.to_string (Uint64.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits128 ->
+          Uint128.to_string (Uint128.of_string x_sanitised) = x_sanitised
+      | Uint_typ Bits256 ->
+          Uint256.to_string (Uint256.of_string x_sanitised) = x_sanitised
       | _ -> false
     with _ -> false
 
