@@ -276,7 +276,8 @@ let perform_dynamic_typechecks checks gas_remaining =
       match t with
       | Address fts -> (
           match
-            EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr fts
+            EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr
+              (Option.map ~f:IdLoc_Comp.Map.to_alist fts)
           with
           | Ok true -> ()
           | Ok false ->

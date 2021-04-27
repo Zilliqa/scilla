@@ -73,17 +73,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
       | Address None -> pure ()
-      | Address (Some fts) -> (
-          match
-            List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
-                RecIdentifier.compare f1 f2)
-          with
-          | Some (dup_field, _) ->
-              fail1
-                (sprintf "Duplicate field %s in address type."
-                   (as_error_string dup_field))
-                (get_rep dup_field)
-          | None -> forallM fts ~f:(fun (_, t) -> walk t))
+      | Address (Some fts) ->
+          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 
@@ -299,7 +290,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           (* Disallow polymorphic definitions for the time being. *)
           fail1 "Type variables not allowed in type definitions" error_loc
       | Address None -> pure ()
-      | Address (Some fts) -> forallM fts ~f:(fun (_, t) -> walk t)
+      | Address (Some fts) ->
+          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 

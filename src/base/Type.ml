@@ -83,8 +83,40 @@ module PrimType = struct
     | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 end
 
+module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
+  type t = loc TIdentifier.t
+
+  let compare (a : t) (b : t) = TIdentifier.compare a b
+
+  let equal (a : t) (b : t) = TIdentifier.equal a b
+
+  let sexp_of_t = TIdentifier.sexp_of_t (fun l -> sexp_of_loc l)
+
+  let t_of_sexp = TIdentifier.t_of_sexp (fun s -> loc_of_sexp s)
+end
+
+module IdLoc_Comp (TIdentifier : ScillaIdentifier) = struct
+  module T = struct
+    include TIdentifier_Loc (TIdentifier)
+  end
+
+  include T
+  include Comparable.Make (T)
+end
+
+(* module type TIdentifier_Loc = functor (TIdentifier : ScillaIdentifier) ->
+  sig
+    type t = loc TIdentifier.t
+    val compare : t -> t -> int
+    val equal : t -> t -> bool
+    val sexp_of_t : loc TIdentifier.t -> Sexp.t
+    val t_of_sexp : Sexp.t -> loc TIdentifier.t
+  end
+ *)
 module type ScillaType = sig
   module TIdentifier : ScillaIdentifier
+
+  module IdLoc_Comp : module type of IdLoc_Comp (TIdentifier)
 
   type t =
     | PrimType of PrimType.t
@@ -94,7 +126,7 @@ module type ScillaType = sig
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
+    | Address of t IdLoc_Comp.Map.t option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   val pp_typ : t -> string
@@ -174,7 +206,7 @@ module type ScillaType = sig
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
 
-  val address_typ : (loc TIdentifier.t * t) list option -> t
+  val address_typ : t IdLoc_Comp.Map.t option -> t
 end
 
 module MkType (I : ScillaIdentifier) = struct
@@ -183,6 +215,7 @@ module MkType (I : ScillaIdentifier) = struct
   (*******************************************************)
   (*                         Types                       *)
   (*******************************************************)
+  module IdLoc_Comp = IdLoc_Comp (TIdentifier)
 
   type t =
     | PrimType of PrimType.t
@@ -192,7 +225,7 @@ module MkType (I : ScillaIdentifier) = struct
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of (loc TIdentifier.t * t) list option (* Some fts if a contract address, None if any address in use *)
+    | Address of t IdLoc_Comp.Map.t option (* Some fts if a contract address, None if any address in use *)
   [@@deriving sexp]
 
   let pp_typ_helper is_error t =
@@ -213,7 +246,7 @@ module MkType (I : ScillaIdentifier) = struct
       | Address None -> "ByStr20 with end"
       | Address (Some fts) ->
           let elems =
-            List.map fts ~f:(fun (f, t) ->
+            List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
                 sprintf "field %s : %s"
                   (if is_error then TIdentifier.as_error_string f
                   else TIdentifier.as_string f)
@@ -221,7 +254,7 @@ module MkType (I : ScillaIdentifier) = struct
             |> String.concat ~sep:", "
           in
           sprintf "ByStr20 with contract %s%send" elems
-            (if List.is_empty fts then "" else " ")
+            (if IdLoc_Comp.Map.is_empty fts then "" else " ")
     and with_paren t =
       match t with
       | FunType _ | PolyFun _ -> sprintf "(%s)" (recurser t)
@@ -254,7 +287,8 @@ module MkType (I : ScillaIdentifier) = struct
           rem acc' arg
       | Address None -> acc
       | Address (Some fts) ->
-          List.fold_left fts ~init:acc ~f:(fun acc (_, t) -> go t acc)
+          IdLoc_Comp.Map.fold fts ~init:acc ~f:(fun ~key:_ ~data acc ->
+              go data acc)
     in
     go tp []
 
@@ -289,9 +323,7 @@ module MkType (I : ScillaIdentifier) = struct
         else PolyFun (arg, subst_type_in_type tvar tp t)
     | Address None -> tm
     | Address (Some fts) ->
-        Address
-          (Some
-             (List.map fts ~f:(fun (f, t) -> (f, subst_type_in_type tvar tp t))))
+        Address (Some (IdLoc_Comp.Map.map fts ~f:(subst_type_in_type tvar tp)))
 
   (* note: this is sequential substitution of multiple variables,
             _not_ simultaneous substitution *)
@@ -316,7 +348,7 @@ module MkType (I : ScillaIdentifier) = struct
           PolyFun (arg', bt2)
       | Address None -> t
       | Address (Some fts) ->
-          Address (Some (List.map fts ~f:(fun (f, t) -> (f, recursor t taken))))
+          Address (Some (IdLoc_Comp.Map.map fts ~f:(fun t -> recursor t taken)))
     in
     recursor
 
@@ -346,17 +378,7 @@ module MkType (I : ScillaIdentifier) = struct
           String.equal v1 v2 && equiv t1'' t2''
       | Address None, Address None -> true
       | Address (Some fts1), Address (Some fts2) ->
-          let traverse fts_first fts_second =
-            List.for_all fts_first ~f:(fun (f1, t1) ->
-                match
-                  List.find fts_second ~f:(fun (f2, _) ->
-                      TIdentifier.equal f1 f2)
-                with
-                | None -> false
-                | Some (_, t2) -> equiv t1 t2)
-          in
-          List.length fts1 = List.length fts2
-          && traverse fts1 fts2 && traverse fts2 fts1
+          IdLoc_Comp.Map.equal equiv fts1 fts2
       | _ -> false
     in
     equiv t1 t2
@@ -377,14 +399,12 @@ module MkType (I : ScillaIdentifier) = struct
           true
       | Address (Some tfts), Address (Some ffts) ->
           (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
-          List.for_all tfts ~f:(fun (tf, tft) ->
-              match
-                List.find ffts ~f:(fun (ff, _) -> TIdentifier.equal tf ff)
-              with
+          IdLoc_Comp.Map.for_alli tfts ~f:(fun ~key:tf ~data:tft ->
+              match IdLoc_Comp.Map.find ffts tf with
               | None ->
                   (* to field does not appear in from type *)
                   false
-              | Some (_, fft) ->
+              | Some fft ->
                   (* Matching field name. Types must be assignable. *)
                   assignable tft fft)
       | PrimType (Bystrx_typ len), Address _ when len = address_length ->
