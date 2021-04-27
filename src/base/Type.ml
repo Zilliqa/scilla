@@ -104,15 +104,6 @@ module IdLoc_Comp (TIdentifier : ScillaIdentifier) = struct
   include Comparable.Make (T)
 end
 
-(* module type TIdentifier_Loc = functor (TIdentifier : ScillaIdentifier) ->
-  sig
-    type t = loc TIdentifier.t
-    val compare : t -> t -> int
-    val equal : t -> t -> bool
-    val sexp_of_t : loc TIdentifier.t -> Sexp.t
-    val t_of_sexp : Sexp.t -> loc TIdentifier.t
-  end
- *)
 module type ScillaType = sig
   module TIdentifier : ScillaIdentifier
 
