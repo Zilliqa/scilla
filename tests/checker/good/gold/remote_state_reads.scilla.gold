@@ -43,7 +43,7 @@
       {
         "vname": "cparam3",
         "type":
-          "ByStr20 with contract field transactionCount : Uint32, field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field other_map : Map (Uint128) (ByStr20 with end) end"
+          "ByStr20 with contract field admin : ByStr20 with end, field other_map : Map (Uint128) (ByStr20 with end), field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field transactionCount : Uint32 end"
       }
     ],
     "fields": [
@@ -148,7 +148,7 @@
           {
             "vname": "remote3",
             "type":
-              "ByStr20 with contract field transactionCount : Uint32, field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)) end"
+              "ByStr20 with contract field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field transactionCount : Uint32 end"
           }
         ]
       },

@@ -245,20 +245,9 @@ functor
                      (pp_typ_error t)
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address None -> pure ()
-          | Address (Some fts) -> (
-              match
-                List.find_a_dup fts ~compare:(fun (f1, _) (f2, _) ->
-                    TIdentifier.compare f1 f2)
-              with
-              | Some (dup_f, _) ->
-                  (* No duplicate fields allowed *)
-                  fail1
-                    (sprintf "Duplicate field %s in address type"
-                       (as_error_string dup_f))
-                    (get_rep dup_f)
-              | None ->
-                  (* Check all types of address fields *)
-                  foldM fts ~init:() ~f:(fun _ (_, t) -> is_wf_typ' t tb))
+          | Address (Some fts) ->
+              foldM (IdLoc_Comp.Map.to_alist fts) ~init:() ~f:(fun _ (_, t) ->
+                  is_wf_typ' t tb)
         in
         is_wf_typ' t []
 
@@ -406,7 +395,7 @@ module TypeUtilities = struct
       | Address (Some fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-          List.for_all fts ~f:(fun (_, t) -> is_legal_field_type t)
+          IdLoc_Comp.Map.for_all fts ~f:(fun t -> is_legal_field_type t)
       | Address _ -> true
     in
     recurser t seen_adts
@@ -471,7 +460,10 @@ module TypeUtilities = struct
     | Address (Some fts) -> (
         if is_balance then pure ContractUtil.balance_type
         else
-          let loc_removed = List.map fts ~f:(fun (f, t) -> (get_id f, t)) in
+          let loc_removed =
+            List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
+                (get_id f, t))
+          in
           match
             List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
           with

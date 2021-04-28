@@ -220,10 +220,12 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | Address None -> pure @@ PostDisType.Address None
       | Address (Some fts) ->
           let%bind dis_fts =
-            mapM fts ~f:(fun (id, t) ->
+            foldM (IdLoc_Comp.Map.to_alist fts)
+              ~init:PostDisType.IdLoc_Comp.Map.empty ~f:(fun acc (id, t) ->
                 let%bind dis_id = name_def_as_simple_global id in
                 let%bind dis_t = recurse t in
-                pure @@ (dis_id, dis_t))
+                pure
+                @@ PostDisType.IdLoc_Comp.Map.set acc ~key:dis_id ~data:dis_t)
           in
           pure @@ PostDisType.Address (Some dis_fts)
     in

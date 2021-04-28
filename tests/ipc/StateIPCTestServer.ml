@@ -203,9 +203,7 @@ module MakeServer () = struct
 
   let fetch_ext_state_value caddr query =
     let%bind f, v, t = fetch_state_value_helper (Some caddr) query in
-    match t with
-    | Some t' -> pure (f, v, t')
-    | None -> fail RPCError.{ code = 0; message = fetch_message }
+    match t with Some t' -> pure (f, v, t') | None -> pure (false, "", "")
 
   let update_state_value query value = set_value_helper None query value None
 
