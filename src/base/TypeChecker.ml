@@ -169,7 +169,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
       | Address None -> 1
       | Address (Some fts) ->
-          List.fold_left fts ~init:1 ~f:(fun acc (_, t) -> acc + type_size t)
+          IdLoc_Comp.Map.fold fts ~init:1 ~f:(fun ~key:_ ~data:t acc ->
+              acc + type_size t)
     in
 
     let subst_type_cost tvar tm tp_size =
@@ -185,7 +186,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Address None -> 1
         | Address (Some fts) ->
             max 1
-              (List.fold_left fts ~init:0 ~f:(fun acc (_, t) -> acc + cost t))
+              (IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc ->
+                   acc + cost t))
       in
       cost tm
     in
@@ -219,9 +221,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Address None -> pure t
         | Address (Some fts) ->
             let%bind fts_res =
-              mapM fts ~f:(fun (x, t') ->
-                  let%bind t'_res = recurser t' in
-                  pure (x, t'_res))
+              foldM (IdLoc_Comp.Map.to_alist fts) ~init:IdLoc_Comp.Map.empty
+                ~f:(fun acc (key, t) ->
+                  let%bind dis_t = recurser t in
+                  pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
             in
             pure (Address (Some fts_res))
       in

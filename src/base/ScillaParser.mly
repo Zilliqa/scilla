@@ -217,7 +217,10 @@ address_typ :
     { if d = "ByStr20"
       then
         (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
-        Address (Some fs)
+        let fs' = List.fold_left (fun acc (id, t) -> 
+          SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
+        in
+        Address (Some fs')
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | (* Adding this production in preparation for contract parameters *)
   d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
