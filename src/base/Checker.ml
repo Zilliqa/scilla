@@ -296,6 +296,132 @@ let check_lmodule cli =
         scilla_warning_to_sstring (get_warnings ())
         ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
 
+let rec has_user_def_adt t =
+  let open TC.TypedSyntax.SType in
+  let open Datatypes in
+  match t with
+  | PrimType _ | TypeVar _ | Unit | Address _ -> false
+  | PolyFun (_, t) -> has_user_def_adt t
+  | MapType (t1, t2)
+  | FunType (t1, t2) -> has_user_def_adt t1 || has_user_def_adt t2
+  | ADT (n, targs)
+    when is_bool_adt_name   (TIdentifier.get_id n) ||
+         is_list_adt_name   (TIdentifier.get_id n) ||
+         is_pair_adt_name   (TIdentifier.get_id n) ||
+         is_nat_adt_name    (TIdentifier.get_id n) ||
+         is_option_adt_name (TIdentifier.get_id n)
+    -> List.exists targs ~f:has_user_def_adt
+  | ADT _ -> true
+    
+let check_tparams_for_userdef_adts comps =
+  let open TC.TypedSyntax in
+  let open Datatypes in
+  List.fold_left comps ~init:[] ~f:(fun acc comp ->
+      let { comp_type; comp_name; comp_params; _ } = comp in
+      match comp_type with
+      | CompTrans ->
+          if List.exists comp_params ~f:(fun (_, typ) -> has_user_def_adt typ) then
+            (DTIdentifier.as_string comp_name) :: acc
+          else acc
+      | CompProc -> acc)
+
+let check_msgs_for_userdef_adts (cmod : TC.TypedSyntax.cmodule) =
+  let open TC.TypedSyntax in
+  let open TC.TU in
+  let rec check_exp acc e =
+    match fst e with
+    | Literal _ | Var _ | App _ | Constr _ | Builtin _ | TApp _ ->
+        acc
+    | Fun (_, _, body) | TFun (_, body) | Fixpoint (_, _, body) | GasExpr (_, body) ->
+        check_exp acc body
+    | Let (_, _, lhs, rhs) ->
+        check_exp (check_exp acc lhs) rhs
+    | MatchExpr (_, pes) ->
+        List.fold_left pes ~init:acc ~f:(fun acc (_, e) ->
+            check_exp acc e)
+    | Message msg ->
+        if List.exists msg ~f:(fun (_, pl) ->
+            match pl with
+            | MLit l -> (
+                match literal_type l with
+                | Ok t -> has_user_def_adt t
+                | Error _ -> false)
+            | MVar v ->
+                has_user_def_adt ((TCERep.get_type (SIdentifier.get_rep v)).tp))
+        then
+          match List.find msg ~f:(fun (f, _) -> String.(f = ContractUtil.MessagePayload.tag_label)) with
+          | Some (_, MLit l) -> (pp_literal l) :: acc
+          | Some (_, MVar v) -> (SIdentifier.as_string v) :: acc
+          | None -> acc
+        else acc
+  in
+  let rec check_stmt acc s =
+    match fst s with
+    | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _ | RemoteMapGet _ | ReadFromBC _
+    | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
+        acc
+    | Bind (_, e) ->
+        check_exp acc e
+    | MatchStmt (_, pss) ->
+        List.fold_left pss ~init:acc ~f:(fun acc (_, ss) ->
+            List.fold_left ss ~init:acc ~f:(fun acc s -> check_stmt acc s))
+  in
+  let check_lib_entry acc le =
+    let open TC.TypedSyntax in
+    match le with
+    | LibVar (_, _, body) -> check_exp acc body
+    | LibTyp _ -> acc
+  in
+  let lib_msgs = Option.value_map cmod.libs ~default:[] ~f:(fun lib -> List.fold_left lib.lentries ~init:[] ~f:check_lib_entry) in
+  let constraint_msgs = check_exp lib_msgs cmod.contr.cconstraint in
+  let field_init_msgs = List.fold_left cmod.contr.cfields ~init:constraint_msgs ~f:(fun acc (_, _, i) -> check_exp acc i) in
+  List.fold_left cmod.contr.ccomps ~init:field_init_msgs ~f:(fun acc c -> List.fold_left c.comp_body ~init:acc ~f:check_stmt)
+  
+let check_for_hash_usage (cmod : TC.TypedSyntax.cmodule) =
+  let open TC.TypedSyntax in
+  let rec check_exp acc e =
+    match fst e with
+    | Builtin ((b, _), _, ids)
+      when [%equal : builtin ] b Builtin_sha256hash ||
+           [%equal : builtin ] b Builtin_keccak256hash ||
+           [%equal : builtin ] b Builtin_ripemd160hash ->
+        if List.exists ids ~f:(fun id -> has_user_def_adt ((TCERep.get_type (SIdentifier.get_rep id)).tp))
+        then
+          (pp_builtin b) :: acc
+        else
+          acc
+    | Builtin _ | Literal _ | Var _ | App _ | Constr _  | TApp _ | Message _ ->
+        acc
+    | Fun (_, _, body) | TFun (_, body) | Fixpoint (_, _, body) | GasExpr (_, body) ->
+        check_exp acc body
+    | Let (_, _, lhs, rhs) ->
+        check_exp (check_exp acc lhs) rhs
+    | MatchExpr (_, pes) ->
+        List.fold_left pes ~init:acc ~f:(fun acc (_, e) ->
+            check_exp acc e)
+  in
+  let rec check_stmt acc s =
+    match fst s with
+    | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _ | RemoteMapGet _ | ReadFromBC _
+    | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
+        acc
+    | Bind (_, e) ->
+        check_exp acc e
+    | MatchStmt (_, pss) ->
+        List.fold_left pss ~init:acc ~f:(fun acc (_, ss) ->
+            List.fold_left ss ~init:acc ~f:(fun acc s -> check_stmt acc s))
+  in
+  let check_lib_entry acc le =
+    let open TC.TypedSyntax in
+    match le with
+    | LibVar (_, _, body) -> check_exp acc body
+    | LibTyp _ -> acc
+  in
+  let lib_msgs = Option.value_map cmod.libs ~default:[] ~f:(fun lib -> List.fold_left lib.lentries ~init:[] ~f:check_lib_entry) in
+  let constraint_msgs = check_exp lib_msgs cmod.contr.cconstraint in
+  let field_init_msgs = List.fold_left cmod.contr.cfields ~init:constraint_msgs ~f:(fun acc (_, _, i) -> check_exp acc i) in
+  List.fold_left cmod.contr.ccomps ~init:field_init_msgs ~f:(fun acc c -> List.fold_left c.comp_body ~init:acc ~f:check_stmt)
+
 (* Check a contract module. *)
 let check_cmodule cli =
   let r =
@@ -321,23 +447,27 @@ let check_cmodule cli =
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
       wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
     in
-    let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas =
+    let%bind (typed_cmod, _tenv, _typed_elibs, _typed_rlibs), _remaining_gas =
       check_typing recursion_cmod recursion_rec_principles recursion_elibs
         initial_gas
     in
+    let comps_with_userdef_adt_as_tparam = check_tparams_for_userdef_adts typed_cmod.contr.ccomps in
+    let msgs_tags_when_userdef_adt_as_param = check_msgs_for_userdef_adts typed_cmod in
+    let hash_usage = check_for_hash_usage typed_cmod in
+(*
     let%bind pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs =
       wrap_error_with_gas remaining_gas
       @@ check_patterns typed_cmod typed_rlibs typed_elibs
     in
     let _ = if cli.cf_flag then check_accepts typed_cmod else () in
-    let type_info =
+    let _type_info =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
     let%bind () =
       wrap_error_with_gas remaining_gas
       @@ check_sanity typed_cmod typed_rlibs typed_elibs
     in
-    let%bind event_info =
+    let%bind _event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
     in
     let%bind () =
@@ -348,19 +478,22 @@ let check_cmodule cli =
         @@ analyze_print_gas typed_cmod typed_elibs
       else pure []
     in
-    let cf_info_opt =
+    let _cf_info_opt =
       if cli.cf_flag then Some (check_cashflow typed_cmod cli.cf_token_fields)
       else None
     in
-    let remaining_gas' =
+    let _remaining_gas' =
       Gas.finalize_remaining_gas cli.gas_limit remaining_gas
     in
-    pure @@ (dis_cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
+        pure @@ (dis_cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
+*)
+    pure @@ (this_address, comps_with_userdef_adt_as_tparam, msgs_tags_when_userdef_adt_as_param, hash_usage)
   in
   match r with
   | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
-  | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
-      check_version cmod.smver;
+                      (*   | Ok (cmod, _, event_info, type_info, cf_info_opt, g) -> *)
+  | Ok (this_address, comps_with_userdef_adt_as_tparam, msgs_tags_when_userdef_adt_as_param, hash_usage) ->
+(*      check_version cmod.smver;
       let output =
         if cli.p_contract_info then
           [
@@ -398,6 +531,21 @@ let check_cmodule cli =
       else
         scilla_warning_to_sstring (get_warnings ())
         ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
+*)
+      sprintf "{ \"address\" : \"%s\"%s%s%s }"
+        this_address
+        (if not @@ List.is_empty comps_with_userdef_adt_as_tparam then 
+           sprintf ", \"ADT transitions\" : [ \"%s\" ]"
+             (String.concat ~sep:"\", \"" comps_with_userdef_adt_as_tparam)
+         else "")
+        (if not @@ List.is_empty msgs_tags_when_userdef_adt_as_param then 
+           sprintf ", \"ADT messages\" : [ \"%s\" ]"
+             (String.concat ~sep:"\", \"" msgs_tags_when_userdef_adt_as_param)
+         else "")
+        (if not @@ List.is_empty hash_usage then 
+           sprintf ", \"ADT hashes\" : [ \"%s\" ]"
+             (String.concat ~sep:"\", \"" hash_usage)
+         else "")
 
 let run args ~exe_name =
   GlobalConfig.reset ();
@@ -412,10 +560,7 @@ let run args ~exe_name =
 
   let open FilePath in
   let open StdlibTracker in
-  if check_extension cli.input_file file_extn_library then
-    (* Check library modules. *)
-    check_lmodule cli
-  else if check_extension cli.input_file file_extn_contract then
+  if check_extension cli.input_file file_extn_contract then
     (* Check contract modules. *)
     check_cmodule cli
   else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))
