@@ -7,4 +7,5 @@
   (ListUtils.scillib as stdlib/ListUtils.scillib)
   (NatUtils.scillib as stdlib/NatUtils.scillib)
   (PairUtils.scillib as stdlib/PairUtils.scillib)
+  (Conversions.scillib as stdlib/Conversions.scillib)
   (Polynetwork.scillib as stdlib/Polynetwork.scillib)))
