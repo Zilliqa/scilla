@@ -73,12 +73,19 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     let lexbuf = Lexing.from_string s in
     parse_lexbuf checkpoint_starter lexbuf "Prelude"
 
+  let parse_stdin checkpoint_starter =
+    let lexbuf = Lexing.from_channel Stdio.stdin in
+    parse_lexbuf checkpoint_starter lexbuf "Prelude"
+
   let parse_type s = parse_string Parser.Incremental.type_term s
 
   let parse_expr s = parse_string Parser.Incremental.exp_term s
 
   let parse_expr_from_file filename =
     parse_file Parser.Incremental.exp_term filename
+
+  let parse_expr_from_stdin () =
+    parse_stdin Parser.Incremental.exp_term
 
   let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
 
