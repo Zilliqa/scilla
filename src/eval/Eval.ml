@@ -901,10 +901,8 @@ let post_process_msgs cstate outs =
   in
   let open ContractState in
   let balance =
-    if compare cstate.balance to_be_transferred < 0 then
-      Uint128.zero
-    else 
-      sub cstate.balance to_be_transferred
+    if compare cstate.balance to_be_transferred < 0 then Uint128.zero
+    else sub cstate.balance to_be_transferred
   in
   pure { cstate with balance }
 
