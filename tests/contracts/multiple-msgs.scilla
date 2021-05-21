@@ -29,3 +29,11 @@ transition multipleMsgs()
   msgs2 = Cons {Message} msg2 msgs1;
   send msgs2
 end
+
+transition multipleAmountMsgs()
+  msg1 = {_tag : ""; _recipient : _sender; _amount : Uint128 100};
+  msg2 = {_tag : ""; _recipient : _sender; _amount : Uint128 100};
+  msgs1 = one_msg msg1;
+  msgs2 = Cons {Message} msg2 msgs1;
+  send msgs2
+end

@@ -412,7 +412,7 @@ let contract_tests env =
                 >::: build_contract_tests env "map_corners_test" succ_code 51 53
                        [];
                 "multiple_msgs_test"
-                >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
+                >::: build_contract_tests env "multiple-msgs" succ_code 1 3 [];
                 "listiter"
                 >::: build_contract_tests env "listiter" succ_code 1 1 [];
                 "polynetwork"

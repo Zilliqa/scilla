@@ -5,7 +5,10 @@
     "vname": "HelloWorld",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "multipleMsgs", "params": [] } ],
+    "transitions": [
+      { "vname": "multipleMsgs", "params": [] },
+      { "vname": "multipleAmountMsgs", "params": [] }
+    ],
     "procedures": [],
     "events": [],
     "ADTs": [

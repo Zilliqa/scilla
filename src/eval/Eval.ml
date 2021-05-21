@@ -900,16 +900,13 @@ let post_process_msgs cstate outs =
     List.fold_left amounts ~init:zero ~f:(fun z a -> add z a)
   in
   let open ContractState in
-  if compare cstate.balance to_be_transferred < 0 then
-    fail0
-    @@ sprintf
-         "The balance is too low (%s) to transfer all the funds in the \
-          messages (%s)"
-         (to_string cstate.balance)
-         (to_string to_be_transferred)
-  else
-    let balance = sub cstate.balance to_be_transferred in
-    pure { cstate with balance }
+  let balance =
+    if compare cstate.balance to_be_transferred < 0 then
+      Uint128.zero
+    else 
+      sub cstate.balance to_be_transferred
+  in
+  pure { cstate with balance }
 
 (* 
 Handle message:
