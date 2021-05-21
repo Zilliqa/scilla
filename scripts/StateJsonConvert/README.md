@@ -20,6 +20,9 @@ This program converts it into a format that Scilla understands. Since
 there is some loss of information in the API output (the type of a field,
 for example), this program also requires the `-contractinfo` output of
 scilla-checker as an additional input to find this missing information.
+The init JSON of the contract must be provided as input to `scilla-checker`
+(via the `-init` option) so that names are disambiguated correctly in the
+output contract info JSON of `scilla-checker`.
 
 The output JSON for the above snippet would look something like this
 
