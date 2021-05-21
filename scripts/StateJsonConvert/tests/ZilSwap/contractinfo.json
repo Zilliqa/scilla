@@ -1,0 +1,346 @@
+{
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ZilSwap",
+    "params": [
+      { "vname": "initial_owner", "type": "ByStr20" },
+      { "vname": "initial_fee", "type": "Uint256" }
+    ],
+    "fields": [
+      {
+        "vname": "pools",
+        "type": "Map (ByStr20) (zilswap.Pool)",
+        "depth": 1
+      },
+      {
+        "vname": "balances",
+        "type": "Map (ByStr20) (Map (ByStr20) (Uint128))",
+        "depth": 2
+      },
+      {
+        "vname": "total_contributions",
+        "type": "Map (ByStr20) (Uint128)",
+        "depth": 1
+      },
+      { "vname": "output_after_fee", "type": "Uint256", "depth": 0 },
+      { "vname": "owner", "type": "ByStr20", "depth": 0 },
+      { "vname": "pending_owner", "type": "ByStr20", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "RecipientAcceptTransferFrom",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFromSuccessCallBack",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferSuccessCallBack",
+        "params": [
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "SetFee",
+        "params": [ { "vname": "new_fee", "type": "Uint256" } ]
+      },
+      {
+        "vname": "TransferOwnership",
+        "params": [ { "vname": "new_owner", "type": "ByStr20" } ]
+      },
+      { "vname": "AcceptPendingOwnership", "params": [] },
+      {
+        "vname": "AddLiquidity",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "min_contribution_amount", "type": "Uint128" },
+          { "vname": "max_token_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" }
+        ]
+      },
+      {
+        "vname": "RemoveLiquidity",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "contribution_amount", "type": "Uint128" },
+          { "vname": "min_zil_amount", "type": "Uint128" },
+          { "vname": "min_token_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" }
+        ]
+      },
+      {
+        "vname": "SwapExactZILForTokens",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "min_token_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapExactTokensForZIL",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "token_amount", "type": "Uint128" },
+          { "vname": "min_zil_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapZILForExactTokens",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "token_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapTokensForExactZIL",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "max_token_amount", "type": "Uint128" },
+          { "vname": "zil_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapExactTokensForTokens",
+        "params": [
+          { "vname": "token0_address", "type": "ByStr20" },
+          { "vname": "token1_address", "type": "ByStr20" },
+          { "vname": "token0_amount", "type": "Uint128" },
+          { "vname": "min_token1_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapTokensForExactTokens",
+        "params": [
+          { "vname": "token0_address", "type": "ByStr20" },
+          { "vname": "token1_address", "type": "ByStr20" },
+          { "vname": "max_token0_amount", "type": "Uint128" },
+          { "vname": "token1_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "ThrowIfExpired",
+        "params": [ { "vname": "deadline_block", "type": "BNum" } ]
+      },
+      {
+        "vname": "ThrowIfZero",
+        "params": [ { "vname": "number", "type": "Uint128" } ]
+      },
+      {
+        "vname": "ThrowIfZil",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      { "vname": "ThrowUnlessSenderIsOwner", "params": [] },
+      {
+        "vname": "Send",
+        "params": [
+          { "vname": "coins", "type": "zilswap.Coins" },
+          { "vname": "to_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "Receive",
+        "params": [ { "vname": "coins", "type": "zilswap.Coins" } ]
+      },
+      {
+        "vname": "DoSwap",
+        "params": [
+          { "vname": "pool", "type": "zilswap.Pool" },
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "input", "type": "zilswap.Coins" },
+          { "vname": "output", "type": "zilswap.Coins" },
+          { "vname": "input_from", "type": "ByStr20" },
+          { "vname": "output_to", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "DoSwapTwice",
+        "params": [
+          { "vname": "pool0", "type": "zilswap.Pool" },
+          { "vname": "token0_address", "type": "ByStr20" },
+          { "vname": "pool1", "type": "zilswap.Pool" },
+          { "vname": "token1_address", "type": "ByStr20" },
+          { "vname": "input_amount", "type": "Uint128" },
+          { "vname": "intermediate_amount", "type": "Uint128" },
+          { "vname": "output_amount", "type": "Uint128" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SwapUsingZIL",
+        "params": [
+          { "vname": "token_address", "type": "ByStr20" },
+          { "vname": "direction", "type": "zilswap.SwapDirection" },
+          { "vname": "exact_side", "type": "zilswap.ExactSide" },
+          { "vname": "exact_amount", "type": "Uint128" },
+          { "vname": "limit_amount", "type": "Uint128" },
+          { "vname": "deadline_block", "type": "BNum" },
+          { "vname": "recipient_address", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "Burn",
+        "params": [
+          { "vname": "pool", "type": "ByStr20" },
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "Mint",
+        "params": [
+          { "vname": "pool", "type": "ByStr20" },
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "PoolCreated",
+        "params": [ { "vname": "pool", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "Swap",
+        "params": [
+          { "vname": "pool", "type": "ByStr20" },
+          { "vname": "address", "type": "ByStr20" },
+          { "vname": "input", "type": "zilswap.Coins" },
+          { "vname": "output", "type": "zilswap.Coins" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "zilswap.Pool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "zilswap.Pool", "argtypes": [ "Uint128", "Uint128" ] }
+        ]
+      },
+      {
+        "tname": "zilswap.Denom",
+        "tparams": [],
+        "tmap": [
+          { "cname": "zilswap.Zil", "argtypes": [] },
+          { "cname": "zilswap.Token", "argtypes": [ "ByStr20" ] }
+        ]
+      },
+      {
+        "tname": "zilswap.ResultOrError",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "zilswap.Result",
+            "argtypes": [ "zilswap.Pool", "Uint128" ]
+          },
+          { "cname": "zilswap.Error", "argtypes": [ "String" ] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "zilswap.Coins",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "zilswap.Coins",
+            "argtypes": [ "zilswap.Denom", "Uint128" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "zilswap.ExactSide",
+        "tparams": [],
+        "tmap": [
+          { "cname": "zilswap.ExactInput", "argtypes": [] },
+          { "cname": "zilswap.ExactOutput", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "zilswap.Swap",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "zilswap.Swap",
+            "argtypes": [
+              "Option (zilswap.Pool)", "zilswap.SwapDirection",
+              "zilswap.ExactSide", "Uint128", "Option (Uint128)", "Uint256"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "zilswap.SwapDirection",
+        "tparams": [],
+        "tmap": [
+          { "cname": "zilswap.ZilToToken", "argtypes": [] },
+          { "cname": "zilswap.TokenToZil", "argtypes": [] }
+        ]
+      }
+    ]
+  },
+  "warnings": [],
+  "gas_remaining": "9941"
+}
+
