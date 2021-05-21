@@ -48,11 +48,11 @@ The output JSON for the above snippet would look something like this
 ```
 
 ## Build
-Install `libjsoncpp-dev`and `libboost-program-options-dev` system package.
+Install `libjsoncpp-dev`and `libboost-program-options-dev` system packages.
 The command `make` in this directory should now succeed in building the
 executable `convert.exe`.
 
 ## Use
-Using the example inputs provided in tests, here's how the tool can be used:
+Using the example inputs provided in `tests`, here's how the tool can be used:
 
 ```./convert.exe -s tests/ZilSwap/state.json -c tests/ZilSwap/contractinfo.json```
