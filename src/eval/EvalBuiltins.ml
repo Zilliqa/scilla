@@ -240,6 +240,60 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
+    let shift_left _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
+              pure @@ Int32L (Int32_safe.shift_left x y)
+          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
+              pure @@ Int64L (Int64_safe.shift_left x y)
+          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
+              pure @@ Int128L (Int128_safe.shift_left x y)
+          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
+              pure @@ Int256L (Int256_safe.shift_left x y)
+          | _ -> builtin_fail "Int.shift_left: unsupported types" ls
+        in
+        pure @@ IntLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Int.shift_left: an overflow/underflow occurred" ls
+
+    let shift_right _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
+              pure @@ Int32L (Int32_safe.shift_right x y)
+          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
+              pure @@ Int64L (Int64_safe.shift_right x y)
+          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
+              pure @@ Int128L (Int128_safe.shift_right x y)
+          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
+              pure @@ Int256L (Int256_safe.shift_right x y)
+          | _ -> builtin_fail "Int.shift_right: unsupported types" ls
+        in
+        pure @@ IntLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Int.shift_right: an overflow/underflow occurred" ls
+
+    let shift_right_logical _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); IntLit (Int32L y) ] ->
+              pure @@ Int32L (Int32_safe.shift_right_logical x y)
+          | [ IntLit (Int64L x); IntLit (Int64L y) ] ->
+              pure @@ Int64L (Int64_safe.shift_right_logical x y)
+          | [ IntLit (Int128L x); IntLit (Int128L y) ] ->
+              pure @@ Int128L (Int128_safe.shift_right_logical x y)
+          | [ IntLit (Int256L x); IntLit (Int256L y) ] ->
+              pure @@ Int256L (Int256_safe.shift_right_logical x y)
+          | _ -> builtin_fail "Int.shift_right: unsupported types" ls
+        in
+        pure @@ IntLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Int.shift_right_logical: an overflow/underflow occurred" ls
+
     let lt _ ls _ =
       try
         match ls with
@@ -396,6 +450,60 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         pure @@ UintLit l
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
+
+    let shift_left _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.shift_left x y)
+          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
+              pure @@ Uint64L (Uint64_safe.shift_left x y)
+          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
+              pure @@ Uint128L (Uint128_safe.shift_left x y)
+          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
+              pure @@ Uint256L (Uint256_safe.shift_left x y)
+          | _ -> builtin_fail "Uint.shift_left: unsupported types" ls
+        in
+        pure @@ UintLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Uint.shift_left: an overflow/underflow occurred" ls
+
+    let shift_right _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.shift_right x y)
+          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
+              pure @@ Uint64L (Uint64_safe.shift_right x y)
+          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
+              pure @@ Uint128L (Uint128_safe.shift_right x y)
+          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
+              pure @@ Uint256L (Uint256_safe.shift_right x y)
+          | _ -> builtin_fail "Uint.shift_right: unsupported types" ls
+        in
+        pure @@ UintLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Uint.shift_right: an overflow/underflow occurred" ls
+
+    let shift_right_logical _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.shift_right_logical x y)
+          | [ UintLit (Uint64L x); UintLit (Uint64L y) ] ->
+              pure @@ Uint64L (Uint64_safe.shift_right_logical x y)
+          | [ UintLit (Uint128L x); UintLit (Uint128L y) ] ->
+              pure @@ Uint128L (Uint128_safe.shift_right_logical x y)
+          | [ UintLit (Uint256L x); UintLit (Uint256L y) ] ->
+              pure @@ Uint256L (Uint256_safe.shift_right_logical x y)
+          | _ -> builtin_fail "Uint.shift_right_logical: unsupported types" ls
+        in
+        pure @@ UintLit l
+      with IntOverflow | IntUnderflow ->
+        builtin_fail "Uint.shift_right_logical: an overflow/underflow occurred" ls
 
     let isqrt _ ls _ =
       try
