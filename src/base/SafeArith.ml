@@ -43,6 +43,10 @@ module type IntRep = sig
 
   val shift_right : t -> int -> t
 
+  val shift_left : t -> int -> t
+
+  val shift_right_logical : t -> int -> t
+
   val zero : t
 
   val one : t
@@ -109,6 +113,12 @@ module SafeInt (Unsafe : IntRep) = struct
     in
     pow_aux Unsafe.one b
 
+  let left_shift a b = Unsafe.shift_left a b
+
+  let right_shift a b = Unsafe.shift_right a b
+
+  let right_shift_logical a b = Unsafe.right_shift_logical a b
+
   let lt a b = Unsafe.compare a b < 0
 end
 
@@ -145,10 +155,16 @@ module SafeUint (Unsafe : IntRep) = struct
     in
     pow_aux Unsafe.one b
 
+  let left_shift a b = Unsafe.shift_left a b
+
+  let right_shift a b = Unsafe.shift_right a b
+
+  let right_shift_logical a b = Unsafe.right_shift_logical a b
+
   let lt a b = Unsafe.compare a b < 0
 
   let isqrt n =
-    let div2 m = Unsafe.shift_right m 1 in
+    let div2 m = right_shift m 1 in
     (* https://math.stackexchange.com/a/2469503/167002 *)
     let rec recurser x y =
       (* if x <= y then x *)
