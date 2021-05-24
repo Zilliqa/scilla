@@ -780,6 +780,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                         UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
       | Builtin_pow -> [IntBuiltins.pow_arity, IntBuiltins.pow_type, IntBuiltins.pow_elab;
                         UintBuiltins.pow_arity, UintBuiltins.pow_type, UintBuiltins.pow_elab]
+      | Builtin_bitwise_and -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_bitwise_xor -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_bitwise_or -> [IntBuiltins.binop_arity, IntBuiltins.binop_type, IntBuiltins.binop_elab;
+                        UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
+      | Builtin_bitwise_not -> [UintBuiltins.binop_arity, UintBuiltins.binop_type, UintBuiltins.binop_elab]
       | Builtin_isqrt -> [UintBuiltins.isqrt_arity, UintBuiltins.isqrt_type, UintBuiltins.isqrt_elab]
     
       (* Signed integers specific builtins *)

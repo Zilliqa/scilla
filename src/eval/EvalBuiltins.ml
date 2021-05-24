@@ -461,6 +461,71 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
+    let bitwise_and _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.bitwise_and x y)
+          | [ UintLit (Uint64L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint64L (Uint64_safe.bitwise_and x y)
+          | [ UintLit (Uint128L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint128L (Uint128_safe.bitwise_and x y)
+          | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint256L (Uint256_safe.bitwise_and x y)
+          | _ -> builtin_fail "Int.and: unsupported types" ls
+        in
+        pure @@ UintLit l
+
+    let bitwise_or _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.bitwise_or x y)
+          | [ UintLit (Uint64L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint64L (Uint64_safe.bitwise_or x y)
+          | [ UintLit (Uint128L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint128L (Uint128_safe.bitwise_or x y)
+          | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint256L (Uint256_safe.bitwise_or x y)
+          | _ -> builtin_fail "Int.or: unsupported types" ls
+        in
+        pure @@ UintLit l
+
+    let bitwise_xor _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint32L (Uint32_safe.bitwise_xor x y)
+          | [ UintLit (Uint64L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint64L (Uint64_safe.bitwise_xor x y)
+          | [ UintLit (Uint128L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint128L (Uint128_safe.bitwise_xor x y)
+          | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
+              pure @@ Uint256L (Uint256_safe.bitwise_xor x y)
+          | _ -> builtin_fail "Int.xor: unsupported types" ls
+        in
+        pure @@ UintLit l
+
+    let bitwise_not _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ UintLit (Uint32L x) ] ->
+              pure @@ Uint32L (Uint32_safe.bitwise_not x)
+          | [ UintLit (Uint64L x) ] ->
+              pure @@ Uint64L (Uint64_safe.bitwise_not x)
+          | [ UintLit (Uint128L x) ] ->
+              pure @@ Uint128L (Uint128_safe.bitwise_not x)
+          | [ UintLit (Uint256L x) ] ->
+              pure @@ Uint256L (Uint256_safe.bitwise_not x)
+          | _ -> builtin_fail "Int.not: unsupported types" ls
+        in
+        pure @@ IntLit l
+
+
     let isqrt _ ls _ =
       try
         let%bind l =
