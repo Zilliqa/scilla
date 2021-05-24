@@ -893,7 +893,7 @@ struct
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure ([ si "m" ], ressize ops params, add_pn pol (const_pn 1))
     | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div | Builtin_rem
-    | Builtin_bitwise_not | Builtin_bitwise_and | Builtin_bitwise_or | Builtin_bitwise_xor
+    | Builtin_bitwise_and | Builtin_bitwise_or | Builtin_bitwise_xor
     | Builtin_lt | Builtin_to_int32 | Builtin_to_int64 | Builtin_to_int128
     | Builtin_to_int256 | Builtin_to_uint32 | Builtin_to_uint64
     | Builtin_to_uint128 | Builtin_to_uint256 ->
@@ -925,7 +925,7 @@ struct
             match ops with
             | Builtin_add | Builtin_sub | Builtin_mul | Builtin_div
             | Builtin_rem | Builtin_lt | Builtin_bitwise_and | Builtin_bitwise_or
-            | Builtin_bitwise_xor | Builtin_bitwise_not ->
+            | Builtin_bitwise_xor ->
                 [ si "a"; si "b" ]
             | _ -> [ si "a" ]
           in
