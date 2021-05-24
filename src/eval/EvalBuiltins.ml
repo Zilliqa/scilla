@@ -1152,7 +1152,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_pow -> [EvalIntBuiltins.pow_arity, EvalIntBuiltins.pow_type, EvalIntBuiltins.pow_elab, EvalIntBuiltins.pow;
                         EvalUintBuiltins.pow_arity, EvalUintBuiltins.pow_type, EvalUintBuiltins.pow_elab, EvalUintBuiltins.pow]
       | Builtin_isqrt -> [EvalUintBuiltins.isqrt_arity, EvalUintBuiltins.isqrt_type, EvalUintBuiltins.isqrt_elab, EvalUintBuiltins.isqrt]
-      | Builtin_bitwise_not -> [EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_not]
+      | Builtin_bitwise_not -> [EvalIntBuiltins.pow_arity, EvalIntBuiltins.pow_type, EvalIntBuiltins.pow_elab, EvalIntBuiltins.bitwise_not;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_not]
       | Builtin_bitwise_and -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.bitwise_and;
                         EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_and]
       | Builtin_bitwise_or -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.bitwise_or;
