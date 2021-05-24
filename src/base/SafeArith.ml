@@ -51,11 +51,13 @@ module type IntRep = sig
 
   val max_int : t
 
-  val logand : t -> t -> t
+  val bitwise_and : t -> t -> t
 
-  val logor : t -> t -> t
+  val bitwise_or : t -> t -> t
 
-  val logxor : t -> t -> t
+  val bitwise_xor : t -> t -> t
+
+  val bitwise_not : t -> t
 
 end
 
@@ -118,11 +120,13 @@ module SafeInt (Unsafe : IntRep) = struct
 
   let lt a b = Unsafe.compare a b < 0
   
-  let logand a b = Unsafe.andl a b
+  let bitwise_and a b = Unsafe.bitwise_and a b
 
-  let logor a b = Unsafe.orl a b
+  let bitwise_or a b = Unsafe.bitwise_or a b
 
-  let logxor a b = Unsafe.xorl a b
+  let bitwise_xor a b = Unsafe.bitwise_xor a b
+
+  let bitwise_not a = Unsafe.bitwise_not a
 end
 
 module SafeUint (Unsafe : IntRep) = struct
@@ -160,11 +164,13 @@ module SafeUint (Unsafe : IntRep) = struct
 
   let lt a b = Unsafe.compare a b < 0
   
-  let logand a b = Unsafe.andl a b
+  let bitwise_and a b = Unsafe.bitwise_and a b
 
-  let logor a b = Unsafe.orl a b
+  let bitwise_or a b = Unsafe.bitwise_or a b
 
-  let logxor a b = Unsafe.xorl a b
+  let bitwise_xor a b = Unsafe.bitwise_xor a b
+
+  let bitwise_not a = Unsafe.bitwise_not a
 
   let isqrt n =
     let div2 m = Unsafe.shift_right m 1 in

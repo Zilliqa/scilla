@@ -558,9 +558,10 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_rem -> [([tvar "'A"; tvar "'A"], int_coster)];
     | Builtin_pow -> [([tvar "'A"; uint32_typ], int_coster)];
     | Builtin_isqrt -> [([tvar "'A"], int_coster)];
-    | Builtin_logand -> [([tvar "'A";  tvar "'A"], int_coster)];
-    | Builtin_logor -> [([tvar "'A";  tvar "'A"], int_coster)];
-    | Builtin_logxor -> [([tvar "'A";  tvar "'A"], int_coster)];
+    | Builtin_bitwise_not -> [([tvar "'A"], int_coster)];
+    | Builtin_bitwise_and -> [([tvar "'A";  tvar "'A"], int_coster)];
+    | Builtin_bitwise_xor -> [([tvar "'A";  tvar "'A"], int_coster)];
+    | Builtin_bitwise_or -> [([tvar "'A";  tvar "'A"], int_coster)];
     | Builtin_to_int32 -> [([tvar "'A"], int_conversion_coster 32)];
     | Builtin_to_int64 -> [([tvar "'A"], int_conversion_coster 64)];
     | Builtin_to_int128 -> [([tvar "'A"], int_conversion_coster 128)];

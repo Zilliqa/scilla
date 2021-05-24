@@ -240,51 +240,67 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
-    let logand _ ls _ =
+    let bitwise_and _ ls _ =
       try
         let%bind l =
           match ls with
           | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
-              pure @@ Int32L (Int32_safe.logand x y)
+              pure @@ Int32L (Int32_safe.bitwise_and x y)
           | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
-              pure @@ Int64L (Int64_safe.logand x y)
+              pure @@ Int64L (Int64_safe.bitwise_and x y)
           | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
-              pure @@ Int128L (Int128_safe.logand x y)
+              pure @@ Int128L (Int128_safe.bitwise_and x y)
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
-              pure @@ Int256L (Int256_safe.logand x y)
-          | _ -> builtin_fail "Int.logand: unsupported types" ls
+              pure @@ Int256L (Int256_safe.bitwise_and x y)
+          | _ -> builtin_fail "Int.and: unsupported types" ls
         in
         pure @@ IntLit l
 
-    let logor _ ls _ =
+    let bitwise_or _ ls _ =
       try
         let%bind l =
           match ls with
           | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
-              pure @@ Int32L (Int32_safe.logor x y)
+              pure @@ Int32L (Int32_safe.bitwise_or x y)
           | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
-              pure @@ Int64L (Int64_safe.logor x y)
+              pure @@ Int64L (Int64_safe.bitwise_or x y)
           | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
-              pure @@ Int128L (Int128_safe.logor x y)
+              pure @@ Int128L (Int128_safe.bitwise_or x y)
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
-              pure @@ Int256L (Int256_safe.logor x y)
-          | _ -> builtin_fail "Int.logor: unsupported types" ls
+              pure @@ Int256L (Int256_safe.bitwise_or x y)
+          | _ -> builtin_fail "Int.or: unsupported types" ls
         in
         pure @@ IntLit l
 
-    let logxor _ ls _ =
+    let bitwise_xor _ ls _ =
       try
         let%bind l =
           match ls with
           | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
-              pure @@ Int32L (Int32_safe.logxor x y)
+              pure @@ Int32L (Int32_safe.bitwise_xor x y)
           | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
-              pure @@ Int64L (Int64_safe.logxor x y)
+              pure @@ Int64L (Int64_safe.bitwise_xor x y)
           | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
-              pure @@ Int128L (Int128_safe.logxor x y)
+              pure @@ Int128L (Int128_safe.bitwise_xor x y)
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
-              pure @@ Int256L (Int256_safe.logxor x y)
-          | _ -> builtin_fail "Int.logxor: unsupported types" ls
+              pure @@ Int256L (Int256_safe.bitwise_xor x y)
+          | _ -> builtin_fail "Int.xor: unsupported types" ls
+        in
+        pure @@ IntLit l
+
+    let bitwise_not _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x) ] ->
+              pure @@ Int32L (Int32_safe.bitwise_not x)
+          | [ IntLit (Int64L x) ] ->
+              pure @@ Int64L (Int64_safe.bitwise_not x)
+          | [ IntLit (Int128L x) ] ->
+              pure @@ Int128L (Int128_safe.bitwise_not x)
+          | [ IntLit (Int256L x) ] ->
+              pure @@ Int256L (Int256_safe.bitwise_not x)
+          | _ -> builtin_fail "Int.not: unsupported types" ls
         in
         pure @@ IntLit l
 
@@ -1071,12 +1087,13 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_pow -> [EvalIntBuiltins.pow_arity, EvalIntBuiltins.pow_type, EvalIntBuiltins.pow_elab, EvalIntBuiltins.pow;
                         EvalUintBuiltins.pow_arity, EvalUintBuiltins.pow_type, EvalUintBuiltins.pow_elab, EvalUintBuiltins.pow]
       | Builtin_isqrt -> [EvalUintBuiltins.isqrt_arity, EvalUintBuiltins.isqrt_type, EvalUintBuiltins.isqrt_elab, EvalUintBuiltins.isqrt]
-      | Builtin_logand -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logand;
-                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logand]
-      | Builtin_logor -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logor;
-                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logor]
-      | Builtin_logxor -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logxor;
-                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logxor]
+      | Builtin_bitwise_not -> [EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_not]
+      | Builtin_bitwise_and -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.bitwise_and;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_and]
+      | Builtin_bitwise_or -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.bitwise_or;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_or]
+      | Builtin_bitwise_xor -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.bitwise_xor;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.bitwise_xor]
 
       (* Signed integers specific builtins *)
       | Builtin_to_int32 -> [EvalIntBuiltins.to_int_arity, EvalIntBuiltins.to_int_type, EvalIntBuiltins.to_int_elab Bits32, EvalIntBuiltins.to_int32]
