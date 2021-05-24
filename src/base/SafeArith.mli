@@ -44,6 +44,14 @@ module type IntRep = sig
   val min_int : t
 
   val max_int : t
+
+  val bitwise_and : t -> t -> t
+
+  val bitwise_or : t -> t -> t
+
+  val bitwise_xor : t -> t -> t
+
+  val bitwise_not : t -> t
 end
 
 (* Integer arithmitic
@@ -62,6 +70,14 @@ module SafeInt (Unsafe : IntRep) : sig
   val pow : Unsafe.t -> Stdint.Uint32.t -> Unsafe.t
 
   val lt : Unsafe.t -> Unsafe.t -> bool
+
+  val bitwise_and : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_or : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_xor : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_not : Unsafe.t -> Unsafe.t
 end
 
 (* Unsigned integer arithmitic
@@ -82,4 +98,12 @@ module SafeUint (Unsafe : IntRep) : sig
   val lt : Unsafe.t -> Unsafe.t -> bool
 
   val isqrt : Unsafe.t -> Unsafe.t
+
+  val bitwise_and : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_or : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_xor : Unsafe.t -> Unsafe.t -> Unsafe.t
+
+  val bitwise_not : Unsafe.t -> Unsafe.t
 end
