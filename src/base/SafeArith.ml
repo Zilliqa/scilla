@@ -50,6 +50,13 @@ module type IntRep = sig
   val min_int : t
 
   val max_int : t
+
+  val logand : t -> t -> t
+
+  val logor : t -> t -> t
+
+  val logxor : t -> t -> t
+
 end
 
 module SafeInt (Unsafe : IntRep) = struct
@@ -110,6 +117,12 @@ module SafeInt (Unsafe : IntRep) = struct
     pow_aux Unsafe.one b
 
   let lt a b = Unsafe.compare a b < 0
+  
+  let logand a b = Unsafe.andl a b
+
+  let logor a b = Unsafe.orl a b
+
+  let logxor a b = Unsafe.xorl a b
 end
 
 module SafeUint (Unsafe : IntRep) = struct
@@ -146,6 +159,12 @@ module SafeUint (Unsafe : IntRep) = struct
     pow_aux Unsafe.one b
 
   let lt a b = Unsafe.compare a b < 0
+  
+  let logand a b = Unsafe.andl a b
+
+  let logor a b = Unsafe.orl a b
+
+  let logxor a b = Unsafe.xorl a b
 
   let isqrt n =
     let div2 m = Unsafe.shift_right m 1 in

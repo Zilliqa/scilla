@@ -240,6 +240,54 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       with IntOverflow | IntUnderflow ->
         builtin_fail "Int.pow: an overflow/underflow occurred" ls
 
+    let logand _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
+              pure @@ Int32L (Int32_safe.logand x y)
+          | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
+              pure @@ Int64L (Int64_safe.logand x y)
+          | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
+              pure @@ Int128L (Int128_safe.logand x y)
+          | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
+              pure @@ Int256L (Int256_safe.logand x y)
+          | _ -> builtin_fail "Int.logand: unsupported types" ls
+        in
+        pure @@ IntLit l
+
+    let logor _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
+              pure @@ Int32L (Int32_safe.logor x y)
+          | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
+              pure @@ Int64L (Int64_safe.logor x y)
+          | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
+              pure @@ Int128L (Int128_safe.logor x y)
+          | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
+              pure @@ Int256L (Int256_safe.logor x y)
+          | _ -> builtin_fail "Int.logor: unsupported types" ls
+        in
+        pure @@ IntLit l
+
+    let logxor _ ls _ =
+      try
+        let%bind l =
+          match ls with
+          | [ IntLit (Int32L x); UintLit (Uint32L y) ] ->
+              pure @@ Int32L (Int32_safe.logxor x y)
+          | [ IntLit (Int64L x); UintLit (Uint32L y) ] ->
+              pure @@ Int64L (Int64_safe.logxor x y)
+          | [ IntLit (Int128L x); UintLit (Uint32L y) ] ->
+              pure @@ Int128L (Int128_safe.logxor x y)
+          | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
+              pure @@ Int256L (Int256_safe.logxor x y)
+          | _ -> builtin_fail "Int.logxor: unsupported types" ls
+        in
+        pure @@ IntLit l
+
     let lt _ ls _ =
       try
         match ls with
@@ -1023,7 +1071,13 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_pow -> [EvalIntBuiltins.pow_arity, EvalIntBuiltins.pow_type, EvalIntBuiltins.pow_elab, EvalIntBuiltins.pow;
                         EvalUintBuiltins.pow_arity, EvalUintBuiltins.pow_type, EvalUintBuiltins.pow_elab, EvalUintBuiltins.pow]
       | Builtin_isqrt -> [EvalUintBuiltins.isqrt_arity, EvalUintBuiltins.isqrt_type, EvalUintBuiltins.isqrt_elab, EvalUintBuiltins.isqrt]
-    
+      | Builtin_logand -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logand;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logand]
+      | Builtin_logor -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logor;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logor]
+      | Builtin_logxor -> [EvalIntBuiltins.binop_arity, EvalIntBuiltins.binop_type, EvalIntBuiltins.binop_elab, EvalIntBuiltins.logxor;
+                        EvalUintBuiltins.binop_arity, EvalUintBuiltins.binop_type, EvalUintBuiltins.binop_elab, EvalUintBuiltins.logxor]
+
       (* Signed integers specific builtins *)
       | Builtin_to_int32 -> [EvalIntBuiltins.to_int_arity, EvalIntBuiltins.to_int_type, EvalIntBuiltins.to_int_elab Bits32, EvalIntBuiltins.to_int32]
       | Builtin_to_int64 -> [EvalIntBuiltins.to_int_arity, EvalIntBuiltins.to_int_type, EvalIntBuiltins.to_int_elab Bits64, EvalIntBuiltins.to_int64]

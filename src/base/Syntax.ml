@@ -76,6 +76,9 @@ type builtin =
   | Builtin_rem
   | Builtin_pow
   | Builtin_isqrt
+  | Builtin_logand
+  | Builtin_logor
+  | Builtin_logxor
   | Builtin_to_int32
   | Builtin_to_int64
   | Builtin_to_int128
@@ -130,6 +133,9 @@ let pp_builtin b =
   | Builtin_rem -> "rem"
   | Builtin_pow -> "pow"
   | Builtin_isqrt -> "isqrt"
+  | Builtin_logand -> "and"
+  | Builtin_logor -> "or"
+  | Builtin_xor -> "xor"
   | Builtin_to_int32 -> "to_int32"
   | Builtin_to_int64 -> "to_int64"
   | Builtin_to_int128 -> "to_int128"
@@ -179,6 +185,9 @@ let parse_builtin s loc =
   | "rem" -> Builtin_rem
   | "pow" -> Builtin_pow
   | "isqrt" -> Builtin_isqrt
+  | "and" -> Builtin_logand
+  | "or" -> Builtin_logor
+  | "xor" -> Builtin_logxor
   | "to_int32" -> Builtin_to_int32
   | "to_int64" -> Builtin_to_int64
   | "to_int128" -> Builtin_to_int128
