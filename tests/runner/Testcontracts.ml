@@ -412,8 +412,8 @@ let contract_tests env =
                 >::: build_contract_tests env "map_corners_test" succ_code 51 53
                        [];
                 "map_corners_test_combined"
-                >::: build_contract_tests env "map_corners_test_combined" succ_code 1 2
-                       [];
+                >::: build_contract_tests env "map_corners_test_combined"
+                       succ_code 1 1 [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
                 "listiter"

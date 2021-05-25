@@ -808,6 +808,19 @@ procedure t24 ()
   p3 tname
 end
 
+procedure reset()
+  s = "420";
+  f_s1 := s;
+  e1 = Emp String String;
+  f_m1 := e1;
+  e2 = Emp String (Map String String);
+  f_m2 := e2;
+  e3 = Emp String (Map String (Map String String));
+  f_m3 :=  e3;
+  e4 = Emp String (Map String String);
+  f_m := e4
+end
+
 transition test()
   t1;
   t2;
@@ -832,18 +845,6 @@ transition test()
   t21;
   t22;
   t23;
-  t24
-end
-
-transition reset()
-  s = "420";
-  f_s1 := s;
-  e1 = Emp String String;
-  f_m1 := e1;
-  e2 = Emp String (Map String String);
-  f_m2 := e2;
-  e3 = Emp String (Map String (Map String String));
-  f_m3 :=  e3;
-  e4 = Emp String (Map String String);
-  f_m := e4
+  t24;
+  reset
 end
