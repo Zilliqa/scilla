@@ -253,8 +253,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
               pure @@ Int256L (Int256_safe.bitwise_and x y)
           | _ -> builtin_fail "Int.and: unsupported types" ls
-        in
-        pure @@ IntLit l
 
     let bitwise_or _ ls _ =
       try
@@ -269,8 +267,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
               pure @@ Int256L (Int256_safe.bitwise_or x y)
           | _ -> builtin_fail "Int.or: unsupported types" ls
-        in
-        pure @@ IntLit l
 
     let bitwise_xor _ ls _ =
       try
@@ -285,8 +281,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ IntLit (Int256L x); UintLit (Uint32L y) ] ->
               pure @@ Int256L (Int256_safe.bitwise_xor x y)
           | _ -> builtin_fail "Int.xor: unsupported types" ls
-        in
-        pure @@ IntLit l
 
     let bitwise_not _ ls _ =
       try
@@ -301,8 +295,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ IntLit (Int256L x) ] ->
               pure @@ Int256L (Int256_safe.bitwise_not x)
           | _ -> builtin_fail "Int.not: unsupported types" ls
-        in
-        pure @@ IntLit l
 
     let lt _ ls _ =
       try
@@ -474,8 +466,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
               pure @@ Uint256L (Uint256_safe.bitwise_and x y)
           | _ -> builtin_fail "Int.and: unsupported types" ls
-        in
-        pure @@ UintLit l
 
     let bitwise_or _ ls _ =
       try
@@ -490,8 +480,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
               pure @@ Uint256L (Uint256_safe.bitwise_or x y)
           | _ -> builtin_fail "Int.or: unsupported types" ls
-        in
-        pure @@ UintLit l
 
     let bitwise_xor _ ls _ =
       try
@@ -506,8 +494,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ UintLit (Uint256L x); UintLit (Uint32L y) ] ->
               pure @@ Uint256L (Uint256_safe.bitwise_xor x y)
           | _ -> builtin_fail "Int.xor: unsupported types" ls
-        in
-        pure @@ UintLit l
 
     let bitwise_not _ ls _ =
       try
@@ -522,8 +508,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | [ UintLit (Uint256L x) ] ->
               pure @@ Uint256L (Uint256_safe.bitwise_not x)
           | _ -> builtin_fail "Int.not: unsupported types" ls
-        in
-        pure @@ IntLit l
 
 
     let isqrt _ ls _ =
