@@ -30,3 +30,10 @@ let int_fold ~init ~(f : 'a -> int -> 'a) n =
       recurser acc' (i + 1)
   in
   recurser init 0
+
+(* Execute f() and print time taken. *)
+let ftimer name ~f =
+  let t = Core.Unix.gettimeofday () in
+  let res = f () in
+  Printf.printf "%s,%f\n" name (Core.Unix.gettimeofday () -. t);
+  res
