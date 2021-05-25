@@ -163,7 +163,7 @@ module SafeUint (Unsafe : IntRep) = struct
     pow_aux Unsafe.one b
 
   let lt a b = Unsafe.compare a b < 0
-  
+
   let bitwise_and a b = Unsafe.bitwise_and a b
 
   let bitwise_or a b = Unsafe.bitwise_or a b
