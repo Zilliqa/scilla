@@ -58,7 +58,6 @@ module type IntRep = sig
   val bitwise_xor : t -> t -> t
 
   val bitwise_not : t -> t
-
 end
 
 module SafeInt (Unsafe : IntRep) = struct

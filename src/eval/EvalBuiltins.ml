@@ -509,7 +509,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               pure @@ Uint256L (Uint256_safe.bitwise_not x)
           | _ -> builtin_fail "Int.not: unsupported types" ls
 
-
     let isqrt _ ls _ =
       try
         let%bind l =
