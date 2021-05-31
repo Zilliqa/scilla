@@ -305,6 +305,24 @@ module Uint256 = struct
       low = Uint128.of_bytes_little_endian buff off;
       high = Uint128.of_bytes_little_endian buff (off + 16);
     }
+
+  let of_uint32 a =
+    {
+      low = Uint128.of_uint32 a;
+      high = Uint128.zero;
+    }
+
+  let of_uint64 a =
+    {
+      low = Uint128.of_uint64 a;
+      high = Uint128.zero;
+    }
+
+  let of_uint128 a =
+    {
+      low = Uint128.of_uint128 a;
+      high = Uint128.zero;
+    }
 end
 
 (*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
