@@ -306,7 +306,7 @@ git clean -dfX --exclude=\!_opam/**
 
 </details>
 
-<details><summary>Global opam switch</summary>
+<details><summary>Adding a global opam switch into preexisting opam installation</summary>
 
 Instead of local switches, you can install a global switch called `scilla` on your system as follows
 ```shell
