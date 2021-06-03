@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract T ()
+
+transition F (param1 : ByStr20 with contract field f : Uint32, field g : Int32 end)
+  x <-& param1 as ByStr20
+end

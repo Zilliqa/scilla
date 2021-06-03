@@ -1,0 +1,7 @@
+scilla_version 0
+
+contract T ()
+
+transition F (param1 : Uint128)
+  x <-& param1 as ByStr20 with end
+end
