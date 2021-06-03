@@ -96,6 +96,8 @@ the maximum number of open file descriptors as `Makefile`'s `test` target does:
 ulimit -n 1024
 ```
 
+After you have proceeded with installation if an error with regards to `version` file during `make` occurs, see [here](https://github.com/Zilliqa/scilla/wiki/macOS-troubleshooting) for the solution.
+
 </details>
 
 <details><summary>Nix and NixOS</summary>
@@ -300,6 +302,20 @@ Note: using `git clean`, extra care should be paid so that it won't delete `_opa
 We suggest using `make clean` command or keeping `_opam` directory like so:
 ```shell
 git clean -dfX --exclude=\!_opam/**
+```
+
+</details>
+
+<details><summary>Adding a global opam switch into preexisting opam installation</summary>
+
+Instead of local switches, you can install a global switch called `scilla` on your system as follows
+```shell
+opam switch create scilla ocaml-base-compiler.4.08.1
+```
+
+Now you will need to install scilla's dependencies with the following command:
+```shell
+opam install ./scilla.opam --deps-only --with-test
 ```
 
 </details>
