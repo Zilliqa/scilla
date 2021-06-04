@@ -31,6 +31,8 @@ let cmd =
           (optional_with_default Server.num_pending int)
           ~doc:"NUM_PENDING Maximum number of pending requests"
       in
-      fun () -> Server.start ~sock_path ~num_pending)
+      fun () ->
+        Server.start ~server_implementation:Server.default_server_implementation
+          ~sock_path ~num_pending)
 
 let () = Command.run cmd
