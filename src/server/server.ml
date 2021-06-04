@@ -87,9 +87,7 @@ let sock_path = "/tmp/scilla-server.sock"
 
 let num_pending = 5
 
-let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
-  pout "Starting Scilla server...\n";
-  Out_channel.flush stdout;
+let default_server_implementation () =
   let runner args =
     let output, _ = Runner.run args ~exe_name:"scilla-runner" in
     Yojson.Basic.pretty_to_string output
@@ -101,11 +99,18 @@ let start ?(sock_path = sock_path) ?(num_pending = num_pending) =
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
   Server.disambiguator @@ mk_handler disambiguator;
+  Server.implementation
+
+let start ?(server_implementation = default_server_implementation)
+    ?(sock_path = sock_path) ?(num_pending = num_pending) =
+  pout "Starting Scilla server...\n";
+  Out_channel.flush stdout;
+
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and
      performs the marshalling and unmarshalling. We need to connect this
      function to a real server that responds to client requests *)
-  let rpc = IDL.server Server.implementation in
+  let rpc = IDL.server (server_implementation ()) in
   (* Setup and listen the socket *)
   let socket = setup ~sock_path ~num_pending in
   (* Accept connections and handle requests *)
