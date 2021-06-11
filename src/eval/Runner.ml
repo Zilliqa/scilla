@@ -271,29 +271,10 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   | Ok anode' -> anode'
 
 let perform_dynamic_typechecks checks gas_remaining =
-  let open RunnerType in
   List.iter checks ~f:(fun (t, caddr) ->
-      match t with
-      | Address fts -> (
-          match
-            EvalUtil.EvalTypecheck.typecheck_remote_field_types ~caddr
-              (Option.map ~f:IdLoc_Comp.Map.to_alist fts)
-          with
-          | Ok true -> ()
-          | Ok false ->
-              fatal_error_gas_scale Gas.scale_factor
-                (mk_error0
-                   (sprintf "Address %s does not satisfy type %s\n"
-                      (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
-                      (RunnerSyntax.SType.pp_typ t)))
-                gas_remaining
-          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
-      | _ ->
-          fatal_error_gas_scale Gas.scale_factor
-            (mk_error0
-               (sprintf "Unable to perform dynamic typecheck on type %s\n"
-                  (RunnerSyntax.SType.pp_typ t)))
-            gas_remaining)
+      match EvalUtil.EvalTypecheck.assert_typecheck_remote_field_types ~caddr t with
+      | Ok _ -> ()
+      | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
 
 let deploy_library args gas_remaining =
   match FEParser.parse_lmodule args.input with

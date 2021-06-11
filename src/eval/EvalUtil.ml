@@ -525,36 +525,91 @@ module EvalTypecheck = struct
         pure true
     | _ -> pure false
 
-  let typecheck_remote_field_types ~caddr fts_opt =
-    let open EvalType in
+  let is_address_in_use ~caddr =
+    (* True if the address is in use, false otherwise *)
+    let%bind user_addr = is_user_addr ~caddr in
+    if not user_addr then
+      let%bind contract_addr = is_contract_addr ~caddr in
+      pure contract_addr
+    else
+      pure true 
+
+  let typecheck_remote_fields ~caddr fts =
+    (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
+    allM fts ~f:(fun (f, t) ->
+        let%bind res =
+          StateService.external_fetch ~caddr ~fname:f ~keys:[]
+            ~ignoreval:true
+        in
+        match res with
+        | _, Some ext_typ ->
+            pure @@ EvalType.type_assignable ~expected:t ~actual:ext_typ
+        | _, None -> pure false)
+
+  type evalTCResult =
+    | AddressNotInUse
+    | NoContractAtAddress
+    | FieldTypeMismatch
+    | Success
+  
+  let typecheck_fts ~caddr fts_opt =
     match fts_opt with
     | None ->
-        (* True if the address is in use, false otherwise *)
-        let%bind user_addr = is_user_addr ~caddr in
-        if not user_addr then
-          let%bind contract_addr = is_contract_addr ~caddr in
-          if not contract_addr then
-            fail0
-            @@ sprintf "Address %s not in use."
-                 (EvalLiteral.Bystrx.hex_encoding caddr)
-          else pure true
-        else pure true
+        let%bind in_use = is_address_in_use ~caddr in
+        if not in_use then
+          pure AddressNotInUse
+        else pure Success
     | Some fts ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in
         if not contract_addr then
-          fail0
-          @@ sprintf "No contract found at address %s"
-               (EvalLiteral.Bystrx.hex_encoding caddr)
+          pure NoContractAtAddress
         else
-          (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-          allM fts ~f:(fun (f, t) ->
-              let%bind res =
-                StateService.external_fetch ~caddr ~fname:f ~keys:[]
-                  ~ignoreval:true
-              in
-              match res with
-              | _, Some ext_typ ->
-                  pure @@ type_assignable ~expected:t ~actual:ext_typ
-              | _, None -> pure false)
+          let%bind fts_ok = typecheck_remote_fields ~caddr fts in
+          if not fts_ok then
+            pure FieldTypeMismatch
+          else
+            pure Success
+
+  let get_fts_opt_from_address t =
+    let open EvalType in
+    match t with
+    | Address fts_opt -> pure fts_opt
+    | _ ->
+        fail0
+        @@ sprintf "Unable to perform dynamic typecheck on type %s\n"
+          (pp_typ t)
+  
+  let assert_typecheck_remote_field_types ~caddr t =
+    let open EvalType in
+    let%bind fts_opt = get_fts_opt_from_address t in
+    let%bind tc_res = typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt) in
+    match tc_res with
+    | AddressNotInUse ->
+        fail0
+        @@ sprintf "Address %s not in use."
+          (EvalLiteral.Bystrx.hex_encoding caddr)
+    | NoContractAtAddress ->
+        fail0
+        @@ sprintf "No contract found at address %s"
+          (EvalLiteral.Bystrx.hex_encoding caddr)
+    | FieldTypeMismatch ->
+        fail0
+        @@ sprintf "Address %s does not satisfy type %s\n"
+          (EvalLiteral.Bystrx.hex_encoding caddr)
+          (pp_typ t)
+    | Success ->
+        pure ()
+            
+  let typecheck_remote_field_types ~caddr t =
+    let open EvalType in
+    let%bind fts_opt = get_fts_opt_from_address t in
+    let%bind tc_res = typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt) in
+    match tc_res with
+    | AddressNotInUse
+    | NoContractAtAddress
+    | FieldTypeMismatch ->
+        pure false
+    | Success ->
+        pure true
 end

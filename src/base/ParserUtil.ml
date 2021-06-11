@@ -132,6 +132,10 @@ module type Syn = sig
     | MatchStmt of
         ParserRep.rep SIdentifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ParserRep.rep SIdentifier.t * string
+    | TypeCast of
+        ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
+        * SType.t
     | AcceptPayment
     (* forall l p *)
     | Iterate of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t

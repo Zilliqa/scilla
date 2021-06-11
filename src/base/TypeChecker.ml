@@ -817,7 +817,30 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.ReadFromBC (typed_x, bf), rep)
                  checked_stmts
-        | MatchStmt (x, clauses) ->
+        | TypeCast (x, r, t) ->
+            (* Only allow casts to address types *)
+            let%bind () =
+              fromR_TE @@
+              assert_type_assignable ~lc:(ER.get_loc (get_rep r)) ~expected:(address_typ None) ~actual:t in
+            let%bind r_typ =
+              fromR_TE
+              @@ TEnv.resolveT env.pure (get_id r)
+                ~lopt:(Some (get_rep r))
+            in
+            (* Only allow casts of types that could be an address type *)
+            let%bind () =
+              fromR_TE @@
+              assert_type_assignable ~lc:(ER.get_loc (get_rep r)) ~expected:(bystrx_typ Type.address_length) ~actual:(rr_typ r_typ).tp in
+            let res_typ = mk_qual_tp (option_typ t) in
+            let typed_x = add_type_to_ident x res_typ in
+            let typed_r = add_type_to_ident r (rr_typ r_typ) in
+            let%bind checked_stmts =
+              with_extended_env env get_tenv_pure [ (x, res_typ.tp) ] [] (type_stmts sts get_loc)
+            in
+            pure @@ add_stmt_to_stmts_env_gas
+              (TypedSyntax.TypeCast (typed_x, typed_r, t), rep)
+              checked_stmts
+         | MatchStmt (x, clauses) ->
             if List.is_empty clauses then
               fail
                 (mk_type_error0
