@@ -1,3 +1,6 @@
+(* This contract is only used in the documentation at scilla.readthedocs.io.
+   No tests are run as part of our test suite *)
+
 scilla_version 0
 
 import IntUtils
