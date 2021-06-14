@@ -12,16 +12,11 @@ open Core_kernel
 open ErrorUtils
 open Syntax
 open Literal
-open TypeUtil
 
 (* ************************************** *)
 (* ******** Dead Code Detector ********** *)
 (* ************************************** *)
-module DeadCodeDetector (SR:Rep) (ER : sig
-      include Rep
-
-      val get_type : rep -> PlainTypes.t inferred_type
-    end) =
+module DeadCodeDetector (SR:Rep) (ER : Rep) =
 struct
     module SCLiteral = GlobalLiteral
     module SCType = SCLiteral.LType 
@@ -30,7 +25,6 @@ struct
     module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
     open SCIdentifier
     open SCSyntax
-    open SCU
     open AssocDictionary
 
     (* Warning level for dead code detection *)
@@ -70,7 +64,7 @@ struct
 
       (**************** Assertions ***************)
       (* Checking elibs and cmod.elib are the same *)
-      let cmod_elib_list = List.map cmod.elibs fst in 
+      let cmod_elib_list = List.map cmod.elibs ~f:fst in 
       let elibs_list = List.map elibs ~f:(fun libt -> libt.libn.lname) in
       if (List.length cmod_elib_list) <> (List.length elibs_list) then 
         warn1 ("Bug in imported libraries - imported libraries might be incorrect") warning_level_dead_code (SR.get_loc SR.dummy_rep);
@@ -114,7 +108,7 @@ struct
         | Some lib -> 
           List.iter lib.lentries ~f:( fun lib_entry ->
             match lib_entry with 
-            | LibVar (name, _, e) -> 
+            | LibVar (name, _, _) -> 
               add_dict libvar_dict name;
             | LibTyp (name, _) -> add_dict libty_dict name
           );
@@ -123,7 +117,7 @@ struct
 
 
       (******* Populate contract dictionaries *******)
-      List.iter cmod.contr.cfields ~f:( fun (iden, ty, expr) ->
+      List.iter cmod.contr.cfields ~f:( fun (iden, _, _) ->
         add_dict cfields_dict iden;
       );
 
@@ -242,7 +236,7 @@ struct
             | MLit _ -> () 
             | MVar x -> mark_used' x;
           )
-        | Constr (iden, tys, es) ->
+        | Constr (_, tys, es) ->
           List.iter tys ~f:(fun ty -> mark_used_ty ty);
           List.iter es ~f:(fun e -> mark_used' e)
         | App (f, actuals) ->
@@ -250,7 +244,7 @@ struct
           List.iter actuals ~f:(fun act -> mark_used' act)
         | TApp (f, tys) -> 
           mark_used' f;
-          List.iter tys mark_used_ty;
+          List.iter tys ~f:mark_used_ty;
         | MatchExpr (x, plist) ->
           begin
             mark_used' x;
@@ -264,8 +258,8 @@ struct
               find_unused !local_dict "Unused Variable: " ER.get_loc
             )
           end
-        | Builtin (builtin, tys, actuals) -> 
-          List.iter tys mark_used_ty;
+        | Builtin (_, tys, actuals) -> 
+          List.iter tys ~f:mark_used_ty;
           List.iter actuals ~f:(fun act -> mark_used' act);
         | Fixpoint (_, ty, e) 
         | Fun (_, ty, e) -> expr_iter e local_dicts; mark_used_ty ty;
@@ -295,18 +289,18 @@ struct
           | MapUpdate (f, i1, i2) ->
             begin
               mark_used' f; 
-              List.iter i1 mark_used';
+              List.iter i1 ~f:mark_used';
               match i2 with 
               | Some i -> mark_used' i;
               | None -> ()
             end
           | MapGet (_, f, i1, _) | RemoteMapGet (_, _, f, i1, _) ->
             mark_used' f;
-            List.iter i1 mark_used'
+            List.iter i1 ~f:mark_used'
           | Bind (_, expr) -> expr_iter expr local_dicts 
           | CallProc (p, actuals) -> 
             let _ = mark_used proc_dict p in ();
-            List.iter actuals mark_used';
+            List.iter actuals ~f:mark_used';
           | MatchStmt (x, plist) ->
             begin
               mark_used' x;
@@ -371,7 +365,7 @@ struct
         List.iter lib.lentries ~f:( fun l_entry ->
           match l_entry with 
           | LibTyp _ -> ()
-          | LibVar (iden, _, e) -> 
+          | LibVar (_, _, e) -> 
             expr_iter e [];
         );
 

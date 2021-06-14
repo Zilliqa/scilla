@@ -57,7 +57,18 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Unused local component parameter: cond",
+      "start_location": {
+        "file": "checker/good/one-transition-might-accept.scilla",
+        "line": 15,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 

@@ -54,7 +54,28 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Unused local component parameter: cond",
+      "start_location": {
+        "file": "checker/good/one-transition-accepts.scilla",
+        "line": 10,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: cond",
+      "start_location": {
+        "file": "checker/good/one-transition-accepts.scilla",
+        "line": 6,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 

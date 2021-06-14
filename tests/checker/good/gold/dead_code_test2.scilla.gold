@@ -1,24 +1,28 @@
 {
-  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "test_pattern", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "MyContract",
+    "vname": "SimpleImplDead",
     "params": [],
-    "fields": [],
+    "fields": [
+      { "vname": "test_pattern", "type": "Option (ByStr20)", "depth": 0 }
+    ],
     "transitions": [
       {
-        "vname": "ByStr20",
-        "params": [ { "vname": "x", "type": "ByStr20" } ]
+        "vname": "AddFunds",
+        "params": [ { "vname": "initiator", "type": "ByStr20" } ]
       }
     ],
     "procedures": [],
     "events": [
       {
-        "vname": "Hello",
-        "params": [
-          { "vname": "x", "type": "Int32" },
-          { "vname": "y", "type": "Int128" }
-        ]
+        "vname": "Funds deposit ",
+        "params": [ { "vname": "funder", "type": "ByStr20" } ]
       }
     ],
     "ADTs": [
@@ -63,21 +67,14 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused local component parameter: x",
+      "warning_message": "Unused Variable: dead_pattern",
       "start_location": {
-        "file": "checker/good/event_reordered_fields.scilla",
-        "line": 7,
-        "column": 21
+        "file": "contracts/dead_code_test2.scilla",
+        "line": 13,
+        "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
-    },
-    {
-      "warning_message":
-        "No transition in contract MyContract contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
     }
   ],
   "gas_remaining": "7999"

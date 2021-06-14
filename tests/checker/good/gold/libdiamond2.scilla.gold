@@ -50,6 +50,49 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: test_bot",
+      "start_location": {
+        "file": "checker/good/libdiamond2.scilla",
+        "line": 8,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: TestLibDiamondTop",
+      "start_location": {
+        "file": "checker/good/libdiamond2.scilla",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: TestLibDiamondBottom",
+      "start_location": {
+        "file": "checker/good/libdiamond2.scilla",
+        "line": 4,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "TestLibDiamondBottom not found in elib",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Bug in imported libraries - imported libraries might be incorrect",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract TestContr1 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

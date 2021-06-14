@@ -69,6 +69,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused fields: f",
+      "start_location": {
+        "file": "contracts/map_as_cparam.scilla",
+        "line": 6,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract T contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

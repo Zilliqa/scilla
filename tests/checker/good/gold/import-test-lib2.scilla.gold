@@ -102,6 +102,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported libraries: TestLib4",
+      "start_location": {
+        "file": "contracts/import-test-lib2.scilla",
+        "line": 17,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract ImportTestLib2 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

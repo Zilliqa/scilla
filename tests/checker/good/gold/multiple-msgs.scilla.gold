@@ -50,6 +50,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported libraries: ListUtils",
+      "start_location": {
+        "file": "contracts/multiple-msgs.scilla",
+        "line": 5,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

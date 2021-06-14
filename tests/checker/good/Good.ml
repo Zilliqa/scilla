@@ -80,6 +80,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "address_eq_test.scilla";
       "address_list_traversal.scilla";
       "polymorphic_address.scilla";
+      "dead_code_test1.scilla";
+      "dead_code_test2.scilla"
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0

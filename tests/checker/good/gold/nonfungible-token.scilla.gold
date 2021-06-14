@@ -175,6 +175,56 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: one_msg",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library var: code_success",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 84,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library var: code_failure",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 85,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract params: name",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 99,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract params: symbol",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 100,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",

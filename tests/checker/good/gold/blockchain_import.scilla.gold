@@ -1,2 +1,16 @@
-{ "warnings": [], "gas_remaining": "7999" }
+{
+  "warnings": [
+    {
+      "warning_message": "Unused imported libraries: BlockchainLib",
+      "start_location": {
+        "file": "checker/good/blockchain_import.scilla",
+        "line": 6,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
+  "gas_remaining": "7999"
+}
 

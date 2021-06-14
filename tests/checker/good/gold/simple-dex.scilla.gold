@@ -144,6 +144,46 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: getAddressFromPair",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library var: getValueFromPair",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract params: contractOwner",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 72,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local variable: zero",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 110,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract SimpleDex contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

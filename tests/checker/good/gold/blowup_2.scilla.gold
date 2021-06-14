@@ -63,6 +63,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: bar10",
+      "start_location": {
+        "file": "checker/good/blowup_2.scilla",
+        "line": 18,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract params: owner",
+      "start_location": {
+        "file": "checker/good/blowup_2.scilla",
+        "line": 20,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: msg",
+      "start_location": {
+        "file": "checker/good/blowup_2.scilla",
+        "line": 22,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Blowup contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

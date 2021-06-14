@@ -247,6 +247,136 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused fields: assign_test_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 25,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 26,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 27,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_4",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 28,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_5",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 29,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_6",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 30,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused fields: assign_test_7",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 31,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: list1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 114,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: list2",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 115,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: list3",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 116,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: pair1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 117,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: adt1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 118,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local component parameter: remote1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 119,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:169:3\n  Accept at contracts/remote_state_reads.scilla:173:3\n",
       "start_location": {

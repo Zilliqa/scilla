@@ -74,6 +74,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported libraries: ListUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: PairUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: NatUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

@@ -50,6 +50,46 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: f",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused Variable: b",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 11,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused Variable: b",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 19,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused Variable: a",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 19,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "Deprecated: variable a shadows a previous binding in the same pattern.",
       "start_location": {

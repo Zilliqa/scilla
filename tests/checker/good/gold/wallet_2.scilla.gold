@@ -187,7 +187,38 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Unused library var: mk_contract_initialized_event",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 11,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library var: f",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 75,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: IntUtils",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 3,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7856"
 }
 

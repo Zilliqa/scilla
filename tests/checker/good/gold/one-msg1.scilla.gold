@@ -50,6 +50,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported libraries: ListUtils",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 5,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused Variable: m2",
+      "start_location": {
+        "file": "contracts/one-msg1.scilla",
+        "line": 33,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

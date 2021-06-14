@@ -55,6 +55,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library var: one_msg",
+      "start_location": {
+        "file": "checker/good/one-msg3.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported libraries: ListUtils",
+      "start_location": {
+        "file": "checker/good/one-msg3.scilla",
+        "line": 5,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

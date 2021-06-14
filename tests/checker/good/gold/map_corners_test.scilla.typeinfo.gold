@@ -9743,6 +9743,12 @@
   ],
   "warnings": [
     {
+      "warning_message": "Unused procedures: expected_fail_msg",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
