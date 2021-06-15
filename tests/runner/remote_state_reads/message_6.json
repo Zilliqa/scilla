@@ -74,7 +74,7 @@
         },
         {
             "vname" : "pair1",
-            "type" : "Pair ByStr20 0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
+            "type" : "Pair ByStr20 0x3620C286757a29985cee194eb90064270fb65414.AddressADT",
             "value" : {
                 "constructor" : "Pair",
                 "argtypes"    : [ "ByStr20", "0x3620c286757a29985cee194eb90064270fb65414.AddressADT" ],
