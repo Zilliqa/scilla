@@ -369,6 +369,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       let deps, checked, emsgs =
         List.fold_left libl ~init:([], already_checked, [])
           ~f:(fun (rec_lib_acc_rev, already_checked_acc, emsgs_acc) ext_lib ->
+            (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+                TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
             let ext_lib_fname =
               (SR.get_loc (get_rep ext_lib.libn.lname)).fname
             in

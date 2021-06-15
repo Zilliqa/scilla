@@ -1181,6 +1181,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (tc_lib_acc_rev, already_checked_acc, emsgs_acc, remaining_gas)
                elib
              ->
+            (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+               TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
             let elib_fname = (SR.get_loc (get_rep elib.libn.lname)).fname in
             match
               List.Assoc.find already_checked_acc elib_fname ~equal:String.( = )
