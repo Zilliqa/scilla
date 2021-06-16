@@ -175,7 +175,10 @@ scid :
 | name = CID { ParserName.parse_simple_name name }
 | ns = CID; PERIOD; name = CID { ParserName.parse_qualified_name ns name }
 (* This production is necessary because message and state jsons contain global type names *)
-| ns = HEXLIT; PERIOD; name = CID { ParserName.parse_qualified_name ns name }
+| ns = HEXLIT; PERIOD; name = CID {
+  let ns' = SLiteral.(Bystrx.hex_encoding (Bystrx.parse_hex ns)) in
+  ParserName.parse_qualified_name ns' name
+}
 
 type_annot:
 | COLON; t = typ { t }
