@@ -836,7 +836,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     let%bind typed_clause =
                       type_match_stmt_branch env sct ptrn ex get_loc
                     in
-                    pure @@ (typed_clause :: checked_clauses_acc))
+                    pure @@ typed_clause :: checked_clauses_acc)
               in
               let checked_clauses = List.rev checked_clauses_rev in
               let%bind checked_stmts = type_stmts sts get_loc env in
@@ -933,7 +933,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      (sprintf
                         "Procedure %s not found or has incorrect argument type."
                         (as_error_string p))
-                     (SR.get_loc (get_rep p))) )
+                     (SR.get_loc (get_rep p))))
         | Throw iopt -> (
             let%bind checked_stmts = type_stmts sts get_loc env in
             match iopt with
@@ -959,13 +959,13 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ add_stmt_to_stmts_env_gas
                      (TypedSyntax.Throw None, rep)
-                     checked_stmts )
+                     checked_stmts)
         | GasStmt g ->
             let%bind checked_stmts = type_stmts sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.GasStmt (type_gas_charge g), rep)
-                 checked_stmts )
+                 checked_stmts)
 
   and type_match_stmt_branch env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in
@@ -1036,7 +1036,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
             let _ = TEnv.addT fields_env fn (mk_qual_tp ft).tp in
-            pure @@ ((typed_fs, ft, typed_expr) :: acc)
+            pure @@ (typed_fs, ft, typed_expr) :: acc
           else
             fail
               (mk_type_error1
@@ -1128,7 +1128,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   in
                   let libtyp = TypedSyntax.LibTyp (tname, ctr_defs) in
                   Ok ((libtyp :: acc, errs, blist), remaining_gas)
-              | Error e -> Ok ((acc, errs @ e, blist), remaining_gas) )
+              | Error e -> Ok ((acc, errs @ e, blist), remaining_gas))
           | LibVar (ln, ltopt, le) -> (
               let dep_on_blist = free_vars_dep_check le blist in
               (* If exp depends on a blacklisted exp, then let's ignore it. *)
@@ -1155,14 +1155,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                         with
                         | Ok () -> Ok (thunk ())
                         | Error e ->
-                            Ok ((acc, errs @ e, ln :: blist), remaining_gas) )
-                    | None -> Ok (thunk ()) )
+                            Ok ((acc, errs @ e, ln :: blist), remaining_gas))
+                    | None -> Ok (thunk ()))
                 | Error ((TypeError, e), remaining_gas) ->
                     (* A new original type failure. Add to blocklist and move on. *)
                     Ok ((acc, errs @ e, ln :: blist), remaining_gas)
                 | Error ((GasError, e), remaining_gas) ->
                     (* Out of gas. Bail out. *)
-                    Error ((GasError, errs @ e), remaining_gas) ))
+                    Error ((GasError, errs @ e), remaining_gas)))
     in
     (* If there has been no errors at all, we're good to go. *)
     if List.is_empty errs then
@@ -1200,9 +1200,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                       =
                     recurser elib.deps files_checked_acc remaining_gas
                   in
-                  let all_files =
-                    (elib_fname :: dep_files) @ files_checked_acc
-                  in
+                  let all_files = elib_fname :: dep_files @ files_checked_acc in
                   match type_library tenv0 elib.libn dep_remaining_gas with
                   | Ok (t_lib, remaining_gas) ->
                       pure
@@ -1221,7 +1219,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                           remaining_gas )
                   | Error ((GasError, el), remaining_gas) ->
                       (* Gas error - bail out *)
-                      Error ((GasError, el), remaining_gas) )
+                      Error ((GasError, el), remaining_gas))
             in
             match tc_lib_opt with
             | Some t_lib ->
@@ -1246,9 +1244,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   let type_lmodule (md : UntypedSyntax.lmodule)
       (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.libtree list) (gas : Stdint.uint64) :
-      ( ( TypedSyntax.lmodule
+      ( (TypedSyntax.lmodule
         * TypedSyntax.lib_entry list
-        * TypedSyntax.libtree list )
+        * TypedSyntax.libtree list)
         * Stdint.uint64,
         (TU.typeCheckerErrorType * scilla_error list) * Stdint.uint64 )
       result =
@@ -1280,10 +1278,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       (* TODO, issue #225 : rec_libs should be added to the libraries when we allow custom, inductive ADTs *)
         (rec_libs : UntypedSyntax.lib_entry list)
       (elibs : UntypedSyntax.libtree list) (gas : Stdint.uint64) :
-      ( ( TypedSyntax.cmodule
+      ( (TypedSyntax.cmodule
         * stmt_tenv
         * TypedSyntax.libtree list
-        * TypedSyntax.lib_entry list )
+        * TypedSyntax.lib_entry list)
         * Stdint.uint64,
         scilla_error list * Stdint.uint64 )
       result =
@@ -1312,7 +1310,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
              | Error ((TypeError, e), gas_remaining) ->
                  Ok ((None, e), gas_remaining)
              | Error ((GasError, e), gas_remaining) ->
-                 Error ((GasError, e), gas_remaining) )
+                 Error ((GasError, e), gas_remaining))
          | None -> pure ((None, emsgs), remaining_gas)
        in
 

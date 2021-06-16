@@ -351,7 +351,7 @@ struct
               let pol = mul_pn [ cpol ] (single_simple_pn @@ Length ls) in
               let cterm' = (1, [ (Container (SPol pol, elmsize), 1) ]) in
               SPol (cterm' :: oterms)
-          | _ -> Intractable "Unable to solve recurrence." )
+          | _ -> Intractable "Unable to solve recurrence.")
       | Container (SPol [ cpol; (1, [ (Length (Base lenvar), 1) ]) ], elmsize)
       | Container (SPol [ (1, [ (Length (Base lenvar), 1) ]); cpol ], elmsize)
         ->
@@ -472,7 +472,7 @@ struct
           (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
           | _ ->
               fail1 "Functions cannot be wrapped in ADTs"
-                (ER.get_loc (get_rep id)) )
+                (ER.get_loc (get_rep id)))
       | None -> pure id
     in
     let rec replacer s =
@@ -480,7 +480,7 @@ struct
       | Base b -> (
           match List.assoc_opt (get_id b) param_actual_map with
           | Some act -> pure @@ act
-          | None -> pure @@ Base b )
+          | None -> pure @@ Base b)
       | Length s' ->
           let%bind r = replacer s' in
           pure @@ Length r
@@ -555,7 +555,7 @@ struct
               (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
               | _ ->
                   fail1 "Functions cannot be wrapped in ADTs"
-                    (ER.get_loc (get_rep id)) )
+                    (ER.get_loc (get_rep id)))
           | None -> pure id
         in
         (* We don't do anything with id as that will be expanded (not just resolved). *)
@@ -659,8 +659,8 @@ struct
               let%bind ls' = resolver ls in
               let%bind acc' = resolver accbase in
               pure
-                ( if rfold then RFoldAcc (id, ls', acc')
-                else LFoldAcc (id, acc', ls') )
+                (if rfold then RFoldAcc (id, ls', acc')
+                else LFoldAcc (id, acc', ls'))
             else
               let args' = List.map (fun i -> get_id i) args in
               let srlist =
@@ -818,7 +818,7 @@ struct
                 match width with
                 | Bits32 | Bits64 -> pure @@ const_pn 4
                 | Bits128 -> pure @@ const_pn 8
-                | Bits256 -> pure @@ const_pn 16 )
+                | Bits256 -> pure @@ const_pn 16)
             (*  eq (a, b) = a. *)
             | PrimType String_typ -> pure @@ sp "a"
             | PrimType Bnum_typ -> pure @@ const_pn 32
@@ -908,9 +908,9 @@ struct
             let arg0 = List.nth tparams 0 in
             (* Check if this is ByStrX -> Uint256 when X <= 32. *)
             if
-              ( match bystrx_width arg0 with
+              (match bystrx_width arg0 with
               | Some w when w <= 32 -> true
-              | _ -> false )
+              | _ -> false)
               && ops = Builtin_to_uint256
             then pure (base * 4)
             else
@@ -1227,7 +1227,7 @@ struct
             in
             let gupol' = add_pn gupol (single_simple_pn (SizeOf s)) in
             gua_stmt genv gupol' sts
-        | _ -> fail1 "Unsupported statement" (SR.get_loc sloc) )
+        | _ -> fail1 "Unsupported statement" (SR.get_loc sloc))
 
   (* Bind identifiers to just sizeref wrappers of themselves. *)
   let identity_bind_ident_list genv idlist =

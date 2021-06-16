@@ -138,7 +138,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             | Some adr ->
                 (* Name is defined in adr, and imported into the default
                      namespace. *)
-                pure (GlobalName.QualifiedGlobal (adr, n), as_string nm) ) )
+                pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)))
     | QualifiedLocal (ns, n) -> (
         (* Check the specified namespace *)
         match
@@ -154,7 +154,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                   error_loc
             | Some adr ->
                 (* Name defined at adr. *)
-                pure (GlobalName.QualifiedGlobal (adr, n), as_string nm) ) )
+                pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)))
 
   (* Local definition that needs an address qualifier:
      User-defined types and constructors, and library variables *)
@@ -315,7 +315,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             foldrM msg_entries ~init:[] ~f:(fun acc (label, t, l) ->
                 let%bind res_l = recurser l in
                 let%bind res_t = disambiguate_type dicts.typ_dict t in
-                pure @@ ((label, res_t, res_l) :: acc))
+                pure @@ (label, res_t, res_l) :: acc)
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
@@ -436,8 +436,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_args =
               mapM args
                 ~f:
-                  (disambiguate_identifier_helper simp_var_dict
-                     (ER.get_loc rep))
+                  (disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.App (dis_f, dis_args)
         | Constr (c, ts, args) ->
@@ -448,8 +447,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_args =
               mapM args
                 ~f:
-                  (disambiguate_identifier_helper simp_var_dict
-                     (ER.get_loc rep))
+                  (disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.Constr (dis_c, dis_ts_args, dis_args)
         | MatchExpr (x, pes) ->
@@ -476,8 +474,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             let%bind dis_args =
               mapM args
                 ~f:
-                  (disambiguate_identifier_helper simp_var_dict
-                     (ER.get_loc rep))
+                  (disambiguate_identifier_helper simp_var_dict (ER.get_loc rep))
             in
             pure @@ PostDisSyntax.Builtin (b, dis_targs, dis_args)
         | TFun (tvar, body) ->

@@ -99,13 +99,13 @@ let rec decode_proto_scilla_query d =
           pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
-  ( {
-      Ipcmessage_types.name = v.name;
-      Ipcmessage_types.mapdepth = v.mapdepth;
-      Ipcmessage_types.indices = v.indices;
-      Ipcmessage_types.ignoreval = v.ignoreval;
-    }
-    : Ipcmessage_types.proto_scilla_query )
+  ({
+     Ipcmessage_types.name = v.name;
+     Ipcmessage_types.mapdepth = v.mapdepth;
+     Ipcmessage_types.indices = v.indices;
+     Ipcmessage_types.ignoreval = v.ignoreval;
+   }
+    : Ipcmessage_types.proto_scilla_query)
 
 let rec encode_proto_scilla_val_map (v : Ipcmessage_types.proto_scilla_val_map)
     encoder =

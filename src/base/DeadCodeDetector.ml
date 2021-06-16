@@ -212,7 +212,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               mark_used_ty ty1;
               mark_used_ty ty2
           | ADTValue (_, tys, _) -> List.iter tys ~f:mark_used_ty
-          | _ -> () )
+          | _ -> ())
       | Var x -> mark_used' x
       | Let (i, ty_o, e1, e2) ->
           (match ty_o with None -> () | Some ty -> mark_used_ty ty);
@@ -280,7 +280,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           | MapUpdate (f, i1, i2) -> (
               mark_used' f;
               List.iter i1 ~f:mark_used';
-              match i2 with Some i -> mark_used' i | None -> () )
+              match i2 with Some i -> mark_used' i | None -> ())
           | MapGet (_, f, i1, _) | RemoteMapGet (_, _, f, i1, _) ->
               mark_used' f;
               List.iter i1 ~f:mark_used'
@@ -307,7 +307,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               mark_used' l
           | SendMsgs m -> mark_used' m
           | ReadFromBC (x, _) | CreateEvnt x -> mark_used' x
-          | Throw x_o -> ( match x_o with Some x -> mark_used' x | _ -> () )
+          | Throw x_o -> ( match x_o with Some x -> mark_used' x | _ -> ())
           | AcceptPayment | GasStmt _ -> ())
     in
 

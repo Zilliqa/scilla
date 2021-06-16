@@ -53,9 +53,8 @@ module Exp_descriptions = struct
                  "Internal error: Cannot build expression description from \
                   pattern match context")
         | (_, _, dargs) :: spss ->
-            build_dsc ctx_rest
-              (Pos (c_name, List.rev args @ (dsc :: dargs)))
-              spss )
+            build_dsc ctx_rest (Pos (c_name, List.rev args @ dsc :: dargs)) spss
+        )
 
   let augment_ctx ctx dsc =
     match ctx with

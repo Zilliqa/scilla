@@ -109,9 +109,9 @@ let rec json_to_adtargs cname tlist ajs =
       let e = Int.to_string expected in
       raise
         (mk_invalid_json
-           ( "Malformed ADT constructor "
+           ("Malformed ADT constructor "
            ^ JSONName.as_error_string cname
-           ^ ": expected " ^ e ^ " args, but provided " ^ p ^ "." ))
+           ^ ": expected " ^ e ^ " args, but provided " ^ p ^ "."))
   in
   let dt =
     match DataTypeDictionary.lookup_constructor cname with
@@ -157,10 +157,10 @@ and read_adt_json name j tlist_verify =
         if not @@ [%equal: Datatypes.adt] dt dt' then
           raise
             (mk_invalid_json
-               ( "ADT type "
+               ("ADT type "
                ^ JSONName.as_error_string dt.tname
                ^ " does not match constructor "
-               ^ JSONName.as_error_string constr ));
+               ^ JSONName.as_error_string constr));
         let argtypes = member_exn "argtypes" j |> to_list_exn in
         let arguments = member_exn "arguments" j |> to_list_exn in
         let tlist = json_to_adttyps argtypes in
@@ -181,9 +181,9 @@ and read_adt_json name j tlist_verify =
           let observed = pp_typ_list_error tlist2 in
           raise
             (mk_invalid_json
-               ( "Type mismatch in parsing ADT "
+               ("Type mismatch in parsing ADT "
                ^ JSONName.as_error_string name
-               ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed ))
+               ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed))
     | _ ->
         raise
           (mk_invalid_json
@@ -346,9 +346,9 @@ module ContractState = struct
         | Error _ ->
             raise
               (mk_invalid_json
-                 ( "Invalid "
+                 ("Invalid "
                  ^ JSONName.as_error_string ContractUtil.extlibs_label
-                 ^ " entry in init json" ))
+                 ^ " entry in init json"))
         | Ok lit' ->
             (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
             List.map lit' ~f:(fun sp ->
@@ -363,15 +363,15 @@ module ContractState = struct
                 | _ ->
                     raise
                       (mk_invalid_json
-                         ( "Invalid "
+                         ("Invalid "
                          ^ JSONName.as_error_string ContractUtil.extlibs_label
-                         ^ " entry in init json" ))) )
+                         ^ " entry in init json"))))
     | _ ->
         raise
           (mk_invalid_json
-             ( "Multiple "
+             ("Multiple "
              ^ JSONName.as_error_string ContractUtil.extlibs_label
-             ^ " entries in init json" ))
+             ^ " entries in init json"))
 
   (* Accessor for _this_address and _extlibs entries in init.json.
      Combined into one function to avoid reading init.json from disk multiple times. *)
@@ -392,9 +392,9 @@ module ContractState = struct
       | _ ->
           raise
             (mk_invalid_json
-               ( "Multiple "
+               ("Multiple "
                ^ JSONName.as_string ContractUtil.this_address_label
-               ^ " entries specified in init json" ))
+               ^ " entries specified in init json"))
     in
     match this_address_init_opt with
     | None -> (None, extlibs)
@@ -404,9 +404,9 @@ module ContractState = struct
         | None ->
             raise
               (mk_invalid_json
-                 ( "Illegal type for field "
+                 ("Illegal type for field "
                  ^ JSONName.as_string ContractUtil.this_address_label
-                 ^ " specified in init json" )) )
+                 ^ " specified in init json")))
 
   (* Convert a single JSON serialized literal back to its Scilla value. *)
   let jstring_to_literal jstring tp =

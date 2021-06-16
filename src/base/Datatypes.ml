@@ -266,7 +266,7 @@ let scilla_list_to_ocaml v =
     | ADTValue (c, _, []) when is_nil_ctr_name c -> pure []
     | ADTValue (c, _, [ h; t ]) when is_cons_ctr_name c ->
         let%bind rest = convert_to_list t in
-        pure @@ (h :: rest)
+        pure @@ h :: rest
     | _ -> fail0 @@ sprintf "Cannot convert scilla list to ocaml list:\n"
   in
   convert_to_list v
