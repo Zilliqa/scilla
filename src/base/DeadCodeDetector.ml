@@ -24,34 +24,37 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
   open SCIdentifier
   open SCSyntax
-  open AssocDictionary
+  open Hashtbl
 
   (* Warning level for dead code detection *)
   let warning_level_dead_code = 3
 
   (* Update a dictionary that a value is used, return whether we updated a dict *)
-  let mark_used dict_ref name =
-    let sname = as_error_string name in
-    let v = lookup sname !dict_ref in
-    match v with
-    | Some (false, rep) ->
-        dict_ref := update_all (as_error_string name) (true, rep) !dict_ref;
-        true
-    | _ -> false
+  let mark_used dict name =
+    let is_updated = ref false in
+    Hashtbl.change dict (as_error_string name) ~f:(fun data_o ->
+        match data_o with
+        | Some (false, rep) ->
+            is_updated := true;
+            Some (true, rep)
+        | _ as x -> x);
+    !is_updated
 
-  (* Clear dictionary *)
-  let clear_dict dict_ref = dict_ref := make_dict ()
+  (* Clear dictionary : TODO: remove? *)
+  let clear_dict dict = Hashtbl.clear dict
 
-  (* Add to dict *)
-  let add_dict dict_ref name =
-    dict_ref :=
-      insert_unique (as_error_string name) (false, get_rep name) !dict_ref
+  (* Add to Hashtbl *)
+  let add_dict dict name =
+    let _ =
+      Hashtbl.add dict ~key:(as_error_string name) ~data:(false, get_rep name)
+    in
+    ()
 
   (* Filter through dictionary to find unused identifiers *)
   let find_unused dict warn_msg get_loc =
     let unused_list =
       List.map
-        (List.filter (to_list dict) ~f:(fun (_, (v, _)) -> not v))
+        (List.filter (Hashtbl.to_alist dict) ~f:(fun (_, (v, _)) -> not v))
         ~f:(fun (name, (_, rep)) -> (name, rep))
     in
     if not (List.is_empty unused_list) then
@@ -90,16 +93,16 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     (************** DC Detector ***************)
     (* Global contract dictionaries: fields, contract parameters, procedures *)
-    let cfields_dict = ref (make_dict ()) in
-    let cparams_dict = ref (make_dict ()) in
-    let proc_dict = ref (make_dict ()) in
+    let cfields_dict = create (module String) in
+    let cparams_dict = create (module String) in
+    let proc_dict = create (module String) in
 
     (* Library entries *)
-    let libvar_dict = ref (make_dict ()) in
-    let libty_dict = ref (make_dict ()) in
+    let libvar_dict = create (module String) in
+    let libty_dict = create (module String) in
 
     (* Library imports *)
-    let elibs_dict = ref (make_dict ()) in
+    let elibs_dict = create (module String) in
 
     (********* Populate library imports ***********)
     List.iter cmod.elibs ~f:(fun (lib_name, _) -> add_dict elibs_dict lib_name);
@@ -128,10 +131,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         | CompTrans -> ()
         | CompProc ->
             (* Populate the procedure dictionary *)
-            proc_dict :=
-              insert_unique
-                (as_error_string comp.comp_name)
-                (false, ER.dummy_rep) !proc_dict);
+            let _ =
+              Hashtbl.add proc_dict
+                ~key:(as_error_string comp.comp_name)
+                ~data:(false, ER.dummy_rep)
+            in
+            ());
 
     (******** Marking Used Identifiers *********)
     (* "The scope of variables in an imported library is restricted to
@@ -157,11 +162,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       (* find all elibs that have not been used *)
       let unused_elibs =
         List.filter elibs ~f:(fun elib ->
-            match
-              AssocDictionary.lookup
-                (as_error_string elib.libn.lname)
-                !elibs_dict
-            with
+            match Hashtbl.find elibs_dict (as_error_string elib.libn.lname) with
             | None -> false (* shouldn't happen *)
             | Some (is_used, _) -> not is_used)
       in
@@ -216,12 +217,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | Var x -> mark_used' x
       | Let (i, ty_o, e1, e2) ->
           (match ty_o with None -> () | Some ty -> mark_used_ty ty);
-          let local_dict = ref (make_dict ()) in
-          local_dict :=
-            insert_unique (as_error_string i) (false, get_rep i) !local_dict;
+          let local_dict = Hashtbl.create (module String) in
+          add_dict local_dict i;
           expr_iter e1 local_dicts;
           expr_iter e2 (local_dict :: local_dicts);
-          find_unused !local_dict "Unused local variable: " ER.get_loc
+          find_unused local_dict "Unused local variable: " ER.get_loc
       | Message sl ->
           List.iter sl ~f:(fun (_, payload) ->
               match payload with MLit _ -> () | MVar x -> mark_used' x)
@@ -238,14 +238,10 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           mark_used' x;
           List.iter plist ~f:(fun (pat, exp') ->
               let bounds = get_pattern_bounds pat in
-              let local_dict = ref (make_dict ()) in
-              List.iter bounds ~f:(fun bound ->
-                  local_dict :=
-                    insert_unique (as_error_string bound)
-                      (false, get_rep bound)
-                      !local_dict);
+              let local_dict = Hashtbl.create (module String) in
+              List.iter bounds ~f:(fun bound -> add_dict local_dict bound);
               expr_iter exp' (local_dict :: local_dicts);
-              find_unused !local_dict "Unused Variable: " ER.get_loc)
+              find_unused local_dict "Unused Variable: " ER.get_loc)
       | Builtin (_, tys, actuals) ->
           List.iter tys ~f:mark_used_ty;
           List.iter actuals ~f:(fun act -> mark_used' act)
@@ -293,14 +289,10 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               mark_used' x;
               List.iter plist ~f:(fun (pat, stmts') ->
                   let bounds = get_pattern_bounds pat in
-                  let local_dict = ref (make_dict ()) in
-                  List.iter bounds ~f:(fun bound ->
-                      local_dict :=
-                        insert_unique (as_error_string bound)
-                          (false, get_rep bound)
-                          !local_dict);
+                  let local_dict = Hashtbl.create (module String) in
+                  List.iter bounds ~f:(fun bound -> add_dict local_dict bound);
                   stmt_iter stmts' (local_dict :: local_dicts);
-                  find_unused !local_dict "Unused Variable: " ER.get_loc)
+                  find_unused local_dict "Unused Variable: " ER.get_loc)
           | Iterate (l, p) ->
               let _ = mark_used proc_dict p in
               ();
@@ -314,15 +306,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     (* Iterate through body of components *)
     List.iter cmod.contr.ccomps ~f:(fun c ->
         (* Create local dictionaries: component params *)
-        let param_dict = ref (make_dict ()) in
+        let param_dict = Hashtbl.create (module String) in
         List.iter c.comp_params ~f:(fun (param, ty) ->
-            param_dict :=
-              insert_unique (as_error_string param)
-                (false, get_rep param)
-                !param_dict;
+            add_dict param_dict param;
             mark_used_ty ty);
         stmt_iter c.comp_body [ param_dict ];
-        find_unused !param_dict "Unused local component parameter: " ER.get_loc);
+        find_unused param_dict "Unused local component parameter: " ER.get_loc);
 
     (* Iterate through expressions of fields *)
     List.iter cmod.contr.cfields ~f:(fun (_, ty, exp) ->
@@ -333,9 +322,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     expr_iter cmod.contr.cconstraint [];
 
     (* Check use of contract identifiers *)
-    find_unused !proc_dict "Unused procedures: " ER.get_loc;
-    find_unused !cfields_dict "Unused fields: " ER.get_loc;
-    find_unused !cparams_dict "Unused contract params: " ER.get_loc;
+    find_unused proc_dict "Unused procedures: " ER.get_loc;
+    find_unused cfields_dict "Unused fields: " ER.get_loc;
+    find_unused cparams_dict "Unused contract params: " ER.get_loc;
 
     (* Clear contract dictionaries for checking libraries *)
     clear_dict proc_dict;
@@ -352,7 +341,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             | LibVar (_, _, e) -> expr_iter e []);
 
         (* Libraries can be imported just for the new lmodule definition *)
-        find_unused !elibs_dict "Unused imported libraries: " SR.get_loc;
-        find_unused !libvar_dict "Unused library var: " ER.get_loc;
-        find_unused !libty_dict "Unused user defined ADT: " ER.get_loc
+        find_unused elibs_dict "Unused imported libraries: " SR.get_loc;
+        find_unused libvar_dict "Unused library var: " ER.get_loc;
+        find_unused libty_dict "Unused user defined ADT: " ER.get_loc
 end
