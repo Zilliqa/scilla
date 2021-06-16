@@ -159,10 +159,10 @@ let parse argv ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
-          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg))
+          PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg) )
   in
   let () = validate_main usage in
   {
@@ -218,7 +218,7 @@ let disambiguate_dt_dictionary_name name this_address lookup =
           tmp_nm
       | Error _ ->
           (* Name does not exist => Name is user-defined *)
-          OutputName.parse_qualified_name this_address nm)
+          OutputName.parse_qualified_name this_address nm )
 
 let disambiguate_adt_name name this_address =
   disambiguate_dt_dictionary_name name this_address
@@ -316,7 +316,7 @@ let gen_parser (t' : OutputType.t) (this_address : string) :
             fun j ->
               UintLit
                 (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
-        | _ -> raise (mk_invalid_json "Invalid primitive type"))
+        | _ -> raise (mk_invalid_json "Invalid primitive type") )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
         let vp = recurser vt in
@@ -331,7 +331,7 @@ let gen_parser (t' : OutputType.t) (this_address : string) :
                   let vallit = vp vjson in
                   Caml.Hashtbl.replace m keylit vallit);
               Map ((kt, vt), m)
-          | _ -> raise (mk_invalid_json "Invalid map in JSON"))
+          | _ -> raise (mk_invalid_json "Invalid map in JSON") )
     | ADT (name, tlist) ->
         (* Add a dummy entry for "t" in our table, to prevent recursive calls. *)
         let _ = add_adt_parser (pp_typ t) Incomplete in
@@ -449,7 +449,7 @@ let build_prim_lit_exn t v =
   | OutputType.PrimType pt -> (
       match OutputLiteral.build_prim_literal pt v with
       | Some v' -> v'
-      | None -> raise (exn ()))
+      | None -> raise (exn ()) )
   | _ -> raise (exn ())
 
 let rec json_to_adttyps tjs =
@@ -507,8 +507,8 @@ and read_adt_json name this_address j tlist_verify =
     | _ ->
         raise
           (mk_invalid_json
-             ("JSON parsing: error parsing ADT "
-             ^ OutputName.as_error_string name))
+             ( "JSON parsing: error parsing ADT "
+             ^ OutputName.as_error_string name ))
   in
   (* return built ADT *)
   res
@@ -587,7 +587,7 @@ let extract_this_address_from_init_json_data jlist =
           raise
             (mk_invalid_json
                (sprintf "Unable to extract %s value as string" this_name))
-      | Some v -> v)
+      | Some v -> v )
   | None ->
       raise
         (mk_invalid_json (sprintf "No %s entry found in init file" this_name))
@@ -677,7 +677,7 @@ let init_module (md : Dis.PostDisSyntax.cmodule) initargs elibs =
           Stdint.Uint64.max_int
       with
       | Error s -> fatal_error s
-      | Ok field_values -> field_values)
+      | Ok field_values -> field_values )
 
 (* StateService.ml *)
 
@@ -733,10 +733,10 @@ module InputStateService = struct
       try jstring_to_literal s tp this_address
       with Invalid_json s ->
         fatal_error
-          (s
+          ( s
           @ mk_error0
               "InputStateIPCClient: Error deserializing literal fetched from \
-               IPC call")
+               IPC call" )
 
     (* Deserialize proto_scilla_val, given its type. *)
     let rec deserialize_value value tp this_address =
@@ -762,7 +762,7 @@ module InputStateService = struct
               fatal_error
                 (mk_error0
                    "StateIPCClient: Type mismatch deserializing value. \
-                    Unexpected protobuf map."))
+                    Unexpected protobuf map.") )
 
     let encode_serialized_query query =
       try
@@ -976,7 +976,7 @@ let run_with_args args =
                             ~keys:[] ~value:v
                         with
                         | Ok () -> ()
-                        | Error e -> fatal_error e))
+                        | Error e -> fatal_error e ))
               in
               let _ = OutputStateService.finalize () in
 

@@ -70,7 +70,7 @@ let t1' =
                 | Error s ->
                     let s' = ErrorUtils.sprint_scilla_error_list s in
                     Printf.fprintf stderr "Error: %s\n" s';
-                    false)
+                    false )
             | Error s ->
                 let s' = ErrorUtils.sprint_scilla_error_list s in
                 Printf.fprintf stderr "Error: %s\n" s';
@@ -99,7 +99,7 @@ let t2' =
                 | Error s ->
                     let s' = ErrorUtils.sprint_scilla_error_list s in
                     Printf.fprintf stderr "Error: %s\n" s';
-                    false)
+                    false )
             | Error s ->
                 let s' = ErrorUtils.sprint_scilla_error_list s in
                 Printf.fprintf stderr "Error: %s\n" s';
@@ -180,8 +180,8 @@ let t3' =
             in
             assert_equal addr addr'
               ~msg:
-                ("Recovered address from signature mismatch: " ^ addr ^ " vs "
-               ^ addr'))
+                ( "Recovered address from signature mismatch: " ^ addr ^ " vs "
+                ^ addr' ))
       in
       List.iter inputs ~f:(fun (header_raw, signatures) ->
           tester header_raw signatures))

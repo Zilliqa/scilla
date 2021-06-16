@@ -157,7 +157,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let goldoutput_file = make_filename (gold_path dir fname) in
         let additional_dirs = List.map ~f:make_filename additional_libdirs in
         let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
-        let path = string_of_path @@ stdlib :: additional_dirs in
+        let path = string_of_path @@ (stdlib :: additional_dirs) in
         let args' =
           if ignore_predef_args then custom_args @ [ input_file ]
           else

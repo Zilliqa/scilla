@@ -87,8 +87,8 @@ module IPCIdl (R : RPC) = struct
       [
         "Set state value and field type of another contract from the blockchain";
       ]
-      (addr @-> query @-> value @-> scilla_type
-      @-> returning return_update RPCError.err)
+      ( addr @-> query @-> value @-> scilla_type
+      @-> returning return_update RPCError.err )
 
   let update_state_value =
     declare "updateStateValue"

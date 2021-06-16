@@ -119,7 +119,7 @@ module MakeStateService () = struct
                        "StateService: Cannot index into map %s. Too many \
                         index  keys."
                        (as_error_string fname))
-                    (ER.get_loc (get_rep fname)))
+                    (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
@@ -150,7 +150,7 @@ module MakeStateService () = struct
                 (sprintf "StateService: Field %s not found on IPC server."
                    (as_error_string fname))
                 (ER.get_loc (get_rep fname))
-          | Some _res' -> pure @@ res)
+          | Some _res' -> pure @@ res )
     | Local -> fetch_local ~fname ~keys fields
 
   (* Common function for external state lookup.
@@ -183,8 +183,8 @@ module MakeStateService () = struct
             | Some stored_tp ->
                 let%bind res = fetch_local ~fname ~keys fields in
                 pure (res, Option.map res ~f:(fun _ -> stored_tp))
-            | None -> pure (None, None))
-        | None -> pure (None, None))
+            | None -> pure (None, None) )
+        | None -> pure (None, None) )
 
   let update_local ~fname ~keys vopt fields =
     let s = fields in
@@ -203,7 +203,7 @@ module MakeStateService () = struct
                   pure @@ s
               | None ->
                   Caml.Hashtbl.remove mlit' k;
-                  pure @@ s)
+                  pure @@ s )
           | k :: krest -> (
               (* we have more nested maps *)
               match Caml.Hashtbl.find_opt mlit' k with
@@ -227,7 +227,7 @@ module MakeStateService () = struct
                             (ER.get_loc (get_rep fname))
                     in
                     Caml.Hashtbl.replace mlit' k (Map ((kt'', vt''), mlit''));
-                    recurser mlit'' krest vt'')
+                    recurser mlit'' krest vt'' )
                   else
                     (* No point removing a key that doesn't exist. *)
                     pure @@ s
@@ -239,7 +239,7 @@ module MakeStateService () = struct
                        "StateService: Cannot index into map %s. Too many index \
                         keys."
                        (as_error_string fname))
-                    (ER.get_loc (get_rep fname)))
+                    (ER.get_loc (get_rep fname)) )
           (* this cannot occur. *)
           | [] ->
               fail1
@@ -260,7 +260,7 @@ module MakeStateService () = struct
             fail1
               (sprintf "StateService: Cannot remove non-map value %s from state"
                  (as_error_string fname))
-              (ER.get_loc (get_rep fname)))
+              (ER.get_loc (get_rep fname)) )
     | _ ->
         fail1
           (sprintf "StateService: Field \"%s\" not found.\n"

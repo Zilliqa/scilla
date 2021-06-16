@@ -77,9 +77,9 @@ let deserialize_literal s tp =
   try pure @@ ContractState.jstring_to_literal s tp
   with Invalid_json s ->
     fail
-      (s
+      ( s
       @ mk_error0
-          "StateIPCClient: Error deserializing literal fetched from IPC call")
+          "StateIPCClient: Error deserializing literal fetched from IPC call" )
 
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -124,7 +124,7 @@ let rec deserialize_value value tp =
       | _ ->
           fail0
             "StateIPCClient: Type mismatch deserializing value. Unexpected \
-             protobuf map.")
+             protobuf map." )
 
 let encode_serialized_value value =
   try

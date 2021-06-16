@@ -463,7 +463,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost (base * 5),
                      GasGasCharge.ValueOf (GI.get_id p) ))
-          | _ -> fail0 @@ "Gas cost error for built-in pow")
+          | _ -> fail0 @@ "Gas cost error for built-in pow" )
       | Builtin_isqrt -> (
           match args with
           | [ a ] ->
@@ -471,7 +471,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost base,
                      GasGasCharge.LogOf (GI.get_id a) ))
-          | _ -> fail0 "Invalid argument type to isqrt")
+          | _ -> fail0 "Invalid argument type to isqrt" )
       | _ -> pure (GasGasCharge.StaticCost base)
     in
     let%bind w =
@@ -479,7 +479,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       | a :: _ -> (
           match int_width a with
           | Some w -> pure w
-          | None -> fail0 "int_coster: cannot determine integer width")
+          | None -> fail0 "int_coster: cannot determine integer width" )
       | _ -> fail0 @@ "Gas cost error for integer built-in"
     in
     if w = 32 || w = 64 then pure base'

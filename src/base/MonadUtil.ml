@@ -149,7 +149,7 @@ let forall2M ~f ls1 ls2 ~msg =
 let rec tryM ~f ls ~msg =
   match ls with
   | x :: ls' -> (
-      match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg)
+      match f x with Ok z -> Ok (x, z) | Error _ -> tryM ~f ls' ~msg )
   | [] -> Error (msg ())
 
 (* True if all elements in a list satisfy the predicate f *)
@@ -206,7 +206,7 @@ let filter_mapM ~f alist =
         | Some a' ->
             let%bind rem' = recurser rem in
             pure (a' :: rem')
-        | None -> recurser rem)
+        | None -> recurser rem )
   in
   recurser alist
 
@@ -351,7 +351,7 @@ module EvalMonad = struct
       match ls with
       | x :: ls' -> (
           let%bind r = f x in
-          match r with Some z -> pure (Some z) | None -> recurser ls')
+          match r with Some z -> pure (Some z) | None -> recurser ls' )
       | [] -> pure None
     in
     recurser ls

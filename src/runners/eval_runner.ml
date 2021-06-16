@@ -99,8 +99,8 @@ let run () =
           match res' with
           | Ok (_, gas_remaining) ->
               printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining)
-          | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining)
-      | Error e -> fatal_error e)
+          | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining )
+      | Error e -> fatal_error e )
   | Error e -> fatal_error e
 
 let () = try run () with FatalError msg -> exit_with_error msg

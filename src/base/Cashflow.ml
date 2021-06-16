@@ -232,7 +232,7 @@ struct
       | Throw xopt -> (
           match xopt with
           | Some x -> CFSyntax.Throw (Some (add_noinfo_to_ident x))
-          | None -> CFSyntax.Throw None)
+          | None -> CFSyntax.Throw None )
       | GasStmt g -> CFSyntax.GasStmt (cf_init_gas_charge g)
     in
     (res_s, rep)
@@ -257,16 +257,18 @@ struct
       CFSyntax.cparams =
         List.map
           ~f:(fun (x, t) ->
-            ( (if token_fields_contains x then add_money_or_mapmoney_to_ident x t
-              else add_noinfo_to_ident x),
+            ( ( if token_fields_contains x then
+                add_money_or_mapmoney_to_ident x t
+              else add_noinfo_to_ident x ),
               t ))
           cparams;
       CFSyntax.cconstraint = cf_init_tag_expr cconstraint;
       CFSyntax.cfields =
         List.map
           ~f:(fun (x, t, e) ->
-            ( (if token_fields_contains x then add_money_or_mapmoney_to_ident x t
-              else add_noinfo_to_ident x),
+            ( ( if token_fields_contains x then
+                add_money_or_mapmoney_to_ident x t
+              else add_noinfo_to_ident x ),
               t,
               cf_init_tag_expr e ))
           cfields;
@@ -417,7 +419,7 @@ struct
                       match arg_tag with
                       | Map vtag -> match_arg_tag_with_typ vt vtag targ_tag_map
                       | NoInfo -> match_arg_tag_with_typ vt NoInfo targ_tag_map
-                      | _ -> targ_tag_map)
+                      | _ -> targ_tag_map )
                   | ADT (_, adt_params) -> (
                       match arg_tag with
                       | Adt (_, adt_param_tags) ->
@@ -431,7 +433,7 @@ struct
                                     (match_arg_tag_with_typ adt_param t map, ts))
                           in
                           new_map
-                      | _ -> targ_tag_map)
+                      | _ -> targ_tag_map )
                   | PrimType _ | PolyFun (_, _) | Unit -> targ_tag_map
                   | Address _ -> (* TODO *) targ_tag_map
                 in
@@ -450,7 +452,7 @@ struct
                       | None -> Inconsistent
                       | Some t -> t)
                 in
-                Adt (adt.tname, final_adt_arg_tags)))
+                Adt (adt.tname, final_adt_arg_tags) ) )
 
   let ctr_pattern_to_subtags ctr_name expected_tag =
     let open DataTypeDictionary in
@@ -470,9 +472,8 @@ struct
                 | Adt (exp_typ_name, arg_tags)
                   when [%equal: CFName.t] exp_typ_name adt.tname ->
                     List.zip adt.tparams arg_tags
-                | NoInfo (* Nothing known *)
-                | Money (* Nat case *)
-                | NotMoney (* Nat case *) ->
+                | NoInfo (* Nothing known *) | Money (* Nat case *) | NotMoney
+                (* Nat case *) ->
                     Ok
                       (List.map adt.tparams ~f:(fun tparam ->
                            (tparam, expected_tag)))
@@ -503,18 +504,17 @@ struct
                     List.Assoc.find tvar_tag_map ~equal:String.( = ) tvar
                   with
                   | Some tag -> tag
-                  | None -> Inconsistent)
+                  | None -> Inconsistent )
               | _ -> Inconsistent
             in
-            Some (List.map tmap ~f:tag_tmap))
+            Some (List.map tmap ~f:tag_tmap) )
 
   let ctr_arg_filter targ =
     let open CFType in
     match targ with
     | PrimType _ | MapType _ | FunType _ -> true
     | ADT _ (* TODO: Detect induction, and ignore only when inductive *)
-    | TypeVar _ (* TypeVars tagged at type level *)
-    | PolyFun _ (* Ignore *)
+    | TypeVar _ (* TypeVars tagged at type level *) | PolyFun _ (* Ignore *)
     | Unit ->
         (* Ignore *)
         false
@@ -555,7 +555,7 @@ struct
           ->
             Some
               (List.Assoc.add ctr_tag_map ~equal:String.( = ) ctr_name new_tags)
-        | _ -> None)
+        | _ -> None )
 
   let option_adt_tag t = Adt (CFName.parse_simple_name "Option", [ t ])
 
@@ -1218,7 +1218,7 @@ struct
         in
         match v with
         | Ident (name, (_, rep)) ->
-            CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)))
+            CFSyntax.MVar (CFIdentifier.mk_id name (tag, rep)) )
 
   let rec cf_tag_expr erep expected_tag param_env local_env ctr_tag_map =
     let lub t = lub_tags expected_tag t in
@@ -1925,7 +1925,8 @@ struct
                 ctr_tag_map,
                 not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
           | None ->
-              (Throw None, param_env, field_env, local_env, ctr_tag_map, false))
+              (Throw None, param_env, field_env, local_env, ctr_tag_map, false)
+          )
     in
     ( (new_s, rep),
       new_param_env,

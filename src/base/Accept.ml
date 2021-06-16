@@ -101,13 +101,13 @@ struct
 
       let dup_accept_warning (group : loc list) : unit =
         warn2
-          (sprintf
-             "transition %s has a potential code path with duplicate accept \
-              statements:\n"
-             (ACIdentifier.as_error_string transition.comp_name)
+          ( sprintf
+              "transition %s has a potential code path with duplicate accept \
+               statements:\n"
+              (ACIdentifier.as_error_string transition.comp_name)
           ^ String.concat ~sep:""
               (List.map group ~f:(fun loc ->
-                   sprintf "  Accept at %s\n" (get_loc_str loc))))
+                   sprintf "  Accept at %s\n" (get_loc_str loc))) )
           warning_level_duplicate_accepts (List.hd_exn group)
           (accept_loc_end @@ List.last_exn group)
       in

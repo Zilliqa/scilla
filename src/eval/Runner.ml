@@ -93,11 +93,11 @@ let check_after_step res gas_limit =
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
   | Ok ((cstate, outs, events, accepted_b), remaining_gas) ->
       plog
-        (sprintf "Success! Here's what we got:\n"
+        ( sprintf "Success! Here's what we got:\n"
         (* sprintf "%s" (ContractState.pp cstate) ^ *)
         ^ sprintf "Emitted messages:\n%s\n\n" (pp_literal_list outs)
         ^ sprintf "Gas remaining:%s\n" (Uint64.to_string remaining_gas)
-        ^ sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
+        ^ sprintf "Emitted events:\n%s\n\n" (pp_literal_list events) );
       ((cstate, outs, events, accepted_b), remaining_gas)
 
 let map_json_input_strings_to_names map =
@@ -287,7 +287,7 @@ let perform_dynamic_typechecks checks gas_remaining =
                       (RunnerSyntax.SLiteral.Bystrx.hex_encoding caddr)
                       (RunnerSyntax.SType.pp_typ t)))
                 gas_remaining
-          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
+          | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining )
       | _ ->
           fatal_error_gas_scale Gas.scale_factor
             (mk_error0
@@ -361,7 +361,7 @@ let deploy_library args gas_remaining =
             Gas.finalize_remaining_gas args.gas_limit gas_remaining'
           in
           `Assoc
-            [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ])
+            [ ("gas_remaining", `String (Uint64.to_string gas_remaining'')) ] )
 
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
@@ -476,10 +476,10 @@ let run_with_args args =
               try JSON.BlockChainState.get_json_data args.input_blockchain
               with Invalid_json s ->
                 fatal_error_gas_scale Gas.scale_factor
-                  (s
+                  ( s
                   @ mk_error0
                       (sprintf "Failed to parse json %s:\n"
-                         args.input_blockchain))
+                         args.input_blockchain) )
                   gas_remaining
             in
             let ( ( output_msg_json,
@@ -517,10 +517,10 @@ let run_with_args args =
                       try fst3 @@ input_state_json args.input_state
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
-                          (s
+                          ( s
                           @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                                 args.input_state) )
                           gas_remaining
                     else field_vals
                   in
@@ -548,9 +548,9 @@ let run_with_args args =
                        "\n\
                         [Deployment] Dynamic typecheck of contract parameters \
                         (%s) required, but disabled outside IPC mode.\n"
-                       (List.map dyn_checks ~f:(fun (_, x) ->
-                            RunnerSyntax.SLiteral.Bystrx.hex_encoding x)
-                       |> String.concat ~sep:", "));
+                       ( List.map dyn_checks ~f:(fun (_, x) ->
+                             RunnerSyntax.SLiteral.Bystrx.hex_encoding x)
+                       |> String.concat ~sep:", " ));
 
                 (* In IPC mode, we don't need to output an initial state as it will be updated directly. *)
                 let field_vals' = if is_ipc then [] else field_vals in
@@ -560,17 +560,17 @@ let run_with_args args =
                     output_state_json cstate'.balance field_vals',
                     `List [],
                     false ),
-                  remaining_gas' ))
+                  remaining_gas' ) )
               else
                 (* Not initialization, execute transition specified in the message *)
                 let mmsg =
                   try JSON.Message.get_json_data args.input_message
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
-                      (s
+                      ( s
                       @ mk_error0
                           (sprintf "Failed to parse json %s:\n"
-                             args.input_message))
+                             args.input_message) )
                       gas_remaining
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
@@ -604,10 +604,10 @@ let run_with_args args =
                       try input_state_json args.input_state
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
-                          (s
+                          ( s
                           @ mk_error0
                               (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                                 args.input_state) )
                           gas_remaining
                     in
 
@@ -697,7 +697,7 @@ let run_with_args args =
                 ("messages", output_msg_json);
                 ("states", output_state_json);
                 ("events", output_events_json);
-              ])
+              ] )
 
 let run args_list ~exe_name =
   GlobalConfig.reset ();

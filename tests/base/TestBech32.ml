@@ -37,8 +37,8 @@ let test1 =
       match decode_bech32_addr ~prfx:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (String.(b = decoded_gold)
-            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test2 =
@@ -50,8 +50,8 @@ let test2 =
       match decode_bech32_addr ~prfx:"zil" ~addr:bech32_addr with
       | Some b ->
           assert_bool "Bech32 address decode failed"
-            (String.(b = decoded_gold)
-            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr)
+            ( String.(b = decoded_gold)
+            && is_valid_bech32 ~prfx:"zil" ~addr:bech32_addr )
       | None -> assert_failure "Bech32 address validity check failed")
 
 let test3 =
@@ -105,7 +105,7 @@ let random_test seed =
   | Some encoded_str -> (
       match decode_bech32_addr ~prfx:"zil" ~addr:encoded_str with
       | Some decoded_str -> assert_bool errmsg String.(bystr20_r = decoded_str)
-      | None -> assert_failure errmsg)
+      | None -> assert_failure errmsg )
   | None -> assert_failure errmsg
 
 let random_tests =

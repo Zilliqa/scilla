@@ -68,9 +68,9 @@ module MessagePayload = struct
         f p
         |> Option.value
              ~default:
-               (fail0
+               ( fail0
                @@ sprintf "Wrong value of the entry \"%s\": %s." lab
-                    (pp_literal p))
+                    (pp_literal p) )
 
   let get_tag =
     get_value_for_entry tag_label (function
@@ -96,14 +96,14 @@ module MessagePayload = struct
             if Uint128.(compare i zero) >= 0 then Some (pure i)
             else
               Some
-                (fail0
+                ( fail0
                 @@ sprintf "Amount should be non-negative: %s"
-                     (Uint128.to_string i))
+                     (Uint128.to_string i) )
           with Failure _ ->
             Some
-              (fail0
+              ( fail0
               @@ sprintf "Could not convert string %s to Stdint.Uint128."
-                   (Uint128.to_string i)))
+                   (Uint128.to_string i) ) )
       | _ -> None)
 
   let get_other_entries es =

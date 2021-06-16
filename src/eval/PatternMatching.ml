@@ -62,4 +62,4 @@ let rec match_with_pattern v p =
             fail0
             @@ sprintf "Cannot match value %s againts pattern %s."
                  (Env.pp_value v)
-                 (sexp_of_pattern p |> Sexplib.Sexp.to_string))
+                 (sexp_of_pattern p |> Sexplib.Sexp.to_string) )

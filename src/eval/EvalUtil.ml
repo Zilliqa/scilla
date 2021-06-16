@@ -273,7 +273,7 @@ module Configuration = struct
           | Some v ->
               let%bind v_lit = pure @@ build_some_lit v vt in
               pure v_lit
-          | None -> pure (build_none_lit vt))
+          | None -> pure (build_none_lit vt) )
       | None ->
           fail1
             (sprintf "Unable to fetch from map field %s" (as_error_string m))
@@ -343,11 +343,11 @@ module Configuration = struct
       | UintLit (Uint128L sender_balance) ->
           if Uint128.compare incoming' sender_balance > 0 then
             fail0
-              ("Insufficient sender balance for acceptance. Incoming vs \
-                sender_balance: "
+              ( "Insufficient sender balance for acceptance. Incoming vs \
+                 sender_balance: "
               ^ Uint128.to_string incoming'
               ^ " vs "
-              ^ Uint128.to_string sender_balance)
+              ^ Uint128.to_string sender_balance )
           else if
             (* Although unsigned integer is used, and this check isn't
              * necessary, we have it just in case, somehow a malformed

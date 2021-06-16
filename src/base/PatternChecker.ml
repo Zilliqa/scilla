@@ -157,7 +157,7 @@ struct
               let%bind f_tree =
                 failure (add_neg dsc (PCIdentifier.as_string c_name))
               in
-              pure @@ IfEq (t, c_name, s_tree, f_tree))
+              pure @@ IfEq (t, c_name, s_tree, f_tree) )
     in
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
     match Array.findi reachable ~f:(fun _ r -> not r) with
@@ -279,7 +279,7 @@ struct
               pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
-        pure @@ checked_s :: checked_stmts
+        pure @@ (checked_s :: checked_stmts)
 
   let pm_check_component t =
     let { comp_type; comp_name; comp_params; comp_body } = t in
@@ -401,7 +401,7 @@ struct
          | Some l -> (
              match pm_check_library l with
              | Ok c_lib -> Ok (Some c_lib, [])
-             | Error msg -> Ok (None, msg))
+             | Error msg -> Ok (None, msg) )
          | None -> Ok (None, [])
        in
 

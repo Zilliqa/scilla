@@ -47,7 +47,7 @@ let mk_cmd cb ~summary =
         if r.Rpc.success then pp_result json
         else (
           pp_error json;
-          exit 1))
+          exit 1 ))
 
 let run = mk_cmd Client.run ~summary:"Execute contract"
 

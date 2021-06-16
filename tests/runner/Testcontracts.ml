@@ -184,17 +184,13 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
     if Poly.(exit_code = succ_code) then
-      test ~ipc_mode:true
-      ::
-      test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name
+      test ~ipc_mode:true :: test ~ipc_mode:false
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name
     else
       test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for

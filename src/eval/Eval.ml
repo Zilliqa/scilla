@@ -98,9 +98,9 @@ let eval_gas_charge env g =
         | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
         | _ ->
             fail0
-              ("Variable "
+              ( "Variable "
               ^ EvalName.as_error_string vstr
-              ^ " did not resolve to an integer"))
+              ^ " did not resolve to an integer" ) )
     | SGasCharge.LogOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
@@ -112,7 +112,7 @@ let eval_gas_charge env g =
         | UintLit (Uint64L i) -> pure (logger (Stdint.Uint64.to_float i))
         | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
         | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
-        | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value")
+        | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value" )
     | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
@@ -120,7 +120,7 @@ let eval_gas_charge env g =
         | ADTValue _ ->
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
             pure @@ List.length l'
-        | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists")
+        | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists" )
     | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
         pure @@ EvalGas.map_sort_cost m
@@ -373,7 +373,7 @@ let rec stmt_eval conf stmts =
               let%bind l = Configuration.remote_load conf s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
-          | _ -> fail0 "Expected remote load address to be ByStr20 value")
+          | _ -> fail0 "Expected remote load address to be ByStr20 value" )
       | Store (x, r) ->
           let%bind v = fromR @@ Configuration.lookup conf r in
           let%bind () = Configuration.store x v in
@@ -414,7 +414,7 @@ let rec stmt_eval conf stmts =
               in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
-          | _ -> fail0 "Expected address to be ByStr20 value")
+          | _ -> fail0 "Expected address to be ByStr20 value" )
       | ReadFromBC (x, bf) ->
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
@@ -497,7 +497,7 @@ let rec stmt_eval conf stmts =
             mk_error1 "Ran out of gas after evaluating statement" sloc
           in
           let remaining_stmts () = stmt_eval conf sts in
-          checkwrap_op remaining_stmts (Uint64.of_int cost) err)
+          checkwrap_op remaining_stmts (Uint64.of_int cost) err )
 
 and try_apply_as_procedure conf proc proc_rest actuals =
   (* Create configuration for procedure call *)
@@ -516,12 +516,8 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
-      (origin
-       ::
-       sender
-       ::
-       amount
-       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
+      ( origin :: sender :: amount
+      :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)) )
       (origin_value :: sender_value :: amount_value :: actuals)
   in
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
@@ -817,7 +813,7 @@ let get_transition_and_procedures ctr tag =
             (procs_acc, Some c)
         | CompTrans ->
             (* Not the correct transition - ignore *)
-            procedure_and_transition_finder procs_acc c_rest)
+            procedure_and_transition_finder procs_acc c_rest )
   in
   let procs, trans_opt = procedure_and_transition_finder [] ctr.ccomps in
   match trans_opt with
