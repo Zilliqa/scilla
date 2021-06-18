@@ -176,14 +176,3 @@ transition CastTest7(x : ByStr20)
   | None =>
   end
 end
-
-
-
-  (* Cast to address in use - read _balance *)
-  (* Cast to contract address - read _balance *)
-  (* Cast to complex address - read _balance and fields *)
-  (* Take remote value, cast to complex address, and read _balance and field from it *)
-
-(* Introduce checker warning when cast is doomed to fail or doomed to succeed? *)
-
-
