@@ -556,7 +556,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
     let sloc = SR.get_loc rep in
     ( (match s with
       | Load (x, f) ->
-         sprintf "Type error in reading value of `%s` into `%s`:\n %s"
+          sprintf "Type error in reading value of `%s` into `%s`:\n %s"
             (as_error_string f) (as_error_string x) phase
       | RemoteLoad (x, adr, f) ->
           sprintf "Type error in reading value of `%s.%s` into `%s`:\n %s"
@@ -591,8 +591,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Error in reading from blockchain state into `%s`:\n"
             (as_error_string x)
       | TypeCast (_, x, t) ->
-          sprintf "Error casting `%s` into type `%s`:\n"
-            (as_error_string x)
+          sprintf "Error casting `%s` into type `%s`:\n" (as_error_string x)
             (SType.pp_typ_error t)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->

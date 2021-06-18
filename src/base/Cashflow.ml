@@ -223,7 +223,8 @@ struct
                   (cf_init_tag_pattern p, List.map ~f:cf_init_tag_stmt ss))
                 pss )
       | ReadFromBC (x, s) -> CFSyntax.ReadFromBC (add_noinfo_to_ident x, s)
-      | TypeCast (x, r, t) -> CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
+      | TypeCast (x, r, t) ->
+          CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
@@ -1864,8 +1865,9 @@ struct
             field_env,
             new_local_env,
             ctr_tag_map,
-            not ([%equal: ECFR.money_tag] (get_id_tag x) x_tag ||
-                 [%equal: ECFR.money_tag] (get_id_tag r) r_tag))
+            not
+              ([%equal: ECFR.money_tag] (get_id_tag x) x_tag
+              || [%equal: ECFR.money_tag] (get_id_tag r) r_tag) )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | GasStmt g ->

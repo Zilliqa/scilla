@@ -194,10 +194,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 match t with
                 | Address (Some fts) ->
                     (* look up _this_address and every listed field *)
-                    1 + (IdLoc_Comp.Map.length fts)
+                    1 + IdLoc_Comp.Map.length fts
                 | _ -> 0
               in
-              let cost = 2 + size (* _balance and _nonce must also be looked up *)
+              let cost =
+                2 + size
+                (* _balance and _nonce must also be looked up *)
               in
               let g = GasGasCharge.StaticCost cost in
               pure @@ [ (GasStmt g, srep); (s, srep) ]

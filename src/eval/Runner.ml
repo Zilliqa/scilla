@@ -272,7 +272,9 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
 
 let perform_dynamic_typechecks checks gas_remaining =
   List.iter checks ~f:(fun (t, caddr) ->
-      match EvalUtil.EvalTypecheck.assert_typecheck_remote_field_types ~caddr t with
+      match
+        EvalUtil.EvalTypecheck.assert_typecheck_remote_field_types ~caddr t
+      with
       | Ok _ -> ()
       | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
 

@@ -427,14 +427,11 @@ let rec stmt_eval conf stmts =
                 pure lbystr
             | _ -> fail0 "Expected address or ByStr20 in type cast"
           in
-          let%bind tc_res = fromR @@ EvalTypecheck.typecheck_remote_field_types ~caddr:l_as_bstr t
+          let%bind tc_res =
+            fromR
+            @@ EvalTypecheck.typecheck_remote_field_types ~caddr:l_as_bstr t
           in
-          let res =
-            if tc_res then
-              build_some_lit l t
-            else
-              build_none_lit t
-          in
+          let res = if tc_res then build_some_lit l t else build_none_lit t in
           let conf' = Configuration.bind conf (get_id x) res in
           stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
