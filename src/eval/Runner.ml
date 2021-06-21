@@ -271,12 +271,24 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
   | Ok anode' -> anode'
 
 let perform_dynamic_typechecks checks gas_remaining =
-  List.iter checks ~f:(fun (t, caddr) ->
+  let dummy_gas_resolver g =
+    let msg = sprintf "Gas charge type %s must be handled by GasCharge\n" (RG.GasGasCharge.pp_gas_charge g) in
+    Error (mk_error0 msg)
+  in
+  List.fold_left checks ~init:gas_remaining ~f:(fun gas_remaining (t, caddr) ->
+      (* The gas cost is static, but we go through the gas cost mechanism for maintainability *)
+      let gas_charge = RG.address_typecheck_cost t in
+      let gas_cost =
+        match RG.GasGasCharge.eval dummy_gas_resolver gas_charge with
+        | Ok cost -> Uint64.of_int cost
+        | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining
+      in
+      let new_gas_remaining = Uint64.sub gas_remaining gas_cost in
       match
         EvalUtil.EvalTypecheck.assert_typecheck_remote_field_types ~caddr t
       with
-      | Ok _ -> ()
-      | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining)
+      | Ok _ -> new_gas_remaining
+      | Error s -> fatal_error_gas_scale Gas.scale_factor s new_gas_remaining)
 
 let deploy_library args gas_remaining =
   match FEParser.parse_lmodule args.input with
@@ -477,7 +489,7 @@ let run_with_args args =
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
-                let cstate', remaining_gas', field_vals, dyn_checks =
+                let cstate', gas_remaining, field_vals, dyn_checks =
                   check_extract_cstate args.input init_res gas_remaining
                 in
                 (* If the data store is not local, we must update the store with the initial field values.
@@ -508,7 +520,7 @@ let run_with_args args =
                     else field_vals
                   in
                   (* Do the dynamic typecheck *)
-                  let () =
+                  let gas_remaining =
                     perform_dynamic_typechecks dyn_checks gas_remaining
                   in
                   match
@@ -522,7 +534,7 @@ let run_with_args args =
                     finalize ()
                   with
                   | Error s ->
-                      fatal_error_gas_scale Gas.scale_factor s remaining_gas'
+                      fatal_error_gas_scale Gas.scale_factor s gas_remaining
                   | Ok _ -> ()
                 else if (* not is_ipc *)
                         not @@ List.is_empty dyn_checks then
@@ -543,7 +555,7 @@ let run_with_args args =
                     output_state_json cstate'.balance field_vals',
                     `List [],
                     false ),
-                  remaining_gas' ))
+                  gas_remaining ))
               else
                 (* Not initialization, execute transition specified in the message *)
                 let mmsg =
@@ -557,13 +569,13 @@ let run_with_args args =
                       gas_remaining
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
-                let cstate, gas_remaining' =
+                let cstate, gas_remaining =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
                       init_module dis_cmod initargs [] cur_bal bstate elibs
                     in
-                    let cstate, gas_remaining', _, _dyn_checks =
+                    let cstate, gas_remaining, _, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
 
@@ -580,7 +592,7 @@ let run_with_args args =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
                         ~ext_states:[]
                     in
-                    (cstate, gas_remaining')
+                    (cstate, gas_remaining)
                   else
                     (* Retrieve state variables *)
                     let curargs, cur_bal, ext_states =
@@ -600,7 +612,7 @@ let run_with_args args =
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
-                    let cstate, gas_remaining', field_vals, _dyn_checks =
+                    let cstate, gas_remaining, field_vals, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
 
@@ -624,7 +636,7 @@ let run_with_args args =
                     let () =
                       StateService.initialize ~sm:Local ~fields ~ext_states
                     in
-                    (cstate, gas_remaining')
+                    (cstate, gas_remaining)
                 in
 
                 (* Contract code *)
@@ -636,18 +648,18 @@ let run_with_args args =
                 plog
                   (sprintf "In a Blockchain State:\n%s\n"
                      (pp_typ_literal_map bstate));
-                let prepped_message, pending_dyn_checks, gas_remaining'' =
+                let prepped_message, pending_dyn_checks, gas_remaining =
                   let pmsg = prepare_for_message ctr mmsg in
-                  check_prepare_message pmsg gas_remaining'
+                  check_prepare_message pmsg gas_remaining
                 in
-                let () =
-                  perform_dynamic_typechecks pending_dyn_checks gas_remaining''
+                let gas_remaining =
+                  perform_dynamic_typechecks pending_dyn_checks gas_remaining
                 in
                 let step_result =
                   handle_message prepped_message cstate bstate
                 in
                 let (cstate', mlist, elist, accepted_b), gas =
-                  check_after_step step_result gas_remaining''
+                  check_after_step step_result gas_remaining
                 in
 
                 (* If we're using a local state (JSON file) then need to fetch and dump it. *)
