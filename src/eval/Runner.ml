@@ -272,7 +272,10 @@ let gas_cost_rewriter_wrapper gas_remaining rewriter anode =
 
 let perform_dynamic_typechecks checks gas_remaining =
   let dummy_gas_resolver g =
-    let msg = sprintf "Gas charge type %s must be handled by GasCharge\n" (RG.GasGasCharge.pp_gas_charge g) in
+    let msg =
+      sprintf "Gas charge type %s must be handled by GasCharge\n"
+        (RG.GasGasCharge.pp_gas_charge g)
+    in
     Error (mk_error0 msg)
   in
   List.fold_left checks ~init:gas_remaining ~f:(fun gas_remaining (t, caddr) ->

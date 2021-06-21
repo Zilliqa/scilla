@@ -57,12 +57,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           1 + IdLoc_Comp.Map.length fts
       | _ -> 0
     in
-    let cost =
-      2 + size
-      (* _balance and _nonce must also be looked up *)
-    in
+    let cost = 2 + size (* _balance and _nonce must also be looked up *) in
     GasGasCharge.StaticCost cost
-      
+
   (* The storage cost of a literal, based on it's size. *)
   let rec literal_cost lit =
     match lit with
