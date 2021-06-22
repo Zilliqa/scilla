@@ -1,0 +1,11 @@
+scilla_version 0
+
+library CastLib
+
+contract CastContract ()
+
+transition CastTest()
+  (* Casts from non-ByStr20 not allowed *)
+  x = Uint128 1;
+  v <-& x as ByStr20 with end
+end

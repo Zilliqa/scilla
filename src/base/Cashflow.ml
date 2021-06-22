@@ -223,6 +223,8 @@ struct
                   (cf_init_tag_pattern p, List.map ~f:cf_init_tag_stmt ss))
                 pss )
       | ReadFromBC (x, s) -> CFSyntax.ReadFromBC (add_noinfo_to_ident x, s)
+      | TypeCast (x, r, t) ->
+          CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
@@ -1850,6 +1852,22 @@ struct
             new_local_env,
             ctr_tag_map,
             not @@ [%equal: ECFR.money_tag] (get_id_tag x) x_tag )
+      | TypeCast (x, r, t) ->
+          let x_tag = lub_tags NotMoney (lookup_var_tag x local_env) in
+          let new_x = update_id_tag x x_tag in
+          let r_tag = lub_tags NotMoney (lookup_var_tag r local_env) in
+          let new_r = update_id_tag r r_tag in
+          let new_local_env =
+            AssocDictionary.remove (CFIdentifier.as_string x) local_env
+          in
+          ( TypeCast (new_x, new_r, t),
+            param_env,
+            field_env,
+            new_local_env,
+            ctr_tag_map,
+            not
+              ([%equal: ECFR.money_tag] (get_id_tag x) x_tag
+              || [%equal: ECFR.money_tag] (get_id_tag r) r_tag) )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | GasStmt g ->

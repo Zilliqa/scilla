@@ -419,6 +419,21 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.bc_lookup conf bf in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
+      | TypeCast (x, r, t) ->
+          let%bind l = fromR @@ Configuration.lookup conf r in
+          let%bind l_as_bstr =
+            match l with
+            | ByStrX lbystr when Bystrx.width lbystr = Type.address_length ->
+                pure lbystr
+            | _ -> fail0 "Expected address or ByStr20 in type cast"
+          in
+          let%bind tc_res =
+            fromR
+            @@ EvalTypecheck.typecheck_remote_field_types ~caddr:l_as_bstr t
+          in
+          let res = if tc_res then build_some_lit l t else build_none_lit t in
+          let conf' = Configuration.bind conf (get_id x) res in
+          stmt_eval conf' sts
       | MatchStmt (x, clauses) ->
           let%bind v = fromR @@ Env.lookup conf.env x in
           let%bind (_, branch_stmts), bnds =

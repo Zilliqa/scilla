@@ -1,0 +1,177 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "test_1_res", "tag": "(Option NoInfo)" },
+      { "field": "test_2_res", "tag": "(Option NoInfo)" },
+      { "field": "test_3_res", "tag": "(Option NoInfo)" },
+      { "field": "test_4_res", "tag": "(Option NoInfo)" },
+      { "field": "test_5_1_res", "tag": "(Option NoInfo)" },
+      { "field": "test_5_2_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_failed_cast", "tag": "NotMoney" },
+      { "field": "test_7_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_7_h_res", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "CastContract",
+    "params": [],
+    "fields": [
+      {
+        "vname": "test_1_res",
+        "type": "Option (ByStr20 with end)",
+        "depth": 0
+      },
+      {
+        "vname": "test_2_res",
+        "type": "Option (ByStr20 with contract end)",
+        "depth": 0
+      },
+      {
+        "vname": "test_3_res",
+        "type": "Option (ByStr20 with contract end)",
+        "depth": 0
+      },
+      { "vname": "test_4_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_5_1_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_5_2_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_2_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_2_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_2_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_3_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_3_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_3_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_4_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_4_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_4_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_4_failed_cast", "type": "Bool", "depth": 0 },
+      { "vname": "test_7_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_7_h_res", "type": "Option (Int256)", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "CastTest1",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest2",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest3",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest4",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest5_1",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest5_2",
+        "params": [ { "vname": "x", "type": "ByStr20 with end" } ]
+      },
+      {
+        "vname": "CastTest6_1",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest6_2",
+        "params": [ { "vname": "x", "type": "ByStr20 with end" } ]
+      },
+      {
+        "vname": "CastTest6_3",
+        "params": [
+          {
+            "vname": "x",
+            "type": "ByStr20 with contract field g : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "CastTest6_4",
+        "params": [
+          {
+            "vname": "x",
+            "type":
+              "ByStr20 with contract field f : Uint256, field g : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "CastTest7",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract CastContract contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
