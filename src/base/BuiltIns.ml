@@ -598,6 +598,13 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let alt_bn128_G1_mul_arity = 2
 
+    (* alt_bn128_G1_neg : zksnark_g1point_typ ->
+                          Option {zksnark_g1point_type} *)
+    let alt_bn128_G1_neg_type =
+      fun_typ g1point_type (option_typ g1point_type)
+    
+    let alt_bn128_G1_neg_arity = 1
+
     (* alt_bn128_pairing_product : List (g1g2pair_type) -> Option {Bool} *)
     let alt_bn128_pairing_product_type =
       fun_typ g1g2pair_list_type (option_typ bool_typ)
