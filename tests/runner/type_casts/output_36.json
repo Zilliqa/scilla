@@ -1,0 +1,195 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7951",
+  "_accepted": "false",
+  "messages": [],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "test_6_4_failed_cast",
+      "type": "Bool",
+      "value": { "constructor": "True", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "test_1_res",
+      "type": "Option (ByStr20 with end)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr20 with end" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_2_res",
+      "type": "Option (ByStr20 with contract end)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr20 with contract end" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_3_res",
+      "type": "Option (ByStr20 with contract end)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr20 with contract end" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_4_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_5_1_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_5_2_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_1_bal_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_1_f_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_1_g_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_2_bal_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_2_f_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_2_g_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_3_bal_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_3_f_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_3_g_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_4_bal_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_4_f_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_6_4_g_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_7_g_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_7_h_res",
+      "type": "Option (Int256)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Int256" ],
+        "arguments": []
+      }
+    }
+  ],
+  "events": []
+}

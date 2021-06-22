@@ -1,0 +1,13 @@
+{
+    "_tag": "CastTest5_2",
+    "_amount": "0",
+    "_sender": "0xabfeccdc9012345678901234567890f777564322",
+    "params": [
+        {
+            "vname" : "x",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564323"
+        }
+    ],
+    "_origin": "0xabfeccdc9012345678901234567890f777564322"
+}
