@@ -153,6 +153,44 @@ let alt_bn128_G1_mul p s =
     let _ = (pS, pD, sS, sD, presS, presD) in
     pres
 
+let alt_bn128_G1_neg p =
+  (* This check can be removed once we have a strong type for scalar. *)
+  if
+    String.length p.g1x <> scalar_len
+    || String.length p.g1y <> scalar_len
+  then None
+  else
+    (* bool alt_bn128_G1_neg_Z(const RawBytes_Z* p, RawBytes_Z* result) *)
+    let alt_bn128_G1_neg_Z =
+      foreign "alt_bn128_G1_neg_Z"
+        (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool)
+    in
+    
+    (* Create container for inputs and output. *)
+    let pS = make rawBytes_Z in
+    let presS = make rawBytes_Z in
+    (* and allocate data *)
+    let pD = allocate_n char ~count:g1point_len in
+    let presD = allocate_n char ~count:g1point_len in
+    (* and fill the fields. *)
+    let _ = setf pS rawBytes_data pD in
+    let _ = setf pS rawBytes_len g1point_len in
+    let _ = setf presS rawBytes_data presD in
+    let _ = setf presS rawBytes_len g1point_len in
+    (* Copy input data to input structs. *)
+    let _ = copy_to_cptr pD (encode_g1point_bytes p) in
+    (* Call the C function. *)
+    let succ = alt_bn128_G1_neg_Z (addr pS) (addr presS) in
+    let pres =
+      if succ (* Copy back the result. *) then
+        decode_g1point_bytes
+          (copy_from_tstring (string_from_ptr presD ~length:g1point_len))
+      else None
+    in
+    (* Dummy use to avoid GC of memory. *)
+    let _ = (pS, pD, presS, presD) in
+    pres
+
 let alt_bn128_pairing_product pairs =
   (* This check can be removed once we have a strong type for g2point. *)
   if
