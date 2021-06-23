@@ -17,6 +17,7 @@
 (* ******************************************************************************** *)
 scilla_version 0
 
+import BoolUtils
 library PairUtils
 
 let fst : forall 'A. forall 'B. Pair 'A 'B -> 'A =
@@ -34,3 +35,21 @@ let snd : forall 'A. forall 'B. Pair 'A 'B -> 'B =
     match p with
     | Pair a b => b
     end
+
+let pair_eq : forall 'A. forall 'B. ('A -> 'A -> Bool) -> ('B -> 'B -> Bool) ->
+Pair 'A 'B -> Pair 'A 'B -> Bool =
+  tfun 'A =>
+  tfun 'B =>
+  fun (eq1 : 'A -> 'A -> Bool) =>
+  fun (eq2 : 'B -> 'B -> Bool) =>
+  fun (p1 : Pair 'A 'B) =>
+  fun (p2 : Pair 'A 'B) =>
+  let f = @fst ByStr32 ByStr32 in
+  let s = @snd ByStr32 ByStr32 in
+  let p11 = f p1 in
+  let p12 = s p1 in
+  let p21 = f p2 in
+  let p22 = s p2 in
+  let t1 = eq1 p11 p21 in
+  let t2 = eq2 p12 p22 in
+  andb t1 t2
