@@ -7,4 +7,4 @@
   [empty -> (ByStr 0x)],
   [empty_x -> (ByStr0 0x)],
   [i -> (Uint32 12345)] }
-Gas remaining: 4001180
+Gas remaining: 4001159

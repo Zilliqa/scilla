@@ -21,4 +21,4 @@
   [two -> (Int64 2)],
   [one -> (Int64 1)],
   [int_list_eq -> <closure>] }
-Gas remaining: 4000777
+Gas remaining: 4000756

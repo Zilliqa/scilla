@@ -1,4 +1,4 @@
 (Uint128 1),
 { [y -> (Uint128 1)],
   [x -> (Uint128 0)] }
-Gas remaining: 4001227
+Gas remaining: 4001206

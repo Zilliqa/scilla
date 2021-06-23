@@ -14,4 +14,4 @@
   [three -> (Int32 3)],
   [two -> (Int32 2)],
   [one -> (Int32 1)] }
-Gas remaining: 4001035
+Gas remaining: 4001014

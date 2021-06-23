@@ -15,4 +15,4 @@
   [list_reverse -> <type_closure>],
   [list_tail -> <type_closure>],
   [list_head -> <type_closure>] }
-Gas remaining: 4000611
+Gas remaining: 4000590

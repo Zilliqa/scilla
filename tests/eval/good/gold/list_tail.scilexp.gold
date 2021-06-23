@@ -7,4 +7,4 @@
   [two -> (Int32 2)],
   [one -> (Int32 1)],
   [int_rest -> <closure>] }
-Gas remaining: 4001218
+Gas remaining: 4001197
