@@ -414,6 +414,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
         let multiplier = GasGasCharge.LogOf (GI.get_id s) in
         pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
+    | Builtin_alt_bn128_G1_neg, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
         let list_len = GasGasCharge.LengthOf (GI.get_id pairs) in
         pure (GasGasCharge.ProdOf (GasGasCharge.StaticCost 40, list_len))
@@ -539,6 +540,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_schnorr_get_address -> [([bystrx_typ pubkey_len], crypto_coster)];
     | Builtin_alt_bn128_G1_add -> [([g1point_type; g1point_type], crypto_coster)];
     | Builtin_alt_bn128_G1_mul -> [([g1point_type; scalar_type], crypto_coster)];
+    | Builtin_alt_bn128_G1_neg -> [([g1point_type ], crypto_coster)];
     | Builtin_alt_bn128_pairing_product -> [([g1g2pair_list_type], crypto_coster)];
   
     (* Maps *)
