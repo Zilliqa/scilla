@@ -57,6 +57,11 @@ let mul_helper p s =
   | Some r -> r
   | None -> assert_failure "TestSnark: add_bn128_G1_mul failed"
 
+let neg_helper p =
+  match alt_bn128_G1_neg p with
+  | Some r -> r
+  | None -> assert_failure "TestSnark: add_bn128_G1_neg failed"
+
 let pairingprod_helper pairs =
   match alt_bn128_pairing_product pairs with
   | Some b -> b
@@ -553,6 +558,23 @@ let test_generate_random_points =
            (encode_g1point_bytes output)
            (hex2bystr
               "0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d3230af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27")))
+let test_neg =
+  test_case (fun _ ->
+      let p =
+        {
+          g1x =
+            dec2bystr32
+              "6851077925310461602867742977619883934042581405263014789956638244065803308498";
+          g1y =
+            dec2bystr32
+              "10336382210592135525880811046708757754106524561907815205241508542912494488506";
+        }
+      in
+      let p1 = neg_helper p in
+      let p2 = negateG1 p in
+      assert_bool "TestSnark failed: test_neg: comparison failed"
+        ([%equal: g1point] p1 p2))
+
 
 module All = struct
   let tests _ =
@@ -564,5 +586,6 @@ module All = struct
            test_pairing;
            test_pairing_null_input;
            test_generate_random_points;
+           test_neg;
          ]
 end
