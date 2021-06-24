@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported libraries: ListUtils",
+      "warning_message": "Dead imported library: ListUtils",
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 5,
@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: m2",
+      "warning_message": "Dead match bound: m2",
       "start_location": {
         "file": "contracts/one-msg1.scilla",
         "line": 33,

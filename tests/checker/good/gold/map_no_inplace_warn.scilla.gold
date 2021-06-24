@@ -76,7 +76,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused local component parameter: k",
+      "warning_message": "Dead component parameter: k",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 22,
@@ -86,11 +86,41 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: k",
+      "warning_message": "Dead component parameter: k",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 13,
         "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead load statement to: a",
+      "start_location": {
+        "file": "checker/good/map_no_inplace_warn.scilla",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: k",
+      "start_location": {
+        "file": "checker/good/map_no_inplace_warn.scilla",
+        "line": 9,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead map get statement to: a",
+      "start_location": {
+        "file": "checker/good/map_no_inplace_warn.scilla",
+        "line": 10,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

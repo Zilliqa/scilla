@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: list_map",
+      "warning_message": "Dead Library value: list_map",
       "start_location": {
         "file": "checker/good/lib_typing2.scilla",
         "line": 11,

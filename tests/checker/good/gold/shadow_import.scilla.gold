@@ -59,6 +59,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: other_len",
+      "start_location": {
+        "file": "contracts/shadow_import.scilla",
+        "line": 24,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: len",
+      "start_location": {
+        "file": "contracts/shadow_import.scilla",
+        "line": 22,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Resolver contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

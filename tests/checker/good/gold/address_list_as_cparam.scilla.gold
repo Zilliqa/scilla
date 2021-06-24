@@ -67,7 +67,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused fields: f",
+      "warning_message": "Unused field: f",
       "start_location": {
         "file": "contracts/address_list_as_cparam.scilla",
         "line": 5,

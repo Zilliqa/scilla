@@ -188,7 +188,17 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: one_msg",
+      "warning_message": "Write only field: members",
+      "start_location": {
+        "file": "contracts/bookstore.scilla",
+        "line": 173,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library value: one_msg",
       "start_location": {
         "file": "contracts/bookstore.scilla",
         "line": 23,
@@ -198,7 +208,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused contract params: store_name",
+      "warning_message": "Dead contract parameter: store_name",
       "start_location": {
         "file": "contracts/bookstore.scilla",
         "line": 56,
@@ -208,7 +218,17 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: book_title",
+      "warning_message": "Dead bind statement to: book_title",
+      "start_location": {
+        "file": "contracts/bookstore.scilla",
+        "line": 250,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: book_title",
       "start_location": {
         "file": "contracts/bookstore.scilla",
         "line": 244,

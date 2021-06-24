@@ -74,17 +74,17 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported libraries: ListUtils",
+      "warning_message": "Dead imported library: NatUtils",
       "start_location": {
         "file": "contracts/inplace-map.scilla",
         "line": 3,
-        "column": 8
+        "column": 28
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused imported libraries: PairUtils",
+      "warning_message": "Dead imported library: PairUtils",
       "start_location": {
         "file": "contracts/inplace-map.scilla",
         "line": 3,
@@ -94,11 +94,41 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused imported libraries: NatUtils",
+      "warning_message": "Dead imported library: ListUtils",
       "start_location": {
         "file": "contracts/inplace-map.scilla",
         "line": 3,
-        "column": 28
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: c",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 108,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: b",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 85,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: c",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 86,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

@@ -250,6 +250,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Dead bind statement to: false",
+      "start_location": {
+        "file": "contracts/shogi_proc.scilla",
+        "line": 787,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: true",
+      "start_location": {
+        "file": "contracts/shogi_proc.scilla",
+        "line": 788,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Name square shadows a transition parameter.",
       "start_location": {
         "file": "contracts/shogi_proc.scilla",

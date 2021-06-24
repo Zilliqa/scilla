@@ -50,17 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: f",
-      "start_location": {
-        "file": "checker/good/shadowwarn3.scilla",
-        "line": 9,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused Variable: b",
+      "warning_message": "Dead match bound: b",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 11,
@@ -70,7 +60,27 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: b",
+      "warning_message": "Dead Library value: f",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: a",
+      "start_location": {
+        "file": "checker/good/shadowwarn3.scilla",
+        "line": 19,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: b",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 19,
@@ -80,11 +90,11 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: a",
+      "warning_message": "Dead match bound: a",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 19,
-        "column": 10
+        "column": 20
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

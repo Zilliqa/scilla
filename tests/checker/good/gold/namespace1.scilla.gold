@@ -78,7 +78,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: foo",
+      "warning_message": "Dead Library value: foo",
       "start_location": {
         "file": "checker/good/namespace1.scilla",
         "line": 7,

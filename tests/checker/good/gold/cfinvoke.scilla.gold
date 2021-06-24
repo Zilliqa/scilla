@@ -63,7 +63,28 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Dead load statement to: bal",
+      "start_location": {
+        "file": "contracts/cfinvoke.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: s",
+      "start_location": {
+        "file": "contracts/cfinvoke.scilla",
+        "line": 29,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 

@@ -39,6 +39,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
+  let diff_filter s = s
+
   let tests =
     [
       "bad_map_key_2.scilla";
@@ -159,6 +161,8 @@ module LibTests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
+  let diff_filter s = s
+
   let tests =
     [
       "lmodule-import-contract.scillib";
@@ -203,6 +207,8 @@ module ExpTests = Scilla_test.Util.DiffBasedTests (struct
   let additional_libdirs = []
 
   let provide_init_arg = false
+
+  let diff_filter s = s
 
   let tests =
     [

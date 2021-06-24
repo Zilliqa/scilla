@@ -87,7 +87,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: foo2",
+      "warning_message": "Dead Library value: foo2",
       "start_location": {
         "file": "checker/good/namespace3.scilla",
         "line": 8,
@@ -97,7 +97,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: bar",
+      "warning_message": "Dead component parameter: bar",
       "start_location": {
         "file": "checker/good/namespace3.scilla",
         "line": 17,
@@ -107,7 +107,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: bar",
+      "warning_message": "Dead component parameter: bar",
       "start_location": {
         "file": "checker/good/namespace3.scilla",
         "line": 13,

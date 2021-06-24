@@ -231,67 +231,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused user defined ADT: DeadType",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 41,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused library var: one_msg",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 12,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused library var: dead_code_var",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 24,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused imported libraries: BoolUtils",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 9,
-        "column": 8
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused contract params: store_name",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 49,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: deadField1",
-      "start_location": {
-        "file": "contracts/dead_code_test1.scilla",
-        "line": 81,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: deadField2",
+      "warning_message": "Unused field: deadField2",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 82,
@@ -301,19 +241,107 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused procedures: DeadProc1",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "Unused field: deadField1",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 81,
+        "column": 7
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused procedures: DeadProc2",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "Write only field: members",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 175,
+        "column": 13
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: book_title",
+      "warning_message": "Dead imported library: BoolUtils",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 9,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library value: one_msg",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library value: dead_code_var",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 24,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library ADT: DeadType",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 41,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead procedure: DeadProc2",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 100,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead procedure: DeadProc1",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 97,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead contract parameter: store_name",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 49,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: book_title",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 252,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: book_title",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 246,
@@ -323,7 +351,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: dead_param",
+      "warning_message": "Dead component parameter: dead_param",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 138,
@@ -333,7 +361,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: dead_pparam",
+      "warning_message": "Dead component parameter: dead_pparam",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 97,

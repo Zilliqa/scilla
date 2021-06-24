@@ -58,7 +58,9 @@ let output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
     =
   if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt) then
     output_updater goldoutput_file test_name out
-  else output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
+  else
+    output_verifier goldoutput_file msg (env.print_diff test_ctxt) out (fun s ->
+        s)
 
 let foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
     output_file goldoutput_file msg s =

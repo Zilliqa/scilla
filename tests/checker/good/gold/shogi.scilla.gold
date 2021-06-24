@@ -208,6 +208,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Dead bind statement to: false",
+      "start_location": {
+        "file": "contracts/shogi.scilla",
+        "line": 604,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: true",
+      "start_location": {
+        "file": "contracts/shogi.scilla",
+        "line": 605,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/shogi.scilla",

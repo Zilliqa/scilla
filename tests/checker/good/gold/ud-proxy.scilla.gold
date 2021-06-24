@@ -87,21 +87,21 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported libraries: BoolUtils",
+      "warning_message": "Dead imported library: ListUtils",
       "start_location": {
         "file": "contracts/ud-proxy.scilla",
         "line": 3,
-        "column": 8
+        "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused imported libraries: ListUtils",
+      "warning_message": "Dead imported library: BoolUtils",
       "start_location": {
         "file": "contracts/ud-proxy.scilla",
         "line": 3,
-        "column": 18
+        "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

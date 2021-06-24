@@ -189,7 +189,27 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: mk_contract_initialized_event",
+      "warning_message": "Read only field: owners",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 262,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead imported library: IntUtils",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 3,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library value: mk_contract_initialized_event",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 11,
@@ -199,21 +219,11 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library var: f",
+      "warning_message": "Dead Library value: f",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 75,
         "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused imported libraries: IntUtils",
-      "start_location": {
-        "file": "contracts/wallet_2.scilla",
-        "line": 3,
-        "column": 18
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

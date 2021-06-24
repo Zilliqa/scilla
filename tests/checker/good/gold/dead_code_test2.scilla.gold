@@ -67,7 +67,17 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Variable: dead_pattern",
+      "warning_message": "Read only field: test_pattern",
+      "start_location": {
+        "file": "contracts/dead_code_test2.scilla",
+        "line": 11,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: dead_pattern",
       "start_location": {
         "file": "contracts/dead_code_test2.scilla",
         "line": 13,

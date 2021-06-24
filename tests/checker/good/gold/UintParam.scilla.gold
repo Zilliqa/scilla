@@ -59,7 +59,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused local component parameter: x",
+      "warning_message": "Dead component parameter: x",
       "start_location": {
         "file": "contracts/UintParam.scilla",
         "line": 11,
@@ -69,7 +69,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: x",
+      "warning_message": "Dead component parameter: x",
       "start_location": {
         "file": "contracts/UintParam.scilla",
         "line": 7,

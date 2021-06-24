@@ -144,7 +144,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: getAddressFromPair",
+      "warning_message": "Dead Library value: getAddressFromPair",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 12,
@@ -154,7 +154,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library var: getValueFromPair",
+      "warning_message": "Dead Library value: getValueFromPair",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 13,
@@ -164,7 +164,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused contract params: contractOwner",
+      "warning_message": "Dead contract parameter: contractOwner",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 72,
@@ -174,7 +174,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local variable: zero",
+      "warning_message": "Dead let expression: zero",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 110,

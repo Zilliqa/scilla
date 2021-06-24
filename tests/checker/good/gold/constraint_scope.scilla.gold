@@ -70,17 +70,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused user defined ADT: MyTyp",
-      "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 7,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: f",
+      "warning_message": "Unused field: f",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 32,
@@ -90,7 +80,17 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local variable: lib_val",
+      "warning_message": "Dead Library ADT: MyTyp",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead let expression: lib_val",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 24,
@@ -100,7 +100,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local variable: param_val",
+      "warning_message": "Dead let expression: param_val",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 26,
@@ -110,7 +110,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local variable: f",
+      "warning_message": "Dead let expression: f",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 28,

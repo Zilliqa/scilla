@@ -2,12 +2,22 @@
   "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Empty",
+    "vname": "SimpleImplDead",
     "params": [],
     "fields": [],
     "transitions": [ { "vname": "dummy", "params": [] } ],
-    "procedures": [],
-    "events": [],
+    "procedures": [
+      {
+        "vname": "dead_procedure",
+        "params": [ { "vname": "o", "type": "Option (Int32)" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "dead_procedure",
+        "params": [ { "vname": "dead_binder", "type": "Int32" } ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -50,63 +60,33 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: PairUtils",
+      "warning_message": "Dead procedure: dead_procedure",
       "start_location": {
-        "file": "contracts/empty.scilla",
-        "line": 4,
-        "column": 50
+        "file": "contracts/dead_code_test3.scilla",
+        "line": 8,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: NatUtils",
+      "warning_message": "Dead match bound: dead_binder",
       "start_location": {
-        "file": "contracts/empty.scilla",
-        "line": 4,
-        "column": 40
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Dead imported library: ListUtils",
-      "start_location": {
-        "file": "contracts/empty.scilla",
-        "line": 4,
-        "column": 29
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Dead imported library: IntUtils",
-      "start_location": {
-        "file": "contracts/empty.scilla",
-        "line": 4,
-        "column": 19
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Dead imported library: BoolUtils",
-      "start_location": {
-        "file": "contracts/empty.scilla",
-        "line": 4,
-        "column": 8
+        "file": "contracts/dead_code_test3.scilla",
+        "line": 10,
+        "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
       "warning_message":
-        "No transition in contract Empty contains an accept statement\n",
+        "No transition in contract SimpleImplDead contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7855"
+  "gas_remaining": "7999"
 }
 

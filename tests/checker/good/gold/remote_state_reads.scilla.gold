@@ -247,67 +247,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused fields: assign_test_1",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 25,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_2",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 26,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_3",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 27,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_4",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 28,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_5",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 29,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_6",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 30,
-        "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused fields: assign_test_7",
+      "warning_message": "Unused field: assign_test_7",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 31,
@@ -317,47 +257,277 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: list1",
+      "warning_message": "Unused field: assign_test_6",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 114,
+        "line": 30,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: assign_test_5",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 29,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: assign_test_4",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 28,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: assign_test_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 27,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: assign_test_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 26,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: assign_test_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 25,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: sender_balance_pre",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 167,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: list2",
+      "warning_message": "Write only field: sender_balance_post",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 115,
+        "line": 175,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: list3",
+      "warning_message": "Write only field: sender_balance_mid",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 116,
+        "line": 171,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: pair1",
+      "warning_message": "Write only field: remote_reads_test_res_3_9",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 117,
+        "line": 95,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: adt1",
+      "warning_message": "Write only field: remote_reads_test_res_3_8",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 92,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_7",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 89,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_6",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 86,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_5",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 83,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_4",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 80,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 77,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_13",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 108,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_12",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 105,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_11",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 102,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_10",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 99,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 74,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_2_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 71,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_1_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 68,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: assign_test_9",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 152,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: assign_test_8",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 149,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: assign_test_10",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 161,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: remote1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 119,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: adt1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 118,
@@ -367,10 +537,40 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused local component parameter: remote1",
+      "warning_message": "Dead component parameter: pair1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
-        "line": 119,
+        "line": 117,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: list3",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 116,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: list2",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 115,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead component parameter: list1",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 114,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

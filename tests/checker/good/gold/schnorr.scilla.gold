@@ -63,7 +63,17 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: fst_f",
+      "warning_message": "Read only field: pub_key",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 21,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead Library value: fst_f",
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 12,
@@ -73,7 +83,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library var: snd_f",
+      "warning_message": "Dead Library value: snd_f",
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 13,

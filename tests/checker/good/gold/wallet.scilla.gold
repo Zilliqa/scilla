@@ -174,27 +174,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: mk_transaction_signed_event",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 16,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused library var: mk_candidate_owner_added_event",
-      "start_location": {
-        "file": "contracts/wallet.scilla",
-        "line": 21,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused imported libraries: ListUtils",
+      "warning_message": "Dead imported library: ListUtils",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 3,
@@ -204,21 +184,41 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: amount",
+      "warning_message": "Dead Library value: mk_transaction_signed_event",
       "start_location": {
         "file": "contracts/wallet.scilla",
-        "line": 254,
-        "column": 29
+        "line": 16,
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Variable: recipient",
+      "warning_message": "Dead Library value: mk_candidate_owner_added_event",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 21,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: recipient",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 254,
         "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead match bound: amount",
+      "start_location": {
+        "file": "contracts/wallet.scilla",
+        "line": 254,
+        "column": 29
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

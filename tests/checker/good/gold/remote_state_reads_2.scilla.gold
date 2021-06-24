@@ -109,6 +109,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: remote_read_remote_read_res_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads_2.scilla",
+        "line": 42,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_read_remote_read_res_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_2.scilla",
+        "line": 37,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_read_remote_read_res_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_2.scilla",
+        "line": 22,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/remote_state_reads_2.scilla",

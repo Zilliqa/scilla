@@ -64,6 +64,66 @@
   },
   "warnings": [
     {
+      "warning_message": "Dead Library ADT: TestType",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 5,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: map",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 12,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: k",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 13,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: zero",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 14,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: v",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead bind statement to: map2",
+      "start_location": {
+        "file": "contracts/map_key_test.scilla",
+        "line": 16,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

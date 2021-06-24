@@ -5,7 +5,7 @@ Checks for unused
 - Immutable contract parameters
 - Pattern-matching binders
 - Library functions (and their parameters) and types
-- Limbrary imports
+- Library imports
 *)
 
 open Core_kernel
@@ -24,324 +24,425 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
   open SCIdentifier
   open SCSyntax
-  open Hashtbl
+
+  (* All checking procdures are marked with the comment
+     (******** Checking for dead ______ ********)
+  *)
 
   (* Warning level for dead code detection *)
   let warning_level_dead_code = 3
 
-  (* Update a dictionary that a value is used, return whether we updated a dict *)
-  let mark_used dict name =
-    let is_updated = ref false in
-    Hashtbl.change dict (as_error_string name) ~f:(fun data_o ->
-        match data_o with
-        | Some (false, rep) ->
-            is_updated := true;
-            Some (true, rep)
-        | _ as x -> x);
-    !is_updated
+  (* Raise a warning *)
+  let warn warn_msg name get_loc =
+    warn1
+      (warn_msg ^ as_error_string name)
+      warning_level_dead_code
+      (get_loc (get_rep name))
 
-  (* Clear dictionary : TODO: remove? *)
-  let clear_dict dict = Hashtbl.clear dict
-
-  (* Add to Hashtbl *)
-  let add_dict dict name =
-    let _ =
-      Hashtbl.add dict ~key:(as_error_string name) ~data:(false, get_rep name)
+  (* Return a list of names of ADTs as Name from a type *)
+  (* Used to finding dead user defined ADTs *)
+  let iden_of_ADT tys =
+    let rec iden_iter ty acc =
+      match ty with
+      | SCType.ADT (iden, _) -> SCIdentifier.get_id iden :: acc
+      | SCType.MapType (ty1, ty2) | SCType.FunType (ty1, ty2) ->
+          iden_iter ty1 [] @ iden_iter ty2 []
+      | _ -> []
     in
-    ()
+    List.dedup_and_sort ~compare:SCIdentifier.Name.compare
+      (List.fold_left tys ~init:[] ~f:(fun iden_l ty ->
+           iden_iter ty [] @ iden_l))
 
-  (* Filter through dictionary to find unused identifiers *)
-  let find_unused dict warn_msg get_loc =
-    let unused_list =
-      List.map
-        (List.filter (Hashtbl.to_alist dict) ~f:(fun (_, (v, _)) -> not v))
-        ~f:(fun (name, (_, rep)) -> (name, rep))
-    in
-    if not (List.is_empty unused_list) then
-      List.iter unused_list ~f:(fun (name, rep) ->
-          warn1 (warn_msg ^ name) warning_level_dead_code (get_loc rep))
+  let rec adts_of_literal lits =
+    List.fold_left lits ~init:[] ~f:(fun res_adts lit ->
+        match lit with
+        | SLiteral.Msg msg ->
+          let new_adts =
+            List.fold_left msg ~init:[] ~f:(fun acc (_, ty, lits') ->
+                iden_of_ADT [ ty ] @ adts_of_literal [ lits' ] @ acc) in
+            new_adts @ res_adts 
+        | Map ((ty1, ty2), _) ->
+            iden_of_ADT [ ty1 ] @ iden_of_ADT [ ty2 ] @ res_adts
+        | ADTValue (_, tys, ts) ->
+            iden_of_ADT tys @ adts_of_literal ts @ res_adts
+        | _ -> [])
 
-  (* Detect Dead code in Contract Modules *)
+  let dedup_id_list = SCIdentifier.dedup_id_list
+
+  let dedup_name_list l =
+    List.dedup_and_sort ~compare:SCIdentifier.Name.compare l
+
+  (* Procedure are checked for seperately due to the discrepency between ER.rep and SR.rep
+     doesn't allow them to be stored as a free variable with the other identifiers. Fix?
+  *)
+  let proc_dict = ref []
+
+  (*
+     Since code is already none pure (proc_dict is a reference), we mark whether fields are read or write
+     in the following, simple, manner
+  *)
+  let read_field = ref []
+
+  let write_field = ref []
+
+  (* Detect Dead Code in a cmod *)
   let dc_cmod (cmod : cmodule) (elibs : libtree list) =
-    (**************** Assertions ***************)
-    (* Checking elibs and cmod.elib are the same *)
-    let cmod_elib_list = List.map cmod.elibs ~f:fst in
-    let elibs_list = List.map elibs ~f:(fun libt -> libt.libn.lname) in
-    if List.length cmod_elib_list <> List.length elibs_list then
-      warn1 "Bug in imported libraries - imported libraries might be incorrect"
-        warning_level_dead_code (SR.get_loc SR.dummy_rep);
-    List.iter cmod_elib_list ~f:(fun elib ->
-        let find =
-          List.find elibs_list ~f:(fun e -> SCIdentifier.equal e elib)
-        in
-        match find with
-        | None ->
-            warn1
-              (as_error_string elib ^ " not found in elib")
-              warning_level_dead_code (SR.get_loc SR.dummy_rep)
-        | Some _ -> ());
-    List.iter elibs_list ~f:(fun elib ->
-        let find =
-          List.find cmod_elib_list ~f:(fun e -> SCIdentifier.equal e elib)
-        in
-        match find with
-        | None ->
-            warn1
-              (as_error_string elib ^ " not found in cmod_elib_list")
-              warning_level_dead_code (SR.get_loc SR.dummy_rep)
-        | Some _ -> ());
-
-    (************** DC Detector ***************)
-    (* Global contract dictionaries: fields, contract parameters, procedures *)
-    let cfields_dict = create (module String) in
-    let cparams_dict = create (module String) in
-    let proc_dict = create (module String) in
-
-    (* Library entries *)
-    let libvar_dict = create (module String) in
-    let libty_dict = create (module String) in
-
-    (* Library imports *)
-    let elibs_dict = create (module String) in
-
-    (********* Populate library imports ***********)
-    List.iter cmod.elibs ~f:(fun (lib_name, _) -> add_dict elibs_dict lib_name);
-
-    (******* Populate library entries *******)
-    let pop_lib_dict () =
-      match cmod.libs with
-      | None -> ()
-      | Some lib ->
-          List.iter lib.lentries ~f:(fun lib_entry ->
-              match lib_entry with
-              | LibVar (name, _, _) -> add_dict libvar_dict name
-              | LibTyp (name, _) -> add_dict libty_dict name)
+    (* Marking a field is used for read or write *)
+    let cfields = List.map cmod.contr.cfields ~f:(fun (f', _, _) -> f') in
+    let mark_field_read f =
+      if SCIdentifier.is_mem_id f cfields then read_field := f :: !read_field
     in
-    pop_lib_dict ();
+    let mark_field_write f =
+      if SCIdentifier.is_mem_id f cfields then write_field := f :: !write_field
+    in
 
-    (******* Populate contract dictionaries *******)
-    List.iter cmod.contr.cfields ~f:(fun (iden, _, _) ->
-        add_dict cfields_dict iden);
+    (******** Checking for dead expressions ********)
+    (* Returns free variables and defined ADT types *)
+    let rec expr_iter (expr, _) =
+      match expr with
+      | Literal l ->
+          let free_tys = adts_of_literal [ l ] in
+          ([], dedup_name_list free_tys)
+      | Var v -> ([ v ], [])
+      | TApp (v, tys) -> ([ v ], iden_of_ADT tys)
+      | Message mlist ->
+          let fvars =
+            List.filter_map mlist ~f:(fun (_, pl) ->
+                match pl with MVar v -> Some v | MLit _ -> None)
+          in
+          (fvars, [])
+      | App (f, actuals) -> (f :: actuals, [])
+      | Constr (_, tys, actuals) | Builtin (_, tys, actuals) ->
+          (actuals, iden_of_ADT tys)
+      | Fixpoint (a, ty, e) | Fun (a, ty, e) ->
+          let e_fv, e_adts = expr_iter e in
+          let e_fv_no_a =
+            List.filter ~f:(fun i -> not @@ SCIdentifier.equal i a) e_fv
+          in
+          (e_fv_no_a, dedup_name_list @@ iden_of_ADT [ ty ] @ e_adts)
+      | Let (i, ty_o, lhs, rhs) ->
+          let fv_rhs, adts_rhs = expr_iter rhs in
+          let fvrhs_no_i =
+            List.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) fv_rhs
+          in
+          if List.mem fv_rhs i ~equal:SCIdentifier.equal then
+            (* LHS is not dead *)
+            let fvlhs, tylhs = expr_iter lhs in
+            let fv = dedup_id_list (fvlhs @ fvrhs_no_i) in
+            let adts = dedup_name_list (adts_rhs @ tylhs) in
+            match ty_o with
+            | Some ty -> (fv, dedup_name_list @@ iden_of_ADT [ ty ] @ adts)
+            | None -> (fv, adts)
+          else (
+            (* Give a warning *)
+            warn "Dead let expression: " i ER.get_loc;
+            (fvrhs_no_i, adts_rhs))
+      | MatchExpr (x, plist) ->
+          (* Iterate through each pattern like Let *)
+          List.fold_left plist ~init:([], [])
+            ~f:(fun (res_fv, res_adts) (pat, exp') ->
+              let fvl, adts = expr_iter exp' in
+              let bounds = get_pattern_bounds pat in
+              (* Check that every bound is used in the expression *)
+              let bounds_unused =
+                List.filter bounds ~f:(fun bound ->
+                    not @@ List.mem fvl bound ~equal:SCIdentifier.equal)
+              in
+              (******** Checking for dead bounds ********)
+              if not @@ List.is_empty bounds_unused then
+                List.iter bounds_unused ~f:(fun bound ->
+                    warn "Dead match bound: " bound ER.get_loc);
+              (* Remove bound variables from the free variables list *)
+              let fvl' =
+                List.filter fvl ~f:(fun a ->
+                    not @@ SCIdentifier.is_mem_id a bounds)
+              in
+              (x :: fvl' @ res_fv, res_adts @ adts))
+      | TFun (a, e) ->
+          let e_fv, e_adts = expr_iter e in
+          let e_fv' =
+            List.filter ~f:(fun i -> not @@ SCIdentifier.equal i a) e_fv
+          in
+          (e_fv', e_adts)
+      | GasExpr (_, e) -> expr_iter e
+    in
 
-    List.iter cmod.contr.cparams ~f:(fun (cparam, _) ->
-        add_dict cparams_dict cparam);
+    (******** Checking for dead statements ********)
+    (* Returns free variables and used ADTs *)
+    let rec stmt_iter stmts =
+      match stmts with
+      | (s, _) :: rest_stmts -> (
+          let live_vars, adts = stmt_iter rest_stmts in
+          match s with
+          | Load (x, m) ->
+              mark_field_write x;
+              mark_field_read m;
+              if SCIdentifier.is_mem_id x live_vars then
+                (dedup_id_list (m :: live_vars), adts)
+              else (
+                warn "Dead load statement to: " x ER.get_loc;
+                (live_vars, adts))
+          | RemoteLoad (x, addr, m) ->
+              mark_field_write x;
+              mark_field_read m;
+              if SCIdentifier.is_mem_id x live_vars then
+                (dedup_id_list (addr :: m :: live_vars), adts)
+              else (
+                warn "Dead remote load statement to: " x ER.get_loc;
+                (live_vars, adts))
+          | Store (i, m) ->
+              mark_field_write i;
+              mark_field_read m;
+              (dedup_id_list (m :: live_vars), adts)
+          | MapUpdate (i, il, io) ->
+              mark_field_write i;
+              List.iter il ~f:mark_field_read;
+              let live_vars' =
+                match io with
+                | Some ii ->
+                    mark_field_read ii;
+                    i :: ii :: il
+                | None -> i :: il
+              in
+              (dedup_id_list @@ live_vars' @ live_vars, adts)
+          | MapGet (x, i, il, _) ->
+              mark_field_write x;
+              mark_field_read i;
+              List.iter il ~f:mark_field_read;
+              if SCIdentifier.is_mem_id x live_vars then
+                (dedup_id_list (i :: (il @ live_vars)), adts)
+              else (
+                warn "Dead map get statement to: " x ER.get_loc;
+                (live_vars, adts))
+          | RemoteMapGet (x, addr, i, il, _) ->
+              mark_field_write x;
+              mark_field_read i;
+              List.iter il ~f:mark_field_read;
+              if SCIdentifier.is_mem_id x live_vars then
+                (dedup_id_list (addr :: i :: (il @ live_vars)), adts)
+              else (
+                warn "Dead remote map get statement to: " x ER.get_loc;
+                (live_vars, adts))
+          | ReadFromBC (x, _) ->
+              mark_field_write x;
+              if not @@ SCIdentifier.is_mem_id x live_vars then
+                warn "Dead Read From BC statement to: " x ER.get_loc;
+              (live_vars, adts)
+          | Throw topt -> (
+              match topt with
+              | Some x -> (dedup_id_list (x :: live_vars), adts)
+              | None -> (live_vars, adts))
+          | CallProc (p, al) ->
+              List.iter al ~f:mark_field_read;
+              proc_dict := p :: !proc_dict;
+              (dedup_id_list (al @ live_vars), adts)
+          | Iterate (l, p) ->
+              mark_field_read l;
+              proc_dict := p :: !proc_dict;
+              (dedup_id_list (l :: live_vars), adts)
+          | Bind (i, e) ->
+              mark_field_write i;
+              let live_vars_no_i =
+                List.filter
+                  ~f:(fun x -> not @@ SCIdentifier.equal i x)
+                  live_vars
+              in
+              if SCIdentifier.is_mem_id i live_vars then
+                let e_live_vars, adts' = expr_iter e in
+                ( dedup_id_list @@ e_live_vars @ live_vars_no_i,
+                  dedup_name_list @@ adts' @ adts )
+              else (
+                warn "Dead bind statement to: " i ER.get_loc;
+                (live_vars, adts))
+          | MatchStmt (i, pslist) ->
+              mark_field_read i;
+              let live_vars', adts' =
+                List.fold_left pslist ~init:(live_vars, adts)
+                  ~f:(fun (res_fv, res_adts) (pat, stmts) ->
+                    let fvl, adts = stmt_iter stmts in
+                    let bounds = get_pattern_bounds pat in
+                    (* Check that every bound is named in the expression *)
+                    let bounds_unused =
+                      List.filter bounds ~f:(fun bound ->
+                          not @@ SCIdentifier.is_mem_id bound fvl)
+                    in
+                    (******** Checking for dead bounds ********)
+                    if not @@ List.is_empty bounds_unused then
+                      List.iter bounds_unused ~f:(fun bound ->
+                          warn "Dead match bound: " bound ER.get_loc);
+                    (* Remove bound varaibles from the free variables list *)
+                    let fvl' =
+                      List.filter fvl ~f:(fun a ->
+                          not (SCIdentifier.is_mem_id a bounds))
+                    in
+                    (fvl' @ res_fv, adts @ res_adts))
+              in
+              (i :: live_vars', adts')
+          | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
+          | AcceptPayment | GasStmt _ -> (live_vars, adts))
+      | _ -> ([], [])
+    in
 
+    (******** Checking for dead library function/variable/type definitions ********)
+    (* DCD library entries. *)
+    let rec dcd_lib_entries lentries freevars adts =
+      match lentries with
+      | lentry :: rentries -> (
+          let freevars', adts' = dcd_lib_entries rentries freevars adts in
+          match lentry with
+          | LibVar (i, topt, lexp) ->
+              let freevars'_no_i =
+                List.filter
+                  ~f:(fun i' -> not @@ SCIdentifier.equal i' i)
+                  freevars'
+              in
+              if not @@ SCIdentifier.is_mem_id i freevars' then
+                warn "Dead Library value: " i ER.get_loc;
+              let fv, tyl = expr_iter lexp in
+              let res_fv = dedup_id_list @@ fv @ freevars'_no_i in
+              let res_adts =
+                match topt with
+                | None -> dedup_name_list (tyl @ adts')
+                | Some ty -> dedup_name_list (iden_of_ADT [ ty ] @ tyl @ adts')
+              in
+              (res_fv, res_adts)
+          | LibTyp (i, _) ->
+              let adts'_no_i =
+                List.filter
+                  ~f:(fun i' ->
+                    not @@ SCIdentifier.Name.equal (SCIdentifier.get_id i) i')
+                  adts'
+              in
+              if
+                not
+                @@ List.exists adts' ~f:(fun adt ->
+                       SCIdentifier.Name.equal (SCIdentifier.get_id i) adt)
+              then warn "Dead Library ADT: " i ER.get_loc;
+              (freevars', adts'_no_i))
+      | [] -> (freevars, adts)
+    in
+
+    (* Detect Dead Code in a library. *)
+    let dcd_lib lib freevars adts =
+      dcd_lib_entries lib.lentries freevars adts
+    in
+
+    (* START *)
+    (* Iterate through contract components. *)
+    let comps_lv, comps_adts =
+      List.fold_left cmod.contr.ccomps ~init:([], [])
+        ~f:(fun (res_fv, res_adts) comp ->
+          let lv, adts = stmt_iter comp.comp_body in
+          (* Remove bound parameters *)
+          let lv' =
+            List.filter lv ~f:(fun a ->
+                not
+                  (List.exists comp.comp_params ~f:(fun (b, _) ->
+                       SCIdentifier.equal a b)))
+          in
+          (******** Checking for dead component parameters ********)
+          List.iter comp.comp_params ~f:(fun (cparam, _) ->
+              if not @@ SCIdentifier.is_mem_id cparam lv then
+                warn "Dead component parameter: " cparam ER.get_loc);
+          (* Take out the type of bound parameters*)
+          let param_adts = iden_of_ADT @@ List.map comp.comp_params ~f:snd in
+          (lv' @ res_fv, param_adts @ adts @ res_adts))
+    in
+    let comps_lv' = dedup_id_list comps_lv in
+    let comps_adts' = dedup_name_list comps_adts in
+
+    (* Iterate through constraints *)
+    let cons_lv, cons_adt = expr_iter cmod.contr.cconstraint in
+
+    (* Iterate through field initialisations *)
+    let fields_lv, fields_adts =
+      List.fold_left cmod.contr.cfields
+        ~init:(comps_lv' @ cons_lv, comps_adts' @ cons_adt)
+        ~f:(fun (res_fv, res_adts) (_, ty, fexp) ->
+          let f_lv, f_adt = expr_iter fexp in
+          (f_lv @ res_fv, iden_of_ADT [ ty ] @ f_adt @ res_adts))
+    in
+
+    (* Note: fields_lv' and fields_adts' also contains data from contraints and components *)
+    let fields_lv' = dedup_id_list fields_lv in
+    let fields_adts' = dedup_name_list fields_adts in
+
+    (******** Checking for dead contract parameters ********)
+    let param_iden, param_ty = List.unzip cmod.contr.cparams in
+    List.iter param_iden ~f:(fun iden ->
+        if not @@ SCIdentifier.is_mem_id iden fields_lv' then
+          warn "Dead contract parameter: " iden ER.get_loc);
+
+    (* Remove contract params from live variable list *)
+    let lv_contract =
+      List.filter fields_lv' ~f:(fun a ->
+          not (SCIdentifier.is_mem_id a param_iden))
+    in
+    (* Adding used ADTs in parameters *)
+    let lv_adts = dedup_name_list @@ fields_adts' @ iden_of_ADT param_ty in
+
+    (******** Checking for dead procedures ********)
     List.iter cmod.contr.ccomps ~f:(fun comp ->
         match comp.comp_type with
-        | CompTrans -> ()
         | CompProc ->
-            (* Populate the procedure dictionary *)
-            let _ =
-              Hashtbl.add proc_dict
-                ~key:(as_error_string comp.comp_name)
-                ~data:(false, ER.dummy_rep)
-            in
-            ());
+            if not @@ SCIdentifier.is_mem_id comp.comp_name !proc_dict then
+              warn "Dead procedure: " comp.comp_name SR.get_loc
+        | CompTrans -> ());
 
-    (******** Marking Used Identifiers *********)
-    (* "The scope of variables in an imported library is restricted to
-       the immediate importer." *)
-    (* Check if var or type exists in library *)
-    let exists_in_lib x elib =
-      let iter_lib_entry lentries x =
-        let found = ref false in
-        List.iter lentries ~f:(fun lentry ->
-            match lentry with
-            | LibVar (iden, _, _) ->
-                if SCIdentifier.equal iden x then found := true
-            | LibTyp (iden, _) ->
-                (* safe to check with var cause rep would be unique *)
-                if SCIdentifier.equal iden x then found := true);
-        !found
-      in
-      iter_lib_entry elib.libn.lentries x
+    (* Iterate through contract library *)
+    let lv_clibs, lv_adts =
+      match cmod.libs with
+      | Some l -> dcd_lib l lv_contract lv_adts
+      | None -> (lv_contract, lv_adts)
     in
 
-    (* Given a lib_entry, mark its library parent as used *)
-    let mark_used_elibs f =
-      (* find all elibs that have not been used *)
-      let unused_elibs =
-        List.filter elibs ~f:(fun elib ->
-            match Hashtbl.find elibs_dict (as_error_string elib.libn.lname) with
-            | None -> false (* shouldn't happen *)
-            | Some (is_used, _) -> not is_used)
-      in
-      let res = ref false in
-      (* iterate through elibs, check if they have been used, find the f function in them, mark if found*)
-      List.iter unused_elibs ~f:(fun elib ->
-          if exists_in_lib f elib then
-            let _ = mark_used elibs_dict elib.libn.lname in
-            res := true);
-      !res
+    (* Iterate through elibs to check if imported library is used *)
+    List.iter elibs ~f:(fun elib ->
+        let lib_used =
+          List.exists elib.libn.lentries ~f:(fun lentry ->
+              match lentry with
+              | LibVar (iden, _, _) -> SCIdentifier.is_mem_id iden lv_clibs
+              | LibTyp (iden, _) ->
+                  List.exists lv_adts ~f:(fun i ->
+                      SCIdentifier.Name.equal (SCIdentifier.get_id iden) i))
+        in
+        (******** Checking for dead imported library ********)
+        if not lib_used then
+          (* Okay to use find_exn cause elib must exist in cmod.elibs *)
+          let import_rep, _ =
+            List.find_exn cmod.elibs ~f:(fun (cmod_elib, _) ->
+                SCIdentifier.equal cmod_elib elib.libn.lname)
+          in
+          warn1
+            ("Dead imported library: " ^ as_error_string elib.libn.lname)
+            warning_level_dead_code
+            (SR.get_loc @@ get_rep import_rep));
+
+    (* Printing what fields are read-only, write-only, or unused *)
+    let field_read_only =
+      List.filter (dedup_id_list !read_field) ~f:(fun f ->
+          not @@ SCIdentifier.is_mem_id f !write_field)
+    in
+    let field_write_only =
+      List.filter (dedup_id_list !write_field) ~f:(fun f ->
+          not @@ SCIdentifier.is_mem_id f !read_field)
+    in
+    let field_unused =
+      List.filter cmod.contr.cfields ~f:(fun (f, _, _) ->
+          (not @@ SCIdentifier.is_mem_id f !read_field)
+          && (not @@ SCIdentifier.is_mem_id f !write_field))
     in
 
-    (* Marking use of ADTs *)
-    let rec mark_used_ty ty =
-      match ty with
-      | SCType.ADT (iden, _) ->
-          let _ = mark_used libty_dict iden in
-          let _ = mark_used_elibs iden in
-          ()
-      | SCType.MapType (ty1, ty2) | SCType.FunType (ty1, ty2) ->
-          mark_used_ty ty1;
-          mark_used_ty ty2
-      | _ -> ()
-    in
+    if not @@ List.is_empty field_read_only then
+      List.iter field_read_only ~f:(fun field ->
+          warn "Read only field: " field ER.get_loc);
 
-    (**************** Iterators ****************)
-    (* Iterate through expressions to look for use of
-       - Contract parameters
-       - Contract parameters/Pattern binders/Local variables
-       - Defined libraries' functions/types
-       - Imported libraries
-    *)
-    let rec expr_iter expr local_dicts =
-      let mark_used' x =
-        if not @@ mark_used cparams_dict x then
-          if not @@ mark_used libvar_dict x then
-            if not @@ mark_used_elibs x then
-              List.iter local_dicts ~f:(fun dict ->
-                  let _ = mark_used dict x in
-                  ())
-      in
+    if not @@ List.is_empty field_write_only then
+      List.iter field_write_only ~f:(fun field ->
+          warn "Write only field: " field ER.get_loc);
 
-      match fst expr with
-      | Literal l -> (
-          match l with
-          | Msg msg -> List.iter msg ~f:(fun (_, ty, _) -> mark_used_ty ty)
-          | Map ((ty1, ty2), _) ->
-              mark_used_ty ty1;
-              mark_used_ty ty2
-          | ADTValue (_, tys, _) -> List.iter tys ~f:mark_used_ty
-          | _ -> ())
-      | Var x -> mark_used' x
-      | Let (i, ty_o, e1, e2) ->
-          (match ty_o with None -> () | Some ty -> mark_used_ty ty);
-          let local_dict = Hashtbl.create (module String) in
-          add_dict local_dict i;
-          expr_iter e1 local_dicts;
-          expr_iter e2 (local_dict :: local_dicts);
-          find_unused local_dict "Unused local variable: " ER.get_loc
-      | Message sl ->
-          List.iter sl ~f:(fun (_, payload) ->
-              match payload with MLit _ -> () | MVar x -> mark_used' x)
-      | Constr (_, tys, es) ->
-          List.iter tys ~f:(fun ty -> mark_used_ty ty);
-          List.iter es ~f:(fun e -> mark_used' e)
-      | App (f, actuals) ->
-          mark_used' f;
-          List.iter actuals ~f:(fun act -> mark_used' act)
-      | TApp (f, tys) ->
-          mark_used' f;
-          List.iter tys ~f:mark_used_ty
-      | MatchExpr (x, plist) ->
-          mark_used' x;
-          List.iter plist ~f:(fun (pat, exp') ->
-              let bounds = get_pattern_bounds pat in
-              let local_dict = Hashtbl.create (module String) in
-              List.iter bounds ~f:(fun bound -> add_dict local_dict bound);
-              expr_iter exp' (local_dict :: local_dicts);
-              find_unused local_dict "Unused Variable: " ER.get_loc)
-      | Builtin (_, tys, actuals) ->
-          List.iter tys ~f:mark_used_ty;
-          List.iter actuals ~f:(fun act -> mark_used' act)
-      | Fixpoint (_, ty, e) | Fun (_, ty, e) ->
-          expr_iter e local_dicts;
-          mark_used_ty ty
-      | TFun (_, e) | GasExpr (_, e) -> expr_iter e local_dicts
-    in
-
-    (* Iterate through stmts to look for use of
-       - Mutable fields
-       - Pattern binders/Local variables
-       - Defined libraries' functions
-       - Imported libraries
-    *)
-    let rec stmt_iter stmts local_dicts =
-      let mark_used' x =
-        if not @@ mark_used cfields_dict x then
-          if not @@ mark_used libvar_dict x then
-            if not @@ mark_used_elibs x then
-              List.iter local_dicts ~f:(fun dict ->
-                  let _ = mark_used dict x in
-                  ())
-      in
-
-      List.iter stmts ~f:(fun (s, _) ->
-          match s with
-          | Load (_, f) -> mark_used' f
-          | RemoteLoad (_, f1, f2) | Store (f1, f2) ->
-              mark_used' f1;
-              mark_used' f2
-          | MapUpdate (f, i1, i2) -> (
-              mark_used' f;
-              List.iter i1 ~f:mark_used';
-              match i2 with Some i -> mark_used' i | None -> ())
-          | MapGet (_, f, i1, _) | RemoteMapGet (_, _, f, i1, _) ->
-              mark_used' f;
-              List.iter i1 ~f:mark_used'
-          | Bind (_, expr) -> expr_iter expr local_dicts
-          | CallProc (p, actuals) ->
-              let _ = mark_used proc_dict p in
-              ();
-              List.iter actuals ~f:mark_used'
-          | MatchStmt (x, plist) ->
-              mark_used' x;
-              List.iter plist ~f:(fun (pat, stmts') ->
-                  let bounds = get_pattern_bounds pat in
-                  let local_dict = Hashtbl.create (module String) in
-                  List.iter bounds ~f:(fun bound -> add_dict local_dict bound);
-                  stmt_iter stmts' (local_dict :: local_dicts);
-                  find_unused local_dict "Unused Variable: " ER.get_loc)
-          | Iterate (l, p) ->
-              let _ = mark_used proc_dict p in
-              ();
-              mark_used' l
-          | SendMsgs m -> mark_used' m
-          | ReadFromBC (x, _) | CreateEvnt x -> mark_used' x
-          | Throw x_o -> ( match x_o with Some x -> mark_used' x | _ -> ())
-          | AcceptPayment | GasStmt _ -> ())
-    in
-
-    (* Iterate through body of components *)
-    List.iter cmod.contr.ccomps ~f:(fun c ->
-        (* Create local dictionaries: component params *)
-        let param_dict = Hashtbl.create (module String) in
-        List.iter c.comp_params ~f:(fun (param, ty) ->
-            add_dict param_dict param;
-            mark_used_ty ty);
-        stmt_iter c.comp_body [ param_dict ];
-        find_unused param_dict "Unused local component parameter: " ER.get_loc);
-
-    (* Iterate through expressions of fields *)
-    List.iter cmod.contr.cfields ~f:(fun (_, ty, exp) ->
-        expr_iter exp [];
-        mark_used_ty ty);
-
-    (* Check constraints through expressions *)
-    expr_iter cmod.contr.cconstraint [];
-
-    (* Check use of contract identifiers *)
-    find_unused proc_dict "Unused procedures: " ER.get_loc;
-    find_unused cfields_dict "Unused fields: " ER.get_loc;
-    find_unused cparams_dict "Unused contract params: " ER.get_loc;
-
-    (* Clear contract dictionaries for checking libraries *)
-    clear_dict proc_dict;
-    clear_dict cfields_dict;
-    clear_dict cparams_dict;
-
-    (* Check exp from module's library *)
-    match cmod.libs with
-    | None -> ()
-    | Some lib ->
-        List.iter lib.lentries ~f:(fun l_entry ->
-            match l_entry with
-            | LibTyp _ -> ()
-            | LibVar (_, _, e) -> expr_iter e []);
-
-        (* Libraries can be imported just for the new lmodule definition *)
-        find_unused elibs_dict "Unused imported libraries: " SR.get_loc;
-        find_unused libvar_dict "Unused library var: " ER.get_loc;
-        find_unused libty_dict "Unused user defined ADT: " ER.get_loc
+    (******** Checking for dead fields ********)
+    if not @@ List.is_empty field_unused then
+      List.iter field_unused ~f:(fun (field, _, _) ->
+          warn "Unused field: " field ER.get_loc)
 end

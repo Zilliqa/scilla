@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported libraries: ListUtils",
+      "warning_message": "Dead imported library: ListUtils",
       "start_location": {
         "file": "contracts/one-msg.scilla",
         "line": 5,

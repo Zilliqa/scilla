@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library var: foo",
+      "warning_message": "Dead Library value: foo",
       "start_location": {
         "file": "checker/good/builtin_type_args.scilla",
         "line": 10,

@@ -78,6 +78,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: limap",
+      "start_location": {
+        "file": "contracts/listiter.scilla",
+        "line": 15,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract ListIter contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

@@ -138,8 +138,22 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused procedures: expected_fail_msg",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "Write only field: f_m",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 489,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Dead procedure: expected_fail_msg",
+      "start_location": {
+        "file": "contracts/map_corners_test.scilla",
+        "line": 41,
+        "column": 11
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
