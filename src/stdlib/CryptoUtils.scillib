@@ -21,7 +21,7 @@ import PairUtils
 
 library CryptoUtils
 
-let g1_eq : Pair ByStr32 ByStr32 -> Pair ByStr32 ByStr32 -> Bool =
+let pair_bystr32_eq : Pair ByStr32 ByStr32 -> Pair ByStr32 ByStr32 -> Bool =
   fun (p1 : Pair ByStr32 ByStr32) =>
   fun (p2 : Pair ByStr32 ByStr32) =>
   let peq = @pair_eq ByStr32 ByStr32 in
