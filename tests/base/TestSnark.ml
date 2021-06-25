@@ -596,10 +596,28 @@ let test_point_at_infinity =
         (* O + P = P *)
         (match alt_bn128_G1_add idp p with
         | Some p2 ->
-          assert_bool "TestSnark failed: test_neg: comparison failed" ([%equal: g1point] p2 p)
+          assert_bool "TestSnark failed: test_point_at_infinity: comparison failed" ([%equal: g1point] p2 p)
         | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
     | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
 
+let test_mul_zero =
+  (* 0 * P = P - P = O *)
+  test_case (fun _ ->
+    let p =
+      {
+        g1x =
+          dec2bystr32
+            "6851077925310461602867742977619883934042581405263014789956638244065803308498";
+        g1y =
+          dec2bystr32
+            "10336382210592135525880811046708757754106524561907815205241508542912494488506";
+      }
+    in
+    let pm0 = mul_helper p (dec2bystr32 "0") in
+    let np = neg_helper p in
+    let pm1 = add_helper np p in
+    assert_bool "TestSnark failed: test_mul_zero : comparison failed" ([%equal: g1point] pm0 pm1)
+  )
 module All = struct
   let tests _ =
     "snark_tests"
@@ -612,5 +630,6 @@ module All = struct
            test_generate_random_points;
            test_neg;
            test_point_at_infinity;
+           test_mul_zero;
          ]
 end
