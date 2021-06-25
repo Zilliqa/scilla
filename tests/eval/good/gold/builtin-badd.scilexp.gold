@@ -1,4 +1,4 @@
 (BNum 23224456),
 { [b -> (Uint32 1)],
   [a -> (BNum 23224455)] }
-Gas remaining: 4001202
+Gas remaining: 4001166

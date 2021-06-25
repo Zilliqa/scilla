@@ -51,4 +51,4 @@
   [ackermann -> <closure>],
   [nat_iter -> <type_closure>],
   [nat_succ -> <closure>] }
-Gas remaining: 3929665
+Gas remaining: 3929629
