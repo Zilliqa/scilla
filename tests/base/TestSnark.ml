@@ -35,6 +35,8 @@ let dec2bystr32 s =
   Uint256.to_bytes_big_endian (Uint256.of_string s) b 0;
   Bytes.to_string b
 
+let bystr2int b = Uint256.to_string (Uint256.of_bytes_big_endian (Bytes.of_string b) 0)
+
 let hex2bystr h =
   let b = Bystr.parse_hex h in
   Bystr.to_raw_bytes b
@@ -575,6 +577,28 @@ let test_neg =
       assert_bool "TestSnark failed: test_neg: comparison failed"
         ([%equal: g1point] p1 p2))
 
+let test_point_at_infinity = 
+  test_case (fun _ -> 
+    let p =
+      {
+        g1x =
+          dec2bystr32
+            "6851077925310461602867742977619883934042581405263014789956638244065803308498";
+        g1y =
+          dec2bystr32
+            "10336382210592135525880811046708757754106524561907815205241508542912494488506";
+      }
+    in
+    let np = neg_helper p in
+    (* P + -P = O *)
+    match alt_bn128_G1_add p np with
+    | Some idp ->
+        (* O + P = P *)
+        (match alt_bn128_G1_add idp p with
+        | Some p2 ->
+          assert_bool "TestSnark failed: test_neg: comparison failed" ([%equal: g1point] p2 p)
+        | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
+    | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
 
 module All = struct
   let tests _ =
@@ -587,5 +611,6 @@ module All = struct
            test_pairing_null_input;
            test_generate_random_points;
            test_neg;
+           test_point_at_infinity;
          ]
 end
