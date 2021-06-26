@@ -39,6 +39,9 @@ bool alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result);
 // "p1" must have length point_len and "s" scalar_len
 bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result);
 // "result" must be allocated to be of size point_len
+// "s" must have length scalar_len
+bool alt_bn128_G1_bmul_Z(const RawBytes_Z* s, RawBytes_Z* result)
+// "result" must be allocated to be of size point_len
 // "p1" and "p2" must have length point_len.
 bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result);
 

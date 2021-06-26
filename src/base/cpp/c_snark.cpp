@@ -45,6 +45,18 @@ bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* r
   }
 }
 
+bool alt_bn128_G1_bmul_Z(const RawBytes_Z* s, RawBytes_Z* result)
+{
+  try {
+    bytes s_b(s->data, s->data + s->len);
+    bytes result_b = alt_bn128_G1_bmul(s_b);
+    std::copy(result_b.begin(), result_b.end(), result->data);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
 bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result)
 {
   try {
