@@ -815,6 +815,17 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
               pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
+    
+      let alt_bn128_G1_bmul _ ls _ =
+        match ls with
+        | [ s ] -> (
+            let%bind s' = fromR @@ scilla_scalar_to_ocaml s in
+            match Snark.alt_bn128_G1_bmul s' with
+            | None -> pure @@ build_none_lit g1point_type
+            | Some pr ->
+                let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
+                pure @@ build_some_lit pr' g1point_type)
+        | _ -> builtin_fail "Crypto.alt_bn128_G1_bmul" ls
 
     let alt_bn128_pairing_product _ ls _ =
       match ls with
@@ -996,6 +1007,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_schnorr_get_address -> [EvalCryptoBuiltins.schnorr_get_address_arity, EvalCryptoBuiltins.schnorr_get_address_type, elab_id, EvalCryptoBuiltins.schnorr_get_address]
       | Builtin_alt_bn128_G1_add -> [EvalCryptoBuiltins.alt_bn128_G1_add_arity, EvalCryptoBuiltins.alt_bn128_G1_add_type, elab_id, EvalCryptoBuiltins.alt_bn128_G1_add]
       | Builtin_alt_bn128_G1_mul -> [EvalCryptoBuiltins.alt_bn128_G1_mul_arity, EvalCryptoBuiltins.alt_bn128_G1_mul_type, elab_id, EvalCryptoBuiltins.alt_bn128_G1_mul]
+      | Builtin_alt_bn128_G1_bmul -> [EvalCryptoBuiltins.alt_bn128_G1_bmul_arity, EvalCryptoBuiltins.alt_bn128_G1_bmul_type, elab_id, EvalCryptoBuiltins.alt_bn128_G1_bmul]
       | Builtin_alt_bn128_pairing_product -> [EvalCryptoBuiltins.alt_bn128_pairing_product_arity, 
                                               EvalCryptoBuiltins.alt_bn128_pairing_product_type, elab_id, EvalCryptoBuiltins.alt_bn128_pairing_product]
     
