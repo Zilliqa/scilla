@@ -428,7 +428,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
         let multiplier = GasGasCharge.LogOf (GI.get_id s) in
         pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
-    | Builtin_alt_bn128_G1_bmul, _, [ _; s ] ->
+    | Builtin_alt_bn128_G1_bmul, _, [ s ] ->
       let multiplier = GasGasCharge.LogOf (GI.get_id s) in
       pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)  
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->

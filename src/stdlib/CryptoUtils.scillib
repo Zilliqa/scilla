@@ -21,7 +21,7 @@ library CryptoUtils
 
 let alt_bn128_q = Uint256 21888242871839275222246405745257275088548364400416034343698204186575808495617
 
-let alt_bn128_g : Pair ByStr32 ByStr32 = 
-  let zero_i = Uint256 0 in
-  let zero = builtin to_bystr32 zero_i in
-  builtin alt_bn128_G1_bmul zero
+let alt_bn128_g =
+  let one_i = Uint256 1 in
+  let one = builtin to_bystr32 one_i in
+  builtin alt_bn128_G1_bmul one
