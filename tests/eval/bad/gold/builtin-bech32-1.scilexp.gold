@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "4000950",
+  "gas_remaining": "4000943",
   "errors": [
     {
       "error_message": "Only zil bech32 addresses are supported",
