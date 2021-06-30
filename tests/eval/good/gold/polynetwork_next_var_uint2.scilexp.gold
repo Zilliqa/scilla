@@ -10,4 +10,4 @@
   [pos -> (Uint32 1)],
   [value -> (ByStr 0x64fdfd00)],
   [num_hex -> (ByStr4 0x64fdfd00)] }
-Gas remaining: 4000929
+Gas remaining: 4000926

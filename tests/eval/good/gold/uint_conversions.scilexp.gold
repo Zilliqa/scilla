@@ -22,4 +22,4 @@
   [big_num -> (Uint64 999999999999999999)],
   [minus_one -> (Int32 -1)],
   [one -> (Int32 1)] }
-Gas remaining: 4000931
+Gas remaining: 4000928

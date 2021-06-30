@@ -35,4 +35,4 @@
   [minus_one -> (Int32 -1)],
   [one -> (Uint32 1)],
   [zero -> (Uint32 0)] }
-Gas remaining: 4000948
+Gas remaining: 4000945

@@ -7,4 +7,4 @@
   [pos -> (Uint32 0)],
   [value -> (ByStr 0x64)],
   [uint_value -> (ByStr1 0x64)] }
-Gas remaining: 4001048
+Gas remaining: 4001045
