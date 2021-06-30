@@ -1,0 +1,15 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Syntax error, state number 286",
+      "start_location": {
+        "file": "checker/bad/bad_cast_2.scilla",
+        "line": 11,
+        "column": 4
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

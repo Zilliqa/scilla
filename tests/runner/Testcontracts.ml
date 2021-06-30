@@ -411,6 +411,9 @@ let contract_tests env =
                 "map_corners_test_chain"
                 >::: build_contract_tests env "map_corners_test" succ_code 51 53
                        [];
+                "map_corners_test_combined"
+                >::: build_contract_tests env "map_corners_test_combined"
+                       succ_code 1 1 [];
                 "multiple_msgs_test"
                 >::: build_contract_tests env "multiple-msgs" succ_code 1 1 [];
                 "listiter"
@@ -463,6 +466,8 @@ let contract_tests env =
                 "polymorphic_address"
                 >::: build_contract_tests ~pplit:false env
                        "address_list_traversal" succ_code 1 2 [];
+                "type_casts"
+                >::: build_contract_tests env "type_casts" succ_code 1 37 [];
                 "addfunds_proxy"
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"

@@ -1,0 +1,209 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "initial_admin", "tag": "NoInfo" },
+      { "field": "admin", "tag": "NotMoney" },
+      { "field": "listed_tokens", "tag": "(Map NoInfo)" },
+      { "field": "active_orders", "tag": "(Map (Order ))" },
+      { "field": "next_order_no", "tag": "NotMoney" }
+    ],
+    "ADT constructors": [
+      {
+        "simple-dex-remote-reads.Order": [
+          {
+            "constructor": "simple-dex-remote-reads.Order",
+            "tags": [ "NotMoney", "_", "NoInfo", "_", "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "SimpleExchange",
+    "params": [ { "vname": "initial_admin", "type": "ByStr20 with end" } ],
+    "fields": [
+      { "vname": "admin", "type": "ByStr20 with end", "depth": 0 },
+      {
+        "vname": "listed_tokens",
+        "type":
+          "Map (String) (ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end)",
+        "depth": 1
+      },
+      {
+        "vname": "active_orders",
+        "type": "Map (Uint128) (simple-dex-remote-reads.Order)",
+        "depth": 1
+      },
+      { "vname": "next_order_no", "type": "Uint128", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "SetAdmin",
+        "params": [ { "vname": "new_admin", "type": "ByStr20 with end" } ]
+      },
+      {
+        "vname": "ListToken",
+        "params": [
+          { "vname": "token_code", "type": "String" },
+          {
+            "vname": "new_token",
+            "type":
+              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
+          }
+        ]
+      },
+      {
+        "vname": "PlaceOrder",
+        "params": [
+          { "vname": "token_code_sell", "type": "String" },
+          { "vname": "sell_amount", "type": "Uint128" },
+          { "vname": "token_code_buy", "type": "String" },
+          { "vname": "buy_amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "MatchOrder",
+        "params": [ { "vname": "order_id", "type": "Uint128" } ]
+      },
+      {
+        "vname": "RecipientAcceptTransferFrom",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferFromSuccessCallBack",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "TransferSuccessCallBack",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "amount", "type": "Uint128" }
+        ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "ThrowListingStatusException",
+        "params": [
+          { "vname": "token_code", "type": "String" },
+          { "vname": "expected_status", "type": "Bool" },
+          { "vname": "actual_status", "type": "Bool" }
+        ]
+      },
+      {
+        "vname": "ThrowInsufficientAllowanceException",
+        "params": [
+          { "vname": "token", "type": "ByStr20" },
+          { "vname": "expected", "type": "Uint128" },
+          { "vname": "actual", "type": "Uint128" }
+        ]
+      },
+      { "vname": "CheckSenderIsAdmin", "params": [] },
+      {
+        "vname": "CheckIsTokenUnlisted",
+        "params": [ { "vname": "token_code", "type": "String" } ]
+      },
+      {
+        "vname": "CheckAllowance",
+        "params": [
+          {
+            "vname": "token",
+            "type":
+              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
+          },
+          { "vname": "expected", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "AddOrder",
+        "params": [
+          { "vname": "order", "type": "simple-dex-remote-reads.Order" }
+        ]
+      },
+      {
+        "vname": "CheckInitiator",
+        "params": [ { "vname": "initiator", "type": "ByStr20" } ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "simple-dex-remote-reads.Order",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "simple-dex-remote-reads.Order",
+            "argtypes": [
+              "ByStr20",
+              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end",
+              "Uint128",
+              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end",
+              "Uint128"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract SimpleExchange contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7941"
+}
+

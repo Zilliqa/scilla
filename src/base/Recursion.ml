@@ -205,6 +205,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             in
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
         | ReadFromBC (x, f) -> pure @@ RecursionSyntax.ReadFromBC (x, f)
+        | TypeCast (x, r, t) -> pure @@ RecursionSyntax.TypeCast (x, r, t)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
@@ -365,48 +366,56 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          }
 
   let recursion_rprins_elibs recursion_principles ext_libs libs =
-    let rec recurser libl filenames_already_checked =
-      List.fold_left libl ~init:([], filenames_already_checked, [])
-        ~f:(fun (rec_elibs_acc, files_checked_acc, emsgs_acc) ext_lib ->
-          let ext_lib_fname = (SR.get_loc (get_rep ext_lib.libn.lname)).fname in
-          let rec_lib_opt, dep_libs, all_checked_files, all_emsgs =
+    let rec recurser libl already_checked =
+      let deps, checked, emsgs =
+        List.fold_left libl ~init:([], already_checked, [])
+          ~f:(fun (rec_lib_acc_rev, already_checked_acc, emsgs_acc) ext_lib ->
             (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
-               TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
+                TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
+            let ext_lib_fname =
+              (SR.get_loc (get_rep ext_lib.libn.lname)).fname
+            in
             match
-              List.find files_checked_acc ~f:(fun fname ->
-                  String.(fname = ext_lib_fname))
+              List.Assoc.find already_checked_acc ext_lib_fname
+                ~equal:String.( = )
             with
-            | Some _ ->
-                (* ext_lib already checked *)
-                (None, [], files_checked_acc, emsgs_acc)
+            | Some (Some lt_opt) ->
+                (* ext_lib already checked successfully *)
+                (lt_opt :: rec_lib_acc_rev, already_checked_acc, emsgs_acc)
+            | Some None ->
+                (* ext_lib already checked, and contains errors *)
+                (rec_lib_acc_rev, already_checked_acc, emsgs_acc)
             | None -> (
                 (* ext_lib not checked yet *)
                 (* Check dependencies *)
-                let rec_dep_libs, dep_files, dep_emsgs =
-                  recurser ext_lib.deps files_checked_acc
-                in
-                let all_files =
-                  ext_lib_fname :: dep_files @ files_checked_acc
+                let rec_dep_libs, already_checked_dep, dep_emsgs =
+                  recurser ext_lib.deps already_checked_acc
                 in
                 match recursion_library ext_lib.libn with
                 | Ok lib ->
-                    (Some lib, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs)
+                    let (new_lt : RecursionSyntax.libtree) =
+                      { libn = lib; deps = rec_dep_libs }
+                    in
+                    let new_already_checked =
+                      List.Assoc.add already_checked_dep ext_lib_fname
+                        (Some new_lt) ~equal:String.( = )
+                    in
+                    ( new_lt :: rec_lib_acc_rev,
+                      new_already_checked,
+                      emsgs_acc @ dep_emsgs )
                 | Error e ->
-                    (None, rec_dep_libs, all_files, emsgs_acc @ dep_emsgs @ e))
-          in
-          match rec_lib_opt with
-          | Some lib ->
-              let (libn' : RecursionSyntax.libtree) =
-                { libn = lib; deps = dep_libs }
-              in
-              (rec_elibs_acc @ [ libn' ], all_checked_files, all_emsgs)
-          | None ->
-              (* An error has occurred *)
-              (rec_elibs_acc, all_checked_files, all_emsgs))
+                    let new_already_checked =
+                      List.Assoc.add already_checked_dep ext_lib_fname None
+                        ~equal:String.( = )
+                    in
+                    ( rec_lib_acc_rev,
+                      new_already_checked,
+                      emsgs_acc @ dep_emsgs @ e )))
+      in
+      (List.rev deps, checked, emsgs)
     in
 
     let recursion_elibs, _, emsgs = recurser ext_libs [] in
-
     let%bind recursion_md_libs, emsgs =
       Option.value_map libs
         ~default:(Ok (None, emsgs))

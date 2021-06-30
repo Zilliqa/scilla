@@ -1,0 +1,11 @@
+scilla_version 0
+
+library CastLib
+
+contract CastContract ()
+
+transition CastTest()
+  (* Casts to non-address not allowed *)
+  x = 0x1234567890123456789012345678901234567890;
+  v <-& x as ByStr20
+end
