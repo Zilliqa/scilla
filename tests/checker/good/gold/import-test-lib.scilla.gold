@@ -109,7 +109,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead bind statement to: unsorted",
+      "warning_message": "Unused bind statement to: unsorted",
       "start_location": {
         "file": "contracts/import-test-lib.scilla",
         "line": 32,

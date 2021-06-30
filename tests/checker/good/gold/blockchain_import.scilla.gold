@@ -1,7 +1,7 @@
 {
   "warnings": [
     {
-      "warning_message": "Dead imported library: BlockchainLib",
+      "warning_message": "Unused imported library: BlockchainLib",
       "start_location": {
         "file": "checker/good/blockchain_import.scilla",
         "line": 6,

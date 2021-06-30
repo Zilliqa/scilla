@@ -64,7 +64,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library ADT: TestType",
+      "warning_message": "Unused Library ADT: TestType",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 5,
@@ -74,7 +74,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: map",
+      "warning_message": "Unused bind statement to: map",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 12,
@@ -84,7 +84,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: k",
+      "warning_message": "Unused bind statement to: k",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 13,
@@ -94,7 +94,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: zero",
+      "warning_message": "Unused bind statement to: zero",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 14,
@@ -104,7 +104,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: v",
+      "warning_message": "Unused bind statement to: v",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 15,
@@ -114,7 +114,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: map2",
+      "warning_message": "Unused bind statement to: map2",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 16,

@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: TestLibDiamondTop",
+      "warning_message": "Unused imported library: TestLibDiamondTop",
       "start_location": {
         "file": "checker/good/libdiamond2.scilla",
         "line": 3,
@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: test_bot",
+      "warning_message": "Unused Library value: test_bot",
       "start_location": {
         "file": "checker/good/libdiamond2.scilla",
         "line": 8,

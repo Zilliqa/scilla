@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: PairUtils",
+      "warning_message": "Unused imported library: PairUtils",
       "start_location": {
         "file": "contracts/empty.scilla",
         "line": 4,
@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: NatUtils",
+      "warning_message": "Unused imported library: NatUtils",
       "start_location": {
         "file": "contracts/empty.scilla",
         "line": 4,
@@ -70,7 +70,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "contracts/empty.scilla",
         "line": 4,
@@ -80,7 +80,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: IntUtils",
+      "warning_message": "Unused imported library: IntUtils",
       "start_location": {
         "file": "contracts/empty.scilla",
         "line": 4,
@@ -90,7 +90,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: BoolUtils",
+      "warning_message": "Unused imported library: BoolUtils",
       "start_location": {
         "file": "contracts/empty.scilla",
         "line": 4,

@@ -189,7 +189,8 @@
   },
   "warnings": [
     {
-      "warning_message": "Read only field: owners",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: owners",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 262,
@@ -199,7 +200,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: IntUtils",
+      "warning_message": "Unused imported library: IntUtils",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 3,
@@ -209,7 +210,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: mk_contract_initialized_event",
+      "warning_message":
+        "Unused Library value: mk_contract_initialized_event",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 11,
@@ -219,7 +221,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: f",
+      "warning_message": "Unused Library value: f",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 75,

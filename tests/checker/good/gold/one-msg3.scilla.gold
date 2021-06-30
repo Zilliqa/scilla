@@ -55,7 +55,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "checker/good/one-msg3.scilla",
         "line": 5,
@@ -65,7 +65,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: one_msg",
+      "warning_message": "Unused Library value: one_msg",
       "start_location": {
         "file": "checker/good/one-msg3.scilla",
         "line": 12,

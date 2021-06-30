@@ -76,7 +76,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead component parameter: k",
+      "warning_message": "Unused component parameter: k",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 22,
@@ -86,7 +86,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: k",
+      "warning_message": "Unused component parameter: k",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 13,
@@ -96,7 +96,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead load statement to: a",
+      "warning_message": "Unused load statement to: a",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 14,
@@ -106,7 +106,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: k",
+      "warning_message": "Unused component parameter: k",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 9,
@@ -116,7 +116,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead map get statement to: a",
+      "warning_message": "Unused map get statement to: a",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 10,

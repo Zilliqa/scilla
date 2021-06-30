@@ -261,7 +261,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: BoolUtils",
+      "warning_message": "Unused imported library: BoolUtils",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 9,
@@ -271,7 +271,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: one_msg",
+      "warning_message": "Unused Library value: one_msg",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 12,
@@ -281,7 +281,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: dead_code_var",
+      "warning_message": "Unused Library value: dead_code_var",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 24,
@@ -291,7 +291,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library ADT: DeadType",
+      "warning_message": "Unused Library ADT: DeadType",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 41,
@@ -301,7 +301,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead procedure: DeadProc2",
+      "warning_message": "Unused procedure: DeadProc2",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 100,
@@ -311,7 +311,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead procedure: DeadProc1",
+      "warning_message": "Unused procedure: DeadProc1",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 97,
@@ -321,7 +321,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: store_name",
+      "warning_message": "Unused contract parameter: store_name",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 49,
@@ -331,7 +331,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: book_title",
+      "warning_message": "Unused bind statement to: book_title",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 252,
@@ -341,7 +341,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: book_title",
+      "warning_message": "Unused match bound: book_title",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 246,
@@ -351,7 +351,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: dead_param",
+      "warning_message": "Unused component parameter: dead_param",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 138,
@@ -361,7 +361,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: dead_pparam",
+      "warning_message": "Unused component parameter: dead_pparam",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 97,

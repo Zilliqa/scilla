@@ -250,7 +250,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead bind statement to: false",
+      "warning_message": "Unused bind statement to: false",
       "start_location": {
         "file": "contracts/shogi_proc.scilla",
         "line": 787,
@@ -260,7 +260,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: true",
+      "warning_message": "Unused bind statement to: true",
       "start_location": {
         "file": "contracts/shogi_proc.scilla",
         "line": 788,

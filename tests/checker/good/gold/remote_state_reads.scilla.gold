@@ -517,7 +517,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: remote1",
+      "warning_message": "Unused component parameter: remote1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 119,
@@ -527,7 +527,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: adt1",
+      "warning_message": "Unused component parameter: adt1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 118,
@@ -537,7 +537,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: pair1",
+      "warning_message": "Unused component parameter: pair1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 117,
@@ -547,7 +547,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: list3",
+      "warning_message": "Unused component parameter: list3",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 116,
@@ -557,7 +557,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: list2",
+      "warning_message": "Unused component parameter: list2",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 115,
@@ -567,7 +567,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: list1",
+      "warning_message": "Unused component parameter: list1",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 114,

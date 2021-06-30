@@ -132,7 +132,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: BoolUtils",
+      "warning_message": "Unused imported library: BoolUtils",
       "start_location": {
         "file": "contracts/earmarked-coin.scilla",
         "line": 13,

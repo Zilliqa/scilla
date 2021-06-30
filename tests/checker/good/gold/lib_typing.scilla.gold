@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: x",
+      "warning_message": "Unused Library value: x",
       "start_location": {
         "file": "checker/good/lib_typing.scilla",
         "line": 5,
@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: y",
+      "warning_message": "Unused Library value: y",
       "start_location": {
         "file": "checker/good/lib_typing.scilla",
         "line": 6,
@@ -70,7 +70,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: z",
+      "warning_message": "Unused Library value: z",
       "start_location": {
         "file": "checker/good/lib_typing.scilla",
         "line": 7,

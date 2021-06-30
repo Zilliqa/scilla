@@ -174,7 +174,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 3,
@@ -184,7 +184,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: mk_transaction_signed_event",
+      "warning_message": "Unused Library value: mk_transaction_signed_event",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 16,
@@ -194,7 +194,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: mk_candidate_owner_added_event",
+      "warning_message":
+        "Unused Library value: mk_candidate_owner_added_event",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 21,
@@ -204,7 +205,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: recipient",
+      "warning_message": "Unused match bound: recipient",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 254,
@@ -214,7 +215,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: amount",
+      "warning_message": "Unused match bound: amount",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 254,

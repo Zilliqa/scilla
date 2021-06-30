@@ -375,7 +375,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Read only field: test_map",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_map",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
         "line": 73,

@@ -107,7 +107,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Read only field: plist",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: plist",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 102,
@@ -117,7 +118,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Read only field: llist",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: llist",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 92,
@@ -127,7 +129,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: x",
+      "warning_message": "Unused bind statement to: x",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 113,

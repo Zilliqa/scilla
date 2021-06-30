@@ -60,7 +60,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead procedure: dead_procedure",
+      "warning_message": "Unused procedure: dead_procedure",
       "start_location": {
         "file": "contracts/dead_code_test3.scilla",
         "line": 8,
@@ -70,7 +70,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: dead_binder",
+      "warning_message": "Unused match bound: dead_binder",
       "start_location": {
         "file": "contracts/dead_code_test3.scilla",
         "line": 10,

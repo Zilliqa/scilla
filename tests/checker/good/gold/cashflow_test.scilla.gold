@@ -86,7 +86,8 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Read only field: transaction_pairs",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: transaction_pairs",
       "start_location": {
         "file": "checker/good/cashflow_test.scilla",
         "line": 21,
@@ -96,7 +97,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: msg",
+      "warning_message": "Unused bind statement to: msg",
       "start_location": {
         "file": "checker/good/cashflow_test.scilla",
         "line": 31,
@@ -106,7 +107,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: x",
+      "warning_message": "Unused match bound: x",
       "start_location": {
         "file": "checker/good/cashflow_test.scilla",
         "line": 23,
@@ -116,7 +117,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: rest",
+      "warning_message": "Unused match bound: rest",
       "start_location": {
         "file": "checker/good/cashflow_test.scilla",
         "line": 23,

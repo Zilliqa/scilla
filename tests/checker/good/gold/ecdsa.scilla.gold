@@ -65,7 +65,8 @@
   },
   "warnings": [
     {
-      "warning_message": "Read only field: pub_key",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: pub_key",
       "start_location": {
         "file": "contracts/ecdsa.scilla",
         "line": 21,
@@ -75,7 +76,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: fst_f",
+      "warning_message": "Unused Library value: fst_f",
       "start_location": {
         "file": "contracts/ecdsa.scilla",
         "line": 12,
@@ -85,7 +86,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: snd_f",
+      "warning_message": "Unused Library value: snd_f",
       "start_location": {
         "file": "contracts/ecdsa.scilla",
         "line": 13,

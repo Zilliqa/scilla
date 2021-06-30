@@ -109,7 +109,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: cparam",
+      "warning_message": "Unused contract parameter: cparam",
       "start_location": {
         "file": "contracts/address_list_traversal.scilla",
         "line": 19,

@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: TestLibDiamondTop",
+      "warning_message": "Unused imported library: TestLibDiamondTop",
       "start_location": {
         "file": "checker/good/libdiamond.scilla",
         "line": 3,

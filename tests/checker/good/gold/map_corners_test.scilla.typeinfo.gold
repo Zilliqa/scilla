@@ -9753,7 +9753,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead procedure: expected_fail_msg",
+      "warning_message": "Unused procedure: expected_fail_msg",
       "start_location": {
         "file": "contracts/map_corners_test.scilla",
         "line": 41,

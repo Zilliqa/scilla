@@ -102,7 +102,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: TestLib4",
+      "warning_message": "Unused imported library: TestLib4",
       "start_location": {
         "file": "contracts/import-test-lib2.scilla",
         "line": 17,

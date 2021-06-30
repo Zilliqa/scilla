@@ -215,7 +215,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: zeroUint64",
+      "warning_message": "Unused Library value: zeroUint64",
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 6,
@@ -225,7 +225,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: zeroByStr32",
+      "warning_message": "Unused Library value: zeroByStr32",
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 8,
@@ -235,7 +235,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: resolver",
+      "warning_message": "Unused match bound: resolver",
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 86,

@@ -80,7 +80,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: no_msg",
+      "warning_message": "Unused Library value: no_msg",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 16,
@@ -90,7 +90,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: ff",
+      "warning_message": "Unused bind statement to: ff",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 228,
@@ -100,7 +100,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: tt",
+      "warning_message": "Unused bind statement to: tt",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 168,

@@ -80,7 +80,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library ADT: MyTyp",
+      "warning_message": "Unused Library ADT: MyTyp",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 7,
@@ -90,7 +90,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead let expression: lib_val",
+      "warning_message": "Unused let expression: lib_val",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 24,
@@ -100,7 +100,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead let expression: param_val",
+      "warning_message": "Unused let expression: param_val",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 26,
@@ -110,7 +110,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead let expression: f",
+      "warning_message": "Unused let expression: f",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 28,

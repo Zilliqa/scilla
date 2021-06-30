@@ -67,7 +67,8 @@
   },
   "warnings": [
     {
-      "warning_message": "Read only field: test_pattern",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_pattern",
       "start_location": {
         "file": "contracts/dead_code_test2.scilla",
         "line": 11,
@@ -77,7 +78,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: dead_pattern",
+      "warning_message": "Unused match bound: dead_pattern",
       "start_location": {
         "file": "contracts/dead_code_test2.scilla",
         "line": 13,

@@ -109,7 +109,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: one",
+      "warning_message": "Unused Library value: one",
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 10,
@@ -119,7 +119,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: symbol",
+      "warning_message": "Unused contract parameter: symbol",
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 52,
@@ -129,7 +129,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: name",
+      "warning_message": "Unused contract parameter: name",
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 51,
@@ -139,7 +139,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: decimals",
+      "warning_message": "Unused contract parameter: decimals",
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 50,

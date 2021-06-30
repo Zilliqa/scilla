@@ -175,7 +175,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: one_msg",
+      "warning_message": "Unused Library value: one_msg",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 9,
@@ -185,7 +185,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: code_success",
+      "warning_message": "Unused Library value: code_success",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 84,
@@ -195,7 +195,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: code_failure",
+      "warning_message": "Unused Library value: code_failure",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 85,
@@ -205,7 +205,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: symbol",
+      "warning_message": "Unused contract parameter: symbol",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 100,
@@ -215,7 +215,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: name",
+      "warning_message": "Unused contract parameter: name",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 99,
@@ -225,7 +225,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead load statement to: copy_operatorApproval",
+      "warning_message": "Unused load statement to: copy_operatorApproval",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 319,
@@ -235,7 +235,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead load statement to: curr_otc",
+      "warning_message": "Unused load statement to: curr_otc",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 241,
@@ -245,7 +245,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead load statement to: currentTokenOwnerMap",
+      "warning_message": "Unused load statement to: currentTokenOwnerMap",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 155,

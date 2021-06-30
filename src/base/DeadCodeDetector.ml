@@ -41,7 +41,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   (* Return a list of names of ADTs as Name from a type *)
   (* Used to finding dead user defined ADTs *)
-  let iden_of_ADT tys =
+  let user_type_in_adt tys =
     let rec iden_iter ty acc =
       match ty with
       | SCType.ADT (iden, _) -> SCIdentifier.get_id iden :: acc
@@ -53,34 +53,26 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       (List.fold_left tys ~init:[] ~f:(fun iden_l ty ->
            iden_iter ty [] @ iden_l))
 
-  let rec adts_of_literal lits =
-    List.fold_left lits ~init:[] ~f:(fun res_adts lit ->
-        match lit with
-        | SLiteral.Msg msg ->
-          let new_adts =
-            List.fold_left msg ~init:[] ~f:(fun acc (_, ty, lits') ->
-                iden_of_ADT [ ty ] @ adts_of_literal [ lits' ] @ acc) in
-            new_adts @ res_adts 
-        | Map ((ty1, ty2), _) ->
-            iden_of_ADT [ ty1 ] @ iden_of_ADT [ ty2 ] @ res_adts
-        | ADTValue (_, tys, ts) ->
-            iden_of_ADT tys @ adts_of_literal ts @ res_adts
-        | _ -> [])
+  let rec user_type_in_literal lits =
+    let res =
+      List.fold_left lits ~init:[] ~f:(fun res_adts lit ->
+          match lit with
+          | SLiteral.Map ((ty1, ty2), _) ->
+              user_type_in_adt [ ty1 ] @ user_type_in_adt [ ty2 ] @ res_adts
+          | SLiteral.ADTValue (_, tys, ts) ->
+              user_type_in_adt tys @ user_type_in_literal ts @ res_adts
+          | _ -> [])
+    in
+    List.dedup_and_sort ~compare:SCIdentifier.Name.compare res
 
   let dedup_id_list = SCIdentifier.dedup_id_list
 
   let dedup_name_list l =
     List.dedup_and_sort ~compare:SCIdentifier.Name.compare l
 
-  (* Procedure are checked for seperately due to the discrepency between ER.rep and SR.rep
-     doesn't allow them to be stored as a free variable with the other identifiers. Fix?
-  *)
   let proc_dict = ref []
 
-  (*
-     Since code is already none pure (proc_dict is a reference), we mark whether fields are read or write
-     in the following, simple, manner
-  *)
+  (* Distinguishing read-only, write-only, and unused fields *)
   let read_field = ref []
 
   let write_field = ref []
@@ -97,14 +89,14 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (******** Checking for dead expressions ********)
-    (* Returns free variables and defined ADT types *)
+    (* Returns free variables and used ADT types *)
     let rec expr_iter (expr, _) =
       match expr with
       | Literal l ->
-          let free_tys = adts_of_literal [ l ] in
+          let free_tys = user_type_in_literal [ l ] in
           ([], dedup_name_list free_tys)
       | Var v -> ([ v ], [])
-      | TApp (v, tys) -> ([ v ], iden_of_ADT tys)
+      | TApp (v, tys) -> ([ v ], user_type_in_adt tys)
       | Message mlist ->
           let fvars =
             List.filter_map mlist ~f:(fun (_, pl) ->
@@ -113,29 +105,27 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           (fvars, [])
       | App (f, actuals) -> (f :: actuals, [])
       | Constr (_, tys, actuals) | Builtin (_, tys, actuals) ->
-          (actuals, iden_of_ADT tys)
+          (actuals, user_type_in_adt tys)
       | Fixpoint (a, ty, e) | Fun (a, ty, e) ->
           let e_fv, e_adts = expr_iter e in
           let e_fv_no_a =
             List.filter ~f:(fun i -> not @@ SCIdentifier.equal i a) e_fv
           in
-          (e_fv_no_a, dedup_name_list @@ iden_of_ADT [ ty ] @ e_adts)
-      | Let (i, ty_o, lhs, rhs) ->
+          (e_fv_no_a, dedup_name_list @@ user_type_in_adt [ ty ] @ e_adts)
+      | Let (i, _, lhs, rhs) ->
           let fv_rhs, adts_rhs = expr_iter rhs in
           let fvrhs_no_i =
             List.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) fv_rhs
           in
-          if List.mem fv_rhs i ~equal:SCIdentifier.equal then
+          if SCIdentifier.is_mem_id i fv_rhs then
             (* LHS is not dead *)
             let fvlhs, tylhs = expr_iter lhs in
             let fv = dedup_id_list (fvlhs @ fvrhs_no_i) in
             let adts = dedup_name_list (adts_rhs @ tylhs) in
-            match ty_o with
-            | Some ty -> (fv, dedup_name_list @@ iden_of_ADT [ ty ] @ adts)
-            | None -> (fv, adts)
+            (fv, adts)
           else (
             (* Give a warning *)
-            warn "Dead let expression: " i ER.get_loc;
+            warn "Unused let expression: " i ER.get_loc;
             (fvrhs_no_i, adts_rhs))
       | MatchExpr (x, plist) ->
           (* Iterate through each pattern like Let *)
@@ -146,12 +136,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               (* Check that every bound is used in the expression *)
               let bounds_unused =
                 List.filter bounds ~f:(fun bound ->
-                    not @@ List.mem fvl bound ~equal:SCIdentifier.equal)
+                    not @@ SCIdentifier.is_mem_id bound fvl)
               in
               (******** Checking for dead bounds ********)
               if not @@ List.is_empty bounds_unused then
                 List.iter bounds_unused ~f:(fun bound ->
-                    warn "Dead match bound: " bound ER.get_loc);
+                    warn "Unused match bound: " bound ER.get_loc);
               (* Remove bound variables from the free variables list *)
               let fvl' =
                 List.filter fvl ~f:(fun a ->
@@ -175,73 +165,59 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           let live_vars, adts = stmt_iter rest_stmts in
           match s with
           | Load (x, m) ->
-              mark_field_write x;
               mark_field_read m;
               if SCIdentifier.is_mem_id x live_vars then
-                (dedup_id_list (m :: live_vars), adts)
+                (* m is a field, thus we don't track its liveness *)
+                (live_vars, adts)
               else (
-                warn "Dead load statement to: " x ER.get_loc;
+                warn "Unused load statement to: " x ER.get_loc;
                 (live_vars, adts))
           | RemoteLoad (x, addr, m) ->
-              mark_field_write x;
               mark_field_read m;
+              (* m is a field, thus we don't track its liveness *)
               if SCIdentifier.is_mem_id x live_vars then
-                (dedup_id_list (addr :: m :: live_vars), adts)
+                (dedup_id_list (addr :: live_vars), adts)
               else (
-                warn "Dead remote load statement to: " x ER.get_loc;
+                warn "Unused remote load statement to: " x ER.get_loc;
                 (live_vars, adts))
           | Store (i, m) ->
               mark_field_write i;
-              mark_field_read m;
               (dedup_id_list (m :: live_vars), adts)
           | MapUpdate (i, il, io) ->
               mark_field_write i;
-              List.iter il ~f:mark_field_read;
               let live_vars' =
-                match io with
-                | Some ii ->
-                    mark_field_read ii;
-                    i :: ii :: il
-                | None -> i :: il
+                match io with Some ii -> i :: ii :: il | None -> i :: il
               in
               (dedup_id_list @@ live_vars' @ live_vars, adts)
           | MapGet (x, i, il, _) ->
-              mark_field_write x;
               mark_field_read i;
-              List.iter il ~f:mark_field_read;
               if SCIdentifier.is_mem_id x live_vars then
                 (dedup_id_list (i :: (il @ live_vars)), adts)
               else (
-                warn "Dead map get statement to: " x ER.get_loc;
+                warn "Unused map get statement to: " x ER.get_loc;
                 (live_vars, adts))
           | RemoteMapGet (x, addr, i, il, _) ->
-              mark_field_write x;
               mark_field_read i;
-              List.iter il ~f:mark_field_read;
               if SCIdentifier.is_mem_id x live_vars then
                 (dedup_id_list (addr :: i :: (il @ live_vars)), adts)
               else (
-                warn "Dead remote map get statement to: " x ER.get_loc;
+                warn "Unused remote map get statement to: " x ER.get_loc;
                 (live_vars, adts))
           | ReadFromBC (x, _) ->
-              mark_field_write x;
               if not @@ SCIdentifier.is_mem_id x live_vars then
-                warn "Dead Read From BC statement to: " x ER.get_loc;
+                warn "Unused Read From BC statement to: " x ER.get_loc;
               (live_vars, adts)
           | Throw topt -> (
               match topt with
               | Some x -> (dedup_id_list (x :: live_vars), adts)
               | None -> (live_vars, adts))
           | CallProc (p, al) ->
-              List.iter al ~f:mark_field_read;
               proc_dict := p :: !proc_dict;
               (dedup_id_list (al @ live_vars), adts)
           | Iterate (l, p) ->
-              mark_field_read l;
               proc_dict := p :: !proc_dict;
               (dedup_id_list (l :: live_vars), adts)
           | Bind (i, e) ->
-              mark_field_write i;
               let live_vars_no_i =
                 List.filter
                   ~f:(fun x -> not @@ SCIdentifier.equal i x)
@@ -252,10 +228,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 ( dedup_id_list @@ e_live_vars @ live_vars_no_i,
                   dedup_name_list @@ adts' @ adts )
               else (
-                warn "Dead bind statement to: " i ER.get_loc;
+                warn "Unused bind statement to: " i ER.get_loc;
                 (live_vars, adts))
           | MatchStmt (i, pslist) ->
-              mark_field_read i;
               let live_vars', adts' =
                 List.fold_left pslist ~init:(live_vars, adts)
                   ~f:(fun (res_fv, res_adts) (pat, stmts) ->
@@ -269,7 +244,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     (******** Checking for dead bounds ********)
                     if not @@ List.is_empty bounds_unused then
                       List.iter bounds_unused ~f:(fun bound ->
-                          warn "Dead match bound: " bound ER.get_loc);
+                          warn "Unused match bound: " bound ER.get_loc);
                     (* Remove bound varaibles from the free variables list *)
                     let fvl' =
                       List.filter fvl ~f:(fun a ->
@@ -297,13 +272,14 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   freevars'
               in
               if not @@ SCIdentifier.is_mem_id i freevars' then
-                warn "Dead Library value: " i ER.get_loc;
+                warn "Unused Library value: " i ER.get_loc;
               let fv, tyl = expr_iter lexp in
               let res_fv = dedup_id_list @@ fv @ freevars'_no_i in
               let res_adts =
                 match topt with
                 | None -> dedup_name_list (tyl @ adts')
-                | Some ty -> dedup_name_list (iden_of_ADT [ ty ] @ tyl @ adts')
+                | Some ty ->
+                    dedup_name_list (user_type_in_adt [ ty ] @ tyl @ adts')
               in
               (res_fv, res_adts)
           | LibTyp (i, _) ->
@@ -317,7 +293,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 not
                 @@ List.exists adts' ~f:(fun adt ->
                        SCIdentifier.Name.equal (SCIdentifier.get_id i) adt)
-              then warn "Dead Library ADT: " i ER.get_loc;
+              then warn "Unused Library ADT: " i ER.get_loc;
               (freevars', adts'_no_i))
       | [] -> (freevars, adts)
     in
@@ -343,9 +319,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           (******** Checking for dead component parameters ********)
           List.iter comp.comp_params ~f:(fun (cparam, _) ->
               if not @@ SCIdentifier.is_mem_id cparam lv then
-                warn "Dead component parameter: " cparam ER.get_loc);
+                warn "Unused component parameter: " cparam ER.get_loc);
           (* Take out the type of bound parameters*)
-          let param_adts = iden_of_ADT @@ List.map comp.comp_params ~f:snd in
+          let param_adts =
+            user_type_in_adt @@ List.map comp.comp_params ~f:snd
+          in
           (lv' @ res_fv, param_adts @ adts @ res_adts))
     in
     let comps_lv' = dedup_id_list comps_lv in
@@ -360,7 +338,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         ~init:(comps_lv' @ cons_lv, comps_adts' @ cons_adt)
         ~f:(fun (res_fv, res_adts) (_, ty, fexp) ->
           let f_lv, f_adt = expr_iter fexp in
-          (f_lv @ res_fv, iden_of_ADT [ ty ] @ f_adt @ res_adts))
+          (f_lv @ res_fv, user_type_in_adt [ ty ] @ f_adt @ res_adts))
     in
 
     (* Note: fields_lv' and fields_adts' also contains data from contraints and components *)
@@ -371,7 +349,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     let param_iden, param_ty = List.unzip cmod.contr.cparams in
     List.iter param_iden ~f:(fun iden ->
         if not @@ SCIdentifier.is_mem_id iden fields_lv' then
-          warn "Dead contract parameter: " iden ER.get_loc);
+          warn "Unused contract parameter: " iden ER.get_loc);
 
     (* Remove contract params from live variable list *)
     let lv_contract =
@@ -379,14 +357,14 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           not (SCIdentifier.is_mem_id a param_iden))
     in
     (* Adding used ADTs in parameters *)
-    let lv_adts = dedup_name_list @@ fields_adts' @ iden_of_ADT param_ty in
+    let lv_adts = dedup_name_list @@ fields_adts' @ user_type_in_adt param_ty in
 
     (******** Checking for dead procedures ********)
     List.iter cmod.contr.ccomps ~f:(fun comp ->
         match comp.comp_type with
         | CompProc ->
             if not @@ SCIdentifier.is_mem_id comp.comp_name !proc_dict then
-              warn "Dead procedure: " comp.comp_name SR.get_loc
+              warn "Unused procedure: " comp.comp_name SR.get_loc
         | CompTrans -> ());
 
     (* Iterate through contract library *)
@@ -414,7 +392,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 SCIdentifier.equal cmod_elib elib.libn.lname)
           in
           warn1
-            ("Dead imported library: " ^ as_error_string elib.libn.lname)
+            ("Unused imported library: " ^ as_error_string elib.libn.lname)
             warning_level_dead_code
             (SR.get_loc @@ get_rep import_rep));
 
@@ -435,7 +413,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     if not @@ List.is_empty field_read_only then
       List.iter field_read_only ~f:(fun field ->
-          warn "Read only field: " field ER.get_loc);
+          warn "Read only field, consider making it a contract parameter: "
+            field ER.get_loc);
 
     if not @@ List.is_empty field_write_only then
       List.iter field_write_only ~f:(fun field ->

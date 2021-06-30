@@ -63,7 +63,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead Library value: bar1",
+      "warning_message": "Unused Library value: bar1",
       "start_location": {
         "file": "checker/good/blowup_1.scilla",
         "line": 8,
@@ -73,7 +73,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: bar9",
+      "warning_message": "Unused Library value: bar9",
       "start_location": {
         "file": "checker/good/blowup_1.scilla",
         "line": 17,
@@ -83,7 +83,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead contract parameter: owner",
+      "warning_message": "Unused contract parameter: owner",
       "start_location": {
         "file": "checker/good/blowup_1.scilla",
         "line": 19,
@@ -93,7 +93,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead component parameter: msg",
+      "warning_message": "Unused component parameter: msg",
       "start_location": {
         "file": "checker/good/blowup_1.scilla",
         "line": 21,

@@ -65,7 +65,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead load statement to: bal",
+      "warning_message": "Unused load statement to: bal",
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 28,
@@ -75,7 +75,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead bind statement to: s",
+      "warning_message": "Unused bind statement to: s",
       "start_location": {
         "file": "contracts/cfinvoke.scilla",
         "line": 29,

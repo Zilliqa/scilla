@@ -100,7 +100,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "contracts/polymorphic_address.scilla",
         "line": 3,

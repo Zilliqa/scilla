@@ -87,7 +87,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "contracts/ud-proxy.scilla",
         "line": 3,
@@ -97,7 +97,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead imported library: BoolUtils",
+      "warning_message": "Unused imported library: BoolUtils",
       "start_location": {
         "file": "contracts/ud-proxy.scilla",
         "line": 3,

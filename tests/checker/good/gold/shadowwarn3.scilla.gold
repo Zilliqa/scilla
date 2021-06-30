@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead match bound: b",
+      "warning_message": "Unused match bound: b",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 11,
@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead Library value: f",
+      "warning_message": "Unused Library value: f",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 9,
@@ -70,7 +70,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: a",
+      "warning_message": "Unused match bound: a",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 19,
@@ -80,7 +80,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: b",
+      "warning_message": "Unused match bound: b",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 19,
@@ -90,7 +90,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Dead match bound: a",
+      "warning_message": "Unused match bound: a",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 19,

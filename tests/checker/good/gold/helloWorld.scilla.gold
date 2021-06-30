@@ -77,7 +77,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Dead imported library: ListUtils",
+      "warning_message": "Unused imported library: ListUtils",
       "start_location": {
         "file": "contracts/helloWorld.scilla",
         "line": 5,
