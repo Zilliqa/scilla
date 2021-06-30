@@ -85,6 +85,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "dead_code_test1.scilla";
       "dead_code_test2.scilla";
       "dead_code_test3.scilla";
+      "simple-dex-remote-reads.scilla";
+      "type_casts.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0

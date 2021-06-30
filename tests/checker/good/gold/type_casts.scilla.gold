@@ -1,0 +1,517 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "test_1_res", "tag": "(Option NoInfo)" },
+      { "field": "test_2_res", "tag": "(Option NoInfo)" },
+      { "field": "test_3_res", "tag": "(Option NoInfo)" },
+      { "field": "test_4_res", "tag": "(Option NoInfo)" },
+      { "field": "test_5_1_res", "tag": "(Option NoInfo)" },
+      { "field": "test_5_2_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_1_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_2_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_3_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_bal_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_f_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_6_4_failed_cast", "tag": "NotMoney" },
+      { "field": "test_7_g_res", "tag": "(Option NoInfo)" },
+      { "field": "test_7_h_res", "tag": "(Option NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "CastContract",
+    "params": [],
+    "fields": [
+      {
+        "vname": "test_1_res",
+        "type": "Option (ByStr20 with end)",
+        "depth": 0
+      },
+      {
+        "vname": "test_2_res",
+        "type": "Option (ByStr20 with contract end)",
+        "depth": 0
+      },
+      {
+        "vname": "test_3_res",
+        "type": "Option (ByStr20 with contract end)",
+        "depth": 0
+      },
+      { "vname": "test_4_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_5_1_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_5_2_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_1_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_2_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_2_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_2_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_3_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_3_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_3_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_4_bal_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_4_f_res", "type": "Option (Uint128)", "depth": 0 },
+      { "vname": "test_6_4_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_6_4_failed_cast", "type": "Bool", "depth": 0 },
+      { "vname": "test_7_g_res", "type": "Option (Bool)", "depth": 0 },
+      { "vname": "test_7_h_res", "type": "Option (Int256)", "depth": 0 }
+    ],
+    "transitions": [
+      {
+        "vname": "CastTest1",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest2",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest3",
+        "params": [ { "vname": "x", "type": "ByStr20 with contract end" } ]
+      },
+      {
+        "vname": "CastTest4",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest5_1",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest5_2",
+        "params": [ { "vname": "x", "type": "ByStr20 with end" } ]
+      },
+      {
+        "vname": "CastTest6_1",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "CastTest6_2",
+        "params": [ { "vname": "x", "type": "ByStr20 with end" } ]
+      },
+      {
+        "vname": "CastTest6_3",
+        "params": [
+          {
+            "vname": "x",
+            "type": "ByStr20 with contract field g : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "CastTest6_4",
+        "params": [
+          {
+            "vname": "x",
+            "type":
+              "ByStr20 with contract field f : Uint256, field g : Bool end"
+          }
+        ]
+      },
+      {
+        "vname": "CastTest7",
+        "params": [ { "vname": "x", "type": "ByStr20" } ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Write only field: test_7_h_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 173,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_7_g_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 170,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_4_g_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 152,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_4_failed_cast",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 155,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_4_f_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 149,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_4_bal_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 146,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_3_g_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 134,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_3_f_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 131,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_3_bal_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 128,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_2_g_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 116,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_2_f_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 113,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_2_bal_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 110,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_1_g_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 98,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_1_f_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 95,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_6_1_bal_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 92,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_5_2_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 80,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_5_1_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 68,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_4_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 56,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_3_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 46,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_2_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 40,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_1_res",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 159,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: x_as_address",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 163,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused remote load statement to: f",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 164,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 139,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 121,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 103,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 85,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 73,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 61,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 49,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 43,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 37,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused component parameter: x",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 31,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "No transition in contract CastContract contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

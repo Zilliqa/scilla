@@ -348,7 +348,8 @@ struct
                 | RemoteLoad (x, _, _)
                 | MapGet (x, _, _, _)
                 | RemoteMapGet (x, _, _, _, _)
-                | ReadFromBC (x, _) ->
+                | ReadFromBC (x, _)
+                | TypeCast (x, _, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
                 | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _

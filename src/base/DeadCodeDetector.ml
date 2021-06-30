@@ -254,7 +254,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               in
               (i :: live_vars', adts')
           | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
-          | AcceptPayment | GasStmt _ -> (live_vars, adts))
+          | AcceptPayment | GasStmt _ -> (live_vars, adts)
+          | TypeCast (_, _, t) -> (live_vars, user_type_in_adt [ t ]))
       | _ -> ([], [])
     in
 
