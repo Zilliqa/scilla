@@ -2,4 +2,4 @@
 { [n -> (Int32 42)],
   [id_int -> <closure>],
   [id -> <type_closure>] }
-Gas remaining: 4001186
+Gas remaining: 4001224

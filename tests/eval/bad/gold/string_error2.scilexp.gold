@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "4001192",
+  "gas_remaining": "4001230",
   "errors": [
     {
       "error_message": "String.to_ascii: Not printable",

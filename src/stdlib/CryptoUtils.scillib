@@ -19,15 +19,11 @@ scilla_version 0
 
 library CryptoUtils
 
-let alt_bn128_q = Uint256 21888242871839275222246405745257275088548364400416034343698204186575808495617
+(* group order for the bn128_G1 curve *)
+let alt_bn128_G1_q = Uint256 21888242871839275222246405745257275088548364400416034343698204186575808495617
 
-let alt_bn128_g =
-  let zero_i = Uint256 0 in
-  let one_i = Uint256 1 in
-  let one = builtin to_bystr32 one_i in
-  let pr = Pair {ByStr32 ByStr32} one one in
-  let opt = builtin alt_bn128_G1_bmul one in
-  match opt with
-  | Some x => x
-  | None => let x = builtin div one_i zero_i in pr
-  end
+(* generator for the bn128_G1 curve *)
+let alt_bn128_G1_g =
+  let one = 0x0000000000000000000000000000000000000000000000000000000000000001 in
+  let two = 0x0000000000000000000000000000000000000000000000000000000000000002 in
+  Pair {ByStr32 ByStr32} one two
