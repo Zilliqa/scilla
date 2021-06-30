@@ -84,8 +84,7 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   let parse_expr_from_file filename =
     parse_file Parser.Incremental.exp_term filename
 
-  let parse_expr_from_stdin () =
-    parse_stdin Parser.Incremental.exp_term
+  let parse_expr_from_stdin () = parse_stdin Parser.Incremental.exp_term
 
   let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
 
