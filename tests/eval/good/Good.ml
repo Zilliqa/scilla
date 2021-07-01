@@ -178,6 +178,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
+  let diff_filter s = s
+
   let tests = explist
 
   let exit_code : UnixLabels.process_status = WEXITED 0

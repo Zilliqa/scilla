@@ -79,13 +79,14 @@ let run_tests tests =
   in
   run_test_tt_main ("tests" >::: List.map ~f:(( |> ) env) tests)
 
-let output_verifier goldoutput_file msg print_diff output =
+let output_verifier goldoutput_file msg print_diff output filter =
   (* load all data from file *)
-  let gold_output = In_channel.read_all goldoutput_file in
+  let gold_output = filter @@ In_channel.read_all goldoutput_file in
+  let output' = filter output in
   let pp_diff fmt =
     let open Patdiff_kernel in
     let gold = Diff_input.{ name = goldoutput_file; text = gold_output } in
-    let out = Diff_input.{ name = "test output"; text = output } in
+    let out = Diff_input.{ name = "test output"; text = output' } in
     let open Patdiff.Compare_core in
     match diff_strings Configuration.default ~prev:gold ~next:out with
     | `Same -> ()
@@ -98,12 +99,12 @@ let output_verifier goldoutput_file msg print_diff output =
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~pp_diff:(fun fmt _ -> pp_diff fmt)
-      gold_output output ~msg
+      gold_output output' ~msg
   else
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~printer:(fun s -> s)
-      gold_output output ~msg
+      gold_output output' ~msg
 
 let output_updater goldoutput_file test_name data =
   Out_channel.write_all goldoutput_file ~data;
@@ -139,6 +140,8 @@ module type TestSuiteInput = sig
   val custom_args : string list
 
   val provide_init_arg : bool
+
+  val diff_filter : string -> string
 end
 
 module DiffBasedTests (Input : TestSuiteInput) = struct
@@ -182,7 +185,8 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file out
             else
-              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out)
+              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
+                diff_filter)
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let tests env = "exptests" >::: build_exp_tests env tests
