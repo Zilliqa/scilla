@@ -134,6 +134,7 @@ let explist =
     "builtin-schnorr_get_address.scilexp";
     "str-char-1.scilexp";
     "builtin-alt-bn128.scilexp";
+    "builtin-alt-bn128-2.scilexp";
     "builtin-ecdsa_recover.scilexp";
     "polynetwork_header.scilexp";
     "polynetwork_deserialize_proof.scilexp";

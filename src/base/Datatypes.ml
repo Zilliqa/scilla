@@ -337,7 +337,7 @@ module SnarkTypes = struct
         pure
         @@ ADTValue
              ( DataTypeDictionary.c_pair.cname,
-               [ g1point_type; g1point_type ],
+               [ scalar_type; scalar_type ],
                [ ByStrX x; ByStrX y ] )
     | _ -> fail0 @@ sprintf "Cannot convert OCaml G1 point to Scilla literal."
 

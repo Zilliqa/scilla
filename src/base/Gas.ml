@@ -49,6 +49,17 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   open GasLiteral
   open GasSyntax
 
+  let address_typecheck_cost t =
+    let size =
+      match t with
+      | Address (Some fts) ->
+          (* look up _this_address and every listed field *)
+          1 + IdLoc_Comp.Map.length fts
+      | _ -> 0
+    in
+    let cost = 2 + size (* _balance and _nonce must also be looked up *) in
+    GasGasCharge.StaticCost cost
+
   (* The storage cost of a literal, based on it's size. *)
   let rec literal_cost lit =
     match lit with
@@ -189,6 +200,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           | ReadFromBC _ | CallProc _ ->
               let g = GasStmt (GasGasCharge.StaticCost 1) in
               pure @@ [ (g, srep); (s, srep) ]
+          | TypeCast (_x, _r, t) ->
+              let g = address_typecheck_cost t in
+              pure @@ [ (GasStmt g, srep); (s, srep) ]
           | MapUpdate (_, klist, ropt) ->
               let n = GasGasCharge.StaticCost (List.length klist) in
               let g =

@@ -25,7 +25,7 @@ open GasCharge
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 10, 1)
+let scilla_version = (0, 11, 0)
 
 let hash_length = 32
 
@@ -327,6 +327,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         * bool
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
     | ReadFromBC of ER.rep SIdentifier.t * string
+    | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
     | AcceptPayment
     (* forall l p *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
@@ -592,6 +593,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
       | ReadFromBC (x, _) ->
           sprintf "Error in reading from blockchain state into `%s`:\n"
             (as_error_string x)
+      | TypeCast (_, x, t) ->
+          sprintf "Error casting `%s` into type `%s`:\n" (as_error_string x)
+            (SType.pp_typ_error t)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"

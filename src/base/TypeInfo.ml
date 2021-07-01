@@ -126,6 +126,7 @@ struct
             in
             ots :: List.concat clausets
         | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
+        | TypeCast (v, r, _) -> [ calc_ident_locs v; calc_ident_locs r ]
         | AcceptPayment | GasStmt _ -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
         | Iterate (l, _) -> [ calc_ident_locs l ]

@@ -817,6 +817,37 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.ReadFromBC (typed_x, bf), rep)
                  checked_stmts
+        | TypeCast (x, r, t) ->
+            (* Only allow casts to address types *)
+            let%bind () =
+              fromR_TE
+              @@ assert_type_assignable
+                   ~lc:(ER.get_loc (get_rep r))
+                   ~expected:(address_typ None) ~actual:t
+            in
+            let%bind r_typ =
+              fromR_TE
+              @@ TEnv.resolveT env.pure (get_id r) ~lopt:(Some (get_rep r))
+            in
+            (* Only allow casts of types that could be an address type *)
+            let%bind () =
+              fromR_TE
+              @@ assert_type_assignable
+                   ~lc:(ER.get_loc (get_rep r))
+                   ~expected:(bystrx_typ Type.address_length)
+                   ~actual:(rr_typ r_typ).tp
+            in
+            let res_typ = mk_qual_tp (option_typ t) in
+            let typed_x = add_type_to_ident x res_typ in
+            let typed_r = add_type_to_ident r (rr_typ r_typ) in
+            let%bind checked_stmts =
+              with_extended_env env get_tenv_pure [ (x, res_typ.tp) ] []
+                (type_stmts sts get_loc)
+            in
+            pure
+            @@ add_stmt_to_stmts_env_gas
+                 (TypedSyntax.TypeCast (typed_x, typed_r, t), rep)
+                 checked_stmts
         | MatchStmt (x, clauses) ->
             if List.is_empty clauses then
               fail
@@ -1174,68 +1205,71 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (* Type a list of libtrees, with tenv0 as the base environment, updating
    * it in-place, to include entries in elibs (but not their deps). *)
   let type_libraries elibs tenv0 remaining_gas =
-    let%bind typed_elibs, _, emsgs, remaining_gas =
-      let rec recurser libl files_already_checked remaining_gas =
-        foldM libl ~init:([], files_already_checked, [], remaining_gas)
-          ~f:(fun (lib_acc, files_checked_acc, emsgs_acc, remaining_gas) elib ->
+    let rec recurser libl already_checked remaining_gas =
+      let%bind deps, checked, emsgs, remaining_gas =
+        foldM libl ~init:([], already_checked, [], remaining_gas)
+          ~f:(fun
+               (tc_lib_acc_rev, already_checked_acc, emsgs_acc, remaining_gas)
+               elib
+             ->
+            (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
+               TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
             let elib_fname = (SR.get_loc (get_rep elib.libn.lname)).fname in
-            let%bind ( tc_lib_opt,
-                       dep_libs,
-                       all_checked_files,
-                       all_emsgs,
-                       remaining_gas ) =
-              (* Only check each library once. Use file names rather than the library names because that's how we identify libraries.
-                 TODO, issue #867: We ought to be able to rely on l.lname and ext_lib.libn.lname instead *)
-              match
-                List.find files_checked_acc ~f:(fun fname ->
-                    String.(fname = elib_fname))
-              with
-              | Some _ ->
-                  (* ext_lib already checked *)
-                  pure (None, [], files_checked_acc, emsgs_acc, remaining_gas)
-              | None -> (
-                  (* ext_lib not checked yet *)
-                  (* Check dependencies *)
-                  let%bind tc_dep_libs, dep_files, dep_emsgs, dep_remaining_gas
-                      =
-                    recurser elib.deps files_checked_acc remaining_gas
-                  in
-                  let all_files = elib_fname :: dep_files @ files_checked_acc in
-                  match type_library tenv0 elib.libn dep_remaining_gas with
-                  | Ok (t_lib, remaining_gas) ->
-                      pure
-                        ( Some t_lib,
-                          tc_dep_libs,
-                          all_files,
-                          emsgs_acc @ dep_emsgs,
-                          remaining_gas )
-                  | Error ((TypeError, el), remaining_gas) ->
-                      (* Collect error, and continue typechecking. *)
-                      pure
-                        ( None,
-                          tc_dep_libs,
-                          all_files,
-                          emsgs_acc @ dep_emsgs @ el,
-                          remaining_gas )
-                  | Error ((GasError, el), remaining_gas) ->
-                      (* Gas error - bail out *)
-                      Error ((GasError, el), remaining_gas))
-            in
-            match tc_lib_opt with
-            | Some t_lib ->
-                let (elib' : TypedSyntax.libtree) =
-                  { libn = t_lib; deps = dep_libs }
-                in
-                (* No reason to remove library entries. Their names are globally unique, and the disambiguator ensures that they are only accessed if they are in scope. *)
+            match
+              List.Assoc.find already_checked_acc elib_fname ~equal:String.( = )
+            with
+            | Some (Some lt_opt) ->
+                (* ext_lib already checked successfully *)
                 pure
-                  ( lib_acc @ [ elib' ],
-                    all_checked_files,
-                    all_emsgs,
+                  ( lt_opt :: tc_lib_acc_rev,
+                    already_checked_acc,
+                    emsgs_acc,
                     remaining_gas )
-            | None ->
-                (* An error has occurred *)
-                Error ((TypeError, all_emsgs), remaining_gas))
+            | Some None ->
+                (* ext_lib already checked, and contains errors *)
+                pure
+                  (tc_lib_acc_rev, already_checked_acc, emsgs_acc, remaining_gas)
+            | None -> (
+                (* ext_lib not checked yet *)
+                (* Check dependencies *)
+                let%bind ( tc_dep_libs,
+                           already_checked_dep,
+                           dep_emsgs,
+                           remaining_gas ) =
+                  recurser elib.deps already_checked_acc remaining_gas
+                in
+                match type_library tenv0 elib.libn remaining_gas with
+                | Ok (t_lib, remaining_gas) ->
+                    let (new_lt : TypedSyntax.libtree) =
+                      { libn = t_lib; deps = tc_dep_libs }
+                    in
+                    let new_already_checked =
+                      List.Assoc.add already_checked_dep elib_fname
+                        (Some new_lt) ~equal:String.( = )
+                    in
+                    pure
+                      ( new_lt :: tc_lib_acc_rev,
+                        new_already_checked,
+                        emsgs_acc @ dep_emsgs,
+                        remaining_gas )
+                | Error ((TypeError, el), remaining_gas) ->
+                    (* Collect error, and continue typechecking. *)
+                    let new_already_checked =
+                      List.Assoc.add already_checked_dep elib_fname None
+                        ~equal:String.( = )
+                    in
+                    pure
+                      ( tc_lib_acc_rev,
+                        new_already_checked,
+                        emsgs_acc @ dep_emsgs @ el,
+                        remaining_gas )
+                | Error ((GasError, el), remaining_gas) ->
+                    (* Gas error - bail out *)
+                    Error ((GasError, el), remaining_gas)))
       in
+      pure (List.rev deps, checked, emsgs, remaining_gas)
+    in
+    let%bind typed_elibs, _, emsgs, remaining_gas =
       recurser elibs [] remaining_gas
     in
     if List.is_empty emsgs then pure (typed_elibs, remaining_gas)
