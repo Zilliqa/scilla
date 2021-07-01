@@ -2,4 +2,4 @@
 { [t -> (String "def	")],
   [s -> (String "abc
 ")] }
-Gas remaining: 4001234
+Gas remaining: 4001225
