@@ -10,4 +10,4 @@
   [pos -> (Uint32 0)],
   [value -> (ByStr 0x0b2d230f552225a8cfa47efe)],
   [bytes -> (ByStr12 0x0b2d230f552225a8cfa47efe)] }
-Gas remaining: 4000826
+Gas remaining: 4000834

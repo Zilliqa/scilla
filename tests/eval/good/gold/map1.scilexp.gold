@@ -6,4 +6,4 @@
   [v1 -> (Uint64 42)],
   [k2 -> (Uint64 2)],
   [k1 -> (Uint64 1)] }
-Gas remaining: 4001206
+Gas remaining: 4001214

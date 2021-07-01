@@ -6,4 +6,4 @@
   [two -> (Nat 2)],
   [one -> (Nat 1)],
   [zero -> (Nat 0)] }
-Gas remaining: 4001110
+Gas remaining: 4001118

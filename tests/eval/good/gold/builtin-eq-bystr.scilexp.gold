@@ -31,4 +31,4 @@
   [aa -> (ByStr 0x0f0f)],
   [c -> (ByStr2 0x0f0f)],
   [b -> (ByStr2 0xbfbf)] }
-Gas remaining: 4001113
+Gas remaining: 4001121

@@ -63,4 +63,4 @@
   [a2 -> (String "+00000123")],
   [res_a1 -> (Some (Int32 123))],
   [a1 -> (String "+123")] }
-Gas remaining: 4001002
+Gas remaining: 4001010
