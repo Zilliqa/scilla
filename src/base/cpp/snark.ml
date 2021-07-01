@@ -152,7 +152,6 @@ let alt_bn128_G1_mul p s =
     (* Dummy use to avoid GC of memory. *)
     let _ = (pS, pD, sS, sD, presS, presD) in
     pres
-    
 let alt_bn128_pairing_product pairs =
   (* This check can be removed once we have a strong type for g2point. *)
   if
