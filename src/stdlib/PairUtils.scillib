@@ -17,7 +17,6 @@
 (* ******************************************************************************** *)
 scilla_version 0
 
-import BoolUtils
 library PairUtils
 
 let fst : forall 'A. forall 'B. Pair 'A 'B -> 'A =
