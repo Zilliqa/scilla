@@ -17,17 +17,19 @@
 (* ******************************************************************************** *)
 scilla_version 0
 
-import PairUtils
+import BoolUtils
 
 library CryptoUtils
 
 let pair_bystr32_eq : Pair ByStr32 ByStr32 -> Pair ByStr32 ByStr32 -> Bool =
   fun (p1 : Pair ByStr32 ByStr32) =>
   fun (p2 : Pair ByStr32 ByStr32) =>
-  let peq = @pair_eq ByStr32 ByStr32 in
-  let b32eq =
-    fun (b1 : ByStr32) =>
-    fun (b2 : ByStr32) =>
-      builtin eq b1 b2
-  in
-  peq b32eq b32eq p1 p2
+  match p1 with
+  | Pair x1 y1 =>
+  match p2 with
+  | Pair x2 y2 =>
+    let b1 = builtin eq x1 x2 in
+    let b2 = builtin eq y1 y2 in
+    andb b1 b2
+  end
+  end

@@ -8,4 +8,4 @@
   [two -> (Int32 2)],
   [one -> (Int32 1)],
   [zero -> (Int32 0)] }
-Gas remaining: 4001121
+Gas remaining: 4001125
