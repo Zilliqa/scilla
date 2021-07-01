@@ -41,8 +41,6 @@ val alt_bn128_G1_add : g1point -> g1point -> g1point option
 
 val alt_bn128_G1_mul : g1point -> scalar -> g1point option
 
-val alt_bn128_G1_bmul : scalar -> g1point option
-
 val alt_bn128_pairing_product : (g1point * g2point) list -> bool option
 
 val encode_g1point_bytes : g1point -> string

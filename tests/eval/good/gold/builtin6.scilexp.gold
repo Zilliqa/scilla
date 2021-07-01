@@ -71,4 +71,4 @@
   [c -> (Int32 40)],
   [b -> (Int32 2)],
   [a -> (Int32 100)] }
-Gas remaining: 4000293
+Gas remaining: 4000292

@@ -1,5 +1,5 @@
 let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in 
-let z_opt = builtin alt_bn128_G1_bmul zero in 
+let z_opt = alt_bn128_G1_bmul zero in 
 match z_opt with 
 | Some z1 =>
   let f = @fst ByStr32 ByStr32 in

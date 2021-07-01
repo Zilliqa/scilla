@@ -32,3 +32,7 @@ let alt_bn128_G1_g =
 let alt_bn128_G1_zero =
   let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in
   Pair {ByStr32 ByStr32} zero zero
+
+let alt_bn128_G1_bmul : ByStr32 -> Option (Pair (ByStr32) (ByStr32)) =
+  fun (s : ByStr32) =>
+  builtin alt_bn128_G1_mul alt_bn128_G1_g s

@@ -4,4 +4,4 @@
   [y -> (Some (Int32 42))],
   [x -> (True)],
   [v -> (Int32 42)] }
-Gas remaining: 4001220
+Gas remaining: 4001219

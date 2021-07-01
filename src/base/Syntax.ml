@@ -54,7 +54,6 @@ type builtin =
   | Builtin_ecdsa_recover_pk
   | Builtin_alt_bn128_G1_add
   | Builtin_alt_bn128_G1_mul
-  | Builtin_alt_bn128_G1_bmul
   | Builtin_alt_bn128_pairing_product
   (* https://github.com/Zilliqa/scilla/pull/486#discussion_r266069221 *)
   (*
@@ -116,7 +115,6 @@ let pp_builtin b =
   | Builtin_schnorr_get_address -> "schnorr_get_address"
   | Builtin_alt_bn128_G1_add -> "alt_bn128_G1_add"
   | Builtin_alt_bn128_G1_mul -> "alt_bn128_G1_mul"
-  | Builtin_alt_bn128_G1_bmul -> "alt_bn128_G1_bmul"
   | Builtin_alt_bn128_pairing_product -> "alt_bn128_pairing_product"
   | Builtin_contains -> "contains"
   | Builtin_put -> "put"
@@ -166,7 +164,6 @@ let parse_builtin s loc =
   | "schnorr_get_address" -> Builtin_schnorr_get_address
   | "alt_bn128_G1_add" -> Builtin_alt_bn128_G1_add
   | "alt_bn128_G1_mul" -> Builtin_alt_bn128_G1_mul
-  | "alt_bn128_G1_bmul" -> Builtin_alt_bn128_G1_bmul
   | "alt_bn128_pairing_product" -> Builtin_alt_bn128_pairing_product
   | "contains" -> Builtin_contains
   | "put" -> Builtin_put

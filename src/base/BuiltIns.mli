@@ -184,10 +184,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) : sig
 
     val alt_bn128_G1_mul_type : BIType.t
 
-    val alt_bn128_G1_bmul_arity : int
-
-    val alt_bn128_G1_bmul_type : BIType.t
-
     val alt_bn128_pairing_product_arity : int
 
     val alt_bn128_pairing_product_type : BIType.t

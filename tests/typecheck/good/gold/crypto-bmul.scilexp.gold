@@ -99,17 +99,31 @@
       }
     },
     {
+      "vname": "alt_bn128_G1_bmul",
+      "type": "ByStr32 -> Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 30
+      }
+    },
+    {
       "vname": "s",
       "type": "ByStr32",
       "start_location": {
         "file": "typecheck/good/crypto-bmul.scilexp",
         "line": 5,
-        "column": 39
+        "column": 31
       },
       "end_location": {
         "file": "typecheck/good/crypto-bmul.scilexp",
         "line": 5,
-        "column": 40
+        "column": 32
       }
     },
     {

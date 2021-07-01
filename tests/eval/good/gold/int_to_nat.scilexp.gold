@@ -17,4 +17,4 @@
   [zero_nat2 -> (Nat 0)],
   [zero_nat1 -> (Nat 0)],
   [zero_uint -> (Uint32 0)] }
-Gas remaining: 3001068
+Gas remaining: 3001067

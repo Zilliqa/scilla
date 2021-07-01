@@ -2,4 +2,4 @@
 { [c -> (True)],
   [b -> (True)],
   [z -> (Int32 3)] }
-Gas remaining: 4001219
+Gas remaining: 4001218
