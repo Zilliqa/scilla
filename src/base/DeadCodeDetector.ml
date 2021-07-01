@@ -25,7 +25,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   open SCIdentifier
   open SCSyntax
 
-  (* All checking procdures are marked with the comment
+  (* All checking procedures are marked with the comment
      (******** Checking for dead ______ ********)
   *)
 

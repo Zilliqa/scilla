@@ -37,8 +37,6 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
-  let diff_filter s = s
-
   let tests =
     [
       "bad_fields1.scilla";
@@ -133,8 +131,6 @@ module LibTests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
-  let diff_filter s = s
-
   let tests =
     [
       "bad_adt_lib_1.scilla";
@@ -180,8 +176,6 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let custom_args = []
 
   let provide_init_arg = true
-
-  let diff_filter s = s
 
   let additional_libdirs = [ [ "checker"; "bad"; "lib" ] ]
 

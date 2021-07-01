@@ -37,8 +37,6 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = false
 
-  let diff_filter s = s
-
   let tests =
     [
       "auction.scilla";
@@ -112,8 +110,6 @@ module TestsWithInit = Scilla_test.Util.DiffBasedTests (struct
 
   let provide_init_arg = true
 
-  let diff_filter s = s
-
   let tests =
     [
       "import-test-lib.scilla";
@@ -143,8 +139,6 @@ module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
   let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
 
   let provide_init_arg = false
-
-  let diff_filter s = s
 
   let tests =
     [
@@ -213,8 +207,6 @@ module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let tests = [ "blockchain_import.scilla" ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
-
-  let diff_filter s = s
 end)
 
 module ShogiTests = Scilla_test.Util.DiffBasedTests (struct
@@ -239,8 +231,6 @@ module ShogiTests = Scilla_test.Util.DiffBasedTests (struct
   let tests = [ "shogi.scilla"; "shogi_proc.scilla" ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
-
-  let diff_filter s = s
 end)
 
 (* We don't add the "-typeinfo" argument to the main set of "Tests"
@@ -267,6 +257,4 @@ module TypeInfoTests = Scilla_test.Util.DiffBasedTests (struct
   let tests = [ "map_corners_test.scilla"; "auction.scilla" ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
-
-  let diff_filter s = s
 end)
