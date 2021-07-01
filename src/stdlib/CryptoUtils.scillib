@@ -28,6 +28,7 @@ let alt_bn128_G1_g =
   let two = 0x0000000000000000000000000000000000000000000000000000000000000002 in
   Pair {ByStr32 ByStr32} one two
 
+(* identity point or point at infinity for the bn128_G1 curve *)
 let alt_bn128_G1_zero =
   let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in
   Pair {ByStr32 ByStr32} zero zero
