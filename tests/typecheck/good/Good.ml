@@ -438,6 +438,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "str-nonprint-char-1.scilexp";
       "map_value_type_pair.scilexp";
       "to_bystr.scilexp";
+      "crypto-bmul.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
