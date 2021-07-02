@@ -9,4 +9,4 @@
   [one -> (Uint32 1)],
   [f -> <closure>],
   [int_map -> <closure>] }
-Gas remaining: 4001059
+Gas remaining: 4001050

@@ -5,4 +5,4 @@
   [two -> (Int64 2)],
   [one -> (Int64 1)],
   [int_rest -> <closure>] }
-Gas remaining: 4001212
+Gas remaining: 4001203

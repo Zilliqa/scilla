@@ -3,4 +3,4 @@
   [x -> (Int32 10000)],
   [b -> (Uint32 2)],
   [a -> (Int32 100)] }
-Gas remaining: 4001142
+Gas remaining: 4001133
