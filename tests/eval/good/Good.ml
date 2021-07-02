@@ -157,6 +157,8 @@ let explist =
     "endian_test256.scilexp";
     "int_lits.scilexp";
     "crypto-neg-eq.scilexp";
+    "crypto_g.scilexp";
+    "crypto_zero.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
