@@ -1,0 +1,55 @@
+(* ******************************************************************************** *)
+(*   This file is part of scilla.                                                   *)
+(*                                                                                  *)
+(*   Copyright (c) 2021 - present Zilliqa Research Pvt. Ltd.                        *)
+(*                                                                                  *)
+(*   scilla is free software: you can redistribute it and/or modify it under the    *)
+(*   terms of the GNU General Public License as published by the Free Software      *)
+(*   Foundation, either version 3 of the License, or (at your option) any later     *)
+(*   version.                                                                       *)
+(*                                                                                  *)
+(*   scilla is distributed in the hope that it will be useful, but WITHOUT ANY      *)
+(*   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR  *)
+(*   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.    *)
+(*                                                                                  *)
+(*   You should have received a copy of the GNU General Public License along with   *)
+(*   scilla.  If not, see <http://www.gnu.org/licenses/>.                           *)
+(* ******************************************************************************** *)
+scilla_version 0
+
+import BoolUtils
+
+library CryptoUtils
+
+(* group order for the bn128_G1 curve *)
+let alt_bn128_G1_q = Uint256 21888242871839275222246405745257275088548364400416034343698204186575808495617
+
+(* generator for the bn128_G1 curve *)
+let alt_bn128_G1_g =
+  let one = 0x0000000000000000000000000000000000000000000000000000000000000001 in
+  let two = 0x0000000000000000000000000000000000000000000000000000000000000002 in
+  Pair {ByStr32 ByStr32} one two
+
+(* identity point or point at infinity for the bn128_G1 curve *)
+let alt_bn128_G1_zero =
+  let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in
+  Pair {ByStr32 ByStr32} zero zero
+
+(* base point multiplication *)
+let alt_bn128_G1_bmul : ByStr32 -> Option (Pair (ByStr32) (ByStr32)) =
+  fun (s : ByStr32) =>
+  builtin alt_bn128_G1_mul alt_bn128_G1_g s
+
+(* point equality *)
+let pair_bystr32_eq : Pair ByStr32 ByStr32 -> Pair ByStr32 ByStr32 -> Bool =
+  fun (p1 : Pair ByStr32 ByStr32) =>
+  fun (p2 : Pair ByStr32 ByStr32) =>
+  match p1 with
+  | Pair x1 y1 =>
+  match p2 with
+  | Pair x2 y2 =>
+    let b1 = builtin eq x1 x2 in
+    let b2 = builtin eq y1 y2 in
+    andb b1 b2
+  end
+  end

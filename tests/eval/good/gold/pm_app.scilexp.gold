@@ -2,4 +2,4 @@
 { [y -> (False)],
   [x -> (True)],
   [andb -> <closure>] }
-Gas remaining: 4001226
+Gas remaining: 4001207

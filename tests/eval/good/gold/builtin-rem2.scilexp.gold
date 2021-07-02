@@ -2,4 +2,4 @@
 { [b -> (Int32 23)],
   [a -> (Int32 100)],
   [f -> <closure>] }
-Gas remaining: 4001204
+Gas remaining: 4001185

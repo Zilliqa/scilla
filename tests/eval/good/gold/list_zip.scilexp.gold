@@ -11,4 +11,4 @@
   [two -> (Uint32 2)],
   [one -> (Uint32 1)],
   [int_zip -> <closure>] }
-Gas remaining: 4000685
+Gas remaining: 4000666

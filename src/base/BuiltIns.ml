@@ -591,7 +591,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let alt_bn128_G1_add_arity = 2
 
-    (* alt_bn128_G1_mul : zksnark_g1point_typ -> zksnark_g1point_type ->
+    (* alt_bn128_G1_mul : zksnark_g1point_typ -> zksnark_scalar_type ->
                       Option {zksnark_g1point_type} *)
     let alt_bn128_G1_mul_type =
       fun_typ g1point_type (fun_typ scalar_type (option_typ g1point_type))

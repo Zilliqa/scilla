@@ -156,6 +156,8 @@ let explist =
     "endian_test128.scilexp";
     "endian_test256.scilexp";
     "int_lits.scilexp";
+    "crypto_g.scilexp";
+    "crypto_zero.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
@@ -176,6 +178,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
   let additional_libdirs = []
 
   let provide_init_arg = false
+
+  let diff_filter s = s
 
   let tests = explist
 

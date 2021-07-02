@@ -4,4 +4,4 @@
   [two -> (Int64 2)],
   [b -> (Int64 44)],
   [a -> (Int64 42)] }
-Gas remaining: 4001220
+Gas remaining: 4001201

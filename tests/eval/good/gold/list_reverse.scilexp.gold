@@ -9,4 +9,4 @@
   [two -> (Int32 2)],
   [one -> (Int32 1)],
   [int_reverse -> <closure>] }
-Gas remaining: 4001167
+Gas remaining: 4001148

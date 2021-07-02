@@ -16,4 +16,4 @@
   [two -> (Int128 2)],
   [one -> (Int128 1)],
   [int_flatten -> <closure>] }
-Gas remaining: 4001086
+Gas remaining: 4001067
