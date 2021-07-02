@@ -819,12 +819,12 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let alt_bn128_G1_neg _ ls _ =
       match ls with
       | [ p1 ] -> (
-        let%bind p1' = fromR @@ scilla_g1point_to_ocaml p1 in
-        match Snark.alt_bn128_G1_neg p1' with
-        | None -> pure @@ build_none_lit g1point_type
-        | Some pr ->
-            let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
-            pure @@ build_some_lit pr' g1point_type)
+          let%bind p1' = fromR @@ scilla_g1point_to_ocaml p1 in
+          match Snark.alt_bn128_G1_neg p1' with
+          | None -> pure @@ build_none_lit g1point_type
+          | Some pr ->
+              let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
+              pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_neg" ls
 
     let alt_bn128_pairing_product _ ls _ =

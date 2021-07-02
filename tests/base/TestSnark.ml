@@ -35,7 +35,8 @@ let dec2bystr32 s =
   Uint256.to_bytes_big_endian (Uint256.of_string s) b 0;
   Bytes.to_string b
 
-let bystr2int b = Uint256.to_string (Uint256.of_bytes_big_endian (Bytes.of_string b) 0)
+let bystr2int b =
+  Uint256.to_string (Uint256.of_bytes_big_endian (Bytes.of_string b) 0)
 
 let hex2bystr h =
   let b = Bystr.parse_hex h in
@@ -560,6 +561,7 @@ let test_generate_random_points =
            (encode_g1point_bytes output)
            (hex2bystr
               "0x14789d0d4a730b354403b5fac948113739e276c23e0258d8596ee72f9cd9d3230af18a63153e0ec25ff9f2951dd3fa90ed0197bfef6e2a1a62b5095b9d2b4a27")))
+
 let test_neg =
   test_case (fun _ ->
       let p =
@@ -577,47 +579,50 @@ let test_neg =
       assert_bool "TestSnark failed: test_neg: comparison failed"
         ([%equal: g1point] p1 p2))
 
-let test_point_at_infinity = 
-  test_case (fun _ -> 
-    let p =
-      {
-        g1x =
-          dec2bystr32
-            "6851077925310461602867742977619883934042581405263014789956638244065803308498";
-        g1y =
-          dec2bystr32
-            "10336382210592135525880811046708757754106524561907815205241508542912494488506";
-      }
-    in
-    let np = neg_helper p in
-    (* P + -P = O *)
-    match alt_bn128_G1_add p np with
-    | Some idp ->
-        (* O + P = P *)
-        (match alt_bn128_G1_add idp p with
-        | Some p2 ->
-          assert_bool "TestSnark failed: test_point_at_infinity: comparison failed" ([%equal: g1point] p2 p)
-        | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
-    | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
+let test_point_at_infinity =
+  test_case (fun _ ->
+      let p =
+        {
+          g1x =
+            dec2bystr32
+              "6851077925310461602867742977619883934042581405263014789956638244065803308498";
+          g1y =
+            dec2bystr32
+              "10336382210592135525880811046708757754106524561907815205241508542912494488506";
+        }
+      in
+      let np = neg_helper p in
+      (* P + -P = O *)
+      match alt_bn128_G1_add p np with
+      | Some idp -> (
+          (* O + P = P *)
+          match alt_bn128_G1_add idp p with
+          | Some p2 ->
+              assert_bool
+                "TestSnark failed: test_point_at_infinity: comparison failed"
+                ([%equal: g1point] p2 p)
+          | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
+      | None -> assert_failure "TestSnark failed: test_add_zero: failed.")
 
 let test_mul_zero =
   (* 0 * P = P - P = O *)
   test_case (fun _ ->
-    let p =
-      {
-        g1x =
-          dec2bystr32
-            "6851077925310461602867742977619883934042581405263014789956638244065803308498";
-        g1y =
-          dec2bystr32
-            "10336382210592135525880811046708757754106524561907815205241508542912494488506";
-      }
-    in
-    let pm0 = mul_helper p (dec2bystr32 "0") in
-    let np = neg_helper p in
-    let pm1 = add_helper np p in
-    assert_bool "TestSnark failed: test_mul_zero : comparison failed" ([%equal: g1point] pm0 pm1)
-  )
+      let p =
+        {
+          g1x =
+            dec2bystr32
+              "6851077925310461602867742977619883934042581405263014789956638244065803308498";
+          g1y =
+            dec2bystr32
+              "10336382210592135525880811046708757754106524561907815205241508542912494488506";
+        }
+      in
+      let pm0 = mul_helper p (dec2bystr32 "0") in
+      let np = neg_helper p in
+      let pm1 = add_helper np p in
+      assert_bool "TestSnark failed: test_mul_zero : comparison failed"
+        ([%equal: g1point] pm0 pm1))
+
 module All = struct
   let tests _ =
     "snark_tests"

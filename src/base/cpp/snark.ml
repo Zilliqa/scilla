@@ -155,17 +155,15 @@ let alt_bn128_G1_mul p s =
 
 let alt_bn128_G1_neg p =
   (* This check can be removed once we have a strong type for scalar. *)
-  if
-    String.length p.g1x <> scalar_len
-    || String.length p.g1y <> scalar_len
-  then None
+  if String.length p.g1x <> scalar_len || String.length p.g1y <> scalar_len then
+    None
   else
     (* bool alt_bn128_G1_neg_Z(const RawBytes_Z* p, RawBytes_Z* result) *)
     let alt_bn128_G1_neg_Z =
       foreign "alt_bn128_G1_neg_Z"
         (ptr rawBytes_Z @-> ptr rawBytes_Z @-> returning bool)
     in
-    
+
     (* Create container for inputs and output. *)
     let pS = make rawBytes_Z in
     let presS = make rawBytes_Z in
