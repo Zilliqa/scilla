@@ -1,0 +1,187 @@
+{
+  "type_info": [
+    {
+      "vname": "px",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 1,
+        "column": 7
+      }
+    },
+    {
+      "vname": "py",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 2,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 2,
+        "column": 7
+      }
+    },
+    {
+      "vname": "pt",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 7
+      }
+    },
+    {
+      "vname": "px",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 33
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 35
+      }
+    },
+    {
+      "vname": "py",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 36
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 3,
+        "column": 38
+      }
+    },
+    {
+      "vname": "s",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 4,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 4,
+        "column": 6
+      }
+    },
+    {
+      "vname": "p_opt",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 10
+      }
+    },
+    {
+      "vname": "alt_bn128_G1_bmul",
+      "type": "ByStr32 -> Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 30
+      }
+    },
+    {
+      "vname": "s",
+      "type": "ByStr32",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 31
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 5,
+        "column": 32
+      }
+    },
+    {
+      "vname": "p_opt",
+      "type": "Option (Pair (ByStr32) (ByStr32))",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 6,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 6,
+        "column": 12
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 7,
+        "column": 8
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 7,
+        "column": 9
+      }
+    },
+    {
+      "vname": "p",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 7,
+        "column": 13
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 7,
+        "column": 14
+      }
+    },
+    {
+      "vname": "pt",
+      "type": "Pair (ByStr32) (ByStr32)",
+      "start_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 8,
+        "column": 11
+      },
+      "end_location": {
+        "file": "typecheck/good/crypto-bmul.scilexp",
+        "line": 8,
+        "column": 13
+      }
+    }
+  ],
+  "type": "Pair (ByStr32) (ByStr32)"
+}

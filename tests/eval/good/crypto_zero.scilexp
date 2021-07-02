@@ -1,0 +1,15 @@
+let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in 
+let z_opt = alt_bn128_G1_bmul zero in 
+match z_opt with 
+| Some z1 =>
+  let f = @fst ByStr32 ByStr32 in
+  let s = @snd ByStr32 ByStr32 in
+  let x1 = f z1 in 
+  let y1 = s z1 in 
+  let x2 = f alt_bn128_G1_zero in 
+  let y2 = s alt_bn128_G1_zero in
+  let b1 = builtin eq x1 x2 in 
+  let b2 = builtin eq y1 y2 in 
+  andb b1 b2
+| None => False
+end
