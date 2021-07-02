@@ -19,4 +19,4 @@
   [two -> (Uint64 2)],
   [one -> (Uint32 1)],
   [zero -> (Uint32 0)] }
-Gas remaining: 3997612
+Gas remaining: 3997603

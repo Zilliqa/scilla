@@ -4,4 +4,4 @@
   [a -> (Int32 1)],
   [f -> <closure>],
   [x -> (Int32 42)] }
-Gas remaining: 4001224
+Gas remaining: 4001215
