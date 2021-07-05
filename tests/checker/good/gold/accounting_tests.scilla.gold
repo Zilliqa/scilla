@@ -1,0 +1,111 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "support_contract", "tag": "NotMoney" },
+      { "field": "test_string_1", "tag": "NoInfo" },
+      { "field": "test_string_2", "tag": "NoInfo" },
+      { "field": "outgoing_amount", "tag": "Money" },
+      { "field": "max_outgoing_msgs", "tag": "NotMoney" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "AccountingTests",
+    "params": [
+      {
+        "vname": "support_contract",
+        "type":
+          "ByStr20 with contract field stored_strings : List (String) end"
+      }
+    ],
+    "fields": [
+      { "vname": "test_string_1", "type": "String", "depth": 0 },
+      { "vname": "test_string_2", "type": "String", "depth": 0 },
+      { "vname": "outgoing_amount", "type": "Uint128", "depth": 0 },
+      { "vname": "max_outgoing_msgs", "type": "Uint128", "depth": 0 }
+    ],
+    "transitions": [
+      { "vname": "Reset", "params": [] },
+      { "vname": "Test_Send_1", "params": [] },
+      { "vname": "Finalize_Test_Send_1", "params": [] },
+      { "vname": "Test_Send_2", "params": [] },
+      { "vname": "Finalize_Test_Send_2", "params": [] },
+      { "vname": "Test_Send_3", "params": [] },
+      { "vname": "Test_Send_3_Helper", "params": [] },
+      { "vname": "Finalize_Test_Send_3", "params": [] },
+      { "vname": "Test_Send_4", "params": [] },
+      { "vname": "Test_Send_5", "params": [] },
+      { "vname": "Test_Send_6", "params": [] },
+      { "vname": "Test_Send_7", "params": [] },
+      {
+        "vname": "Finalize_Send_6_7",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      { "vname": "Test_Send_8", "params": [] },
+      {
+        "vname": "Finalize_Send_8_9",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      { "vname": "Test_Send_9", "params": [] }
+    ],
+    "procedures": [
+      { "vname": "AssertReset", "params": [] },
+      {
+        "vname": "Finalize_Test_Send_Helper_2_Msgs",
+        "params": [ { "vname": "test_no", "type": "Uint128" } ]
+      },
+      {
+        "vname": "CheckBalance",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      {
+        "vname": "CheckSupportBalance",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [],
+  "gas_remaining": "7916"
+}
+
