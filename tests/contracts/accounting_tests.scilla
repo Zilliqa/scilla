@@ -21,7 +21,7 @@ field test_string_1 : String = "Hello"
 field test_string_2 : String = "World"
 
 field outgoing_amount : Uint128 = Uint128 10
-field max_outgoing_msgs : Uint128 = Uint128 2
+field max_outgoing_msgs : Uint128 = Uint128 3
 
 transition Reset()
   msg = { _recipient : support_contract;
