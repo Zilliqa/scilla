@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "Syntax error, state number 87",
+      "error_message":
+        "Contract fields are not allowed to start with underscore.\n",
       "start_location": {
         "file": "base/parser/bad/address_spid_as_field.scilla",
         "line": 5,
