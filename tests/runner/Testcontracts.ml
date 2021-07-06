@@ -470,6 +470,8 @@ let contract_tests env =
                        "address_list_traversal" succ_code 1 2 [];
                 "type_casts"
                 >::: build_contract_tests env "type_casts" succ_code 1 37 [];
+                "accounting_tests"
+                >::: build_contract_tests env "accounting_tests" succ_code 1 1 [];
                 "addfunds_proxy"
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"

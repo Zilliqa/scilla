@@ -233,8 +233,9 @@ module Configuration = struct
         else pure v
     | _ ->
         fail1
-          (Printf.sprintf "Error loading field %s"
-             (EvalName.as_error_string (get_id k)))
+          (Printf.sprintf "Error loading remote field %s at address %s"
+             (EvalName.as_error_string (get_id k))
+             (SLiteral.Bystrx.hex_encoding caddr))
           (ER.get_loc (get_rep k))
 
   let remote_field_type caddr k =
