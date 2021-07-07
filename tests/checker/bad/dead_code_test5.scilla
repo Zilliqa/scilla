@@ -1,0 +1,15 @@
+scilla_version 0
+
+library SimpleImplDead5
+
+
+contract SimpleImplDead5()
+
+procedure dead_procedure (o : Option Int32)
+    (* x2 should not be live at this load statement *)
+    y = let x1 = x2 in x1;
+    x = Int32 1
+end
+
+transition dummy()
+end

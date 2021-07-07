@@ -1,0 +1,15 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Couldn't resolve the identifier \"x2\".\n",
+      "start_location": {
+        "file": "checker/bad/dead_code_test5.scilla",
+        "line": 10,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

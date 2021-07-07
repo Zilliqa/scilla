@@ -165,20 +165,21 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | (s, _) :: rest_stmts -> (
           let live_vars, adts = stmt_iter rest_stmts in
           match s with
-          | Load (x, m) -> (* TODO: Write test for x liveness *)
+          | Load (x, m) ->
               mark_field_read m;
               if SCIdentifier.is_mem_id x live_vars then
                 (* m is a field, thus we don't track its liveness *)
+                (* Remove liveness of x - as seen when checking tests/checker/bad/dead_code_test5.scilla  *)
                 let live_vars_no_x =
                   List.filter
                     ~f:(fun i -> not @@ SCIdentifier.equal i x)
                     live_vars
                 in
-                (live_vars_no_x, adts)
+                (live_vars_no_x, adts) (* (live_vars, adts) *)
               else (
                 warn "Unused load statement to: " x ER.get_loc;
                 (live_vars, adts))
-          | RemoteLoad (x, addr, m) -> (* TODO: Write test for x liveness *)
+          | RemoteLoad (x, addr, m) ->
               mark_field_read m;
               (* m is a field, thus we don't track its liveness *)
               if SCIdentifier.is_mem_id x live_vars then
@@ -194,13 +195,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           | Store (i, m) ->
               mark_field_write i;
               (dedup_id_list (m :: live_vars), adts)
-          | MapUpdate (i, il, io) -> (* TODO: Write test for x liveness *)
+          | MapUpdate (i, il, io) ->
               mark_field_write i;
               let live_vars' =
                 match io with Some ii -> i :: ii :: il | None -> i :: il
               in
               (dedup_id_list @@ live_vars' @ live_vars, adts)
-          | MapGet (x, i, il, _) -> (* TODO: Write test for x liveness *)
+          | MapGet (x, i, il, _) ->
               (* i is a field, thus we don't track its liveness *)
               mark_field_read i;
               if SCIdentifier.is_mem_id x live_vars then
@@ -255,7 +256,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 (live_vars, adts))
           | MatchStmt (i, pslist) ->
               let live_vars', adts' =
-                List.fold_left pslist ~init:([], []) (* TODO: Write test case for livevars before MatchStmt *)
+                (* No live variables when analysing MatchStmt, as seen when checking tests/checker/bad/dead_code_test4.scilla *)
+                List.fold_left pslist ~init:([], [])
                   ~f:(fun (res_fv, res_adts) (pat, stmts) ->
                     let fvl, adts = stmt_iter stmts in
                     let bounds = get_pattern_bounds pat in
@@ -275,7 +277,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     in
                     (fvl' @ res_fv, adts @ res_adts))
               in
-              (i :: live_vars', adts')
+              (i :: live_vars @ live_vars', adts @ adts')
           | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
           | AcceptPayment | GasStmt _ -> (live_vars, adts)
           | TypeCast (_, _, t) -> (live_vars, user_types_in_adt [ t ]))
@@ -381,7 +383,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           not (SCIdentifier.is_mem_id a param_iden))
     in
     (* Adding used ADTs in parameters *)
-    let lv_adts = dedup_name_list @@ fields_adts' @ user_types_in_adt param_ty in
+    let lv_adts =
+      dedup_name_list @@ fields_adts' @ user_types_in_adt param_ty
+    in
 
     (******** Checking for dead procedures ********)
     List.iter cmod.contr.ccomps ~f:(fun comp ->
