@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error, state number 286",
+      "error_message": "Ends in an error in state: 286.\n",
       "start_location": {
         "file": "checker/bad/bad_cast_3.scilla",
         "line": 11,

@@ -156,6 +156,7 @@ let explist =
     "endian_test128.scilexp";
     "endian_test256.scilexp";
     "int_lits.scilexp";
+    "crypto-neg-eq.scilexp";
     "crypto_g.scilexp";
     "crypto_zero.scilexp";
   ]

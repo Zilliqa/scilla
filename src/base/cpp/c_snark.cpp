@@ -58,4 +58,15 @@ bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* 
   }
 }
 
+bool alt_bn128_G1_neg_Z(const RawBytes_Z* p1, RawBytes_Z* result) {
+  try {
+    bytes p1_b(p1->data, p1->data + p1->len);
+    bytes result_b = alt_bn128_G1_neg(p1_b);
+    std::copy(result_b.begin(), result_b.end(), result->data);
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
 } // extern "C"
