@@ -169,7 +169,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               mark_field_read m;
               if SCIdentifier.is_mem_id x live_vars then
                 (* m is a field, thus we don't track its liveness *)
-                (* Remove liveness of x - as seen when checking tests/checker/bad/dead_code_test5.scilla  *)
+                (* Remove liveness of x - as seen when checking tests/contracts/dead_code_test4.scilla  *)
                 let live_vars_no_x =
                   List.filter
                     ~f:(fun i -> not @@ SCIdentifier.equal i x)
@@ -256,7 +256,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 (live_vars, adts))
           | MatchStmt (i, pslist) ->
               let live_vars', adts' =
-                (* No live variables when analysing MatchStmt, as seen when checking tests/checker/bad/dead_code_test4.scilla *)
+                (* No live variables when analysing MatchStmt, as seen when checking tests/contracts/dead_code_test4.scilla *)
                 List.fold_left pslist ~init:([], [])
                   ~f:(fun (res_fv, res_adts) (pat, stmts) ->
                     let fvl, adts = stmt_iter stmts in

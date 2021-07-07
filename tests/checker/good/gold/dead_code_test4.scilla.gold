@@ -1,0 +1,139 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "z1", "tag": "NoInfo" },
+      { "field": "z2", "tag": "NoInfo" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Dead4",
+    "params": [],
+    "fields": [
+      { "vname": "z1", "type": "Uint32", "depth": 0 },
+      { "vname": "z2", "type": "Uint32", "depth": 0 }
+    ],
+    "transitions": [
+      { "vname": "dummy1", "params": [ { "vname": "b", "type": "Bool" } ] },
+      { "vname": "dummy2", "params": [] }
+    ],
+    "procedures": [],
+    "events": [
+      { "vname": "Foo", "params": [ { "vname": "x", "type": "Uint32" } ] }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: z2",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 25,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: z1",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 24,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: x",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 24,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused let expression: x_",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 28,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: x",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 15,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "x is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 15,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "No transition in contract Dead4 contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
