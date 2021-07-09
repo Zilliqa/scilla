@@ -278,9 +278,17 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     (fvl' @ res_fv, adts @ res_adts))
               in
               (i :: live_vars @ live_vars', adts @ adts')
+          | TypeCast (x, r, t) ->
+              if SCIdentifier.is_mem_id x live_vars then
+                let live_vars_no_x =
+                  List.filter
+                    ~f:(fun i -> not @@ SCIdentifier.equal x i)
+                    live_vars
+                in
+                (r :: live_vars_no_x, user_types_in_adt [ t ])
+              else (live_vars, adts)
           | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
-          | AcceptPayment | GasStmt _ -> (live_vars, adts)
-          | TypeCast (_, _, t) -> (live_vars, user_types_in_adt [ t ]))
+          | AcceptPayment | GasStmt _ -> (live_vars, adts))
       | _ -> ([], [])
     in
 
