@@ -598,6 +598,12 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let alt_bn128_G1_mul_arity = 2
 
+    (* alt_bn128_G1_neg : zksnark_g1point_typ ->
+                          Option {zksnark_g1point_type} *)
+    let alt_bn128_G1_neg_type = fun_typ g1point_type (option_typ g1point_type)
+
+    let alt_bn128_G1_neg_arity = 1
+
     (* alt_bn128_pairing_product : List (g1g2pair_type) -> Option {Bool} *)
     let alt_bn128_pairing_product_type =
       fun_typ g1g2pair_list_type (option_typ bool_typ)
@@ -754,6 +760,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | Builtin_schnorr_get_address -> [CryptoBuiltins.schnorr_get_address_arity, CryptoBuiltins.schnorr_get_address_type, elab_id]
       | Builtin_alt_bn128_G1_add -> [CryptoBuiltins.alt_bn128_G1_add_arity, CryptoBuiltins.alt_bn128_G1_add_type, elab_id]
       | Builtin_alt_bn128_G1_mul -> [CryptoBuiltins.alt_bn128_G1_mul_arity, CryptoBuiltins.alt_bn128_G1_mul_type, elab_id]
+      | Builtin_alt_bn128_G1_neg -> [CryptoBuiltins.alt_bn128_G1_neg_arity, CryptoBuiltins.alt_bn128_G1_neg_type, elab_id]
       | Builtin_alt_bn128_pairing_product -> [CryptoBuiltins.alt_bn128_pairing_product_arity, 
                                               CryptoBuiltins.alt_bn128_pairing_product_type, elab_id]
     
