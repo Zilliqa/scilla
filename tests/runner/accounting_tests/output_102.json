@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7957",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Support contract not reset\"))])",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 42,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from Test_Send_1",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 63,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

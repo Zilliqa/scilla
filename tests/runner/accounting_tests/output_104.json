@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7922",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Test_Send failed\")) ; (test_no : (Uint128 1)) ; (expected : (List (String \"World\"), (String \"Hello\"), (Nil))) ; (actual : (List (String \"Hello\"), (String \"World\"), (Nil)))])",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 99,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from Finalize_Test_Send_1",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 104,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

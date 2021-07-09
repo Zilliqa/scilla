@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7946",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Insufficient balance for tests\"))])",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 54,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from Test_Send_1",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 63,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
