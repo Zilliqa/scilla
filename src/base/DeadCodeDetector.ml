@@ -286,7 +286,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     live_vars
                 in
                 (r :: live_vars_no_x, user_types_in_adt [ t ])
-              else (live_vars, adts)
+              else (
+                warn "Unused type case statement to: " x ER.get_loc;
+                (live_vars, adts))
           | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
           | AcceptPayment | GasStmt _ -> (live_vars, adts))
       | _ -> ([], [])
