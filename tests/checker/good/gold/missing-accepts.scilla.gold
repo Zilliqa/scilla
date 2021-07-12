@@ -56,6 +56,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused transition parameter: cond",
+      "start_location": {
+        "file": "checker/good/missing-accepts.scilla",
+        "line": 11,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: cond",
+      "start_location": {
+        "file": "checker/good/missing-accepts.scilla",
+        "line": 6,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract MissingAccepts contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

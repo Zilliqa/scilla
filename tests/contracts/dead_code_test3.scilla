@@ -1,0 +1,20 @@
+scilla_version 0
+
+library SimpleImplDead
+
+
+contract SimpleImplDead()
+
+procedure dead_procedure (o : Option Int32)
+  match o with
+  | Some dead_binder =>
+    dead_binder = Int32 100;
+    v1 = dead_binder;
+    e = { _eventname : "dead_procedure"; dead_binder : v1 };
+    event e
+  | None =>
+  end
+end
+
+transition dummy()
+end

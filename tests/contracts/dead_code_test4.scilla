@@ -1,0 +1,33 @@
+scilla_version 0
+
+library Dead4
+
+
+contract Dead4()
+
+field z1: Uint32 = Uint32 1
+field z2: Uint32 = Uint32 2
+
+transition dummy1(b: Bool)
+  x = Uint32 0;
+  match b with
+  (* The following x definition would be deemed dead *)
+  | True => x = Uint32 1
+  | False =>
+  end;
+  e = {_eventname : "Foo"; x : x};
+  event e
+end
+
+transition dummy2()
+  (* The first x Load statement should be dead *)
+  x <- z1;
+  x <- z2;
+
+  (* The first let expression to x is dead *)
+  y = 
+    let x_ = Uint32 1 in 
+    let x_ = x in x_;
+  e = {_eventname : "Foo"; x : y};
+  event e
+end

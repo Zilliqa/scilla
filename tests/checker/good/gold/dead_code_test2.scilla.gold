@@ -1,28 +1,30 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "cfaddr", "tag": "NotMoney" },
-      { "field": "owner", "tag": "NotMoney" }
+      { "field": "test_pattern", "tag": "(Option NoInfo)" }
     ],
     "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "CrowdFundingInvoke",
-    "params": [
-      { "vname": "cfaddr", "type": "ByStr20" },
-      { "vname": "owner", "type": "ByStr20" }
+    "vname": "SimpleImplDead",
+    "params": [],
+    "fields": [
+      { "vname": "test_pattern", "type": "Option (ByStr20)", "depth": 0 }
     ],
-    "fields": [],
     "transitions": [
-      { "vname": "Main", "params": [] },
       {
-        "vname": "Invoke",
-        "params": [ { "vname": "trans", "type": "String" } ]
+        "vname": "AddFunds",
+        "params": [ { "vname": "initiator", "type": "ByStr20" } ]
       }
     ],
     "procedures": [],
-    "events": [],
+    "events": [
+      {
+        "vname": "Funds deposit ",
+        "params": [ { "vname": "funder", "type": "ByStr20" } ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -65,21 +67,22 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused load statement to: bal",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_pattern",
       "start_location": {
-        "file": "contracts/cfinvoke.scilla",
-        "line": 28,
-        "column": 3
+        "file": "contracts/dead_code_test2.scilla",
+        "line": 11,
+        "column": 15
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused bind statement to: s",
+      "warning_message": "Unused match bound: dead_pattern",
       "start_location": {
-        "file": "contracts/cfinvoke.scilla",
-        "line": 29,
-        "column": 3
+        "file": "contracts/dead_code_test2.scilla",
+        "line": 13,
+        "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

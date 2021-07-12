@@ -213,7 +213,38 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Unused library value: zeroUint64",
+      "start_location": {
+        "file": "contracts/ud-registry.scilla",
+        "line": 6,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: zeroByStr32",
+      "start_location": {
+        "file": "contracts/ud-registry.scilla",
+        "line": 8,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: resolver",
+      "start_location": {
+        "file": "contracts/ud-registry.scilla",
+        "line": 86,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7916"
 }
 

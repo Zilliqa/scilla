@@ -76,6 +76,57 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: map_also_money",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 45,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: transaction_pairs",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 21,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: msg",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 31,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: x",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 23,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: rest",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 23,
+        "column": 20
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract CashflowTest contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

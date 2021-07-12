@@ -87,6 +87,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library value: foo2",
+      "start_location": {
+        "file": "checker/good/namespace3.scilla",
+        "line": 8,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: bar",
+      "start_location": {
+        "file": "checker/good/namespace3.scilla",
+        "line": 17,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: bar",
+      "start_location": {
+        "file": "checker/good/namespace3.scilla",
+        "line": 13,
+        "column": 22
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract TestContr1 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

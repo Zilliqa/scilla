@@ -62,6 +62,46 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused field: p2",
+      "start_location": {
+        "file": "checker/good/shadowwarn2.scilla",
+        "line": 6,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: p1",
+      "start_location": {
+        "file": "checker/good/shadowwarn2.scilla",
+        "line": 5,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract parameter: p1",
+      "start_location": {
+        "file": "checker/good/shadowwarn2.scilla",
+        "line": 3,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: p2",
+      "start_location": {
+        "file": "checker/good/shadowwarn2.scilla",
+        "line": 8,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Name p2 shadows a field declaration.",
       "start_location": {
         "file": "checker/good/shadowwarn2.scilla",

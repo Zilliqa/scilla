@@ -109,6 +109,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused bind statement to: unsorted",
+      "start_location": {
+        "file": "contracts/import-test-lib.scilla",
+        "line": 32,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Hello contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

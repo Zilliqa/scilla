@@ -65,6 +65,37 @@
   },
   "warnings": [
     {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: pub_key",
+      "start_location": {
+        "file": "contracts/ecdsa.scilla",
+        "line": 21,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: fst_f",
+      "start_location": {
+        "file": "contracts/ecdsa.scilla",
+        "line": 12,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: snd_f",
+      "start_location": {
+        "file": "contracts/ecdsa.scilla",
+        "line": 13,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Name sig shadows a transition parameter.",
       "start_location": {
         "file": "contracts/ecdsa.scilla",

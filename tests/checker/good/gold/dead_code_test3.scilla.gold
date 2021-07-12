@@ -1,28 +1,23 @@
 {
-  "cashflow_tags": {
-    "State variables": [
-      { "field": "cfaddr", "tag": "NotMoney" },
-      { "field": "owner", "tag": "NotMoney" }
-    ],
-    "ADT constructors": []
-  },
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "CrowdFundingInvoke",
-    "params": [
-      { "vname": "cfaddr", "type": "ByStr20" },
-      { "vname": "owner", "type": "ByStr20" }
-    ],
+    "vname": "SimpleImplDead",
+    "params": [],
     "fields": [],
-    "transitions": [
-      { "vname": "Main", "params": [] },
+    "transitions": [ { "vname": "dummy", "params": [] } ],
+    "procedures": [
       {
-        "vname": "Invoke",
-        "params": [ { "vname": "trans", "type": "String" } ]
+        "vname": "dead_procedure",
+        "params": [ { "vname": "o", "type": "Option (Int32)" } ]
       }
     ],
-    "procedures": [],
-    "events": [],
+    "events": [
+      {
+        "vname": "dead_procedure",
+        "params": [ { "vname": "dead_binder", "type": "Int32" } ]
+      }
+    ],
     "ADTs": [
       {
         "tname": "Option",
@@ -65,24 +60,31 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused load statement to: bal",
+      "warning_message": "Unused procedure: dead_procedure",
       "start_location": {
-        "file": "contracts/cfinvoke.scilla",
-        "line": 28,
-        "column": 3
+        "file": "contracts/dead_code_test3.scilla",
+        "line": 8,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused bind statement to: s",
+      "warning_message": "Unused match bound: dead_binder",
       "start_location": {
-        "file": "contracts/cfinvoke.scilla",
-        "line": 29,
-        "column": 3
+        "file": "contracts/dead_code_test3.scilla",
+        "line": 10,
+        "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message":
+        "No transition in contract SimpleImplDead contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
     }
   ],
   "gas_remaining": "7999"
