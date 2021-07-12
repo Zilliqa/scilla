@@ -1,6 +1,9 @@
 #@ WARNING:
 #@ The following comment has been copied from "src/base/ParserFaults.messages".
 #@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
 # 
 # This file is part of scilla.
 # 
@@ -645,7 +648,7 @@ stmts_term: ID WITH
 ##
 # see tests/parser/bad/stmts_t-id-with.scilla
 
-This is an invalid statements term. Scilla expects to do something with the identifier.
+This is an invalid statements term. Scilla expects to do something with the identifier. Sometimes it's just a procedure call with parentheses where there should be none.
 
 stmts_term: MATCH SPID UNDERSCORE
 ##
@@ -823,7 +826,7 @@ stmts_term: THROW SEMICOLON WITH
 # to understand this do not look at the tokens 'THROW SEMICOLON WITH'
 # instead look at the stack, these are merely tokens in a way associated
 
-What follows the statement was unexpected, for example possibly a statement or termination is expected.
+What follows the statement was unexpected, for example, possibly a statement or termination is expected, or there is an extra semicolon before this line.
 
 stmts_term: THROW WITH
 ##
