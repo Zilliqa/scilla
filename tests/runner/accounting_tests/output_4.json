@@ -1,0 +1,33 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7892",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "StoreString",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "params": [ { "vname": "s", "type": "String", "value": "Hello" } ]
+    },
+    {
+      "_tag": "StoreString",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "params": [ { "vname": "s", "type": "String", "value": "World" } ]
+    },
+    {
+      "_tag": "Finalize_Test_Send_2",
+      "_amount": "0",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
+      "params": []
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "30" },
+    { "vname": "test_string_1", "type": "String", "value": "Hello" },
+    { "vname": "test_string_2", "type": "String", "value": "World" },
+    { "vname": "outgoing_amount", "type": "Uint128", "value": "10" },
+    { "vname": "max_outgoing_msgs", "type": "Uint128", "value": "3" }
+  ],
+  "events": []
+}

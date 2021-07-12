@@ -106,7 +106,7 @@ transition Finalize_Test_Send_1()
   Finalize_Test_Send_Helper_2_Msgs x
 end
 
-(* Test that a send with multiple messages result in messages being processed in the order the messages are added to the argument list *)
+(* Test that a send with multiple messages result in messages being processed in the order that the messages appear in in the argument list *)
 transition Test_Send_2()
   AssertReset;
   s1 <- test_string_1;
@@ -114,13 +114,13 @@ transition Test_Send_2()
            _tag : "StoreString";
            _amount : Uint128 0;
            s : s1};
-  msgs1 = one_msg msg1;
   s2 <- test_string_2;
   msg2 = { _recipient : support_contract;
            _tag : "StoreString";
            _amount : Uint128 0;
            s : s2};
-  msgs = Cons { Message } msg2 msgs1;
+  msgs_tmp = one_msg msg2;
+  msgs = Cons { Message } msg1 msgs_tmp;
   send msgs;
   msg_final = { _recipient : _this_address;
                 _tag : "Finalize_Test_Send_2";
