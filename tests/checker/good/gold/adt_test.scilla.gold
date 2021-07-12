@@ -75,7 +75,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library ADT: TestType1",
+      "warning_message": "Unused library ADT: TestType1",
       "start_location": {
         "file": "checker/good/adt_test.scilla",
         "line": 8,
@@ -85,7 +85,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library ADT: TestType2",
+      "warning_message": "Unused library ADT: TestType2",
       "start_location": {
         "file": "checker/good/adt_test.scilla",
         "line": 12,
@@ -95,7 +95,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library ADT: TestType3",
+      "warning_message": "Unused library ADT: TestType3",
       "start_location": {
         "file": "checker/good/adt_test.scilla",
         "line": 16,

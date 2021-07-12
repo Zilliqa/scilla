@@ -99,8 +99,8 @@
       "warning_message": "Unused let expression: x_",
       "start_location": {
         "file": "contracts/dead_code_test4.scilla",
-        "line": 28,
-        "column": 11
+        "line": 29,
+        "column": 9
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

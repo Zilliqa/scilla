@@ -63,7 +63,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: bar1",
+      "warning_message": "Unused library value: bar1",
       "start_location": {
         "file": "checker/good/blowup_2.scilla",
         "line": 8,
@@ -73,7 +73,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: bar10",
+      "warning_message": "Unused library value: bar10",
       "start_location": {
         "file": "checker/good/blowup_2.scilla",
         "line": 18,
@@ -93,7 +93,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: msg",
+      "warning_message": "Unused transition parameter: msg",
       "start_location": {
         "file": "checker/good/blowup_2.scilla",
         "line": 22,

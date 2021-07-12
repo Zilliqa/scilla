@@ -198,7 +198,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: one_msg",
+      "warning_message": "Unused library value: one_msg",
       "start_location": {
         "file": "contracts/bookstore.scilla",
         "line": 23,

@@ -211,7 +211,7 @@
     },
     {
       "warning_message":
-        "Unused Library value: mk_contract_initialized_event",
+        "Unused library value: mk_contract_initialized_event",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 11,
@@ -221,7 +221,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: f",
+      "warning_message": "Unused library value: f",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
         "line": 75,

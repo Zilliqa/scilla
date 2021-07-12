@@ -80,7 +80,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library ADT: MyTyp",
+      "warning_message": "Unused library ADT: MyTyp",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
         "line": 7,

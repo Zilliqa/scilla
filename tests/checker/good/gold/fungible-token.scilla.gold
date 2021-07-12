@@ -109,7 +109,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: one",
+      "warning_message": "Unused library value: one",
       "start_location": {
         "file": "contracts/fungible-token.scilla",
         "line": 10,

@@ -215,7 +215,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: zeroUint64",
+      "warning_message": "Unused library value: zeroUint64",
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 6,
@@ -225,7 +225,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: zeroByStr32",
+      "warning_message": "Unused library value: zeroByStr32",
       "start_location": {
         "file": "contracts/ud-registry.scilla",
         "line": 8,

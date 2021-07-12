@@ -25,7 +25,9 @@ transition dummy2()
   x <- z2;
 
   (* The first let expression to x is dead *)
-  y = let x_ = Uint32 1 in let x_ = x in x_;
+  y = 
+    let x_ = Uint32 1 in 
+    let x_ = x in x_;
   e = {_eventname : "Foo"; x : y};
   event e
 end

@@ -74,7 +74,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: fst_f",
+      "warning_message": "Unused library value: fst_f",
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 12,
@@ -84,7 +84,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: snd_f",
+      "warning_message": "Unused library value: snd_f",
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 13,

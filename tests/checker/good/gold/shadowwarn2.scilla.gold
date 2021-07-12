@@ -92,7 +92,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: p2",
+      "warning_message": "Unused transition parameter: p2",
       "start_location": {
         "file": "checker/good/shadowwarn2.scilla",
         "line": 8,

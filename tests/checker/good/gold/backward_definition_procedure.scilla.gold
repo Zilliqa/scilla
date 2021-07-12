@@ -76,7 +76,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: arg",
+      "warning_message": "Unused procedure parameter: arg",
       "start_location": {
         "file": "checker/good/backward_definition_procedure.scilla",
         "line": 20,

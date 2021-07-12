@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: f",
+      "warning_message": "Unused library value: f",
       "start_location": {
         "file": "checker/good/shadowwarn3.scilla",
         "line": 9,

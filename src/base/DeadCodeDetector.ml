@@ -1,12 +1,12 @@
 (*
 Checks for unused
-- Procedures and their parameters
-- Mutable Fields
-- Immutable contract parameters
-- Pattern-matching binders
-- Library functions (and their parameters) and types
-- Let bindings
-- Library imports
+* Procedures and their parameters
+* Mutable Fields
+* Immutable contract parameters
+* Pattern-matching binders
+* Library functions (and their parameters) and types
+* Let bindings
+* Library imports
 *)
 
 open Core_kernel
@@ -308,7 +308,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   freevars'
               in
               if not @@ SCIdentifier.is_mem_id i freevars' then
-                warn "Unused Library value: " i ER.get_loc;
+                warn "Unused library value: " i ER.get_loc;
               let fv, tyl = expr_iter lexp in
               let res_fv = dedup_id_list @@ fv @ freevars'_no_i in
               let res_adts =
@@ -329,7 +329,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 not
                 @@ List.exists adts' ~f:(fun adt ->
                        SCIdentifier.Name.equal (SCIdentifier.get_id i) adt)
-              then warn "Unused Library ADT: " i ER.get_loc;
+              then warn "Unused library ADT: " i ER.get_loc;
               (freevars', adts'_no_i))
       | [] -> (freevars, adts)
     in
@@ -355,7 +355,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           (******** Checking for dead component parameters ********)
           List.iter comp.comp_params ~f:(fun (cparam, _) ->
               if not @@ SCIdentifier.is_mem_id cparam lv then
-                warn "Unused component parameter: " cparam ER.get_loc);
+                match comp.comp_type with
+                | CompTrans ->
+                    warn "Unused transition parameter: " cparam ER.get_loc
+                | CompProc ->
+                    warn "Unused procedure parameter: " cparam ER.get_loc);
           (* Take out the type of bound parameters*)
           let param_adts =
             user_types_in_adt @@ List.map comp.comp_params ~f:snd

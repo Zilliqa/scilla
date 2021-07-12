@@ -60,7 +60,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: test_bot",
+      "warning_message": "Unused library value: test_bot",
       "start_location": {
         "file": "checker/good/libdiamond2.scilla",
         "line": 8,

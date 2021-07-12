@@ -197,7 +197,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused component parameter: amount",
+      "warning_message": "Unused transition parameter: amount",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 317,
@@ -207,7 +207,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: recipient",
+      "warning_message": "Unused transition parameter: recipient",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 316,
@@ -217,7 +217,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: sender",
+      "warning_message": "Unused transition parameter: sender",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 315,
@@ -227,7 +227,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: amount",
+      "warning_message": "Unused transition parameter: amount",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 308,
@@ -237,7 +237,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: recipient",
+      "warning_message": "Unused transition parameter: recipient",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 307,
@@ -247,7 +247,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: sender",
+      "warning_message": "Unused transition parameter: sender",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 306,
@@ -257,7 +257,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: amount",
+      "warning_message": "Unused transition parameter: amount",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 299,
@@ -267,7 +267,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: recipient",
+      "warning_message": "Unused transition parameter: recipient",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 298,
@@ -277,7 +277,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: sender",
+      "warning_message": "Unused transition parameter: sender",
       "start_location": {
         "file": "contracts/simple-dex-remote-reads.scilla",
         "line": 297,

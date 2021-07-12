@@ -64,7 +64,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library ADT: TestType",
+      "warning_message": "Unused library ADT: TestType",
       "start_location": {
         "file": "contracts/map_key_test.scilla",
         "line": 5,

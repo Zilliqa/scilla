@@ -78,7 +78,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: foo",
+      "warning_message": "Unused library value: foo",
       "start_location": {
         "file": "checker/good/libchain1.scilla",
         "line": 7,

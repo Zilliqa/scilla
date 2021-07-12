@@ -184,7 +184,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: mk_transaction_signed_event",
+      "warning_message": "Unused library value: mk_transaction_signed_event",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 16,
@@ -195,7 +195,7 @@
     },
     {
       "warning_message":
-        "Unused Library value: mk_candidate_owner_added_event",
+        "Unused library value: mk_candidate_owner_added_event",
       "start_location": {
         "file": "contracts/wallet.scilla",
         "line": 21,

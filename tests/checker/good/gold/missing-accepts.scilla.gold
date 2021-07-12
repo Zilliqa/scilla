@@ -56,7 +56,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused component parameter: cond",
+      "warning_message": "Unused transition parameter: cond",
       "start_location": {
         "file": "checker/good/missing-accepts.scilla",
         "line": 11,
@@ -66,7 +66,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: cond",
+      "warning_message": "Unused transition parameter: cond",
       "start_location": {
         "file": "checker/good/missing-accepts.scilla",
         "line": 6,

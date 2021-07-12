@@ -63,7 +63,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused component parameter: x",
+      "warning_message": "Unused transition parameter: x",
       "start_location": {
         "file": "checker/good/event_reordered_fields.scilla",
         "line": 7,

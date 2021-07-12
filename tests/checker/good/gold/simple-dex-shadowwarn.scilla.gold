@@ -144,7 +144,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: getAddressFromPair",
+      "warning_message": "Unused library value: getAddressFromPair",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 12,
@@ -154,7 +154,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: getValueFromPair",
+      "warning_message": "Unused library value: getValueFromPair",
       "start_location": {
         "file": "checker/good/simple-dex-shadowwarn.scilla",
         "line": 13,

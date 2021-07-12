@@ -175,7 +175,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused Library value: one_msg",
+      "warning_message": "Unused library value: one_msg",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 9,
@@ -185,7 +185,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: code_success",
+      "warning_message": "Unused library value: code_success",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 84,
@@ -195,7 +195,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: code_failure",
+      "warning_message": "Unused library value: code_failure",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",
         "line": 85,

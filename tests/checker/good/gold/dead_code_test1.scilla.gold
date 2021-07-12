@@ -271,7 +271,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: one_msg",
+      "warning_message": "Unused library value: one_msg",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 12,
@@ -281,7 +281,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library value: dead_code_var",
+      "warning_message": "Unused library value: dead_code_var",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 24,
@@ -291,7 +291,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused Library ADT: DeadType",
+      "warning_message": "Unused library ADT: DeadType",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 41,
@@ -351,7 +351,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: dead_param",
+      "warning_message": "Unused transition parameter: dead_param",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 138,
@@ -361,7 +361,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused component parameter: dead_pparam",
+      "warning_message": "Unused procedure parameter: dead_pparam",
       "start_location": {
         "file": "contracts/dead_code_test1.scilla",
         "line": 97,
