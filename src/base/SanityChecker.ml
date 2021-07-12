@@ -23,6 +23,7 @@ open Syntax
 open ErrorUtils
 open MonadUtil
 open ContractUtil.MessagePayload
+open DeadCodeDetector
 
 module ScillaSanityChecker
     (SR : Rep) (ER : sig
@@ -40,6 +41,7 @@ struct
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module TU = TypeUtilities
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
+  module DCD = DeadCodeDetector (SR) (ER)
   open SCIdentifier
   open SCSyntax
   open SCU
@@ -388,6 +390,7 @@ struct
     let%bind () = CheckShadowing.shadowing_libentries rlibs in
     let%bind () = forallM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind () = CheckShadowing.shadowing_cmod cmod in
+    DCD.dc_cmod cmod elibs;
     pure ()
 
   let lmod_sanity (lmod : lmodule) (rlibs : lib_entry list)

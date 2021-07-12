@@ -1,0 +1,20 @@
+scilla_version 0
+
+library SimpleImplDead
+
+
+contract SimpleImplDead()
+field test_pattern : Option ByStr20 = None {ByStr20}
+
+transition AddFunds(initiator: ByStr20)
+  accept;
+  test_var <- test_pattern;
+  match test_var with 
+  | Some dead_pattern => 
+    e = { _eventname : "Funds deposit "; funder : initiator };
+    event e
+  | None => 
+    e = { _eventname : "Funds deposit "; funder : initiator };
+    event e
+  end 
+end

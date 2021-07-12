@@ -80,6 +80,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library value: no_msg",
+      "start_location": {
+        "file": "contracts/zil-game.scilla",
+        "line": 16,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: ff",
+      "start_location": {
+        "file": "contracts/zil-game.scilla",
+        "line": 228,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: tt",
+      "start_location": {
+        "file": "contracts/zil-game.scilla",
+        "line": 168,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract ZilGame contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

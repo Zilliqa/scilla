@@ -63,6 +63,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused transition parameter: x",
+      "start_location": {
+        "file": "checker/good/event_reordered_fields.scilla",
+        "line": 7,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: e1",
+      "start_location": {
+        "file": "checker/good/event_reordered_fields.scilla",
+        "line": 8,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: e2",
+      "start_location": {
+        "file": "checker/good/event_reordered_fields.scilla",
+        "line": 9,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract MyContract contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

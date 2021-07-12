@@ -245,6 +245,147 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: to_uint_res",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 62,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: to_bystr_res",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 57,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_to_string",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 100,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_to_ascii",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 102,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: test_strrev",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 104,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_6",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 85,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_5",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 83,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_4",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 81,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_3",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 79,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_2",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 77,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: map_res_1",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 75,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: eq_test_res",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: concat_res",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 68,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_map",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 73,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",

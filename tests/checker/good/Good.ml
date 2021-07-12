@@ -82,6 +82,10 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "address_eq_test.scilla";
       "address_list_traversal.scilla";
       "polymorphic_address.scilla";
+      "dead_code_test1.scilla";
+      "dead_code_test2.scilla";
+      "dead_code_test3.scilla";
+      "dead_code_test4.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
     ]

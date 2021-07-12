@@ -55,6 +55,26 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused contract parameter: p1",
+      "start_location": {
+        "file": "checker/good/shadowwarn1.scilla",
+        "line": 3,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: p1",
+      "start_location": {
+        "file": "checker/good/shadowwarn1.scilla",
+        "line": 5,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Name p1 shadows a contract parameter.",
       "start_location": {
         "file": "checker/good/shadowwarn1.scilla",

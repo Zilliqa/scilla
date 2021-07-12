@@ -97,6 +97,48 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: gmap",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 51,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: plist",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 102,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: llist",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 92,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: x",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 113,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "x is a new variable. It does not reassign the previously defined variable.",
       "start_location": {

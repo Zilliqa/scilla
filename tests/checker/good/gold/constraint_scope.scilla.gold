@@ -70,6 +70,56 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused field: f",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 32,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library ADT: MyTyp",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 7,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused let expression: lib_val",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 24,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused let expression: param_val",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 26,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused let expression: f",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 28,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Name param_val shadows a contract parameter.",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",

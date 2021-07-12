@@ -1,25 +1,26 @@
 {
   "cashflow_tags": {
-    "State variables": [ { "field": "owner", "tag": "NoInfo" } ],
+    "State variables": [
+      { "field": "z1", "tag": "NoInfo" },
+      { "field": "z2", "tag": "NoInfo" }
+    ],
     "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Blowup",
-    "params": [ { "vname": "owner", "type": "ByStr20" } ],
-    "fields": [],
+    "vname": "Dead4",
+    "params": [],
+    "fields": [
+      { "vname": "z1", "type": "Uint32", "depth": 0 },
+      { "vname": "z2", "type": "Uint32", "depth": 0 }
+    ],
     "transitions": [
-      {
-        "vname": "setHello",
-        "params": [ { "vname": "msg", "type": "String" } ]
-      }
+      { "vname": "dummy1", "params": [ { "vname": "b", "type": "Bool" } ] },
+      { "vname": "dummy2", "params": [] }
     ],
     "procedures": [],
     "events": [
-      {
-        "vname": "setHello()",
-        "params": [ { "vname": "code", "type": "Int32" } ]
-      }
+      { "vname": "Foo", "params": [ { "vname": "x", "type": "Uint32" } ] }
     ],
     "ADTs": [
       {
@@ -63,53 +64,76 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library value: bar1",
+      "warning_message":
+        "Read only field, consider making it a contract parameter: z2",
       "start_location": {
-        "file": "checker/good/blowup_1.scilla",
-        "line": 8,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused library value: bar9",
-      "start_location": {
-        "file": "checker/good/blowup_1.scilla",
-        "line": 17,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused contract parameter: owner",
-      "start_location": {
-        "file": "checker/good/blowup_1.scilla",
-        "line": 19,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused transition parameter: msg",
-      "start_location": {
-        "file": "checker/good/blowup_1.scilla",
-        "line": 21,
-        "column": 22
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 25,
+        "column": 8
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
       "warning_message":
-        "No transition in contract Blowup contains an accept statement\n",
+        "Read only field, consider making it a contract parameter: z1",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 24,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: x",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 24,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused let expression: x_",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 29,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: x",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 15,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "x is a new variable. It does not reassign the previously defined variable.",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 15,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message":
+        "No transition in contract Dead4 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
-  "gas_remaining": "5951"
+  "gas_remaining": "7999"
 }
 

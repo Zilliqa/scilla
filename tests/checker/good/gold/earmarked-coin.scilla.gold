@@ -130,7 +130,18 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Unused imported library: BoolUtils",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 13,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 
