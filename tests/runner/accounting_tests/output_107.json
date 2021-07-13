@@ -1,21 +1,21 @@
 {
-  "gas_remaining": "7922",
+  "gas_remaining": "7932",
   "errors": [
     {
       "error_message":
-        "Exception thrown: (Message [(_exception : (String \"Test_Send failed\")) ; (test_no : (Uint128 1)) ; (expected : (List (String \"World\"), (String \"Hello\"), (Nil))) ; (actual : (List (String \"Hello\"), (String \"World\"), (Nil)))])",
+        "Exception thrown: (Message [(_exception : (String \"Unexpected balance\")) ; (expected : (Uint128 30)) ; (actual : (Uint128 20))])",
       "start_location": {
         "file": "tests/contracts/accounting_tests.scilla",
-        "line": 110,
+        "line": 208,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Raised from Finalize_Test_Send_1",
+      "error_message": "Raised from Finalize_Test_Send_6_7",
       "start_location": {
         "file": "tests/contracts/accounting_tests.scilla",
-        "line": 115,
+        "line": 302,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

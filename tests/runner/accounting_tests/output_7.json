@@ -1,8 +1,15 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7942",
+  "gas_remaining": "7943",
   "_accepted": "false",
-  "messages": [],
+  "messages": [
+    {
+      "_tag": "StoreString",
+      "_amount": "0",
+      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "params": [ { "vname": "s", "type": "String", "value": "Hello" } ]
+    }
+  ],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "30" },
     { "vname": "test_string_1", "type": "String", "value": "Hello" },

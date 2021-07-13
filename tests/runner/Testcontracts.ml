@@ -471,7 +471,7 @@ let contract_tests env =
                 "type_casts"
                 >::: build_contract_tests env "type_casts" succ_code 1 37 [];
                 "accounting_tests"
-                >::: build_contract_tests env "accounting_tests" succ_code 1 4 [];
+                >::: build_contract_tests env "accounting_tests" succ_code 1 13 [];
                 "accounting_tests_support"
                 >::: build_contract_tests env "accounting_tests_support" succ_code 1 3 [];
                 "addfunds_proxy"
@@ -576,7 +576,7 @@ let contract_tests env =
                      "address_list_as_cparam" "init_address_type"
                      ~is_library:false ~ipc_mode:true;
                 "accounting_tests"
-                >::: build_contract_tests env "accounting_tests" fail_code 100 105 [];
+                >::: build_contract_tests env "accounting_tests" fail_code 100 108 [];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

@@ -27,6 +27,7 @@
     ],
     "transitions": [
       { "vname": "Reset", "params": [] },
+      { "vname": "Test_Insufficient_Balance", "params": [] },
       { "vname": "Test_Send_1", "params": [] },
       { "vname": "Finalize_Test_Send_1", "params": [] },
       { "vname": "Test_Send_2", "params": [] },
@@ -39,12 +40,12 @@
       { "vname": "Test_Send_6", "params": [] },
       { "vname": "Test_Send_7", "params": [] },
       {
-        "vname": "Finalize_Send_6_7",
+        "vname": "Finalize_Test_Send_6_7",
         "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
       },
       { "vname": "Test_Send_8", "params": [] },
       {
-        "vname": "Finalize_Send_8_9",
+        "vname": "Finalize_Test_Send_8_9",
         "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
       },
       { "vname": "Test_Send_9", "params": [] }

@@ -901,31 +901,6 @@ let prepare_for_message contr entries =
   let%bind tenv, pending_dyn_checks = check_message_entries tparams other in
   pure ((tenv, incoming_amount, tprocedures, tbody, tname), pending_dyn_checks)
 
-(* Subtract the amounts to be transferred *)
-let post_process_msgs cstate outs =
-  (* Evey outgoing message should carry an "_amount" tag *)
-  let%bind amounts =
-    mapM outs ~f:(fun l ->
-        match l with
-        | Msg es -> fromR @@ MessagePayload.get_amount es
-        | _ -> fail0 @@ sprintf "Not a message literal: %s." (pp_literal l))
-  in
-  let open Uint128 in
-  let to_be_transferred =
-    List.fold_left amounts ~init:zero ~f:(fun z a -> add z a)
-  in
-  let open ContractState in
-  if compare cstate.balance to_be_transferred < 0 then
-    fail0
-    @@ sprintf
-         "The balance is too low (%s) to transfer all the funds in the \
-          messages (%s)"
-         (to_string cstate.balance)
-         (to_string to_be_transferred)
-  else
-    let balance = sub cstate.balance to_be_transferred in
-    pure { cstate with balance }
-
 (* 
 Handle message:
 * tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
@@ -970,8 +945,6 @@ let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
   in
   let new_msgs = conf'.emitted in
   let new_events = conf'.events in
-  (* Make sure that we aren't too generous and subract funds *)
-  let%bind cstate'' = post_process_msgs cstate' new_msgs in
 
   (*Return new contract state, messages and events *)
-  pure (cstate'', new_msgs, new_events, conf'.accepted)
+  pure (cstate', new_msgs, new_events, conf'.accepted)

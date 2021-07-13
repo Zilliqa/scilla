@@ -402,7 +402,7 @@ module Configuration = struct
                  String.compare s t)
         in
         if tag_found && amount_found && recipient_found && uniq_entries then
-          pure m'
+          pure ()
         else
           fail0
           @@ sprintf
@@ -416,10 +416,31 @@ module Configuration = struct
 
   let send_messages conf ms =
     let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
-    let%bind ls = mapM ~f:validate_outgoing_message ls' in
+    let%bind () = forallM ~f:validate_outgoing_message ls' in
+    let%bind out_funds = foldM ls' ~init:Uint128.zero ~f:(fun run_total msg_lit ->
+        match msg_lit with
+        | SLiteral.Msg msg ->
+            let%bind amount = fromR @@ MessagePayload.get_amount msg in
+            pure (Uint128.(run_total + amount))
+        | _ ->
+            fail0
+            @@ sprintf "Literal %s verified as a message, but is not a message literal."
+              (pp_literal msg_lit))
+    in
     let old_emitted = conf.emitted in
-    let emitted = old_emitted @ ls in
-    pure { conf with emitted }
+    let emitted = old_emitted @ ls' in
+    let old_balance = conf.balance in
+    let%bind balance =
+      if Uint128.compare old_balance out_funds < 0 then
+        fail0
+        @@ sprintf
+          "The balance (%s) is too low to transfer all the funds in the \
+           messages (%s)"
+          (Uint128.to_string old_balance)
+          (Uint128.to_string out_funds)
+      else pure @@ Uint128.(old_balance - out_funds)
+    in
+    pure { conf with emitted; balance }
 
   let validate_event m' =
     let open EvalLiteral in
