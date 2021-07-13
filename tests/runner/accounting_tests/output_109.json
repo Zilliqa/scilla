@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7927",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Main contract read unexpected support contract balance\")) ; (expected : (Uint128 52)) ; (actual : (Uint128 42))])",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 221,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from Finalize_Test_Send_8_9",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 343,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
