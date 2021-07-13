@@ -192,7 +192,7 @@ type runner_cli = {
   cf_token_fields : string list;
   p_contract_info : bool;
   p_type_info : bool;
-  silence_warnings : bool;
+  disable_analy_warn : bool;
 }
 
 let parse_cli args ~exe_name =
@@ -207,7 +207,7 @@ let parse_cli args ~exe_name =
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
   let r_validate_json = ref true in
-  let r_silence_warnings = ref false in
+  let r_disable_analy_warn = ref false in
 
   let speclist =
     [
@@ -267,7 +267,7 @@ let parse_cli args ~exe_name =
         Arg.Unit (fun () -> r_validate_json := false),
         "Disable validation of input JSONs" );
       ( "-disable-developer-warnings",
-        Arg.Unit (fun () -> r_silence_warnings := true),
+        Arg.Unit (fun () -> r_disable_analy_warn := true),
         "Disable analyses' warnings" );
     ]
   in
@@ -311,5 +311,5 @@ let parse_cli args ~exe_name =
     cf_token_fields = !r_cf_token_fields;
     init_file = !r_init_file;
     p_type_info = !r_type_info;
-    silence_warnings = !r_silence_warnings;
+    disable_analy_warn = !r_disable_analy_warn;
   }

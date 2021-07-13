@@ -262,7 +262,7 @@ let check_lmodule cli =
       @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
     in
     let%bind () =
-      if cli.silence_warnings then pure ()
+      if cli.disable_analy_warn then pure ()
       else
         Result.ignore_m
         @@ wrap_error_with_gas remaining_gas
@@ -336,7 +336,7 @@ let check_cmodule cli =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
     let%bind () =
-      if cli.silence_warnings then pure ()
+      if cli.disable_analy_warn then pure ()
       else
         wrap_error_with_gas remaining_gas
         @@ check_sanity typed_cmod typed_rlibs typed_elibs
