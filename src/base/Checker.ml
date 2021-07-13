@@ -262,9 +262,11 @@ let check_lmodule cli =
       @@ check_patterns_lmodule typed_lmod typed_rlibs typed_elibs
     in
     let%bind () =
-      Result.ignore_m
-      @@ wrap_error_with_gas remaining_gas
-      @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
+      if cli.disable_analy_warn then pure ()
+      else
+        Result.ignore_m
+        @@ wrap_error_with_gas remaining_gas
+        @@ check_sanity_lmod typed_lmod typed_rlibs typed_elibs
     in
     let type_info =
       if cli.p_type_info then TI.type_info_lmod typed_lmod else []
@@ -334,8 +336,10 @@ let check_cmodule cli =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
     let%bind () =
-      wrap_error_with_gas remaining_gas
-      @@ check_sanity typed_cmod typed_rlibs typed_elibs
+      if cli.disable_analy_warn then pure ()
+      else
+        wrap_error_with_gas remaining_gas
+        @@ check_sanity typed_cmod typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod
