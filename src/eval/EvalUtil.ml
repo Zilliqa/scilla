@@ -199,38 +199,13 @@ module Configuration = struct
                (EvalName.as_error_string i))
             (ER.get_loc (get_rep k))
 
-  let remote_load st caddr k =
+  let remote_load caddr k =
     let%bind fval =
       fromR
       @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
     in
     match fval with
-    | Some v, _ ->
-        (* _sender._balance is a special case if funds have been accepted. _amount must be deducted. *)
-        let%bind sender_addr = lookup_sender_addr st in
-        if
-          st.accepted
-          && EvalLiteral.Bystrx.equal sender_addr caddr
-          && EvalName.equal (get_id k) balance_label
-        then
-          let%bind amount_lit =
-            fromR
-            @@ lookup st
-                 (mk_loc_id (label_name_of_string MessagePayload.amount_label))
-          in
-          match (v, amount_lit) with
-          | UintLit (Uint128L sender_balance), UintLit (Uint128L amount)
-            when Uint128.compare sender_balance amount >= 0 ->
-              pure
-              @@ EvalLiteral.UintLit
-                   (Uint128L Uint128.(sender_balance - amount))
-          | _ ->
-              fail0
-              @@ sprintf
-                   "Unexpected sender balance or amount literal: sender \
-                    balance = %s, amount = %s"
-                   (pp_literal v) (pp_literal amount_lit)
-        else pure v
+    | Some v, _ -> pure v
     | _ ->
         fail1
           (Printf.sprintf "Error loading remote field %s at address %s"
@@ -337,7 +312,7 @@ module Configuration = struct
       (* Check that sender balance is sufficient *)
       let%bind sender_addr = lookup_sender_addr st in
       let%bind sender_balance_l =
-        remote_load st sender_addr (mk_loc_id balance_label)
+        remote_load sender_addr (mk_loc_id balance_label)
       in
       let incoming' = st.incoming_funds in
       match sender_balance_l with

@@ -5,8 +5,8 @@
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "100" },
-    { "vname": "sender_balance_post", "type": "Uint128", "value": "999900" },
-    { "vname": "sender_balance_mid", "type": "Uint128", "value": "999900" },
+    { "vname": "sender_balance_post", "type": "Uint128", "value": "1000000" },
+    { "vname": "sender_balance_mid", "type": "Uint128", "value": "1000000" },
     { "vname": "sender_balance_pre", "type": "Uint128", "value": "1000000" },
     {
       "vname": "assign_test_1",

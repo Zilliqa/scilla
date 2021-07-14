@@ -35,9 +35,28 @@ procedure CheckBalance(expected_balance : Uint128)
   end
 end
 
+procedure CheckSenderBalance(expected_balance : Uint128)
+  cur_balance <-& _sender._balance;
+  is_expected = builtin eq expected_balance cur_balance;
+  match is_expected with
+  | True => (* OK *)
+  | False =>
+    e = { _exception : "Unexpected sender balance read by support contract";
+          expected : expected_balance;
+          actual : cur_balance };
+    throw e
+  end
+end
+
 transition AcceptAndCheckBalance()
   init_bal <- _balance;
   accept;
   expected_balance = builtin add init_bal _amount;
   CheckBalance expected_balance
+end
+
+transition AcceptAndCheckSenderBalance()
+  init_bal <- & _sender._balance;
+  accept;
+  CheckSenderBalance init_bal
 end

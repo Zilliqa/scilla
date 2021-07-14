@@ -48,7 +48,8 @@
       {
         "vname": "Finalize_Test_Send_8_9",
         "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
-      }
+      },
+      { "vname": "Test_Send_10", "params": [] }
     ],
     "procedures": [
       { "vname": "AssertReset", "params": [] },

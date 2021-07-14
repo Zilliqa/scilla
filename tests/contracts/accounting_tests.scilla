@@ -343,3 +343,14 @@ end
 transition Finalize_Test_Send_8_9(expected_balance : Uint128)
   CheckSupportBalance expected_balance
 end
+
+(* Check that acceptance does not affect sender's balance *)
+transition Test_Send_10()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end

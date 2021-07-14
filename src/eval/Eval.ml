@@ -370,7 +370,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l = Configuration.remote_load conf s' r in
+              let%bind l = Configuration.remote_load s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ -> fail0 "Expected remote load address to be ByStr20 value")

@@ -20,11 +20,16 @@
       },
       { "vname": "Accept", "params": [] },
       { "vname": "NonAccept", "params": [] },
-      { "vname": "AcceptAndCheckBalance", "params": [] }
+      { "vname": "AcceptAndCheckBalance", "params": [] },
+      { "vname": "AcceptAndCheckSenderBalance", "params": [] }
     ],
     "procedures": [
       {
         "vname": "CheckBalance",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      {
+        "vname": "CheckSenderBalance",
         "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
       }
     ],
