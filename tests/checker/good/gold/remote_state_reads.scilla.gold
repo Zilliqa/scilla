@@ -246,6 +246,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused field: sender_balance_post",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 53,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: sender_balance_mid",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 52,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field: sender_balance_pre",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 51,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused field: assign_test_7",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
@@ -311,36 +341,6 @@
         "file": "contracts/remote_state_reads.scilla",
         "line": 25,
         "column": 7
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Write only field: sender_balance_pre",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 167,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Write only field: sender_balance_post",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 175,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Write only field: sender_balance_mid",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 171,
-        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3

@@ -110,7 +110,62 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_string_2",
+      "start_location": {
+        "file": "contracts/accounting_tests.scilla",
+        "line": 83,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: test_string_1",
+      "start_location": {
+        "file": "contracts/accounting_tests.scilla",
+        "line": 76,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: outgoing_amount",
+      "start_location": {
+        "file": "contracts/accounting_tests.scilla",
+        "line": 45,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: max_outgoing_msgs",
+      "start_location": {
+        "file": "contracts/accounting_tests.scilla",
+        "line": 46,
+        "column": 15
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: s1",
+      "start_location": {
+        "file": "contracts/accounting_tests.scilla",
+        "line": 152,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7916"
 }
 
