@@ -179,8 +179,7 @@
       },
       { "vname": "OutgoingMsgTest", "params": [] },
       { "vname": "ExceptionTest", "params": [] },
-      { "vname": "AssignTest", "params": [] },
-      { "vname": "SenderBalanceTest", "params": [] }
+      { "vname": "AssignTest", "params": [] }
     ],
     "procedures": [],
     "events": [
@@ -248,17 +247,9 @@
   "warnings": [
     {
       "warning_message":
-        "transition SenderBalanceTest has a potential code path with duplicate accept statements:\n  Accept at contracts/remote_state_reads.scilla:169:3\n  Accept at contracts/remote_state_reads.scilla:173:3\n",
-      "start_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 169,
-        "column": 3
-      },
-      "end_location": {
-        "file": "contracts/remote_state_reads.scilla",
-        "line": 173,
-        "column": 9
-      },
+        "No transition in contract RRContract contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],

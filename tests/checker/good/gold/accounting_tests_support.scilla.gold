@@ -19,8 +19,10 @@
         "params": [ { "vname": "s", "type": "String" } ]
       },
       { "vname": "Accept", "params": [] },
+      { "vname": "AcceptTwice", "params": [] },
       { "vname": "NonAccept", "params": [] },
       { "vname": "AcceptAndCheckBalance", "params": [] },
+      { "vname": "AcceptTwiceAndCheckBalance", "params": [] },
       { "vname": "AcceptAndCheckSenderBalance", "params": [] }
     ],
     "procedures": [
@@ -74,7 +76,38 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message":
+        "transition AcceptTwiceAndCheckBalance has a potential code path with duplicate accept statements:\n  Accept at contracts/accounting_tests_support.scilla:65:3\n  Accept at contracts/accounting_tests_support.scilla:68:3\n",
+      "start_location": {
+        "file": "contracts/accounting_tests_support.scilla",
+        "line": 65,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/accounting_tests_support.scilla",
+        "line": 68,
+        "column": 9
+      },
+      "warning_id": 1
+    },
+    {
+      "warning_message":
+        "transition AcceptTwice has a potential code path with duplicate accept statements:\n  Accept at contracts/accounting_tests_support.scilla:23:3\n  Accept at contracts/accounting_tests_support.scilla:24:3\n",
+      "start_location": {
+        "file": "contracts/accounting_tests_support.scilla",
+        "line": 23,
+        "column": 3
+      },
+      "end_location": {
+        "file": "contracts/accounting_tests_support.scilla",
+        "line": 24,
+        "column": 9
+      },
+      "warning_id": 1
+    }
+  ],
   "gas_remaining": "7999"
 }
 

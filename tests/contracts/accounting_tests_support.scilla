@@ -19,6 +19,11 @@ transition Accept()
   accept
 end
 
+transition AcceptTwice()
+  accept;
+  accept
+end
+
 transition NonAccept()
 end
 
@@ -55,8 +60,18 @@ transition AcceptAndCheckBalance()
   CheckBalance expected_balance
 end
 
+transition AcceptTwiceAndCheckBalance()
+  init_bal <- _balance;
+  accept;
+  expected_balance = builtin add init_bal _amount;
+  CheckBalance expected_balance;
+  accept;
+  CheckBalance expected_balance
+end
+
 transition AcceptAndCheckSenderBalance()
   init_bal <- & _sender._balance;
   accept;
   CheckSenderBalance init_bal
 end
+

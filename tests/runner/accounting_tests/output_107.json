@@ -12,10 +12,10 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Raised from Finalize_Test_Send_6_7",
+      "error_message": "Raised from CheckSenderBalance",
       "start_location": {
         "file": "tests/contracts/accounting_tests.scilla",
-        "line": 302,
+        "line": 212,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

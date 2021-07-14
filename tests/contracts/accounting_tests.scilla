@@ -209,6 +209,10 @@ procedure CheckBalance(expected_balance : Uint128)
   end
 end
 
+transition CheckSenderBalance(expected_balance : Uint128)
+  CheckBalance expected_balance
+end
+
 procedure CheckSupportBalance(expected_balance : Uint128)
   cur_balance <- & support_contract._balance;
   is_expected = builtin eq expected_balance cur_balance;
@@ -220,6 +224,10 @@ procedure CheckSupportBalance(expected_balance : Uint128)
           actual : cur_balance };
     throw e
   end
+end
+
+transition CheckRecipientBalance(expected_balance : Uint128)
+  CheckSupportBalance expected_balance
 end
 
 (* Check that the current contract's balance is decreased when sending funds in single messages *)
@@ -274,7 +282,7 @@ transition Test_Send_6()
   send msgs1;
   expected_balance = builtin sub bal amount;
   msg2 = { _recipient : _this_address;
-           _tag : "Finalize_Test_Send_6_7";
+           _tag : "CheckSenderBalance";
            _amount : Uint128 0;
            expected_balance : expected_balance };
   msgs2 = one_msg msg2;
@@ -292,15 +300,11 @@ transition Test_Send_7()
   msgs1 = one_msg msg1;
   send msgs1;
   msg2 = { _recipient : _this_address;
-           _tag : "Finalize_Test_Send_6_7";
+           _tag : "CheckSenderBalance";
            _amount : Uint128 0;
            expected_balance : bal };
   msgs2 = one_msg msg2;
   send msgs2
-end
-
-transition Finalize_Test_Send_6_7(expected_balance : Uint128)
-  CheckBalance expected_balance
 end
 
 (* Check that the recipient's balance isn't updated until the funds are accepted *)
@@ -315,7 +319,7 @@ transition Test_Send_8()
   support_bal <- & support_contract._balance;
   expected_balance = builtin add support_bal amount;
   msg2 = { _recipient : _this_address;
-           _tag : "Finalize_Test_Send_8_9";
+           _tag : "CheckRecipientBalance";
            _amount : Uint128 0;
            expected_balance : expected_balance };
   msgs2 = one_msg msg2;
@@ -333,15 +337,11 @@ transition Test_Send_9()
   send msgs1;
   support_bal <- & support_contract._balance;
   msg2 = { _recipient : _this_address;
-           _tag : "Finalize_Test_Send_8_9";
+           _tag : "CheckRecipientBalance";
            _amount : Uint128 0;
            expected_balance : support_bal };
   msgs2 = one_msg msg2;
   send msgs2
-end
-
-transition Finalize_Test_Send_8_9(expected_balance : Uint128)
-  CheckSupportBalance expected_balance
 end
 
 (* Check that acceptance does not affect sender's balance *)
@@ -353,4 +353,53 @@ transition Test_Send_10()
            _amount : amount};
   msgs = one_msg msg1;
   send msgs
+end
+
+(* Check that only the first accept affects the recipient's balance *)
+transition Test_Send_11()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end
+
+(* Check that only one of multiple accepts decrease the sender's balance *)
+transition Test_Send_12()
+  amount <- outgoing_amount;
+  bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  expected_balance = builtin sub bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that only one of multiple accepts increase the recipient's balance *)
+transition Test_Send_13()
+  (* Check that the recipient's balance isn't updated until the funds are accepted *)
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  support_bal <- & support_contract._balance;
+  expected_balance = builtin add support_bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckRecipientBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
 end

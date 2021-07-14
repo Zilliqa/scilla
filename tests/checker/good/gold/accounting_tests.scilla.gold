@@ -35,21 +35,24 @@
       { "vname": "Test_Send_3", "params": [] },
       { "vname": "Test_Send_3_Helper", "params": [] },
       { "vname": "Finalize_Test_Send_3", "params": [] },
+      {
+        "vname": "CheckSenderBalance",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      {
+        "vname": "CheckRecipientBalance",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
       { "vname": "Test_Send_4", "params": [] },
       { "vname": "Test_Send_5", "params": [] },
       { "vname": "Test_Send_6", "params": [] },
       { "vname": "Test_Send_7", "params": [] },
-      {
-        "vname": "Finalize_Test_Send_6_7",
-        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
-      },
       { "vname": "Test_Send_8", "params": [] },
       { "vname": "Test_Send_9", "params": [] },
-      {
-        "vname": "Finalize_Test_Send_8_9",
-        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
-      },
-      { "vname": "Test_Send_10", "params": [] }
+      { "vname": "Test_Send_10", "params": [] },
+      { "vname": "Test_Send_11", "params": [] },
+      { "vname": "Test_Send_12", "params": [] },
+      { "vname": "Test_Send_13", "params": [] }
     ],
     "procedures": [
       { "vname": "AssertReset", "params": [] },

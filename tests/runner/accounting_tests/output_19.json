@@ -1,20 +1,20 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7913",
+  "gas_remaining": "7925",
   "_accepted": "false",
   "messages": [
     {
-      "_tag": "NonAccept",
+      "_tag": "AcceptTwiceAndCheckBalance",
       "_amount": "10",
       "_recipient": "0xabfeccdc9012345678901234567890f777564323",
       "params": []
     },
     {
-      "_tag": "CheckRecipientBalance",
+      "_tag": "CheckSenderBalance",
       "_amount": "0",
       "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
       "params": [
-        { "vname": "expected_balance", "type": "Uint128", "value": "42" }
+        { "vname": "expected_balance", "type": "Uint128", "value": "20" }
       ]
     }
   ],
