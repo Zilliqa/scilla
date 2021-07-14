@@ -197,6 +197,96 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused transition parameter: amount",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 317,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: recipient",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 316,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: sender",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 315,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: amount",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 308,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: recipient",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 307,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: sender",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 306,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: amount",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 299,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: recipient",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 298,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: sender",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 297,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract SimpleExchange contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

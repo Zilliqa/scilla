@@ -40,6 +40,15 @@ dev:
 	@test -L bin || ln -s _build/install/default/bin .
 	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
+# Update src/base/ParserFaults.messages
+parser-messages:
+	menhir --list-errors src/base/ScillaParser.mly >src/base/NewParserFaultsStubs.messages
+	menhir --merge-errors src/base/ParserFaults.messages \
+		   --merge-errors src/base/NewParserFaultsStubs.messages \
+		   src/base/ScillaParser.mly  >src/base/NewParserFaults.messages
+	mv src/base/NewParserFaults.messages src/base/ParserFaults.messages
+	rm src/base/NewParserFaultsStubs.messages
+
 # Launch utop such that it finds the libraroes.
 utop: release
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop

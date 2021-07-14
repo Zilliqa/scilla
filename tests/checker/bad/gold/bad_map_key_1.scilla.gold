@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error, state number 97",
+      "error_message": "Ends in an error in state: 97.\n",
       "start_location": {
         "file": "checker/bad/bad_map_key_1.scilla",
         "line": 7,

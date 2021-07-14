@@ -50,6 +50,56 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported library: PairUtils",
+      "start_location": {
+        "file": "contracts/empty.scilla",
+        "line": 4,
+        "column": 50
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: NatUtils",
+      "start_location": {
+        "file": "contracts/empty.scilla",
+        "line": 4,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: ListUtils",
+      "start_location": {
+        "file": "contracts/empty.scilla",
+        "line": 4,
+        "column": 29
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: IntUtils",
+      "start_location": {
+        "file": "contracts/empty.scilla",
+        "line": 4,
+        "column": 19
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: BoolUtils",
+      "start_location": {
+        "file": "contracts/empty.scilla",
+        "line": 4,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Empty contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

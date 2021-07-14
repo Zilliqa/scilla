@@ -89,6 +89,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: res_mem",
+      "start_location": {
+        "file": "contracts/address_list_traversal.scilla",
+        "line": 42,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: res_list",
+      "start_location": {
+        "file": "contracts/address_list_traversal.scilla",
+        "line": 32,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract parameter: cparam",
+      "start_location": {
+        "file": "contracts/address_list_traversal.scilla",
+        "line": 19,
+        "column": 31
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract AddressListTraversal contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid statements term. Scilla expects to do something with the identifier.\n",
+        "This is an invalid statements term. Scilla expects to do something with the identifier. Sometimes it's just a procedure call with parentheses where there should be none.\n",
       "start_location": {
         "file": "base/parser/bad/stmts_t-cid-with.scilla",
         "line": 11,

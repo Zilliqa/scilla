@@ -175,6 +175,86 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused library value: one_msg",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 9,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: code_success",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 84,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: code_failure",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 85,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract parameter: symbol",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 100,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused contract parameter: name",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 99,
+        "column": 2
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: copy_operatorApproval",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 319,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: curr_otc",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 241,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused load statement to: currentTokenOwnerMap",
+      "start_location": {
+        "file": "contracts/nonfungible-token.scilla",
+        "line": 155,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/nonfungible-token.scilla",

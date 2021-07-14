@@ -80,6 +80,36 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: res_2",
+      "start_location": {
+        "file": "contracts/polymorphic_address.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: res_1",
+      "start_location": {
+        "file": "contracts/polymorphic_address.scilla",
+        "line": 20,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: ListUtils",
+      "start_location": {
+        "file": "contracts/polymorphic_address.scilla",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract AddressListTraversal contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },

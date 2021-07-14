@@ -74,6 +74,66 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused imported library: NatUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 28
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: PairUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 18
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: ListUtils",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 3,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: c",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 108,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: b",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 85,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: c",
+      "start_location": {
+        "file": "contracts/inplace-map.scilla",
+        "line": 86,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message":
         "No transition in contract Test contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
