@@ -475,7 +475,7 @@ let contract_tests env =
                        [];
                 "accounting_tests_support"
                 >::: build_contract_tests env "accounting_tests_support"
-                       succ_code 1 5 [];
+                       succ_code 1 6 [];
                 "addfunds_proxy"
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"
