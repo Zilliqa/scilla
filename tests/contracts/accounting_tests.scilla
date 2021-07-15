@@ -403,3 +403,14 @@ transition Test_Send_13()
   msgs2 = one_msg msg2;
   send msgs2
 end
+
+(* Check that it is possible to transfer all funds (this ensures that the sender's balance isn't deducted more than once) *)
+transition Test_Send_14()
+  AssertReset;
+  amount <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "Accept";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end
