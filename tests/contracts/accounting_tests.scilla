@@ -1,0 +1,416 @@
+scilla_version 0
+
+import ListUtils
+
+library Lib
+
+let one_msg : Message -> List Message =
+  fun (m : Message) =>
+    let mty = Nil { Message } in
+    Cons { Message } m mty
+
+let list_head_string = @list_head String
+let list_eq_string =
+  let string_eq = fun (x : String) => fun (y : String) => builtin eq x y in
+  let list_eq_string = @list_eq String in
+  list_eq_string string_eq
+
+contract AccountingTests(support_contract : ByStr20 with contract field stored_strings : List String end)
+
+field test_string_1 : String = "Hello"
+field test_string_2 : String = "World"
+
+field outgoing_amount : Uint128 = Uint128 10
+field max_outgoing_msgs : Uint128 = Uint128 3
+
+transition Reset()
+  msg = { _recipient : support_contract;
+          _tag : "Reset";
+          _amount : Uint128 0 };
+  msgs = one_msg msg;
+  send msgs;
+  accept
+end
+
+procedure AssertReset()
+  ss <- & support_contract.stored_strings;
+  cur_head = list_head_string ss;
+  match cur_head with
+  | None => (* OK *)
+  | Some _ =>
+    e = { _exception : "Support contract not reset" };
+    throw e
+  end;
+  (* Ensure that sufficient balance is available *)
+  amount <- outgoing_amount;
+  max_msgs <- max_outgoing_msgs;
+  minimum = builtin mul amount max_msgs;
+  bal <- _balance;
+  insufficient_balance = builtin lt bal minimum;
+  match insufficient_balance with
+  | False => (* OK *)
+  | True =>
+    e = { _exception : "Insufficient balance for tests" };
+    throw e
+  end
+end
+
+(* Simple test that an error is thrown on the Scilla side if the contract has insufficient balance to cover the outgoing amounts.
+   Ignore when testing at blockchain level. *)
+transition Test_Insufficient_Balance()
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "NonAccept";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end
+
+(* ********************************************************* *)
+(*             TESTS OF THE ORDER OF SENT MESSAGES           *)
+(* ********************************************************* *)
+
+(* Test that multiple sends result in messages being processed in the order of the sends *)
+transition Test_Send_1()
+  AssertReset;
+  s1 <- test_string_1;
+  msg1 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s1};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  s2 <- test_string_2;
+  msg2 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s2};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg_final = { _recipient : _this_address;
+                _tag : "Finalize_Test_Send_1";
+                _amount : Uint128 0};
+  msgs_final = one_msg msg_final;
+  send msgs_final
+end
+
+procedure Finalize_Test_Send_Helper_2_Msgs(test_no : Uint128)
+  s1 <- test_string_1;
+  s2 <- test_string_2;
+  expected =
+    let mty = Nil { String } in
+    let fst = Cons { String } s1 mty in
+    Cons { String } s2 fst;
+  actual <- & support_contract.stored_strings;
+  res = list_eq_string expected actual;
+  match res with
+  | True => (* Ok *)
+  | False =>
+    e = { _exception : "Test_Send failed"; test_no: test_no; expected : expected; actual : actual };
+    throw e
+  end
+end
+  
+(* Check that the stored strings at the support contract are in the correct order *)
+transition Finalize_Test_Send_1()
+  x = Uint128 1;
+  Finalize_Test_Send_Helper_2_Msgs x
+end
+
+(* Test that a send with multiple messages result in messages being processed in the order that the messages appear in in the argument list *)
+transition Test_Send_2()
+  AssertReset;
+  s1 <- test_string_1;
+  msg1 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s1};
+  s2 <- test_string_2;
+  msg2 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s2};
+  msgs_tmp = one_msg msg2;
+  msgs = Cons { Message } msg1 msgs_tmp;
+  send msgs;
+  msg_final = { _recipient : _this_address;
+                _tag : "Finalize_Test_Send_2";
+                _amount : Uint128 0};
+  msgs_final = one_msg msg_final;
+  send msgs_final
+end
+
+(* Check that the stored strings at the support contract are in the correct order *)
+transition Finalize_Test_Send_2()
+  x = Uint128 2;
+  Finalize_Test_Send_Helper_2_Msgs x
+end
+
+(* Test that outgoing messages are processed depth-first *)
+transition Test_Send_3()
+  AssertReset;
+  s1 <- test_string_1;
+  msg1 = { _recipient : _this_address;
+           _tag : "Test_Send_3_Helper";
+           _amount : Uint128 0};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  s2 <- test_string_2;
+  msg2 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s2};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg_final = { _recipient : _this_address;
+                _tag : "Finalize_Test_Send_3";
+                _amount : Uint128 0};
+  msgs_final = one_msg msg_final;
+  send msgs_final
+end
+
+(* Test that outgoing messages are processed depth-first *)
+transition Test_Send_3_Helper()
+  s1 <- test_string_1;
+  msg1 = { _recipient : support_contract;
+           _tag : "StoreString";
+           _amount : Uint128 0;
+           s : s1};
+  msgs1 = one_msg msg1;
+  send msgs1
+end
+
+(* Check that the stored strings at the support contract are in the correct order *)
+transition Finalize_Test_Send_3()
+  x = Uint128 3;
+  Finalize_Test_Send_Helper_2_Msgs x
+end
+
+(* ********************************************************* *)
+(*             TESTS OF SEND AND ACCEPT OF ZIL               *)
+(* ********************************************************* *)
+
+(* Send should deduct from the current contract's balance. Message construction should not *)
+(* Send of multiple messages should deduct all sent money from the current contract's balance. *)
+(* Remote read of current contract's balance should be identical to _balance at all times - THIS DOESN'T WORK AFTER ACCEPT BECAUSE OF A MISSING CORNER CASE IN EvalUtil.ml *)
+(* Accept should increase current contract's balance, but not decrease sender's balance - THIS DOESN'T WORK BECAUSE OF A CORNER CASE THAT SHOULDN'T BE TREATED AS A CORNER CASE *)
+(* Non-acceptance should result in an increase of the sender's balance by the amount in the message *)
+
+procedure CheckBalance(expected_balance : Uint128)
+  cur_balance <- _balance;
+  is_expected = builtin eq expected_balance cur_balance;
+  match is_expected with
+  | True => (* OK *)
+  | False =>
+    e = { _exception : "Unexpected balance";
+          expected : expected_balance;
+          actual : cur_balance };
+    throw e
+  end
+end
+
+transition CheckSenderBalance(expected_balance : Uint128)
+  CheckBalance expected_balance
+end
+
+procedure CheckSupportBalance(expected_balance : Uint128)
+  cur_balance <- & support_contract._balance;
+  is_expected = builtin eq expected_balance cur_balance;
+  match is_expected with
+  | True => (* OK *)
+  | False =>
+    e = { _exception : "Main contract read unexpected support contract balance";
+          expected : expected_balance;
+          actual : cur_balance };
+    throw e
+  end
+end
+
+transition CheckRecipientBalance(expected_balance : Uint128)
+  CheckSupportBalance expected_balance
+end
+
+(* Check that the current contract's balance is decreased when sending funds in single messages *)
+transition Test_Send_4()
+  AssertReset;
+  amount <- outgoing_amount;
+  init_bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "Accept";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  expected_intermediate_balance = builtin sub init_bal amount;
+  CheckBalance expected_intermediate_balance;
+  msg2 = { _recipient : support_contract;
+           _tag : "NonAccept";
+           _amount : amount};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  expected_final_balance = builtin sub expected_intermediate_balance amount;
+  CheckBalance expected_final_balance
+end
+
+(* Check that the current contract's balance is decreased when sending funds in multiple messages in a single send *)
+transition Test_Send_5()
+  AssertReset;
+  amount <- outgoing_amount;
+  init_bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "Accept";
+           _amount : amount};
+  msg2 = { _recipient : support_contract;
+           _tag : "NonAccept";
+           _amount : amount};
+  msgs_tmp = one_msg msg2;
+  msgs = Cons {Message} msg1 msgs_tmp;
+  send msgs;
+  expected_intermediate_balance = builtin sub init_bal amount;
+  expected_final_balance = builtin sub expected_intermediate_balance amount;
+  CheckBalance expected_final_balance
+end
+
+(* Check that funds are transferred on acceptance *)
+transition Test_Send_6()
+  AssertReset;
+  amount <- outgoing_amount;
+  bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "Accept";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  expected_balance = builtin sub bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that funds are returned on non-acceptance *)
+transition Test_Send_7()
+  AssertReset;
+  amount <- outgoing_amount;
+  bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "NonAccept";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : bal };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that the recipient's balance isn't updated until the funds are accepted *)
+transition Test_Send_8()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckBalance";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  support_bal <- & support_contract._balance;
+  expected_balance = builtin add support_bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckRecipientBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that the recipient's balance isn't updated if funds are not accepted *)
+transition Test_Send_9()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "NonAccept";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  support_bal <- & support_contract._balance;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckRecipientBalance";
+           _amount : Uint128 0;
+           expected_balance : support_bal };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that acceptance does not affect sender's balance *)
+transition Test_Send_10()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end
+
+(* Check that only the first accept affects the recipient's balance *)
+transition Test_Send_11()
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end
+
+(* Check that only one of multiple accepts decrease the sender's balance *)
+transition Test_Send_12()
+  amount <- outgoing_amount;
+  bal <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  expected_balance = builtin sub bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that only one of multiple accepts increase the recipient's balance *)
+transition Test_Send_13()
+  (* Check that the recipient's balance isn't updated until the funds are accepted *)
+  AssertReset;
+  amount <- outgoing_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptTwiceAndCheckBalance";
+           _amount : amount};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  support_bal <- & support_contract._balance;
+  expected_balance = builtin add support_bal amount;
+  msg2 = { _recipient : _this_address;
+           _tag : "CheckRecipientBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance };
+  msgs2 = one_msg msg2;
+  send msgs2
+end
+
+(* Check that it is possible to transfer all funds (this ensures that the sender's balance isn't deducted more than once) *)
+transition Test_Send_14()
+  AssertReset;
+  amount <- _balance;
+  msg1 = { _recipient : support_contract;
+           _tag : "Accept";
+           _amount : amount};
+  msgs = one_msg msg1;
+  send msgs
+end

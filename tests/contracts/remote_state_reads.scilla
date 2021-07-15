@@ -160,17 +160,3 @@ transition AssignTest()
   k2 = Uint128 42;
   assign_test_10[k1][k2] := x
 end
-
-(* Check that sender balance is deducted on acceptance *)
-transition SenderBalanceTest()
-  pre <-& _sender._balance;
-  sender_balance_pre := pre;
-  (* First accept should cause sender balance to decrease *)
-  accept;
-  mid <-& _sender._balance;
-  sender_balance_mid := mid;
-  (* Second accept should make no difference *)
-  accept;
-  post <-& _sender._balance;
-  sender_balance_post := post
-end

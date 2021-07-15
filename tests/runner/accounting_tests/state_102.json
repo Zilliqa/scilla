@@ -1,0 +1,45 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "30" },
+  {
+    "vname": "test_string_1",
+    "type": "String",
+    "value": "Hello"
+  },
+  {
+    "vname": "test_string_2",
+    "type": "String",
+    "value": "World"
+  },
+  {
+    "vname": "outgoing_amount",
+    "type": "Uint128",
+    "value": "10"
+  },
+  {
+    "vname": "max_outgoing_msgs",
+    "type": "Uint128",
+    "value": "3"
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564322",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "100" },
+                { "vname": "_balance", "type": "Uint128", "value": "42" }
+            ]
+        },
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564323",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "stored_strings", "type": "List String", "value": [ "Hello" ] },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" }
+            ]
+        }
+    ]
+  }
+]

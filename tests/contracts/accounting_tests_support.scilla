@@ -1,0 +1,77 @@
+scilla_version 0
+
+contract AccountingTestsSupport()
+
+field stored_strings : List String = Nil { String }
+
+transition Reset()
+  new_strings = Nil { String };
+  stored_strings := new_strings
+end
+
+transition StoreString (s : String)
+  old_strings <- stored_strings;
+  new_strings = Cons { String } s old_strings;
+  stored_strings := new_strings
+end
+
+transition Accept()
+  accept
+end
+
+transition AcceptTwice()
+  accept;
+  accept
+end
+
+transition NonAccept()
+end
+
+procedure CheckBalance(expected_balance : Uint128)
+  cur_balance <- _balance;
+  is_expected = builtin eq expected_balance cur_balance;
+  match is_expected with
+  | True => (* OK *)
+  | False =>
+    e = { _exception : "Unexpected balance at support contract";
+          expected : expected_balance;
+          actual : cur_balance };
+    throw e
+  end
+end
+
+procedure CheckSenderBalance(expected_balance : Uint128)
+  cur_balance <-& _sender._balance;
+  is_expected = builtin eq expected_balance cur_balance;
+  match is_expected with
+  | True => (* OK *)
+  | False =>
+    e = { _exception : "Unexpected sender balance read by support contract";
+          expected : expected_balance;
+          actual : cur_balance };
+    throw e
+  end
+end
+
+transition AcceptAndCheckBalance()
+  init_bal <- _balance;
+  accept;
+  expected_balance = builtin add init_bal _amount;
+  CheckBalance expected_balance
+end
+
+transition AcceptTwiceAndCheckBalance()
+  init_bal <- _balance;
+  accept;
+  expected_balance = builtin add init_bal _amount;
+  CheckBalance expected_balance;
+  accept;
+  CheckBalance expected_balance
+end
+
+transition AcceptAndCheckSenderBalance()
+  init_bal <- & _sender._balance;
+  accept;
+  CheckSenderBalance init_bal
+end
+
