@@ -27,8 +27,52 @@ module JSONTypeUtilities = TypeUtilities
 module JSONIdentifier = TypeUtil.TUIdentifier
 module JSONName = JSONIdentifier.Name
 module JSONType = TypeUtil.TUType
-module JSONLiteral = TypeUtil.TULiteral
+module JSONSanitisedLiteral = TypeUtil.TULiteral
 open JSONTypeUtilities
+
+(* Specialised literal type for JSON parsing. Needed in order to parse unrecognised ADT literals *)
+type json_literal =
+  | StringLit of string
+  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
+  | IntLit of JSONSanitisedLiteral.int_lit
+  | UintLit of JSONSanitisedLiteral.uint_lit
+  | BNum of string
+  (* Byte string with a statically known length. *)
+  | ByStrX of JSONSanitisedLiteral.Bystrx.t
+  (* Byte string without a statically known length. *)
+  | ByStr of JSONSanitisedLiteral.Bystr.t
+  (* Message: an associative array *)
+  | Msg of (string * JSONType.t * json_literal) list
+  (* A dynamic map of literals *)
+  | Map of JSONSanitisedLiteral.mtype * (json_literal, json_literal) Sexplib.Std.Hashtbl.t
+  (* A constructor in HNF *)
+  | ADTValue of JSONIdentifier.Name.t * JSONType.t list * json_literal list
+  | Unrecognised of string
+
+let build_nil_lit t =
+  ADTValue (JSONName.parse_simple_name "Nil", [ t ], [])
+
+let build_cons_lit hd t tl =
+  ADTValue (JSONName.parse_simple_name "Cons", [ t ], [ hd; tl ])
+
+let rec sanitise_literal = function
+  | StringLit s -> JSONSanitisedLiteral.StringLit s
+  | IntLit i -> JSONSanitisedLiteral.IntLit i
+  | UintLit i -> JSONSanitisedLiteral.UintLit i
+  | BNum s -> JSONSanitisedLiteral.BNum s
+  | ByStrX s -> JSONSanitisedLiteral.ByStrX s
+  | ByStr s -> JSONSanitisedLiteral.ByStr s
+  | Msg msg -> JSONSanitisedLiteral.Msg (List.map msg ~f:(fun (tag, typ, l) -> (tag, typ, sanitise_literal l)))
+  | Map (mtyp, tbl) ->
+      let new_tbl = Sexplib.Std.Hashtbl.create (Sexplib.Std.Hashtbl.length tbl) in
+      let () = Sexplib.Std.Hashtbl.iter (fun k v -> Sexplib.Std.Hashtbl.replace new_tbl (sanitise_literal k) (sanitise_literal v)) tbl in
+      JSONSanitisedLiteral.Map (mtyp, new_tbl)
+  | ADTValue (c, ts, ls) -> JSONSanitisedLiteral.ADTValue (c, ts, List.map ls ~f:sanitise_literal)
+  | Unrecognised s -> raise (mk_invalid_json (Printf.sprintf "Unrecognised literal in JSON: %s" s))
+
+let map_info = function
+  | Map ((kt, vt), m) -> (kt, vt, m)
+  | _ -> raise (mk_invalid_json "Expected map literal but found %s")
 
 (*************************************)
 (***** Exception and wrappers ********)
@@ -75,7 +119,7 @@ let lookup_adt_name_exn name =
 
 type adt_parser_entry =
   | Incomplete (* Parser not completely constructed. *)
-  | Parser of (Basic.t -> JSONLiteral.t)
+  | Parser of (Basic.t -> json_literal)
 
 let adt_parsers =
   let open Caml in
@@ -102,18 +146,17 @@ let lookup_adt_parser adt_name =
 (*************************************)
 
 (* Generate a parser. *)
-let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
+let gen_parser (t' : JSONType.t) : Basic.t -> json_literal =
   let open Basic in
   let open TUType in
-  let open TULiteral in
   let rec recurser t =
     match t with
     | PrimType pt -> (
         match pt with
         | String_typ -> fun j -> StringLit (to_string_exn j)
         | Bnum_typ -> fun j -> BNum (to_string_exn j)
-        | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
-        | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
+        | Bystr_typ -> fun j -> ByStr (TULiteral.Bystr.parse_hex (to_string_exn j))
+        | Bystrx_typ _ -> fun j -> ByStrX (TULiteral.Bystrx.parse_hex (to_string_exn j))
         | Int_typ Bits32 ->
             fun j -> IntLit (Int32L (Int32.of_string (to_string_exn j)))
         | Int_typ Bits64 ->

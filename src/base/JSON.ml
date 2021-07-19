@@ -27,23 +27,75 @@ open TypeUtil
 open BuiltIns
 open PrettyPrinters
 module JSONTypeUtilities = TypeUtilities
-module JSONLiteral = GlobalLiteral
-module JSONType = JSONLiteral.LType
+module JSONSanitisedLiteral = GlobalLiteral
+module JSONType = JSONSanitisedLiteral.LType
 module JSONIdentifier = JSONType.TIdentifier
 module JSONName = JSONIdentifier.Name
 module JSONBuiltIns =
   ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
-module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (JSONLiteral)
+module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (JSONSanitisedLiteral)
 open JSONTypeUtilities
 open JSONIdentifier
 open JSONType
-open JSONLiteral
+open JSONParser
+    
+(* Given an integer type and the value (as string),
+   build IntLit or UintLit out of it. *)
+let build_int pt v =
+  let validator_wrapper l = Option.some_if (JSONSanitisedLiteral.validate_int_string pt v) l in
+  try
+    match pt with
+    | Int_typ Bits32 ->
+        validator_wrapper (IntLit (Int32L (Int32.of_string v)))
+    | Int_typ Bits64 ->
+        validator_wrapper (IntLit (Int64L (Int64.of_string v)))
+    | Int_typ Bits128 ->
+        validator_wrapper (IntLit (Int128L (Stdint.Int128.of_string v)))
+    | Int_typ Bits256 ->
+        validator_wrapper (IntLit (Int256L (Integer256.Int256.of_string v)))
+    | Uint_typ Bits32 ->
+        validator_wrapper (UintLit (Uint32L (Stdint.Uint32.of_string v)))
+    | Uint_typ Bits64 ->
+        validator_wrapper (UintLit (Uint64L (Stdint.Uint64.of_string v)))
+    | Uint_typ Bits128 ->
+        validator_wrapper (UintLit (Uint128L (Stdint.Uint128.of_string v)))
+    | Uint_typ Bits256 ->
+        validator_wrapper (UintLit (Uint256L (Integer256.Uint256.of_string v)))
+    | _ -> None
+  with _ -> None
+
+let build_prim_literal pt v =
+  let open Type.PrimType in
+  match pt with
+  | Int_typ _ | Uint_typ _ -> build_int pt v
+  | String_typ -> Option.some_if (JSONSanitisedLiteral.validate_string_literal v) (StringLit v)
+  | Bnum_typ ->
+      Option.some_if
+        (let re = Str.regexp "[0-9]+$" in
+         Str.string_match re v 0)
+        (BNum v)
+  | Bystr_typ -> Some (ByStr (JSONSanitisedLiteral.Bystr.parse_hex v))
+  | Bystrx_typ _ -> Some (ByStrX (JSONSanitisedLiteral.Bystrx.parse_hex v))
+  | _ -> None
+
+(* Convert Scilla list to OCaml list.
+ * Not tail recursive. Don't use for long lists. *)
+let scilla_list_to_ocaml v =
+  let rec convert_to_list = function
+    | ADTValue (c, _, []) when is_nil_ctr_name c -> Some []
+    | ADTValue (c, _, [ h; t ]) when is_cons_ctr_name c -> (
+        match convert_to_list t with
+        | None -> None
+        | Some rest -> Some (h :: rest))
+    | _ -> None
+  in
+  convert_to_list v
 
 type json_parsed_field =
   (* A field belonging to this contract. *)
-  | ThisContr of string * JSONType.t * JSONLiteral.t
+  | ThisContr of string * JSONType.t * json_literal
   (* External contracts and their fields. *)
-  | ExtrContrs of (Bystrx.t * (string * JSONType.t * JSONLiteral.t) list) list
+  | ExtrContrs of (JSONSanitisedLiteral.Bystrx.t * (string * JSONType.t * json_literal) list) list
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -130,41 +182,49 @@ let rec json_to_adtargs cname tlist ajs =
 and read_adt_json name j tlist_verify =
   let dt =
     match DataTypeDictionary.lookup_name name with
-    | Error emsg -> raise (Invalid_json emsg)
-    | Ok r -> r
+    | Error _ -> None
+    | Ok r -> Some r
   in
   let res =
     match j with
-    | `List vli ->
+    | `List vli -> (
         (* We make an exception for Lists, allowing them to be stored flatly. *)
-        if not (is_list_adt_name dt.tname) then
+        let err () =
           raise
             (Invalid_json
                (mk_error0 "ADT value is a JSON array, but type is not List"))
-        else
+        in
+        match dt with
+        | None -> err ()
+        | Some dt
+          when not (is_list_adt_name dt.tname) -> err ()
+        | Some _ ->
           let etyp = List.nth_exn tlist_verify 0 in
           List.fold_right vli
             ~f:(fun vl acc -> build_cons_lit (json_to_lit_exn etyp vl) etyp acc)
-            ~init:(build_nil_lit etyp)
-    | `Assoc _ ->
-        let constr_str = member_exn "constructor" j |> to_string_exn in
-        let constr = parse_as_name constr_str in
-        let dt' =
-          match DataTypeDictionary.lookup_constructor constr with
-          | Error emsg -> raise (Invalid_json emsg)
-          | Ok (r, _) -> r
-        in
-        if not @@ [%equal: Datatypes.adt] dt dt' then
-          raise
-            (mk_invalid_json
-               ("ADT type "
-               ^ JSONName.as_error_string dt.tname
-               ^ " does not match constructor "
-               ^ JSONName.as_error_string constr));
-        let argtypes = member_exn "argtypes" j |> to_list_exn in
-        let arguments = member_exn "arguments" j |> to_list_exn in
-        let tlist = json_to_adttyps argtypes in
-        json_to_adtargs constr tlist arguments
+            ~init:(build_nil_lit etyp))
+    | `Assoc _ -> (
+        match dt with
+        | None -> Unrecognised (to_string_exn j)
+        | Some dt -> 
+            let constr_str = member_exn "constructor" j |> to_string_exn in
+            let constr = parse_as_name constr_str in
+            let dt' =
+              match DataTypeDictionary.lookup_constructor constr with
+              | Error emsg -> raise (Invalid_json emsg)
+              | Ok (r, _) -> r
+            in
+            if not @@ [%equal: Datatypes.adt] dt dt' then
+              raise
+                (mk_invalid_json
+                   ("ADT type "
+                    ^ JSONName.as_error_string dt.tname
+                    ^ " does not match constructor "
+                    ^ JSONName.as_error_string constr));
+            let argtypes = member_exn "argtypes" j |> to_list_exn in
+            let arguments = member_exn "arguments" j |> to_list_exn in
+            let tlist = json_to_adttyps argtypes in
+            json_to_adtargs constr tlist arguments)
     | _ ->
         raise
           (mk_invalid_json
@@ -243,7 +303,7 @@ let rec jobj_to_statevar json =
     let exts' =
       List.fold exts ~init:[] ~f:(fun acc ext ->
           let addr =
-            member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
+            member_exn "address" ext |> to_string_exn |> JSONSanitisedLiteral.Bystrx.parse_hex
           in
           let state = member_exn "state" ext |> to_list_exn in
           let state' =
@@ -286,15 +346,15 @@ let rec slist_to_json l =
       let remj = slist_to_json remaining in
       sj :: remj
 
-let get_string_literal l = match l with StringLit sl -> Some sl | _ -> None
+let get_string_literal l = match l with JSONSanitisedLiteral.StringLit sl -> Some sl | _ -> None
 
 let get_uint_literal l =
-  match l with UintLit il -> Some (string_of_uint_lit il) | _ -> None
+  match l with JSONSanitisedLiteral.UintLit il -> Some (JSONSanitisedLiteral.string_of_uint_lit il) | _ -> None
 
 let get_address_literal l =
   match l with
-  | ByStrX bs when Bystrx.width bs = Type.address_length ->
-      Some (Bystrx.hex_encoding bs)
+  | JSONSanitisedLiteral.ByStrX bs when JSONSanitisedLiteral.Bystrx.width bs = Type.address_length ->
+      Some (JSONSanitisedLiteral.Bystrx.hex_encoding bs)
   | _ -> None
 
 (****************************************************************)
@@ -342,14 +402,14 @@ module ContractState = struct
     match extlibs with
     | [] -> []
     | [ (_name, _typ, lit) ] -> (
-        match Datatypes.scilla_list_to_ocaml lit with
-        | Error _ ->
+        match scilla_list_to_ocaml lit with
+        | None ->
             raise
               (mk_invalid_json
                  ("Invalid "
                  ^ JSONName.as_error_string ContractUtil.extlibs_label
                  ^ " entry in init json"))
-        | Ok lit' ->
+        | Some lit' ->
             (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
             List.map lit' ~f:(fun sp ->
                 match sp with
@@ -358,8 +418,8 @@ module ContractState = struct
                        && [%equal: JSONType.t] t1 JSONType.string_typ
                        && [%equal: JSONType.t] t2
                             (JSONType.bystrx_typ Type.address_length)
-                       && Bystrx.width bs = Type.address_length ->
-                    (name, Bystrx.hex_encoding bs)
+                       && JSONSanitisedLiteral.Bystrx.width bs = Type.address_length ->
+                    (name, JSONSanitisedLiteral.Bystrx.hex_encoding bs)
                 | _ ->
                     raise
                       (mk_invalid_json
@@ -398,7 +458,8 @@ module ContractState = struct
     in
     match this_address_init_opt with
     | None -> (None, extlibs)
-    | Some adr -> (
+    | Some json_adr -> (
+        let adr = sanitise_literal json_adr in
         match get_address_literal adr with
         | Some adr -> (Some adr, extlibs)
         | None ->
@@ -513,7 +574,7 @@ module BlockChainState = struct
     let jlist = json |> to_list_exn in
     List.map jlist ~f:(fun j ->
         match jobj_to_statevar j with
-        | ThisContr (name, t, v) -> (name, t, v)
+        | ThisContr (name, t, v) -> (name, t, sanitise_literal v)
         | ExtrContrs _ ->
             raise
               (mk_invalid_json "_external cannot be present in a message JSON"))
@@ -523,7 +584,7 @@ module BlockChainState = struct
 end
 
 module ContractInfo = struct
-  module JSONParserSyntax = ParserUtil.ParserSyntax (JSONLiteral)
+  module JSONParserSyntax = ParserUtil.ParserSyntax (JSONSanitisedLiteral)
   open JSONParserSyntax
 
   let get_json cmver (contr : contract)

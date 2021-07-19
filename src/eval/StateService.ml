@@ -34,13 +34,13 @@ module SSName = SSIdentifier.Name
 module EvalSyntax = ScillaSyntax (SR) (ER) (SSLiteral)
 open SSIdentifier
 
-type ss_field = {
+type 'a ss_field = {
   fname : SSName.t;
   ftyp : SSType.t;
-  fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
+  fval : 'a option; (* We may or may not have the value in memory. *)
 }
 
-type external_state = { caddr : SSLiteral.Bystrx.t; cstate : ss_field list }
+type external_state = { caddr : SSLiteral.Bystrx.t; cstate : (JSONParser.json_literal ss_field) list }
 
 type service_mode =
   | IPC of string
@@ -49,7 +49,7 @@ type service_mode =
 
 type ss_state =
   | Uninitialized
-  | SS of service_mode * ss_field list * external_state list
+  | SS of service_mode * (SSLiteral.t ss_field) list * external_state list
 
 module MakeStateService () = struct
   (* Internal state for the state service. *)
@@ -83,7 +83,8 @@ module MakeStateService () = struct
     match
       List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
     with
-    | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
+    (* This pattern-match (and a similar one a few lines down) fixes the type of literals *)
+    | Some { fname = _; ftyp = MapType _; fval = Some (SSLiteral.Map ((kt, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
           SSTypeUtil.map_access_type (MapType (kt, vt)) (List.length keys)

@@ -22,7 +22,32 @@ module JSONTypeUtilities = TypeUtil.TypeUtilities
 module JSONIdentifier = TypeUtil.TUIdentifier
 module JSONName = JSONIdentifier.Name
 module JSONType = TypeUtil.TUType
-module JSONLiteral = TypeUtil.TULiteral
+module JSONSanitisedLiteral = TypeUtil.TULiteral
+
+(* Specialised literal type for JSON parsing. Needed in order to parse unrecognised ADT literals *)
+type json_literal =
+  | StringLit of string
+  (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
+  | IntLit of JSONSanitisedLiteral.int_lit
+  | UintLit of JSONSanitisedLiteral.uint_lit
+  | BNum of string
+  (* Byte string with a statically known length. *)
+  | ByStrX of JSONSanitisedLiteral.Bystrx.t
+  (* Byte string without a statically known length. *)
+  | ByStr of JSONSanitisedLiteral.Bystr.t
+  (* Message: an associative array *)
+  | Msg of (string * JSONType.t * json_literal) list
+  (* A dynamic map of literals *)
+  | Map of JSONSanitisedLiteral.mtype * (json_literal, json_literal) Sexplib.Std.Hashtbl.t
+  (* A constructor in HNF *)
+  | ADTValue of JSONIdentifier.Name.t * JSONType.t list * json_literal list
+  | Unrecognised of string
+
+val build_nil_lit : JSONType.t -> json_literal
+val build_cons_lit : json_literal -> JSONType.t -> json_literal -> json_literal
+
+val sanitise_literal : json_literal -> JSONSanitisedLiteral.t
+val map_info : json_literal -> JSONType.t * JSONType.t * json_literal
 
 (*************************************)
 (***** Exception and wrappers ********)
@@ -47,7 +72,7 @@ val lookup_adt_name_exn : 'a JSONIdentifier.t -> Datatypes.adt
 (*********** ADT parsers *************)
 (*************************************)
 
-type adt_parser_entry = Incomplete | Parser of (Basic.t -> JSONLiteral.t)
+type adt_parser_entry = Incomplete | Parser of (Basic.t -> json_literal)
 
 (* ADT parsers table *)
 val adt_parsers : (string, adt_parser_entry) Caml.Hashtbl.t
@@ -62,7 +87,7 @@ val lookup_adt_parser_opt : string -> adt_parser_entry option
 val lookup_adt_parser : string -> adt_parser_entry
 
 (* Generate a parser *)
-val gen_parser : JSONType.t -> Basic.t -> JSONLiteral.t
+val gen_parser : JSONType.t -> Basic.t -> json_literal
 
 (* Parse JSON *)
-val parse_json : JSONType.t -> Basic.t -> JSONLiteral.t
+val parse_json : JSONType.t -> Basic.t -> json_literal

@@ -110,7 +110,7 @@ let map_json_input_strings_to_names map =
 let input_state_json filename =
   let open JSON.ContractState in
   let states_str, estates_str = get_json_data filename in
-  let states = map_json_input_strings_to_names states_str in
+  let states = map_json_input_strings_to_names states_str |> List.map ~f:(fun (x, t, l) -> (x, t, JSONParser.sanitise_literal l)) in
   let estates =
     List.map estates_str ~f:(fun (addr, states_str) ->
         (addr, map_json_input_strings_to_names states_str))
@@ -144,12 +144,12 @@ let input_state_json filename =
 (* Add balance to output json and print it out *)
 let output_state_json balance field_vals =
   let bal_lit =
-    (balance_label, balance_type, JSON.JSONLiteral.UintLit (Uint128L balance))
+    (balance_label, balance_type, JSON.JSONSanitisedLiteral.UintLit (Uint128L balance))
   in
   JSON.ContractState.state_to_json (bal_lit :: field_vals)
 
 let output_message_json gas_remaining mlist =
-  let open JSON.JSONLiteral in
+  let open JSON.JSONSanitisedLiteral in
   `List
     (List.map mlist ~f:(function
       | Msg m -> JSON.Message.message_to_json m
@@ -159,7 +159,7 @@ let output_message_json gas_remaining mlist =
             gas_remaining))
 
 let output_event_json elist =
-  let open JSON.JSONLiteral in
+  let open JSON.JSONSanitisedLiteral in
   List.map elist ~f:(function
     | Msg m -> JSON.Event.event_to_json m
     | _ -> `Null)
@@ -227,10 +227,11 @@ let validate_get_init_json init_file gas_remaining source_ver =
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
   let initargs =
     map_json_input_strings_to_names initargs_str
-    |> List.map ~f:(fun (n, t, l) ->
-           let () = assert_no_address_type_in_type t gas_remaining in
-           let () = assert_no_address_type_in_literal l gas_remaining in
-           (n, l))
+    |> List.map ~f:(fun (n, t, parsed_l) ->
+        let l = JSONParser.sanitise_literal parsed_l in
+        let () = assert_no_address_type_in_type t gas_remaining in
+        let () = assert_no_address_type_in_literal l gas_remaining in
+        (n, l))
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
   let emsg = mk_error0 "Scilla version mismatch\n" in
@@ -475,9 +476,9 @@ let run_with_args args =
               with Invalid_json s ->
                 fatal_error_gas_scale Gas.scale_factor
                   (s
-                  @ mk_error0
-                      (sprintf "Failed to parse json %s:\n"
-                         args.input_blockchain))
+                   @ mk_error0
+                     (sprintf "Failed to parse json %s:\n"
+                        args.input_blockchain))
                   gas_remaining
             in
             let ( ( output_msg_json,
@@ -516,9 +517,9 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                           @ mk_error0
+                             (sprintf "Failed to parse json %s:\n"
+                                args.input_state))
                           gas_remaining
                     else field_vals
                   in
@@ -562,14 +563,17 @@ let run_with_args args =
               else
                 (* Not initialization, execute transition specified in the message *)
                 let mmsg =
-                  try JSON.Message.get_json_data args.input_message
-                  with Invalid_json s ->
-                    fatal_error_gas_scale Gas.scale_factor
-                      (s
-                      @ mk_error0
-                          (sprintf "Failed to parse json %s:\n"
-                             args.input_message))
-                      gas_remaining
+                  let parsed_mmsg = 
+                    try JSON.Message.get_json_data args.input_message
+                    with Invalid_json s ->
+                      fatal_error_gas_scale Gas.scale_factor
+                        (s
+                         @ mk_error0
+                           (sprintf "Failed to parse json %s:\n"
+                              args.input_message))
+                        gas_remaining
+                  in
+                  List.map parsed_mmsg ~f:(fun (f, t, l) -> (f, t, JSONParser.sanitise_literal l)) 
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
                 let cstate, gas_remaining =
@@ -603,12 +607,11 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                           @ mk_error0
+                             (sprintf "Failed to parse json %s:\n"
+                                args.input_state))
                           gas_remaining
                     in
-
                     (* Initializing the contract's state *)
                     let init_res =
                       init_module dis_cmod initargs curargs cur_bal bstate elibs
