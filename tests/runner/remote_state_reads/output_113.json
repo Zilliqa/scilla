@@ -1,15 +1,10 @@
+type: 0x3620c286757a29985cee194eb90064270fb65414.AddressADT2, constructor: 0x3620c286757a29985cee194eb90064270fb65414.Address2
 {
-  "gas_remaining": "7428",
+  "gas_remaining": "7489",
   "errors": [
     {
       "error_message":
-        "ADT 0x3620c286757a29985cee194eb90064270fb65414.AddressADT2 not found",
-      "start_location": { "file": "", "line": 0, "column": 0 },
-      "end_location": { "file": "", "line": 0, "column": 0 }
-    },
-    {
-      "error_message":
-        "Failed to parse json tests/runner/remote_state_reads/message_113.json:\n",
+        "Unrecognised ADT constructor in JSON: type: 0x3620c286757a29985cee194eb90064270fb65414.AddressADT2, constructor: 0x3620c286757a29985cee194eb90064270fb65414.Address2",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

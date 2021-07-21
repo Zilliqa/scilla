@@ -92,13 +92,9 @@ let default_server_implementation () =
     let output, _ = Runner.run args ~exe_name:"scilla-runner" in
     Yojson.Basic.pretty_to_string output
   in
-  let disambiguator args =
-    Disambiguator.run args ~exe_name:"scilla-disambiguator"
-  in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
-  Server.disambiguator @@ mk_handler disambiguator;
   Server.implementation
 
 let start ?(server_implementation = default_server_implementation)
