@@ -40,6 +40,19 @@
       "type": "Map (Uint32) (Map (Uint32) (ShogiLib.SquareContents))",
       "value": [
         {
+          "key": "3",
+          "val": [
+            {
+              "key": "1",
+              "val": {
+                "constructor": "ShogiLib.Free",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        },
+        {
           "key": "1",
           "val": [
             {
@@ -60,19 +73,6 @@
                   },
                   "0x1234567890123456789012345678906784567890"
                 ]
-              }
-            }
-          ]
-        },
-        {
-          "key": "3",
-          "val": [
-            {
-              "key": "1",
-              "val": {
-                "constructor": "ShogiLib.Free",
-                "argtypes": [],
-                "arguments": []
               }
             }
           ]

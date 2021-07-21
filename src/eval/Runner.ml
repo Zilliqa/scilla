@@ -106,6 +106,12 @@ let map_json_input_strings_to_names map =
       | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
       | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
 
+let sanitise_json_literal l gas_remaining =
+  try JSONParser.sanitise_literal l with
+  | Invalid_json err ->
+      fatal_error_gas_scale Gas.scale_factor err
+        gas_remaining
+
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
   let open JSON.ContractState in
@@ -228,7 +234,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
   let initargs =
     map_json_input_strings_to_names initargs_str
     |> List.map ~f:(fun (n, t, parsed_l) ->
-        let l = JSONParser.sanitise_literal parsed_l in
+        let l = sanitise_json_literal parsed_l gas_remaining in
         let () = assert_no_address_type_in_type t gas_remaining in
         let () = assert_no_address_type_in_literal l gas_remaining in
         (n, l))
@@ -573,7 +579,7 @@ let run_with_args args =
                               args.input_message))
                         gas_remaining
                   in
-                  List.map parsed_mmsg ~f:(fun (f, t, l) -> (f, t, JSONParser.sanitise_literal l)) 
+                  List.map parsed_mmsg ~f:(fun (f, t, l) -> (f, t, sanitise_json_literal l gas_remaining)) 
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
                 let cstate, gas_remaining =
@@ -631,7 +637,7 @@ let run_with_args args =
                           { fname = s; ftyp = t; fval = Some l })
                     in
                     let ext_states =
-                      let open StateService in
+                      let open StateService in 
                       List.map ext_states ~f:(fun (addr, fields) ->
                           let fields' =
                             List.map fields ~f:(fun (n, t, l) ->

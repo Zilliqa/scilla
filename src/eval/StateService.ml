@@ -78,13 +78,9 @@ module MakeStateService () = struct
              (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
-  let fetch_local ~fname ~keys fields =
-    let s = fields in
-    match
-      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
-    with
-    (* This pattern-match (and a similar one a few lines down) fixes the type of literals *)
-    | Some { fname = _; ftyp = MapType _; fval = Some (SSLiteral.Map ((kt, vt), mlit)) }
+  let fetch_local_helper ~fname ~keys l =
+    match l with
+    | SSLiteral.Map ((kt, vt), mlit)
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
           SSTypeUtil.map_access_type (MapType (kt, vt)) (List.length keys)
@@ -130,13 +126,36 @@ module MakeStateService () = struct
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
-    | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ Some l
+    | _ -> pure @@ Some l
+
+  let fetch_local ~fname ~keys fields =
+    let s = fields in
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
+    | Some { fname = _; ftyp = _; fval = Some l } ->
+        fetch_local_helper ~fname ~keys l
     | _ ->
         fail1
           (sprintf "StateService: field \"%s\" not found.\n"
              (as_error_string fname))
           (ER.get_loc (get_rep fname))
 
+  let fetch_external_local ~fname ~keys fields =
+    let s = fields in
+    match
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+    with
+    | Some { fname = _; ftyp = _; fval = Some l } ->
+        (* Convert sanitise entire field value before fetching.
+           This works because a dynamic typecheck must have succeeded before this point *)
+        fetch_local_helper ~fname ~keys (JSONParser.sanitise_literal l)
+    | _ ->
+        fail1
+          (sprintf "StateService: remote field \"%s\" not found.\n"
+             (as_error_string fname))
+          (ER.get_loc (get_rep fname))
+    
   let fetch ~fname ~keys =
     let%bind sm, fields, _estates = assert_init () in
     match sm with
@@ -182,7 +201,7 @@ module MakeStateService () = struct
                   else None)
             with
             | Some stored_tp ->
-                let%bind res = fetch_local ~fname ~keys fields in
+                let%bind res = fetch_external_local ~fname ~keys fields in
                 pure (res, Option.map res ~f:(fun _ -> stored_tp))
             | None -> pure (None, None))
         | None -> pure (None, None))
@@ -192,7 +211,7 @@ module MakeStateService () = struct
     match
       List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
     with
-    | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
+    | Some { fname = _; ftyp = _; fval = Some (SSLiteral.Map ((_, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
           match klist' with

@@ -92,7 +92,7 @@
             "vname" : "adt1",
             "type" : "0x3620c286757a29985cee194eb90064270fb65414.AddressADT2",
             "value" :
-            {
+            {                     
                 "constructor" : "0x3620c286757a29985cee194eb90064270fb65414.Address2",
                 "argtypes"    : [],
                 "arguments"   : [ "0xabfeccdc9012345678901234567890f777564324" ]

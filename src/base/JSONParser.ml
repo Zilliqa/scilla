@@ -68,11 +68,9 @@ let rec sanitise_literal = function
       let () = Sexplib.Std.Hashtbl.iter (fun k v -> Sexplib.Std.Hashtbl.replace new_tbl (sanitise_literal k) (sanitise_literal v)) tbl in
       JSONSanitisedLiteral.Map (mtyp, new_tbl)
   | ADTValue (c, ts, ls) -> JSONSanitisedLiteral.ADTValue (c, ts, List.map ls ~f:sanitise_literal)
-  | Unrecognised s -> raise (mk_invalid_json (Printf.sprintf "Unrecognised literal in JSON: %s" s))
-
-let map_info = function
-  | Map ((kt, vt), m) -> (kt, vt, m)
-  | _ -> raise (mk_invalid_json "Expected map literal but found %s")
+  | Unrecognised s ->
+      printf "%s\n" s;
+      raise (mk_invalid_json (Printf.sprintf "Unrecognised ADT constructor in JSON: %s" s))
 
 (*************************************)
 (***** Exception and wrappers ********)

@@ -205,7 +205,9 @@ and read_adt_json name j tlist_verify =
             ~init:(build_nil_lit etyp))
     | `Assoc _ -> (
         match dt with
-        | None -> Unrecognised (to_string_exn j)
+        | None ->
+            let constr_str = member_exn "constructor" j |> to_string_exn in
+            Unrecognised (sprintf "type: %s, constructor: %s" (JSONName.as_error_string name) constr_str)
         | Some dt -> 
             let constr_str = member_exn "constructor" j |> to_string_exn in
             let constr = parse_as_name constr_str in
@@ -233,6 +235,7 @@ and read_adt_json name j tlist_verify =
   (* match tlist1 with adt's tlist. *)
   let verify_exn name tlist1 adt =
     match adt with
+    | Unrecognised _ -> () (* Ignore *)
     | ADTValue (_, tlist2, _) ->
         (* Type arguments must be identical, not assignable *)
         if type_equiv_list ~to_list:tlist1 ~from_list:tlist2 then ()

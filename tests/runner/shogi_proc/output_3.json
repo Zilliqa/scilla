@@ -19,7 +19,7 @@
       "type": "Map (Uint32) (Map (Uint32) (ShogiLib.SquareContents))",
       "value": [
         {
-          "key": "1",
+          "key": "3",
           "val": [
             {
               "key": "1",
@@ -32,7 +32,7 @@
           ]
         },
         {
-          "key": "3",
+          "key": "1",
           "val": [
             {
               "key": "1",

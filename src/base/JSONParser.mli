@@ -47,7 +47,6 @@ val build_nil_lit : JSONType.t -> json_literal
 val build_cons_lit : json_literal -> JSONType.t -> json_literal -> json_literal
 
 val sanitise_literal : json_literal -> JSONSanitisedLiteral.t
-val map_info : json_literal -> JSONType.t * JSONType.t * json_literal
 
 (*************************************)
 (***** Exception and wrappers ********)

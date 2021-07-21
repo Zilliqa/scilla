@@ -74,7 +74,7 @@ let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
 let serialize_literal l = Bytes.of_string (PrettyPrinters.literal_to_jstring l)
 
 let deserialize_literal s tp =
-  try pure @@ ContractState.jstring_to_literal s tp
+  try pure @@ JSONParser.sanitise_literal (ContractState.jstring_to_literal s tp)
   with Invalid_json s ->
     fail
       (s
