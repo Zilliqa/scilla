@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "7917",
+  "gas_remaining": "7896",
   "errors": [
     {
       "error_message": "Couldn't resolve the identifier \"list_sort\".\n",

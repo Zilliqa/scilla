@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "8000",
+  "gas_remaining": "7931",
   "errors": [
     {
       "error_message": "Cannot serialize values of type Uint32 -> Uint32.",

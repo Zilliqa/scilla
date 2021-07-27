@@ -232,8 +232,22 @@ let wrap_error_with_gas gas res =
 let check_lmodule cli =
   let r =
     let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
+    let remaining_gas =
+      let cost' =
+        UnixLabels.(
+          (stat cli.input_file).st_size
+          + match cli.init_file with Some f -> (stat f).st_size | None -> 0)
+      in
+      let cost = Uint64.of_int cost' in
+      if Uint64.compare initial_gas cost < 0 then
+        fatal_error_gas_scale Gas.scale_factor
+          (mk_error0
+             (sprintf "Ran out of gas when parsing contract/init files.\n"))
+          Uint64.zero
+      else Uint64.sub initial_gas cost
+    in
     let%bind (lmod : ParserSyntax.lmodule) =
-      wrap_error_with_gas initial_gas
+      wrap_error_with_gas remaining_gas
       @@ check_parsing cli.input_file Parser.Incremental.lmodule
     in
     let this_address_opt, init_address_map =
@@ -246,15 +260,15 @@ let check_lmodule cli =
     in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
-      wrap_error_with_gas initial_gas
+      wrap_error_with_gas remaining_gas
       @@ disambiguate_lmod lmod elibs init_address_map this_address
     in
     let%bind recursion_lmod, recursion_rec_principles, recursion_elibs =
-      wrap_error_with_gas initial_gas @@ check_recursion_lmod dis_lmod elibs
+      wrap_error_with_gas remaining_gas @@ check_recursion_lmod dis_lmod elibs
     in
     let%bind (typed_lmod, typed_rlibs, typed_elibs), remaining_gas =
       check_typing_lmod recursion_lmod recursion_rec_principles recursion_elibs
-        initial_gas
+        remaining_gas
     in
     let%bind () =
       Result.ignore_m
@@ -302,8 +316,22 @@ let check_lmodule cli =
 let check_cmodule cli =
   let r =
     let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
+    let remaining_gas =
+      let cost' =
+        UnixLabels.(
+          (stat cli.input_file).st_size
+          + match cli.init_file with Some f -> (stat f).st_size | None -> 0)
+      in
+      let cost = Uint64.of_int cost' in
+      if Uint64.compare initial_gas cost < 0 then
+        fatal_error_gas_scale Gas.scale_factor
+          (mk_error0
+             (sprintf "Ran out of gas when parsing contract/init files.\n"))
+          Uint64.zero
+      else Uint64.sub initial_gas cost
+    in
     let%bind (cmod : ParserSyntax.cmodule) =
-      wrap_error_with_gas initial_gas
+      wrap_error_with_gas remaining_gas
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
     (* Import whatever libs we want. *)
@@ -317,15 +345,15 @@ let check_cmodule cli =
     in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
-      wrap_error_with_gas initial_gas
+      wrap_error_with_gas remaining_gas
       @@ disambiguate_cmod cmod elibs init_address_map this_address
     in
     let%bind recursion_cmod, recursion_rec_principles, recursion_elibs =
-      wrap_error_with_gas initial_gas @@ check_recursion dis_cmod elibs
+      wrap_error_with_gas remaining_gas @@ check_recursion dis_cmod elibs
     in
     let%bind (typed_cmod, tenv, typed_elibs, typed_rlibs), remaining_gas =
       check_typing recursion_cmod recursion_rec_principles recursion_elibs
-        initial_gas
+        remaining_gas
     in
     let%bind pm_checked_cmod, _pm_checked_rlibs, _pm_checked_elibs =
       wrap_error_with_gas remaining_gas

@@ -370,18 +370,8 @@ let run_with_args args =
   in
   let initial_gas_limit = Uint64.mul args.gas_limit Gas.scale_factor in
   let gas_remaining =
-    (* Subtract gas based on (contract+init) size / message size. *)
-    if is_deployment then
-      let cost' =
-        UnixLabels.((stat args.input).st_size + (stat args.input_init).st_size)
-      in
-      let cost = Uint64.of_int cost' in
-      if Uint64.compare initial_gas_limit cost < 0 then
-        fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf "Ran out of gas when parsing contract/init files.\n"))
-          Uint64.zero
-      else Uint64.sub initial_gas_limit cost
+    (* Subtract gas based message size. *)
+    if is_deployment then initial_gas_limit
     else
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       (* libraries can only be deployed, not "run". *)

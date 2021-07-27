@@ -81,7 +81,9 @@ let build_prim_lit_exn t v =
     mk_invalid_json ("Invalid " ^ pp_typ t ^ " value " ^ v ^ " in JSON")
   in
   let build_prim_literal_of_type t v =
-    match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
+    try
+      match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
+    with Invalid_argument _ -> raise (exn ())
   in
   match t with
   | PrimType pt -> build_prim_literal_of_type pt v

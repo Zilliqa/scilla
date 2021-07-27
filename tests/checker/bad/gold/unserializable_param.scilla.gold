@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "8000",
+  "gas_remaining": "7934",
   "errors": [
     {
       "error_message": "Type Test cannot be used as transition parameter",

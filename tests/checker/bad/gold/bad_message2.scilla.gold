@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "8000",
+  "gas_remaining": "7921",
   "errors": [
     {
       "error_message": "Missing _amount or _recipient in Message\n",

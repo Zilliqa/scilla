@@ -1,5 +1,5 @@
 {
-  "gas_remaining": "8000",
+  "gas_remaining": "7975",
   "errors": [
     {
       "error_message": "Type error(s) in contract RecursiveProcedure:\n",
