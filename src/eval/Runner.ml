@@ -368,26 +368,7 @@ let run_with_args args =
     FilePath.check_extension args.input
       GlobalConfig.StdlibTracker.file_extn_library
   in
-  let initial_gas_limit = Uint64.mul args.gas_limit Gas.scale_factor in
-  let gas_remaining =
-    (* Subtract gas based message size. *)
-    if is_deployment then initial_gas_limit
-    else
-      let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
-      (* libraries can only be deployed, not "run". *)
-      if is_library then
-        fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf
-                "Cannot run a library contract. They can only be deployed\n"))
-          Uint64.zero
-      else if Uint64.compare initial_gas_limit cost < 0 then
-        fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
-          Uint64.zero
-      else Uint64.sub initial_gas_limit cost
-  in
-
+  let gas_remaining = Uint64.mul args.gas_limit Gas.scale_factor in
   if is_library then deploy_library args gas_remaining
   else
     match FEParser.parse_cmodule args.input with
