@@ -1,0 +1,14 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "66565",
+  "_accepted": "false",
+  "messages": null,
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    { "vname": "test_string_1", "type": "String", "value": "Hello" },
+    { "vname": "test_string_2", "type": "String", "value": "World" },
+    { "vname": "outgoing_amount", "type": "Uint128", "value": "10" },
+    { "vname": "max_outgoing_msgs", "type": "Uint128", "value": "3" }
+  ],
+  "events": []
+}
