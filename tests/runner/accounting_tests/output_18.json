@@ -6,7 +6,7 @@
     {
       "_tag": "AcceptTwiceAndCheckBalance",
       "_amount": "10",
-      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
       "params": []
     }
   ],

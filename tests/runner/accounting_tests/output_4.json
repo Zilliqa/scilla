@@ -6,19 +6,19 @@
     {
       "_tag": "StoreString",
       "_amount": "0",
-      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
       "params": [ { "vname": "s", "type": "String", "value": "Hello" } ]
     },
     {
       "_tag": "StoreString",
       "_amount": "0",
-      "_recipient": "0xabfeccdc9012345678901234567890f777564323",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
       "params": [ { "vname": "s", "type": "String", "value": "World" } ]
     },
     {
       "_tag": "Finalize_Test_Send_2",
       "_amount": "0",
-      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
+      "_recipient": "0x673b712c3e47bf98fae068370f9e5a2a1c1c8047",
       "params": []
     }
   ],

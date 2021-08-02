@@ -5,11 +5,11 @@
         "type": "Unit",
         "value": [
             {
-                "address": "0xabfeccdc9012345678901234567890f777564323",
+                "address": "0x3620c286757a29985cee194eb90064270fb65414",
                 "state": [
                     { "vname": "_nonce", "type": "Uint64", "value": "42" },
                     { "vname": "_balance", "type": "Uint128", "value": "42" },
-                    { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                    { "vname": "_this_address", "type": "ByStr20", "value": "0x3620c286757a29985cee194eb90064270fb65414" },
                     { "vname": "stored_strings", "type": "List String", "value": { "constructor": "Nil", "argtypes": ["String"], "arguments": [] } }
                 ]
             }

@@ -9,18 +9,18 @@
     "type": "Unit",
     "value": [
         {
-            "address": "0xabfeccdc9012345678901234567890f777564322",
+            "address": "0x5c6712c8f3b049e98e733cfdb38a8e37a1c724c0",
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "100" },
                 { "vname": "_balance", "type": "Uint128", "value": "42" }
             ]
         },
         {
-            "address": "0x3620c286757a29985cee194eb90064270fb65414",
+            "address": "0x673b712c3e47bf98fae068370f9e5a2a1c1c8047",
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "30" },
-                { "vname": "_this_address", "type": "ByStr20", "value": "0x3620c286757a29985cee194eb90064270fb65414" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0x673b712c3e47bf98fae068370f9e5a2a1c1c8047" },
                 {
                     "vname": "test_string_1",
                     "type": "String",

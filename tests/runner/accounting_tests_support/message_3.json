@@ -1,7 +1,7 @@
 {
     "_tag": "AcceptAndCheckBalance",
     "_amount": "10",
-    "_sender": "0x3620c286757a29985cee194eb90064270fb65414",
+    "_sender": "0x673b712c3e47bf98fae068370f9e5a2a1c1c8047",
     "params": [ ],
-    "_origin": "0xabfeccdc9012345678901234567890f777564322"
+    "_origin": "0x5c6712c8f3b049e98e733cfdb38a8e37a1c724c0"
 }
