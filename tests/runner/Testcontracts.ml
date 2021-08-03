@@ -471,11 +471,11 @@ let contract_tests env =
                 "type_casts"
                 >::: build_contract_tests env "type_casts" succ_code 1 37 [];
                 "accounting_tests"
-                >::: build_contract_tests env "accounting_tests" succ_code 1 21
+                >::: build_contract_tests env "accounting_tests" succ_code 1 22
                        [];
                 "accounting_tests_support"
                 >::: build_contract_tests env "accounting_tests_support"
-                       succ_code 1 6 [];
+                       succ_code 1 7 [];
                 "addfunds_proxy"
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"

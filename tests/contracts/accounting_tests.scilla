@@ -414,3 +414,17 @@ transition Test_Send_14()
   msgs = one_msg msg1;
   send msgs
 end
+
+(* Check that outgoing amount is deducted before invoking next transition (cash in the envelope) *)
+transition Test_Send_15()
+  AssertReset;
+  cur_bal <- _balance;
+  out_amount <- outgoing_amount;
+  expected_balance_as_seen_from_support = builtin sub cur_bal out_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "NoAcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : expected_balance_as_seen_from_support};
+  msgs = one_msg msg1;
+  send msgs
+end
