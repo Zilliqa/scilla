@@ -15,4 +15,4 @@
   [zero -> (Int32 0)],
   [f -> <closure>],
   [int_mem -> <closure>] }
-Gas remaining: 4000842
+Gas remaining: 4001855

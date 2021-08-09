@@ -68,10 +68,11 @@ let run () =
   Datatypes.DataTypeDictionary.reinit ();
   let cli = parse_cli None ~exe_name:Sys.argv.(0) in
   let filename = cli.input_file in
-  let gas_limit =
+  let gas_limit' =
     if Stdint.Uint64.(compare cli.gas_limit zero = 0) then default_gas_limit
     else cli.gas_limit
   in
+  let gas_limit = Stdint.Uint64.mul gas_limit' Gas.scale_factor in
   match FEParser.parse_expr_from_file filename with
   | Ok e_nogas -> (
       StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
@@ -92,14 +93,19 @@ let run () =
           let env, gas_remaining =
             match envres Eval.init_gas_kont gas_limit with
             | Ok (env', gas_remaining) -> (env', gas_remaining)
-            | Error (err, gas_remaining) -> fatal_error_gas err gas_remaining
+            | Error (err, gas_remaining) ->
+                fatal_error_gas_scale Gas.scale_factor err gas_remaining
           in
           let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
           let res' = Eval.(exp_eval dis_e env init_gas_kont gas_remaining) in
           match res' with
           | Ok (_, gas_remaining) ->
-              printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining)
-          | Error (el, gas_remaining) -> fatal_error_gas el gas_remaining)
+              let gas_remaining' =
+                Gas.finalize_remaining_gas cli.gas_limit gas_remaining
+              in
+              printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining')
+          | Error (el, gas_remaining) ->
+              fatal_error_gas_scale Gas.scale_factor el gas_remaining)
       | Error e -> fatal_error e)
   | Error e -> fatal_error e
 
