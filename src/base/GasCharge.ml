@@ -39,6 +39,8 @@ end = struct
   let get i = i
 end
 
+type resolved_ValueOf = GFloat of float | GInt of int
+
 module type GC = sig
   module Name : QualifiedName
 
@@ -61,8 +63,8 @@ module type GC = sig
     | MinOf of gas_charge * gas_charge
     (* div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 *)
     | DivCeil of gas_charge * PositiveInt.t
-    (* For a Scilla unsigned integer I: log(float(I) + 1.0) *)
-    | UintLogOf of Name.t
+    (* LogOf(I) = int (log(float(I) + 1.0)) + 1 *)
+    | LogOf of gas_charge
   [@@deriving sexp]
 end
 
@@ -88,8 +90,8 @@ module ScillaGasCharge (N : QualifiedName) = struct
     | MinOf of gas_charge * gas_charge
     (* div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 *)
     | DivCeil of gas_charge * PositiveInt.t
-    (* For a Scilla integer I: log(float(I) + 1.0) *)
-    | UintLogOf of Name.t
+    (* LogOf(I) = int (log(float(I) + 1.0)) + 1 *)
+    | LogOf of gas_charge
   [@@deriving sexp]
 
   let rec replace_variable_name ~f = function
@@ -105,36 +107,50 @@ module ScillaGasCharge (N : QualifiedName) = struct
     | MinOf (g1, g2) ->
         MinOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
     | DivCeil (g1, g2) -> DivCeil (replace_variable_name ~f g1, g2)
-    | UintLogOf v -> UintLogOf (f v)
+    | LogOf g -> LogOf (replace_variable_name ~f g)
 
   (* Assuming that resolver resolves
    *   SizeOf v : To the literal_size of v
    *   ValueOf v : The value of the integer literal
-   *   Other special purpose charges (ListLength, UintLogOf, etc)
+   *   Other special purpose charges (ListLength, etc)
    * to an integer compute the total gas charge (an integer) for g.
    *)
   let eval resolver g =
     let rec recurser g =
       match g with
-      | StaticCost i -> pure i
-      | SizeOf _ | ValueOf _ | LengthOf _ | UintLogOf _ | MapSortCost _ ->
-          resolver g
-      | SumOf (g1, g2) ->
+      | StaticCost i -> pure @@ GInt i
+      | SizeOf _ | ValueOf _ | LengthOf _ | MapSortCost _ -> resolver g
+      | SumOf (g1, g2) -> (
           let%bind i1 = recurser g1 in
           let%bind i2 = recurser g2 in
-          pure (i1 + i2)
-      | ProdOf (g1, g2) ->
+          match (i1, i2) with
+          | GInt i1', GInt i2' -> pure @@ GInt (i1' + i2')
+          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+      | ProdOf (g1, g2) -> (
           let%bind i1 = recurser g1 in
           let%bind i2 = recurser g2 in
-          pure (i1 * i2)
-      | MinOf (g1, g2) ->
+          match (i1, i2) with
+          | GInt i1', GInt i2' -> pure @@ GInt (i1' * i2')
+          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+      | MinOf (g1, g2) -> (
           let%bind i1 = recurser g1 in
           let%bind i2 = recurser g2 in
-          pure (Int.min i1 i2)
-      | DivCeil (g1, g2) ->
+          match (i1, i2) with
+          | GInt i1', GInt i2' -> pure @@ GInt (Int.min i1' i2')
+          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+      | DivCeil (g1, g2) -> (
           let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
           let%bind g1_i = recurser g1 in
-          pure (div_ceil g1_i (PositiveInt.get g2))
+          match g1_i with
+          | GInt g1_i' -> pure @@ GInt (div_ceil g1_i' (PositiveInt.get g2))
+          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+      | LogOf g ->
+          let logger uf =
+            let f = match uf with GFloat f -> f | GInt i -> Float.of_int i in
+            (Float.to_int @@ Float.log (f +. 1.0)) + 1
+          in
+          let%bind g' = recurser g in
+          pure @@ GInt (logger g')
     in
     recurser g
 
@@ -152,5 +168,5 @@ module ScillaGasCharge (N : QualifiedName) = struct
         sprintf "min(%s, %s)" (pp_gas_charge g1) (pp_gas_charge g2)
     | DivCeil (g1, g2) ->
         sprintf "divceil(%s, %d)" (pp_gas_charge g1) (PositiveInt.get g2)
-    | UintLogOf v -> sprintf "log (%s)" (Name.as_string v)
+    | LogOf g -> sprintf "log (%s)" (pp_gas_charge g)
 end

@@ -427,7 +427,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
              Option.(value_exn (bystrx_width a1) + value_exn (bystrx_width a2)))
     | Builtin_alt_bn128_G1_add, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
-        let multiplier = GasGasCharge.UintLogOf (GI.get_id s) in
+        let multiplier =
+          GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id s))
+        in
         pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
     | Builtin_alt_bn128_G1_neg, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
@@ -442,6 +444,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         match op with
         | Builtin_size | Builtin_get | Builtin_contains ->
             pure (GasGasCharge.StaticCost 1)
+        | Builtin_to_list ->
+            let len = GasGasCharge.LengthOf (GI.get_id m) in
+            pure @@ GasGasCharge.ProdOf (len, GasGasCharge.LogOf len)
         | _ ->
             pure
               (GasGasCharge.SumOf
@@ -486,7 +491,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               pure
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost base,
-                     GasGasCharge.UintLogOf (GI.get_id a) ))
+                     GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id a)) ))
           | _ -> fail0 "Invalid argument type to isqrt")
       | _ -> pure (GasGasCharge.StaticCost base)
     in

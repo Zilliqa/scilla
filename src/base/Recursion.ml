@@ -97,7 +97,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           (recursion_gas_charge g1, recursion_gas_charge g2)
     | DivCeil (g1, g2) ->
         RecursionSyntax.SGasCharge.DivCeil (recursion_gas_charge g1, g2)
-    | UintLogOf v -> RecursionSyntax.SGasCharge.UintLogOf v
+    | LogOf g -> RecursionSyntax.SGasCharge.LogOf (recursion_gas_charge g)
 
   let recursion_payload p =
     match p with

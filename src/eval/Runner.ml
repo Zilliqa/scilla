@@ -283,7 +283,11 @@ let perform_dynamic_typechecks checks gas_remaining =
       let gas_charge = RG.address_typecheck_cost t in
       let gas_cost =
         match RG.GasGasCharge.eval dummy_gas_resolver gas_charge with
-        | Ok cost -> Uint64.of_int cost
+        | Ok (GasCharge.GInt cost) -> Uint64.of_int cost
+        | Ok (GasCharge.GFloat _) ->
+            fatal_error_gas_scale Gas.scale_factor
+              (mk_error0 "GasCharge evaluated to float")
+              gas_remaining
         | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining
       in
       let new_gas_remaining = Uint64.sub gas_remaining gas_cost in

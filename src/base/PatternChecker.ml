@@ -74,7 +74,7 @@ struct
           (pm_check_gas_charge g1, pm_check_gas_charge g2)
     | DivCeil (g1, g2) ->
         CheckedPatternSyntax.SGasCharge.DivCeil (pm_check_gas_charge g1, g2)
-    | UintLogOf v -> CheckedPatternSyntax.SGasCharge.UintLogOf v
+    | LogOf g -> CheckedPatternSyntax.SGasCharge.LogOf (pm_check_gas_charge g)
     [@@deriving sexp]
 
   let pm_check_clauses t clauses =

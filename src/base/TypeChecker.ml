@@ -277,7 +277,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     | MinOf (g1, g2) ->
         TypedSyntax.SGasCharge.MinOf (type_gas_charge g1, type_gas_charge g2)
     | DivCeil (g1, g2) -> TypedSyntax.SGasCharge.DivCeil (type_gas_charge g1, g2)
-    | UintLogOf v -> TypedSyntax.SGasCharge.UintLogOf v
+    | LogOf g -> TypedSyntax.SGasCharge.LogOf (type_gas_charge g)
 
   (**************************************************************)
   (*                   Typing expressions                       *)
