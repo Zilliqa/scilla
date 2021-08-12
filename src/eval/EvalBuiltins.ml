@@ -38,6 +38,43 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
   let print_literal_list ls = PrettyPrinters.pp_literal_list ls
 
+  let rec serialize_literal l =
+    match l with
+    (* we don't keep type information here *)
+    | StringLit s -> s
+    | IntLit il -> bstring_from_int_lit il
+    | UintLit uil -> bstring_from_uint_lit uil
+    | BNum s -> s
+    | ByStr bs -> Bystr.to_raw_bytes bs
+    | ByStrX bs -> Bystrx.to_raw_bytes bs
+    | Msg entries ->
+        let raw_entries =
+          List.map entries ~f:(fun (s, _t, v) -> s ^ serialize_literal v)
+        in
+        Core_kernel.String.concat ~sep:"" raw_entries
+    | Map (_, tbl) ->
+        let raw_strings =
+          let tbl' =
+            (* Sort based on keys to keep the serialization predictable
+             * across implementations / platforms. *)
+            Caml.List.sort
+              (fun (k1, _) (k2, _) ->
+                String.compare (serialize_literal k1) (serialize_literal k2))
+              (Caml.List.of_seq @@ Caml.Hashtbl.to_seq tbl)
+          in
+          Caml.List.fold_left
+            (fun acc (k, v) ->
+              serialize_literal k :: serialize_literal v :: acc)
+            [] tbl'
+        in
+        Core_kernel.String.concat ~sep:"" raw_strings
+    | ADTValue (cons_name, _, params) ->
+        let raw_params = List.map params ~f:serialize_literal in
+        Core_kernel.String.concat ~sep:""
+          (BIName.as_string cons_name :: raw_params)
+    | Clo _fun -> "(Clo <fun>)"
+    | TAbs _fun -> "(Tabs <fun>)"
+
   let builtin_fail name ls =
     fail0
     @@ sprintf "Cannot apply built-in %s to a list of arguments:%s." name
@@ -551,35 +588,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let hash_helper hasher name len ls =
       match ls with
       | [ l ] -> (
-          let rec raw_bytes l =
-            match l with
-            (* we don't keep type information here *)
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | BNum s -> s
-            | ByStr bs -> Bystr.to_raw_bytes bs
-            | ByStrX bs -> Bystrx.to_raw_bytes bs
-            | Msg entries ->
-                let raw_entries =
-                  List.map entries ~f:(fun (s, _t, v) -> s ^ raw_bytes v)
-                in
-                Core_kernel.String.concat ~sep:"" raw_entries
-            | Map (_, tbl) ->
-                let raw_strings =
-                  Caml.Hashtbl.fold
-                    (fun k v acc -> raw_bytes k :: raw_bytes v :: acc)
-                    tbl []
-                in
-                Core_kernel.String.concat ~sep:"" raw_strings
-            | ADTValue (cons_name, _, params) ->
-                let raw_params = List.map params ~f:raw_bytes in
-                Core_kernel.String.concat ~sep:""
-                  (BIName.as_string cons_name :: raw_params)
-            | Clo _fun -> "(Clo <fun>)"
-            | TAbs _fun -> "(Tabs <fun>)"
-          in
-          let lhash = hasher (raw_bytes l) in
+          let lhash = hasher (serialize_literal l) in
           match Bystrx.of_raw_bytes len lhash with
           | Some bs -> pure @@ ByStrX bs
           | None ->
@@ -922,12 +931,21 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let otyp = pair_typ kt vt in
           let nil = build_nil_lit otyp in
           let ol =
-            Caml.Hashtbl.fold
-              (fun k v accum ->
+            let kvl' =
+              (* Sort map entries in reverse order, so that when we
+               * build the Scilla list next, it'll be in ascending order. *)
+              Caml.List.sort
+                (fun (k1, _) (k2, _) ->
+                  String.descending (serialize_literal k1)
+                    (serialize_literal k2))
+                (Caml.List.of_seq @@ Caml.Hashtbl.to_seq entries)
+            in
+            Caml.List.fold_left
+              (fun accum (k, v) ->
                 let kv = build_pair_lit k kt v vt in
                 let kvl = build_cons_lit kv otyp accum in
                 kvl)
-              entries nil
+              nil kvl'
           in
           pure ol
       | _ -> builtin_fail "Map.to_list" ls
