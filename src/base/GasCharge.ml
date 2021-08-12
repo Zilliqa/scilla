@@ -18,8 +18,26 @@
 
 open Core_kernel
 open Result.Let_syntax
+open ErrorUtils
 open MonadUtil
 open Identifier
+
+(* Poor man's dependent type for int > 0.
+ * https://stackoverflow.com/a/55364673/2128804 *)
+module PositiveInt : sig
+  type t [@@deriving sexp]
+
+  val create : int -> (t, scilla_error list) result
+
+  val get : t -> int
+end = struct
+  type t = int [@@deriving sexp]
+
+  let create i =
+    if i > 0 then pure i else fail0 "PositiveInt: Constructed failed."
+
+  let get i = i
+end
 
 module type GC = sig
   module Name : QualifiedName
@@ -42,9 +60,9 @@ module type GC = sig
     (* The minimum of two gas charges. *)
     | MinOf of gas_charge * gas_charge
     (* div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 *)
-    | DivCeil of gas_charge * gas_charge
-    (* For a Scilla integer I: log(float(I) + 1.0) *)
-    | LogOf of Name.t
+    | DivCeil of gas_charge * PositiveInt.t
+    (* For a Scilla unsigned integer I: log(float(I) + 1.0) *)
+    | UintLogOf of Name.t
   [@@deriving sexp]
 end
 
@@ -69,9 +87,9 @@ module ScillaGasCharge (N : QualifiedName) = struct
     (* The minimum of two gas charges. *)
     | MinOf of gas_charge * gas_charge
     (* div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 *)
-    | DivCeil of gas_charge * gas_charge
+    | DivCeil of gas_charge * PositiveInt.t
     (* For a Scilla integer I: log(float(I) + 1.0) *)
-    | LogOf of Name.t
+    | UintLogOf of Name.t
   [@@deriving sexp]
 
   let rec replace_variable_name ~f = function
@@ -86,21 +104,20 @@ module ScillaGasCharge (N : QualifiedName) = struct
         ProdOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
     | MinOf (g1, g2) ->
         MinOf (replace_variable_name ~f g1, replace_variable_name ~f g2)
-    | DivCeil (g1, g2) ->
-        DivCeil (replace_variable_name ~f g1, replace_variable_name ~f g2)
-    | LogOf v -> LogOf (f v)
+    | DivCeil (g1, g2) -> DivCeil (replace_variable_name ~f g1, g2)
+    | UintLogOf v -> UintLogOf (f v)
 
   (* Assuming that resolver resolves
    *   SizeOf v : To the literal_size of v
    *   ValueOf v : The value of the integer literal
-   *   Other special purpose charges (ListLength, LogOf, etc)
+   *   Other special purpose charges (ListLength, UintLogOf, etc)
    * to an integer compute the total gas charge (an integer) for g.
    *)
   let eval resolver g =
     let rec recurser g =
       match g with
       | StaticCost i -> pure i
-      | SizeOf _ | ValueOf _ | LengthOf _ | LogOf _ | MapSortCost _ ->
+      | SizeOf _ | ValueOf _ | LengthOf _ | UintLogOf _ | MapSortCost _ ->
           resolver g
       | SumOf (g1, g2) ->
           let%bind i1 = recurser g1 in
@@ -117,8 +134,7 @@ module ScillaGasCharge (N : QualifiedName) = struct
       | DivCeil (g1, g2) ->
           let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
           let%bind g1_i = recurser g1 in
-          let%bind g2_i = recurser g2 in
-          pure (div_ceil g1_i g2_i)
+          pure (div_ceil g1_i (PositiveInt.get g2))
     in
     recurser g
 
@@ -135,6 +151,6 @@ module ScillaGasCharge (N : QualifiedName) = struct
     | MinOf (g1, g2) ->
         sprintf "min(%s, %s)" (pp_gas_charge g1) (pp_gas_charge g2)
     | DivCeil (g1, g2) ->
-        sprintf "divceil(%s, %s)" (pp_gas_charge g1) (pp_gas_charge g2)
-    | LogOf v -> sprintf "log (%s)" (Name.as_string v)
+        sprintf "divceil(%s, %d)" (pp_gas_charge g1) (PositiveInt.get g2)
+    | UintLogOf v -> sprintf "log (%s)" (Name.as_string v)
 end

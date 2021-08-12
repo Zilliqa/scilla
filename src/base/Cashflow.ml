@@ -121,10 +121,8 @@ struct
         CFSyntax.SGasCharge.ProdOf (cf_init_gas_charge g1, cf_init_gas_charge g2)
     | MinOf (g1, g2) ->
         CFSyntax.SGasCharge.MinOf (cf_init_gas_charge g1, cf_init_gas_charge g2)
-    | DivCeil (g1, g2) ->
-        CFSyntax.SGasCharge.DivCeil
-          (cf_init_gas_charge g1, cf_init_gas_charge g2)
-    | LogOf v -> CFSyntax.SGasCharge.LogOf v
+    | DivCeil (g1, g2) -> CFSyntax.SGasCharge.DivCeil (cf_init_gas_charge g1, g2)
+    | UintLogOf v -> CFSyntax.SGasCharge.UintLogOf v
 
   let rec cf_init_tag_pattern p =
     match p with

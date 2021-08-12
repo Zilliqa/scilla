@@ -101,7 +101,7 @@ let eval_gas_charge env g =
               ("Variable "
               ^ EvalName.as_error_string vstr
               ^ " did not resolve to an integer"))
-    | SGasCharge.LogOf vstr -> (
+    | SGasCharge.UintLogOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
         | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
