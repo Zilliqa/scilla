@@ -132,6 +132,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           else 0
         in
         sub_cost + this_cost
+    | ADTValue (_, _, ls) ->
+        List.fold ~init:0 ls ~f:(fun acc l -> acc + map_sort_cost l)
     | _ -> 0
 
   let rec expr_static_cost e =
@@ -373,17 +375,29 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_schnorr_get_address, _, [ a ]
     | Builtin_ecdsa_recover_pk, _, a :: _ ->
         (* Block size of sha256hash is 512 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
         let%bind n = GasCharge.PositiveInt.create (64 * 15) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_keccak256hash, _, [ a ] ->
         (* Block size of keccak256hash is 1088 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
         let%bind n = GasCharge.PositiveInt.create (136 * 15) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
         let%bind n = GasCharge.PositiveInt.create (64 * 10) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_schnorr_verify, _, [ _; s; _ ]
