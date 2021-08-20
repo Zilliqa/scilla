@@ -87,48 +87,47 @@ let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
   let open EvalGas.GasSyntax in
-  let logger u = Float.to_int @@ Float.log (u +. 1.0) in
   let resolver = function
     | SGasCharge.SizeOf vstr ->
         let%bind l = Env.lookup env (mk_loc_id vstr) in
-        EvalGas.literal_cost l
+        let%bind lc = EvalGas.literal_cost l in
+        pure @@ GasCharge.GInt lc
     | SGasCharge.ValueOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
-        | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
+        | UintLit (Uint32L ui) -> pure @@ GasCharge.GInt (Uint32.to_int ui)
+        | UintLit (Uint64L ui) -> pure @@ GasCharge.GFloat (Uint64.to_float ui)
+        | UintLit (Uint128L ui) ->
+            pure @@ GasCharge.GFloat (Uint128.to_float ui)
+        | UintLit (Uint256L ui) ->
+            pure @@ GasCharge.GFloat (Integer256.Uint256.to_float ui)
+        | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
+            let s = Bytes.of_string @@ Bystrx.to_raw_bytes s' in
+            let ui = Integer256.Uint256.of_bytes_big_endian s 0 in
+            pure @@ GasCharge.GFloat (Integer256.Uint256.to_float ui)
         | _ ->
             fail0
               ("Variable "
               ^ EvalName.as_error_string vstr
               ^ " did not resolve to an integer"))
-    | SGasCharge.LogOf vstr -> (
-        let%bind l = Env.lookup env (mk_loc_id vstr) in
-        match l with
-        | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
-            let s = Bytes.of_string @@ Bystrx.to_raw_bytes s' in
-            let u = Integer256.Uint256.of_bytes_big_endian s 0 in
-            pure @@ logger (Integer256.Uint256.to_float u)
-        | UintLit (Uint32L i) -> pure (logger (Stdint.Uint32.to_float i))
-        | UintLit (Uint64L i) -> pure (logger (Stdint.Uint64.to_float i))
-        | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
-        | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
-        | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value")
     | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
-        | Map (_, m) -> pure @@ Caml.Hashtbl.length m
+        | Map (_, m) -> pure @@ GasCharge.GInt (Caml.Hashtbl.length m)
         | ADTValue _ ->
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
-            pure @@ List.length l'
+            pure @@ GasCharge.GInt (List.length l')
         | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists")
     | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
-        pure @@ EvalGas.map_sort_cost m
+        pure @@ GasCharge.GInt (EvalGas.map_sort_cost m)
     | SGasCharge.SumOf _ | SGasCharge.ProdOf _ | SGasCharge.DivCeil _
-    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ ->
+    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ | SGasCharge.LogOf _ ->
         fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
-  SGasCharge.eval resolver g
+  match%bind SGasCharge.eval resolver g with
+  | GasCharge.GInt i -> pure i
+  | GasCharge.GFloat _ -> fail0 "eval_gas evaluated to a float value"
 
 let builtin_cost env f targs tps args_id =
   let open MonadUtil in

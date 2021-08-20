@@ -270,11 +270,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           pure @@ PostDisSyntax.SGasCharge.MinOf (dis_g1, dis_g2)
       | DivCeil (g1, g2) ->
           let%bind dis_g1 = recurser g1 in
-          let%bind dis_g2 = recurser g2 in
-          pure @@ PostDisSyntax.SGasCharge.DivCeil (dis_g1, dis_g2)
-      | LogOf v ->
-          let%bind dis_v = dis_id_helper v in
-          pure @@ PostDisSyntax.SGasCharge.LogOf dis_v
+          pure @@ PostDisSyntax.SGasCharge.DivCeil (dis_g1, g2)
+      | LogOf g ->
+          let%bind dis_g = recurser g in
+          pure @@ PostDisSyntax.SGasCharge.LogOf dis_g
     in
     recurser gc
 
