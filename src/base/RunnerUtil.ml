@@ -179,7 +179,17 @@ let import_all_libs ldirs =
   in
   (* Make a list of all libraries and parse them through import_lib above. *)
   let names = List.concat_map ldirs ~f:get_lib_list in
-  import_libs names []
+  (* We sort the imports because ldirs / (Sys.readdir dir) may not
+   * have a deterministic order across platforms and implementations. *)
+  let names' =
+    List.sort
+      ~compare:(fun a b ->
+        String.compare
+          (RULocalIdentifier.as_string (fst a))
+          (RULocalIdentifier.as_string (fst b)))
+      names
+  in
+  import_libs names' []
 
 type runner_cli = {
   input_file : string;
