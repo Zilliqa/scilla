@@ -166,9 +166,9 @@ let import_all_libs ldirs =
      *)
     if not (Caml.Sys.file_exists dir) then []
     else
-      let files =
-        List.sort ~compare:String.compare @@ Array.to_list (Sys.readdir dir)
-      in
+      let files_unsorted = Array.to_list (Sys.readdir dir) in
+      printf "Files: %s\n" (String.concat ~sep:" " files_unsorted);
+      let files = List.sort ~compare:String.compare files_unsorted in
       List.filter_map files ~f:(fun file ->
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
