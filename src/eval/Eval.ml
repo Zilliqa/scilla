@@ -140,18 +140,18 @@ let builtin_cost env f targs tps args_id =
 
 (* Return a builtin_op wrapped in EvalMonad *)
 let builtin_executor env f targs args_id =
-  let%bind arg_lits =
-    mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
-  in
+  let open MonadUtil in
+  let open Result.Let_syntax in
+  let%bind arg_lits = mapM args_id ~f:(fun arg -> Env.lookup env arg) in
   (* Builtin elaborators need to know the literal type of arguments *)
-  let%bind tps = mapM arg_lits ~f:(fun l -> fromR @@ literal_type l) in
+  let%bind tps = mapM arg_lits ~f:(fun l -> literal_type l) in
   let%bind ret_typ, op =
     EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
       ~vargtypes:tps
   in
-  let%bind cost = fromR @@ builtin_cost env f targs tps args_id in
+  let%bind cost = builtin_cost env f targs tps args_id in
   let res () = op targs arg_lits ret_typ in
-  checkwrap_op res (Uint64.of_int cost) []
+  pure (res, Uint64.of_int cost)
 
 (* Replace address types with ByStr20 in a literal. 
    This is to ensure that address types are treated as ByStr20 throughout the interpreter.  *)
@@ -280,7 +280,8 @@ let rec exp_eval erep env =
       in
       exp_eval e_branch env'
   | Builtin (i, targs, actuals) ->
-      let%bind res = builtin_executor env i targs actuals in
+      let%bind thunk, cost = fromR @@ builtin_executor env i targs actuals in
+      let%bind res = checkwrap_opR thunk cost in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =
