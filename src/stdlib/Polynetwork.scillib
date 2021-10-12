@@ -586,9 +586,9 @@ let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
     let folder = @list_foldl ByStr20 Uint32 in
     let foldf =
       fun (n : Uint32) =>
-      fun (s : ByStr20) =>
-        let is_s_in_signers = memmer eqquer s signers in
-        match is_s_in_signers with
+      fun (k : ByStr20) =>
+        let is_k_in_signers = memmer eqquer k signers in
+        match is_k_in_signers with
         | True =>
           let one = Uint32 1 in
           builtin add n one
