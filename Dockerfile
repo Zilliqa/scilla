@@ -1,7 +1,7 @@
 # escape=\
 ARG BASE_IMAGE=ubuntu:18.04
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} as builder
 
 ARG MAJOR_VERSION=0
 
@@ -40,4 +40,30 @@ RUN bash scripts/install_cmake_ubuntu.sh \
     && make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval $(opam env) && \
-    make
+    make release
+
+# Generate a minified release image
+RUN mkdir -p /scilla/0/bin2/ && cp -L /scilla/0/bin/* /scilla/0/bin2/ && strip /scilla/0/bin2/*
+
+FROM ${BASE_IMAGE}
+
+RUN mkdir -p \
+    /scilla/0/bin \
+    /scilla/0/src/stdlib
+WORKDIR /scilla/0
+# pour in scilla binaries
+COPY --from=builder  /scilla/0/bin2            /scilla/0/bin
+# pour in scilla conntract stdlibs
+COPY --from=builder  /scilla/0/src/stdlib     /scilla/0/src/stdlib
+# put bins into one of dir in PATH
+RUN ln -s /scilla/0/bin/* /usr/local/bin/ \
+    && apt-get update \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:avsm/ppa -y \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    cmake \
+    libssl-dev \
+    libsecp256k1-dev \
+    && rm -rf /var/lib/apt/lists/*
