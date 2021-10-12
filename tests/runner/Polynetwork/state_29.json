@@ -1,0 +1,28 @@
+[
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "f_curKeepers",
+      "type": "List (ByStr20)",
+      "value": [
+        "0x09732fac787afb2c5d3abb45f3927da18504f10f",
+        "0x7fbfc361a31bdbc57ccc7917fe5dbdbba744e3a8",
+        "0xa42a4e85034d5bebc225743da400cc4c0e43727a",
+        "0x5d60f39ab5bec41fa712562a5c098d8a128cd406",
+        "0xda9cdffbfccab4181efc77831dc8ce7c442a7c7f",
+        "0xb98d72dc7743ede561f225e1bf258f49aea8f786",
+        "0x02cbc020209ef8835388882e2c4c4e6acef96f28"
+      ]
+    },
+    { "vname": "f_curStartHeight", "type": "Uint32", "value": "0" },
+    {
+      "vname": "f_zilToPolyTxHashMap",
+      "type": "Map (Uint256) (ByStr32)",
+      "value": []
+    },
+    { "vname": "f_zilToPolyTxHashIndex", "type": "Uint256", "value": "0" },
+    {
+      "vname": "f_fromChainTxExist",
+      "type": "Map (Uint64) (Map (ByStr32) (Polynetwork.Unit))",
+      "value": []
+    }
+]

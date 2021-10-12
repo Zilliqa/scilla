@@ -1,13 +1,13 @@
 {
-  "gas_remaining": "2286",
+  "gas_remaining": "5668",
   "errors": [
     {
       "error_message":
-        "Exception thrown: (Message [(_exception : (String \"Txn already executed\"))])",
+        "Exception thrown: (Message [(_exception : (String \"Signature verification failed\"))])",
       "start_location": {
         "file": "tests/contracts/Polynetwork.scilla",
-        "line": 80,
-        "column": 7
+        "line": 196,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
