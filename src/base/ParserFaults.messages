@@ -177,32 +177,6 @@ type_term: LPAREN WITH
 
 This is an invalid type term, please put a valid type term in the brackets.
 
-type_term: MAP CID CID LPAREN WITH
-##
-## Ends in an error in state: 47.
-##
-## t_map_value_args -> LPAREN . t_map_value RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN
-##
-# see tests/parser/bad/type_t-map-cid-cid-lparen-with.scilla
-
-This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a separated capital identifier.
-
-type_term: MAP CID CID MAP WITH
-##
-## Ends in an error in state: 41.
-##
-## t_map_value_args -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## MAP
-##
-# see tests/parser/bad/type_t-map-cid-cid-map-with.scilla
-
-This is an invalid map type, the map value type is incorrect. It is likely there there is an ADT constructor with an invalid argument (a map with an invalid map key).
-
 type_term: MAP CID LPAREN CID CID TYPE
 ##
 ## Ends in an error in state: 38.
@@ -1378,7 +1352,7 @@ exp_term: FUN LPAREN ID COLON TID WITH
 ##
 # see tests/parser/bad/exps/exp_t-fun-lparen-id-colon-tid-with.scilexp
 
-This type annotation is not closed properly, or has a missing or misplaced '='.
+This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.
 
 exp_term: FUN LPAREN ID COLON WITH
 ##
@@ -1634,25 +1608,6 @@ exp_term: MATCH SPID WITH BAR CID LPAREN WITH
 # see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-lparen-with.scilexp
 
 This match expression has invalid pattern arguments, in the brackets we expect a pattern.
-
-exp_term: MATCH SPID WITH BAR CID TYPE
-##
-## Ends in an error in state: 127.
-##
-## pattern -> scid . list(arg_pattern) [ RPAREN ARROW ]
-##
-## The known suffix of the stack is as follows:
-## scid
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 50, spurious reduction of production scid -> CID
-##
-# see tests/parser/bad/exps/exp_t-match-spid-with-bar-cid-type.scilexp
-
-In this match expression, the parser expects either a list of pattern arguments or an arrow (e.g. '=>').
 
 exp_term: MATCH SPID WITH BAR CID UNDERSCORE WITH
 ##
@@ -2317,89 +2272,6 @@ type_term: HEXLIT WITH
 ##
 
 Ends in an error in state: 22.
-
-type_term: MAP CID CID CID UNDERSCORE
-##
-## Ends in an error in state: 53.
-##
-## list(t_map_value_args) -> t_map_value_args . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## t_map_value_args
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 50, spurious reduction of production scid -> CID
-## In state 54, spurious reduction of production t_map_value_args -> scid
-##
-
-Extra parameters or missing parentheses in type signature.
-
-type_term: MAP CID CID CID WITH
-##
-## Ends in an error in state: 50.
-##
-## scid -> CID . [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## scid -> CID . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## CID
-##
-
-Ends in an error in state: 50.
-
-type_term: MAP CID CID LPAREN CID TYPE
-##
-## Ends in an error in state: 48.
-##
-## t_map_value_args -> LPAREN t_map_value . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## LPAREN t_map_value
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 25, spurious reduction of production scid -> CID
-## In state 40, spurious reduction of production list(t_map_value_args) ->
-## In state 56, spurious reduction of production t_map_value -> scid list(t_map_value_args)
-##
-
-Ends in an error in state: 48.
-
-type_term: MAP CID CID MAP CID TYPE
-##
-## Ends in an error in state: 42.
-##
-## t_map_value_args -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## MAP t_map_key
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 25, spurious reduction of production scid -> CID
-## In state 45, spurious reduction of production t_map_key -> scid
-##
-
-Ends in an error in state: 42.
-
-type_term: MAP CID HEXLIT PERIOD CID AND
-##
-## Ends in an error in state: 40.
-##
-## t_map_value -> scid . list(t_map_value_args) [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-##
-## The known suffix of the stack is as follows:
-## scid
-##
-
-Ends in an error in state: 40.
 
 type_term: MAP CID MAP CID TYPE
 ##
