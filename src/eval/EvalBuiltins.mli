@@ -20,7 +20,6 @@ open Scilla_base
 open Syntax
 open ErrorUtils
 open BuiltIns
-open MonadUtil
 
 module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) : sig
   module EvalBuiltInDictionary : sig
@@ -32,7 +31,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) : sig
       (* value arguments *)
       BIType.t ->
       (* result type *)
-      (BILiteral.t, scilla_error list, 'a -> 'b) CPSMonad.t
+      (BILiteral.t, scilla_error list) result
 
     (* Returns a pair:
      * - The result type for given argument types, e.g., Bool
@@ -44,9 +43,6 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) : sig
       (* type arguments *)
       vargtypes:BIType.t list ->
       (* types of value arguments *)
-      ( BIType.t * ('a, 'b) built_in_executor,
-        scilla_error list,
-        'a -> 'b )
-      CPSMonad.t
+      (BIType.t * ('a, 'b) built_in_executor, scilla_error list) result
   end
 end

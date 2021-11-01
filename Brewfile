@@ -6,7 +6,7 @@ brew "ocaml"
 brew "opam"
 brew "pkg-config"
 brew "libffi"
-brew "openssl"
+brew "openssl@1.1"
 brew "boost"
 brew "pcre"
 brew "domt4/crypto/secp256k1", args: ["with-enable-module-recovery"]

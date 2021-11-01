@@ -2,11 +2,11 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value type is incorrect. It is likely there there is an ADT constructor with an invalid argument (a map with an invalid map key).\n",
+        "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-cid-map-with.scilla",
         "line": 6,
-        "column": 38
+        "column": 31
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

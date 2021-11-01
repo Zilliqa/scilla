@@ -23,12 +23,11 @@ open ErrorUtils
 open MonadUtil
 open BuiltIns
 open TypeUtil
-open EvalMonad
-open EvalMonad.Let_syntax
 open Big_int
 open Stdint
 open Integer256
 open TypeUtilities
+open Result.Let_syntax
 
 module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
   module BaseBuiltins = ScillaBuiltIns (SR) (ER)
@@ -37,6 +36,43 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
   open BIType
 
   let print_literal_list ls = PrettyPrinters.pp_literal_list ls
+
+  let rec serialize_literal l =
+    match l with
+    (* we don't keep type information here *)
+    | StringLit s -> s
+    | IntLit il -> bstring_from_int_lit il
+    | UintLit uil -> bstring_from_uint_lit uil
+    | BNum s -> s
+    | ByStr bs -> Bystr.to_raw_bytes bs
+    | ByStrX bs -> Bystrx.to_raw_bytes bs
+    | Msg entries ->
+        let raw_entries =
+          List.map entries ~f:(fun (s, _t, v) -> s ^ serialize_literal v)
+        in
+        Core_kernel.String.concat ~sep:"" raw_entries
+    | Map (_, tbl) ->
+        let raw_strings =
+          let tbl' =
+            (* Sort based on keys to keep the serialization predictable
+             * across implementations / platforms. *)
+            Caml.List.sort
+              (fun (k1, _) (k2, _) ->
+                String.compare (serialize_literal k1) (serialize_literal k2))
+              (Caml.List.of_seq @@ Caml.Hashtbl.to_seq tbl)
+          in
+          Caml.List.fold_left
+            (fun acc (k, v) ->
+              serialize_literal k :: serialize_literal v :: acc)
+            [] tbl'
+        in
+        Core_kernel.String.concat ~sep:"" raw_strings
+    | ADTValue (cons_name, _, params) ->
+        let raw_params = List.map params ~f:serialize_literal in
+        Core_kernel.String.concat ~sep:""
+          (BIName.as_string cons_name :: raw_params)
+    | Clo _fun -> "(Clo <fun>)"
+    | TAbs _fun -> "(Tabs <fun>)"
 
   let builtin_fail name ls =
     fail0
@@ -551,35 +587,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let hash_helper hasher name len ls =
       match ls with
       | [ l ] -> (
-          let rec raw_bytes l =
-            match l with
-            (* we don't keep type information here *)
-            | StringLit s -> s
-            | IntLit il -> bstring_from_int_lit il
-            | UintLit uil -> bstring_from_uint_lit uil
-            | BNum s -> s
-            | ByStr bs -> Bystr.to_raw_bytes bs
-            | ByStrX bs -> Bystrx.to_raw_bytes bs
-            | Msg entries ->
-                let raw_entries =
-                  List.map entries ~f:(fun (s, _t, v) -> s ^ raw_bytes v)
-                in
-                Core_kernel.String.concat ~sep:"" raw_entries
-            | Map (_, tbl) ->
-                let raw_strings =
-                  Caml.Hashtbl.fold
-                    (fun k v acc -> raw_bytes k :: raw_bytes v :: acc)
-                    tbl []
-                in
-                Core_kernel.String.concat ~sep:"" raw_strings
-            | ADTValue (cons_name, _, params) ->
-                let raw_params = List.map params ~f:raw_bytes in
-                Core_kernel.String.concat ~sep:""
-                  (BIName.as_string cons_name :: raw_params)
-            | Clo _fun -> "(Clo <fun>)"
-            | TAbs _fun -> "(Tabs <fun>)"
-          in
-          let lhash = hasher (raw_bytes l) in
+          let lhash = hasher (serialize_literal l) in
           match Bystrx.of_raw_bytes len lhash with
           | Some bs -> pure @@ ByStrX bs
           | None ->
@@ -736,7 +744,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStrX privkey; ByStr msg ] when Bystrx.width privkey = privkey_len
         -> (
           let%bind s =
-            fromR @@ sign (Bystrx.to_raw_bytes privkey) (Bystr.to_raw_bytes msg)
+            sign (Bystrx.to_raw_bytes privkey) (Bystr.to_raw_bytes msg)
           in
           match Bystrx.of_raw_bytes signature_len s with
           | Some bs -> pure @@ ByStrX bs
@@ -751,11 +759,10 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         when Bystrx.width signature = signature_len
              && Bystrx.width pubkey = pubkey_len ->
           let%bind v =
-            fromR
-            @@ verify
-                 (Bystrx.to_raw_bytes pubkey)
-                 (Bystr.to_raw_bytes msg)
-                 (Bystrx.to_raw_bytes signature)
+            verify
+              (Bystrx.to_raw_bytes pubkey)
+              (Bystr.to_raw_bytes msg)
+              (Bystrx.to_raw_bytes signature)
           in
           pure @@ build_bool_lit v
       | _ -> builtin_fail "ecdsa_verify" ls
@@ -766,10 +773,9 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStr msg; ByStrX signature; UintLit (Uint32L recid) ]
         when Bystrx.width signature = signature_len -> (
           let%bind pk =
-            fromR
-            @@ recover_pk (Bystr.to_raw_bytes msg)
-                 (Bystrx.to_raw_bytes signature)
-                 (Stdint.Uint32.to_int recid)
+            recover_pk (Bystr.to_raw_bytes msg)
+              (Bystrx.to_raw_bytes signature)
+              (Stdint.Uint32.to_int recid)
           in
           match Bystrx.of_raw_bytes uncompressed_pubkey_len pk with
           | Some pk' -> pure (ByStrX pk')
@@ -795,42 +801,42 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let alt_bn128_G1_add _ ls _ =
       match ls with
       | [ p1; p2 ] -> (
-          let%bind p1' = fromR @@ scilla_g1point_to_ocaml p1 in
-          let%bind p2' = fromR @@ scilla_g1point_to_ocaml p2 in
+          let%bind p1' = scilla_g1point_to_ocaml p1 in
+          let%bind p2' = scilla_g1point_to_ocaml p2 in
           match Snark.alt_bn128_G1_add p1' p2' with
           | None -> pure @@ build_none_lit g1point_type
           | Some pr ->
-              let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
+              let%bind pr' = ocaml_g1point_to_scilla_lit pr in
               pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_add" ls
 
     let alt_bn128_G1_mul _ ls _ =
       match ls with
       | [ p1; s ] -> (
-          let%bind p1' = fromR @@ scilla_g1point_to_ocaml p1 in
-          let%bind s' = fromR @@ scilla_scalar_to_ocaml s in
+          let%bind p1' = scilla_g1point_to_ocaml p1 in
+          let%bind s' = scilla_scalar_to_ocaml s in
           match Snark.alt_bn128_G1_mul p1' s' with
           | None -> pure @@ build_none_lit g1point_type
           | Some pr ->
-              let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
+              let%bind pr' = ocaml_g1point_to_scilla_lit pr in
               pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
 
     let alt_bn128_G1_neg _ ls _ =
       match ls with
       | [ p1 ] -> (
-          let%bind p1' = fromR @@ scilla_g1point_to_ocaml p1 in
+          let%bind p1' = scilla_g1point_to_ocaml p1 in
           match Snark.alt_bn128_G1_neg p1' with
           | None -> pure @@ build_none_lit g1point_type
           | Some pr ->
-              let%bind pr' = fromR @@ ocaml_g1point_to_scilla_lit pr in
+              let%bind pr' = ocaml_g1point_to_scilla_lit pr in
               pure @@ build_some_lit pr' g1point_type)
       | _ -> builtin_fail "Crypto.alt_bn128_G1_neg" ls
 
     let alt_bn128_pairing_product _ ls _ =
       match ls with
       | [ pairs ] -> (
-          let%bind pairs' = fromR @@ scilla_g1g2pairlist_to_ocaml pairs in
+          let%bind pairs' = scilla_g1g2pairlist_to_ocaml pairs in
           match Snark.alt_bn128_pairing_product pairs' with
           | None -> pure @@ build_none_lit bool_typ
           | Some b -> pure @@ build_some_lit (build_bool_lit b) bool_typ)
@@ -922,12 +928,21 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           let otyp = pair_typ kt vt in
           let nil = build_nil_lit otyp in
           let ol =
-            Caml.Hashtbl.fold
-              (fun k v accum ->
+            let kvl' =
+              (* Sort map entries in reverse order, so that when we
+               * build the Scilla list next, it'll be in ascending order. *)
+              Caml.List.sort
+                (fun (k1, _) (k2, _) ->
+                  String.descending (serialize_literal k1)
+                    (serialize_literal k2))
+                (Caml.List.of_seq @@ Caml.Hashtbl.to_seq entries)
+            in
+            Caml.List.fold_left
+              (fun accum (k, v) ->
                 let kv = build_pair_lit k kt v vt in
                 let kvl = build_cons_lit kv otyp accum in
                 kvl)
-              entries nil
+              nil kvl'
           in
           pure ol
       | _ -> builtin_fail "Map.to_list" ls
@@ -953,7 +968,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       (* value arguments *)
       BIType.t ->
       (* result type *)
-      (BILiteral.t, scilla_error list, 'a -> 'b) CPSMonad.t
+      (BILiteral.t, scilla_error list) result
 
     (* A built-in record type:
        * arity
@@ -1069,11 +1084,10 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         | arity, optype, elab, exec ->
             if arity = List.length vargtypes then
               (* First: elaborate based on argument types *)
-              let%bind type_elab = fromR @@ elab optype targtypes vargtypes in
+              let%bind type_elab = elab optype targtypes vargtypes in
               (* Second: check applicability *)
               let%bind res_type =
-                fromR
-                @@ fun_type_applies type_elab vargtypes ~lc:(ER.get_loc rep)
+                fun_type_applies type_elab vargtypes ~lc:(ER.get_loc rep)
               in
               pure (res_type, exec)
             else fail0 @@ "Name or arity don't match"
