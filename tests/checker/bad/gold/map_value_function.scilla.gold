@@ -2,7 +2,8 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Syntax error, state number 41",
+      "error_message":
+        "This is an invalid map type, the map value type is likely incorrect. The map type must be a storable type, i.e., a base type, a valid ADT, or a map type.\n",
       "start_location": {
         "file": "checker/bad/map_value_function.scilla",
         "line": 7,
