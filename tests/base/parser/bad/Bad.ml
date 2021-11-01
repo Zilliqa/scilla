@@ -95,6 +95,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "stmts_t-id-lsqb-with.scilla";
       "stmts_t-id-with.scilla";
       "stmts_t-match-spid-underscore.scilla";
+      "stmts_t-match-spid-with-bar-cid-cid-with.scilla";
+      "stmts_t-match-spid-with-bar-cid-map.scilla";
       "stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla";
       "stmts_t-match-spid-with-bar-underscore-arrow-with.scilla";
       "stmts_t-match-spid-with-bar-underscore-with.scilla";
@@ -126,6 +128,12 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type_t-map-cid-cid-map-with.scilla";
       "type_t-map-cid-cid-underscore.scilla";
       "type_t-map-cid-lparen-cid-cid-type.scilla";
+      "type_t-map-cid-lparen-cid-cid-underscore.scilla";
+      "type_t-map-cid-lparen-cid-cid-lparen-map-cid-cid-rbrace.scilla";
+      "type_t-map-cid-lparen-cid-lparen-with.scilla";
+      "type_t-map-cid-lparen-cid-map-cid-type.scilla";
+      "type_t-map-cid-lparen-cid-map-with.scilla";
+      "type_t-map-cid-lparen-map-cid-cid-type.scilla";
       "type_t-map-cid-lparen-map-cid-cid-underscore.scilla";
       "type_t-map-cid-lparen-map-cid-underscore.scilla";
       "type_t-map-cid-lparen-map-with.scilla";
