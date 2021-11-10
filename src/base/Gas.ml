@@ -132,6 +132,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
           else 0
         in
         sub_cost + this_cost
+    | ADTValue (_, _, ls) ->
+        List.fold ~init:0 ls ~f:(fun acc l -> acc + map_sort_cost l)
     | _ -> 0
 
   let rec expr_static_cost e =
@@ -373,27 +375,40 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_schnorr_get_address, _, [ a ]
     | Builtin_ecdsa_recover_pk, _, a :: _ ->
         (* Block size of sha256hash is 512 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
-        let n = GasGasCharge.StaticCost (64 * 15) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
+        let%bind n = GasCharge.PositiveInt.create (64 * 15) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_keccak256hash, _, [ a ] ->
         (* Block size of keccak256hash is 1088 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
-        let n = GasGasCharge.StaticCost (136 * 15) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
+        let%bind n = GasCharge.PositiveInt.create (136 * 15) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_ripemd160hash, _, [ a ] ->
         (* Block size of ripemd160hash is 512 *)
-        let s = GasGasCharge.SizeOf (GI.get_id a) in
-        let n = GasGasCharge.StaticCost (64 * 10) in
+        let s =
+          GasGasCharge.SumOf
+            ( GasGasCharge.SizeOf (GI.get_id a),
+              GasGasCharge.MapSortCost (GI.get_id a) )
+        in
+        let%bind n = GasCharge.PositiveInt.create (64 * 10) in
         pure (GasGasCharge.DivCeil (s, n))
     | Builtin_schnorr_verify, _, [ _; s; _ ]
     | Builtin_ecdsa_verify, _, [ _; s; _ ] ->
         (* x = div_ceil (Bystr.width s + 66) 64 *)
+        let%bind divisor = GasCharge.PositiveInt.create 64 in
         let x =
           GasGasCharge.DivCeil
             ( GasGasCharge.SumOf
                 (GasGasCharge.SizeOf (GI.get_id s), GasGasCharge.StaticCost 66),
-              GasGasCharge.StaticCost 64 )
+              divisor )
         in
         (* (250 + (15 * x)) *)
         pure
@@ -426,7 +441,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
              Option.(value_exn (bystrx_width a1) + value_exn (bystrx_width a2)))
     | Builtin_alt_bn128_G1_add, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_G1_mul, _, [ _; s ] ->
-        let multiplier = GasGasCharge.LogOf (GI.get_id s) in
+        let multiplier =
+          GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id s))
+        in
         pure @@ GasGasCharge.ProdOf (GasGasCharge.StaticCost 20, multiplier)
     | Builtin_alt_bn128_G1_neg, _, _ -> pure (GasGasCharge.StaticCost 20)
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
@@ -441,6 +458,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         match op with
         | Builtin_size | Builtin_get | Builtin_contains ->
             pure (GasGasCharge.StaticCost 1)
+        | Builtin_to_list ->
+            let len = GasGasCharge.LengthOf (GI.get_id m) in
+            pure @@ GasGasCharge.ProdOf (len, GasGasCharge.LogOf len)
         | _ ->
             pure
               (GasGasCharge.SumOf
@@ -485,7 +505,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               pure
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost base,
-                     GasGasCharge.LogOf (GI.get_id a) ))
+                     GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id a)) ))
           | _ -> fail0 "Invalid argument type to isqrt")
       | _ -> pure (GasGasCharge.StaticCost base)
     in
