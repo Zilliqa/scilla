@@ -62,13 +62,93 @@ let output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
     output_verifier goldoutput_file msg (env.print_diff test_ctxt) out (fun s ->
         s)
 
-let foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
-    output_file goldoutput_file msg s =
+let gas_rem_from_output outs'' =
+  let outs' = String.split_on_chars ~on:[ '\n' ] outs'' in
+  match
+    List.find_map outs' ~f:(fun outs ->
+        let re =
+          Str.regexp ".*\"gas_remaining\"[\\t ]*:[\\t ]*\"\\([0-9]+\\)\".*"
+        in
+        match Str.string_match re outs 0 with
+        | true -> Some (Str.matched_group 1 outs)
+        | false -> (
+            let re = Str.regexp ".*Gas remaining:[\\t ]*\\([0-9]+\\).*" in
+            match Str.string_match re outs 0 with
+            | true -> Some (Str.matched_group 1 outs)
+            | false -> None))
+  with
+  | Some nums -> Int.of_string nums
+  | None -> 0
+
+let test_compiled_scilla_gas env test_ctxt name test_id init_name exit_code
+    expected_remaining_gas =
+  let istr = Int.to_string test_id in
+  let tests_dir =
+    FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+  in
+  let contract_dir = tests_dir ^/ "contracts" in
+  let dir = tests_dir ^/ "runner" ^/ name in
+  let tmpdir = bracket_tmpdir test_ctxt in
+  let ll_file = tmpdir ^/ name ^ istr ^. "ll" in
+  let init_file = dir ^/ init_name ^. "json" in
+  let compiler_args =
+    [
+      "-init";
+      init_file;
+      contract_dir ^/ name ^. "scilla";
+      (* stdlib is in src/stdlib *)
+      "-libdir";
+      env.stdlib_dir test_ctxt;
+      "-o";
+      ll_file;
+      "-gaslimit";
+      testsuit_gas_limit;
+    ]
+  in
+  let rtl_runner_args =
+    [
+      "-i";
+      ll_file;
+      "-n";
+      init_file;
+      "-g";
+      testsuit_gas_limit;
+      "-b";
+      dir ^/ "blockchain_" ^ istr ^. "json";
+      "-m";
+      dir ^/ "message_" ^ istr ^. "json";
+      "-s";
+      dir ^/ "state_" ^ istr ^. "json";
+    ]
+  in
+  let compiler_bin_o = env.scilla_compiler_bin test_ctxt in
+  match compiler_bin_o with
+  | Some compiler_bin ->
+      assert_command ~exit_code:succ_code ~use_stderr:true ~ctxt:test_ctxt
+        compiler_bin compiler_args;
+      let srtl_runner_bin_o = env.scilla_rtl_runner_bin test_ctxt in
+      assert_bool "Compiler bin provided but not SRTL runner"
+        (Option.is_some srtl_runner_bin_o);
+      (* We now have the LLVM IR for this, execute it. *)
+      assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt
+        (Option.value_exn srtl_runner_bin_o) rtl_runner_args
+        ~foutput:(fun runnerout ->
+          let srtl_gasrem = gas_rem_from_output (stream_to_string runnerout) in
+          assert_bool
+            (sprintf "Expected gas remaining vs SRTL gas remaining: %d %d"
+               expected_remaining_gas srtl_gasrem)
+            (srtl_gasrem = expected_remaining_gas))
+  | None -> ()
+
+let foutput compiled_scilla_tester env test_ctxt test_name ipc_mode
+    ipc_addr_thread exit_code output_file goldoutput_file msg s =
   (* if the test is supposed to succeed we read the output from a file,
      otherwise we read from the output stream *)
   let interpreter_output =
     get_interpreter_output env test_ctxt exit_code output_file s
   in
+  let interpreter_gas_rem = gas_rem_from_output interpreter_output in
+  compiled_scilla_tester exit_code interpreter_gas_rem;
   let out =
     if ipc_mode then
       (* The output of the interpreter in IPC mode will only contain "_balance" as
@@ -177,10 +257,13 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
           [ "run"; "-argv"; String.concat args ~sep:" " ]
         else args
       in
+      let compiled_scilla_tester =
+        test_compiled_scilla_gas env test_ctxt name i init_name
+      in
       assert_command ~exit_code ~use_stderr:true ~ctxt:test_ctxt runner args
         ~foutput:
-          (foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
-             output_file goldoutput_file msg)
+          (foutput compiled_scilla_tester env test_ctxt test_name ipc_mode
+             ipc_addr_thread exit_code output_file goldoutput_file msg)
     in
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.

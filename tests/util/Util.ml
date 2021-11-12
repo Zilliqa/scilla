@@ -34,6 +34,8 @@ type tsuite_env = {
   print_diff : test_ctxt -> bool;
   ext_ipc_server : test_ctxt -> string;
   server : test_ctxt -> bool;
+  scilla_compiler_bin : test_ctxt -> string option;
+  scilla_rtl_runner_bin : test_ctxt -> string option;
 }
 
 let run_tests tests =
@@ -65,7 +67,16 @@ let run_tests tests =
       "Address of external IPC server for IPC tests. Ensure that \"-runner \
        sequential\" is set"
   in
-
+  let scilla_compiler_bin =
+    Conf.make_string_opt "scilla_compiler_bin" None
+      "Path to scilla compiler bin if compiled Scilla must be checked for gas \
+       compatbility"
+  in
+  let scilla_rtl_runner_bin =
+    Conf.make_string_opt "scilla_rtl_runner_bin" None
+      "Path to scilla runner bin (SRTL) if compiled Scilla must be checked for \
+       gas compatbility"
+  in
   let env : tsuite_env =
     {
       tests_dir;
@@ -75,6 +86,8 @@ let run_tests tests =
       print_diff;
       server;
       ext_ipc_server;
+      scilla_compiler_bin;
+      scilla_rtl_runner_bin;
     }
   in
   run_test_tt_main ("tests" >::: List.map ~f:(( |> ) env) tests)
