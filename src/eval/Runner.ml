@@ -543,7 +543,6 @@ let run_with_args args =
                     perform_dynamic_typechecks dyn_checks gas_remaining
                   in
                   match
-                    (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
                       Result.ignore_m
                       @@ mapM field_vals' ~f:(fun (s, _t, v) ->
