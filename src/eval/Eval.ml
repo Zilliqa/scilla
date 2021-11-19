@@ -681,14 +681,12 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
+let init_contract libenv cparams' cfields initargs' init_bal =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implicit_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
   let initargs = CU.remove_noneval_args initargs' in
-  (* Initialize libraries *)
-  let%bind libenv = init_libraries clibs elibs in
   (* There as an init arg for each parameter *)
   let%bind pending_dyn_checks =
     foldM cparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
@@ -731,14 +729,11 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
   let env = Env.bind_all libenv initargs in
-  (* Evaluate constraint, and abort if false *)
-  let%bind () = eval_constraint cconstraint' env in
-  let%bind field_values = init_fields env cfields in
   let fields = List.map cfields ~f:(fun (f, t, _) -> (get_id f, t)) in
   let balance = init_bal in
   let open ContractState in
   let cstate = { env; fields; balance } in
-  pure (cstate, field_values, pending_dyn_checks)
+  pure (cstate, pending_dyn_checks)
 
 (* Combine initialized state with infro from current state *)
 let create_cur_state_fields initcstate curcstate =
@@ -791,18 +786,25 @@ let create_cur_state_fields initcstate curcstate =
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
 
-(* Initialize a module with given arguments and initial balance *)
-let init_module md initargs curargs init_bal bstate elibs =
-  let { libs; contr; _ } = md in
-  let { cconstraint; cparams; cfields; _ } = contr in
-  let%bind initcstate, field_vals, pending_dyn_checks =
-    init_contract libs elibs cconstraint cparams cfields initargs init_bal
-  in
+let check_contr libs_env cconstraint cfields initargs curargs =
+  let initargs' = CU.remove_noneval_args initargs in
+  let env = Env.bind_all libs_env initargs' in
+  let%bind () = eval_constraint cconstraint env in
+  let%bind field_vals = init_fields env cfields in
   let%bind curfield_vals = create_cur_state_fields field_vals curargs in
+  pure curfield_vals
+
+(* Initialize a module with given arguments and initial balance *)
+let init_module libenv md initargs init_bal bstate =
+  let { contr; _ } = md in
+  let ({ cparams; cfields; _ } : contract) = contr in
+  let%bind initcstate, pending_dyn_checks =
+    init_contract libenv cparams cfields initargs init_bal
+  in
   (* blockchain input provided is only validated and not used here. *)
   let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
-  pure (contr, cstate, curfield_vals, pending_dyn_checks)
+  pure (contr, cstate, pending_dyn_checks)
 
 (*******************************************************)
 (*               Message processing                    *)
