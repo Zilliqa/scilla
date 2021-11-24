@@ -398,7 +398,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let hash_elab sc targs ts =
       match (targs, ts) with
-      | [], [ _ ] -> elab_tfun_with_args_no_gas sc ts
+      | [], [ t ] when is_legal_hash_argument_type t -> elab_tfun_with_args_no_gas sc ts
       | _, _ -> fail0 "Failed to elaborate"
 
     (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)

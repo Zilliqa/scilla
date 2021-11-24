@@ -356,23 +356,19 @@ module TypeUtilities = struct
         true
     | _ -> true
 
-  let rec is_serializable_storable_helper accept_maps allow_unserializable
-      check_addresses t seen_adts =
-    let rec recurser t seen_adts =
+  let rec is_legal_type_helper ~allow_maps ~allow_messages_events ~allow_closures ~allow_polymorphism ~allow_unit ~check_addresses t seen_adts seen_tvars =
+    let rec recurser t seen_adts seen_tvars =
       match t with
-      | FunType (a, r) ->
-          allow_unserializable && recurser a seen_adts && recurser r seen_adts
-      | PolyFun (_, t) -> allow_unserializable && recurser t seen_adts
-      | Unit -> allow_unserializable
-      | MapType (kt, vt) ->
-          accept_maps && recurser kt seen_adts && recurser vt seen_adts
-      | TypeVar _ ->
-          (* If we are inside an ADT, then type variable
-             instantiations are handled outside *)
-          not @@ List.is_empty seen_adts
+      | FunType (a, r) -> allow_closures && recurser a seen_adts seen_tvars && recurser r seen_adts seen_tvars
+      | PolyFun (tvar, t) -> allow_polymorphism && recurser t seen_adts (tvar :: seen_tvars)
+      | Unit -> allow_unit
+      | MapType (kt, vt) -> allow_maps && recurser kt seen_adts seen_tvars && recurser vt seen_adts seen_tvars
+      | TypeVar tvar ->
+          (* Type variables can occur legally inside PolyFuns (if polymorphism is allowed) or inside ADTs *)
+          List.mem seen_tvars tvar ~equal:String.(=)
       | PrimType _ ->
-          (* Messages and Events are not serialisable in terms of contract parameters *)
-          allow_unserializable
+          (* Messages and Events are considered primitive types *)
+          allow_messages_events
           || TUType.(
                (not @@ [%equal: TUType.t] t msg_typ)
                || [%equal: TUType.t] t event_typ)
@@ -388,41 +384,51 @@ module TypeUtilities = struct
                 let adt_serializable =
                   List.for_all adt.tmap ~f:(fun (_, carg_list) ->
                       List.for_all carg_list ~f:(fun carg ->
-                          recurser carg (tname :: seen_adts)))
+                          recurser carg (tname :: seen_adts) (adt.tparams @ seen_tvars)))
                 in
                 adt_serializable
-                && List.for_all ts ~f:(fun t -> recurser t seen_adts))
+                && List.for_all ts ~f:(fun t -> recurser t seen_adts seen_tvars))
       | Address (Some fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-          IdLoc_Comp.Map.for_all fts ~f:(fun t -> is_legal_field_type t)
+          IdLoc_Comp.Map.for_all fts ~f:(fun t -> is_legal_field_type_helper t seen_adts seen_tvars)
       | Address _ -> true
     in
-    recurser t seen_adts
+    recurser t seen_adts seen_tvars
 
-  and is_legal_message_field_type t =
-    (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
-    is_serializable_storable_helper false false false t []
-
-  and is_legal_transition_parameter_type t =
-    (* Maps are not allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper false false true t []
-
-  and is_legal_procedure_parameter_type t =
-    (* Like transition parametes, except that polymorphic parameters are allowed,
-       since parameters do not need to be serializable. *)
-    is_serializable_storable_helper false true true t []
-
-  and is_legal_contract_parameter_type t =
-    (* Like fields. Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true false true t []
-
-  and is_legal_field_type t =
+  and is_legal_field_type_helper t seen_adts seen_tvars =
     (* Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true false true t []
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:true t seen_adts seen_tvars
 
-  let is_legal_map_key_type t = is_prim_type t || is_address_type t
+  
+  let is_legal_message_field_type t =
+    (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:false t [] []
 
+  let is_legal_transition_parameter_type t =
+    (* Maps are not allowed. Address values should be checked for storable field types. *) 
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:true t [] []
+
+  let is_legal_procedure_parameter_type t =
+    (* Like transition parametes, except messages, events and closures are allowed,
+       since parameters do not need to be serializable. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:true ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:true t [] []
+
+  let is_legal_contract_parameter_type t =
+    (* Like transitions parameters, except maps are allowed (due to an exploited bug). Address values should be checked for storable field types. *)
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:true t [] []
+
+  let is_legal_field_type t =
+    is_legal_field_type_helper t [] []
+
+  let is_legal_hash_argument_type t =
+    (* Only closures and type closures are disallowed. Addresses behave like ByStr20. *)
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:true ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:false t [] []
+  
+  let is_legal_map_key_type t =
+    (* Only primitive (non-message and non-event) types are allowed. Addresses behave like ByStr20, and are thus allowed. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false ~check_addresses:false t [] []
+  
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
     if List.exists m ~f:(fun (x, _, _) -> String.(tag_label = x)) then
