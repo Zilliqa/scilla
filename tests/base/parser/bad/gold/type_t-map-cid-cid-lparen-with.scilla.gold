@@ -2,11 +2,11 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value type is likely incorrect. In the brackets we expect a separated capital identifier.\n",
+        "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-cid-lparen-with.scilla",
         "line": 5,
-        "column": 35
+        "column": 29
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

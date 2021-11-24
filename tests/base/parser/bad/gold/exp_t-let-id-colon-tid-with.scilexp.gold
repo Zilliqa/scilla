@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This type annotation is not closed properly, or has a missing or misplaced '='.\n",
+        "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
       "start_location": {
         "file": "base/parser/bad/exps/exp_t-let-id-colon-tid-with.scilexp",
         "line": 1,

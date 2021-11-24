@@ -2,11 +2,11 @@
   "errors": [
     {
       "error_message":
-        "Extra parameters or missing parentheses in type signature.\n",
+        "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-cid-cid-underscore.scilla",
         "line": 6,
-        "column": 37
+        "column": 32
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

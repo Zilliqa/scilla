@@ -87,48 +87,47 @@ let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
   let open EvalGas.GasSyntax in
-  let logger u = Float.to_int @@ Float.log (u +. 1.0) in
   let resolver = function
     | SGasCharge.SizeOf vstr ->
         let%bind l = Env.lookup env (mk_loc_id vstr) in
-        EvalGas.literal_cost l
+        let%bind lc = EvalGas.literal_cost l in
+        pure @@ GasCharge.GInt lc
     | SGasCharge.ValueOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
-        | UintLit (Uint32L ui) -> pure @@ Uint32.to_int ui
+        | UintLit (Uint32L ui) -> pure @@ GasCharge.GInt (Uint32.to_int ui)
+        | UintLit (Uint64L ui) -> pure @@ GasCharge.GFloat (Uint64.to_float ui)
+        | UintLit (Uint128L ui) ->
+            pure @@ GasCharge.GFloat (Uint128.to_float ui)
+        | UintLit (Uint256L ui) ->
+            pure @@ GasCharge.GFloat (Integer256.Uint256.to_float ui)
+        | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
+            let s = Bytes.of_string @@ Bystrx.to_raw_bytes s' in
+            let ui = Integer256.Uint256.of_bytes_big_endian s 0 in
+            pure @@ GasCharge.GFloat (Integer256.Uint256.to_float ui)
         | _ ->
             fail0
               ("Variable "
               ^ EvalName.as_error_string vstr
               ^ " did not resolve to an integer"))
-    | SGasCharge.LogOf vstr -> (
-        let%bind l = Env.lookup env (mk_loc_id vstr) in
-        match l with
-        | ByStrX s' when Bystrx.width s' = Scilla_crypto.Snark.scalar_len ->
-            let s = Bytes.of_string @@ Bystrx.to_raw_bytes s' in
-            let u = Integer256.Uint256.of_bytes_big_endian s 0 in
-            pure @@ logger (Integer256.Uint256.to_float u)
-        | UintLit (Uint32L i) -> pure (logger (Stdint.Uint32.to_float i))
-        | UintLit (Uint64L i) -> pure (logger (Stdint.Uint64.to_float i))
-        | UintLit (Uint128L i) -> pure (logger (Stdint.Uint128.to_float i))
-        | UintLit (Uint256L i) -> pure (logger (Integer256.Uint256.to_float i))
-        | _ -> fail0 "eval_gas_charge: Cannot take logarithm of value")
     | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
         match l with
-        | Map (_, m) -> pure @@ Caml.Hashtbl.length m
+        | Map (_, m) -> pure @@ GasCharge.GInt (Caml.Hashtbl.length m)
         | ADTValue _ ->
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
-            pure @@ List.length l'
+            pure @@ GasCharge.GInt (List.length l')
         | _ -> fail0 "eval_gas_charge: Can only take length of Maps and Lists")
     | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
-        pure @@ EvalGas.map_sort_cost m
+        pure @@ GasCharge.GInt (EvalGas.map_sort_cost m)
     | SGasCharge.SumOf _ | SGasCharge.ProdOf _ | SGasCharge.DivCeil _
-    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ ->
+    | SGasCharge.MinOf _ | SGasCharge.StaticCost _ | SGasCharge.LogOf _ ->
         fail0 "eval_gas_charge: Must be handled by GasCharge"
   in
-  SGasCharge.eval resolver g
+  match%bind SGasCharge.eval resolver g with
+  | GasCharge.GInt i -> pure i
+  | GasCharge.GFloat _ -> fail0 "eval_gas evaluated to a float value"
 
 let builtin_cost env f targs tps args_id =
   let open MonadUtil in
@@ -141,18 +140,18 @@ let builtin_cost env f targs tps args_id =
 
 (* Return a builtin_op wrapped in EvalMonad *)
 let builtin_executor env f targs args_id =
-  let%bind arg_lits =
-    mapM args_id ~f:(fun arg -> fromR @@ Env.lookup env arg)
-  in
+  let open MonadUtil in
+  let open Result.Let_syntax in
+  let%bind arg_lits = mapM args_id ~f:(fun arg -> Env.lookup env arg) in
   (* Builtin elaborators need to know the literal type of arguments *)
-  let%bind tps = mapM arg_lits ~f:(fun l -> fromR @@ literal_type l) in
+  let%bind tps = mapM arg_lits ~f:(fun l -> literal_type l) in
   let%bind ret_typ, op =
     EvalBuiltIns.EvalBuiltInDictionary.find_builtin_op f ~targtypes:targs
       ~vargtypes:tps
   in
-  let%bind cost = fromR @@ builtin_cost env f targs tps args_id in
+  let%bind cost = builtin_cost env f targs tps args_id in
   let res () = op targs arg_lits ret_typ in
-  checkwrap_op res (Uint64.of_int cost) []
+  pure (res, Uint64.of_int cost)
 
 (* Replace address types with ByStr20 in a literal. 
    This is to ensure that address types are treated as ByStr20 throughout the interpreter.  *)
@@ -281,7 +280,8 @@ let rec exp_eval erep env =
       in
       exp_eval e_branch env'
   | Builtin (i, targs, actuals) ->
-      let%bind res = builtin_executor env i targs actuals in
+      let%bind thunk, cost = fromR @@ builtin_executor env i targs actuals in
+      let%bind res = checkwrap_opR thunk cost in
       pure (res, env)
   | Fixpoint (g, _, body) ->
       let rec fix arg =
@@ -681,14 +681,12 @@ let init_fields env fs =
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
 
-let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
+let init_contract libenv cparams' cfields initargs' init_bal =
   (* All contracts take a few implicit parameters. *)
   let cparams = CU.append_implicit_contract_params cparams' in
   (* Remove arguments that the evaluator doesn't (need to) deal with.
    * Validation of these init parameters is left to the blockchain. *)
   let initargs = CU.remove_noneval_args initargs' in
-  (* Initialize libraries *)
-  let%bind libenv = init_libraries clibs elibs in
   (* There as an init arg for each parameter *)
   let%bind pending_dyn_checks =
     foldM cparams ~init:[] ~f:(fun acc_dyn_checks (x, xt) ->
@@ -731,14 +729,11 @@ let init_contract clibs elibs cconstraint' cparams' cfields initargs' init_bal =
   in
   (* Fold params into already initialized libraries, possibly shadowing *)
   let env = Env.bind_all libenv initargs in
-  (* Evaluate constraint, and abort if false *)
-  let%bind () = eval_constraint cconstraint' env in
-  let%bind field_values = init_fields env cfields in
   let fields = List.map cfields ~f:(fun (f, t, _) -> (get_id f, t)) in
   let balance = init_bal in
   let open ContractState in
   let cstate = { env; fields; balance } in
-  pure (cstate, field_values, pending_dyn_checks)
+  pure (cstate, pending_dyn_checks)
 
 (* Combine initialized state with infro from current state *)
 let create_cur_state_fields initcstate curcstate =
@@ -791,18 +786,25 @@ let create_cur_state_fields initcstate curcstate =
   (* Combine filtered list and curcstate *)
   pure (filtered_init @ curcstate)
 
-(* Initialize a module with given arguments and initial balance *)
-let init_module md initargs curargs init_bal bstate elibs =
-  let { libs; contr; _ } = md in
-  let { cconstraint; cparams; cfields; _ } = contr in
-  let%bind initcstate, field_vals, pending_dyn_checks =
-    init_contract libs elibs cconstraint cparams cfields initargs init_bal
-  in
+let check_contr libs_env cconstraint cfields initargs curargs =
+  let initargs' = CU.remove_noneval_args initargs in
+  let env = Env.bind_all libs_env initargs' in
+  let%bind () = eval_constraint cconstraint env in
+  let%bind field_vals = init_fields env cfields in
   let%bind curfield_vals = create_cur_state_fields field_vals curargs in
+  pure curfield_vals
+
+(* Initialize a module with given arguments and initial balance *)
+let init_module libenv md initargs init_bal bstate =
+  let { contr; _ } = md in
+  let ({ cparams; cfields; _ } : contract) = contr in
+  let%bind initcstate, pending_dyn_checks =
+    init_contract libenv cparams cfields initargs init_bal
+  in
   (* blockchain input provided is only validated and not used here. *)
   let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
-  pure (contr, cstate, curfield_vals, pending_dyn_checks)
+  pure (contr, cstate, pending_dyn_checks)
 
 (*******************************************************)
 (*               Message processing                    *)
