@@ -86,6 +86,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "procedure_bad_type.scilla";
       "procedure_bad_args.scilla";
       "procedure_map_arg.scilla";
+      "hash_arg.scilla";
       "name_clashes.scilla";
       "procedure_env.scilla";
       "global_scope_procedures.scilla";
