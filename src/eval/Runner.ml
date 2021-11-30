@@ -396,21 +396,20 @@ let run_with_args args =
       else Uint64.sub initial_gas_limit cost
     else
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
-      (* libraries can only be deployed, not "run". *)
-      if is_library then
-        fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf
-                "Cannot run a library contract. They can only be deployed\n"))
-          Uint64.zero
-      else if Uint64.compare initial_gas_limit cost < 0 then
+      if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
           (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
   in
 
-  if is_library then deploy_library args gas_remaining
+  if is_library then
+    if is_deployment then 
+      deploy_library args gas_remaining
+    else
+      (* Messages to libraries are ignored, but tolerated *)
+      `Assoc
+        [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
