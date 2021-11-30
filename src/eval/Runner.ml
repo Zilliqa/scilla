@@ -404,12 +404,10 @@ let run_with_args args =
   in
 
   if is_library then
-    if is_deployment then 
-      deploy_library args gas_remaining
+    if is_deployment then deploy_library args gas_remaining
     else
       (* Messages to libraries are ignored, but tolerated *)
-      `Assoc
-        [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
+      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->

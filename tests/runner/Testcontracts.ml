@@ -128,7 +128,7 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
           "-init";
           dir ^/ init_name ^. "json";
           "-i";
-          contract_dir ^/ name ^. (if is_library then "scillib" else "scilla");
+          (contract_dir ^/ name ^. if is_library then "scillib" else "scilla");
           (* stdlib is in src/stdlib *)
           "-libdir";
           env.stdlib_dir test_ctxt;
@@ -212,8 +212,7 @@ let build_contract_tests ?(pplit = true) env name exit_code i n additional_libs
  * Used to test message passing to libraries. This should cost gas for message processing,
  * but should otherwise be ignored silently
  *)
-let build_library_tests env name i n
-    =
+let build_library_tests env name i n =
   build_contract_tests_with_init_file ~pplit:false env name succ_code i n []
     "init" true
 
@@ -341,8 +340,7 @@ let contract_tests env =
                 "testlib2_init"
                 >: build_contract_init_test env succ_code "TestLib2" "init"
                      ~is_library:true ~ipc_mode:false;
-                "testlib2"
-                >::: build_library_tests env "TestLib2" 1 1;
+                "testlib2" >::: build_library_tests env "TestLib2" 1 1;
                 "testlib3_init"
                 >: build_contract_init_test env succ_code
                      "0x111256789012345678901234567890123456abef" "init"
