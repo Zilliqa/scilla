@@ -288,3 +288,19 @@ let remove ~socket_addr ~fname ~keys ~tp =
     ipcclient_exn_wrapper thunk
   in
   pure ()
+
+(* Fetch blockchain info. The semantics and format of 
+ * ~query_args and the result depends on ~query_name 
+ * Any error on the blockchain side or IPC is forwarded
+ * (via the error monad). *)
+let fetch_bcinfo ~socket_addr ~query_name ~query_args =
+  let%bind res =
+    let thunk () =
+      translate_res
+      @@ IPCClient.fetch_bcinfo (binary_rpc ~socket_addr) query_name query_args
+    in
+    ipcclient_exn_wrapper thunk
+  in
+  match res with
+  | true, res' -> pure @@ res'
+  | false, _ -> fail0 "Error fetching blockchain info"

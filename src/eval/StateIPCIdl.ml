@@ -44,6 +44,10 @@ module IPCIdl (R : RPC) = struct
 
   let addr = Param.mk ~name:"addr" Rpc.Types.string
 
+  let query_name = Param.mk ~name:"query_name" Rpc.Types.string
+
+  let query_args = Param.mk ~name:"query_args" Rpc.Types.string
+
   (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)
    * "value" is valid only if "found && !query.ignoreval" *)
   (* TODO: [@warning "-32"] doesn't seem to work for "unused" types. *)
@@ -79,6 +83,16 @@ module IPCIdl (R : RPC) = struct
     declare "fetchExternalStateValue"
       [ "Fetch state value of another contract from the blockchain" ]
       (addr @-> query @-> returning return_ext_fetch RPCError.err)
+
+  let fetch_bcinfo =
+    declare "fetchBlockchainInfo"
+      [ "Fetch various information about the current blockchain state" ]
+      (query_name @-> query_args @-> returning return_fetch RPCError.err)
+
+  let set_bcinfo =
+    declare "setBlockchainInfo" [ "Set blockchain info" ]
+      (query_name @-> query_args @-> value
+      @-> returning return_update RPCError.err)
 
   (* This is a utility to test the testsuite server with JSON data.
    * It isn't part of the Zilliqa<->Scilla IPC protocol. *)

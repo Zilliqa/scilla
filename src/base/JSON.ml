@@ -505,21 +505,26 @@ module Message = struct
 end
 
 module BlockChainState = struct
-  (**  Returns a list of (vname:string,value:literal) items
-   **  from the json in the input filename. **)
+  (**  Returns bcinfo_state *)
   let get_json_data filename =
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:(fun j ->
-        match jobj_to_statevar j with
-        | ThisContr (name, t, v) -> (name, t, v)
-        | ExtrContrs _ ->
+    let state = Caml.Hashtbl.create (List.length jlist) in
+    List.iter jlist ~f:(fun j ->
+        let vname = member_exn "vname" j |> to_string_exn in
+        let value = member_exn "value" j in
+        match vname with
+        | "BLOCKNUMBER" ->
+            Caml.Hashtbl.replace state "BLOCKNUMBER"
+              (let subm = Caml.Hashtbl.create 1 in
+               Caml.Hashtbl.add subm "" (to_string_exn value);
+               subm)
+        | _ ->
             raise
-              (mk_invalid_json "_external cannot be present in a message JSON"))
-
-  (* Validation against pre-defined block state variables
-     is done in `Eval.check_blockchain_entries` *)
+              (mk_invalid_json
+                 ("Unknown field " ^ vname ^ " in blockchain JSON")));
+    state
 end
 
 module ContractInfo = struct

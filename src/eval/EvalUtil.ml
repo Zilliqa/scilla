@@ -117,8 +117,6 @@ module Configuration = struct
     balance : uint128;
     (* Was incoming money accepted? *)
     accepted : bool;
-    (* Blockchain state *)
-    blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
     incoming_funds : uint128;
     (* Procedures available to the current component. The list is in
@@ -139,7 +137,6 @@ module Configuration = struct
     let pp_fields = pp_typ_map conf.fields in
     let pp_balance = Uint128.to_string conf.balance in
     let pp_accepted = Bool.to_string conf.accepted in
-    let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     (*  let pp_procs = TODO... *)
     let pp_emitted = pp_literal_list conf.emitted in
@@ -160,8 +157,7 @@ module Configuration = struct
        %s\n\
        Emitted events =\n\
        %s\n"
-      pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted
-      pp_events
+      pp_env pp_fields pp_balance pp_accepted pp_in_funds pp_emitted pp_events
 
   (*  Manipulations with configuration *)
 
@@ -327,7 +323,15 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
+  let bc_lookup _st k =
+    match k with
+    | "BLOCKNUMBER" ->
+        let%bind bnum_s =
+          fromR
+          @@ StateService.fetch_bcinfo ~query_name:"BLOCKNUMBER" ~query_args:""
+        in
+        pure (EvalLiteral.BNum bnum_s)
+    | _ -> fail0 ("Unknown blockchain info query: " ^ k)
 
   let accept_incoming st =
     if st.accepted then (* Do nothing *)

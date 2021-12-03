@@ -67,3 +67,13 @@ val remove :
   keys:IPCCLiteral.t list ->
   tp:IPCCType.t ->
   (unit, scilla_error list) result
+
+(* Fetch blockchain info. The semantics and format of 
+ * ~query_args and the result depends on ~query_name 
+ * Any error on the blockchain side or IPC is forwarded
+ * (via the error monad). *)
+val fetch_bcinfo :
+  socket_addr:string ->
+  query_name:string ->
+  query_args:string ->
+  (string, scilla_error list) result

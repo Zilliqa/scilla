@@ -171,3 +171,22 @@ let update_ext ~caddr ~fname ~value ~tp =
 let fetch_all () =
   let _, fields = assert_init () in
   List.map fields ~f:(fun (fname, tp) -> (fname, tp, fetch ~fname))
+
+(* Fetch blockchain info. The semantics and format of 
+ * ~query_args and the result depends on ~query_name 
+ * Any error on the blockchain side or IPC is forwarded
+ * (via the error monad). *)
+let fetch_bcinfo ~query_name ~query_args =
+  let sock_addr, _ = assert_init () in
+  let res =
+    translate_res
+    @@ IPCClient.fetch_bcinfo (binary_rpc ~sock_addr) query_name query_args
+  in
+  match res with
+  | true, res' -> res'
+  | false, _ -> assert_failure "Error fetching blockchain info"
+
+let set_bcinfo ~query_name ~query_args value =
+  let sock_addr, _ = assert_init () in
+  translate_res
+  @@ IPCClient.set_bcinfo (binary_rpc ~sock_addr) query_name query_args value

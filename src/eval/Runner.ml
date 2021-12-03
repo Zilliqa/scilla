@@ -481,17 +481,6 @@ let run_with_args args =
                 dis_cmod.smver
             in
 
-            (* Retrieve block chain state  *)
-            let bstate =
-              try JSON.BlockChainState.get_json_data args.input_blockchain
-              with Invalid_json s ->
-                fatal_error_gas_scale Gas.scale_factor
-                  (s
-                  @ mk_error0
-                      (sprintf "Failed to parse json %s:\n"
-                         args.input_blockchain))
-                  gas_remaining
-            in
             let ( ( output_msg_json,
                     output_state_json,
                     output_events_json,
@@ -504,7 +493,7 @@ let run_with_args args =
                 in
                 (* Initializing the contract's state, just for checking things. *)
                 let init_res =
-                  init_module libs_env dis_cmod initargs Uint128.zero bstate
+                  init_module libs_env dis_cmod initargs Uint128.zero
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
@@ -524,7 +513,10 @@ let run_with_args args =
                         else Some { fname = s; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
-                  let () = initialize ~sm ~fields ~ext_states:[] in
+                  let () =
+                    initialize ~sm ~fields ~ext_states:[]
+                      ~bcinfo:(Caml.Hashtbl.create 0)
+                  in
                   let field_vals' =
                     if args.reinit then
                       (* Retrieve state variables *)
@@ -591,7 +583,7 @@ let run_with_args args =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     let cstate, gas_remaining, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
@@ -608,10 +600,23 @@ let run_with_args args =
                     in
                     let () =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
-                        ~ext_states:[]
+                        ~ext_states:[] ~bcinfo:(Caml.Hashtbl.create 0)
                     in
                     (cstate, gas_remaining)
                   else
+                    (* Retrieve block chain state  *)
+                    let bcinfo =
+                      (try
+                         JSON.BlockChainState.get_json_data
+                           args.input_blockchain
+                       with Invalid_json s ->
+                         fatal_error_gas_scale Gas.scale_factor
+                           (s
+                           @ mk_error0
+                               (sprintf "Failed to parse json %s:\n"
+                                  args.input_blockchain))
+                           gas_remaining)
+                    in
                     (* Retrieve state variables *)
                     let curargs, cur_bal, ext_states =
                       try input_state_json args.input_state
@@ -629,7 +634,7 @@ let run_with_args args =
                     in
                     (* Initializing the contract's state *)
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
@@ -655,7 +660,7 @@ let run_with_args args =
                           { caddr = addr; cstate = fields' })
                     in
                     let () =
-                      StateService.initialize ~sm:Local ~fields ~ext_states
+                      StateService.initialize ~sm:Local ~fields ~ext_states ~bcinfo
                     in
                     (cstate, gas_remaining)
                 in
@@ -666,9 +671,6 @@ let run_with_args args =
                 plog
                   (sprintf "Executing message:\n%s\n"
                      (JSON.Message.message_to_jstring mmsg));
-                plog
-                  (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_typ_literal_map bstate));
                 let prepped_message, pending_dyn_checks, gas_remaining =
                   let pmsg = prepare_for_message ctr mmsg in
                   check_prepare_message pmsg gas_remaining
@@ -676,9 +678,7 @@ let run_with_args args =
                 let gas_remaining =
                   perform_dynamic_typechecks pending_dyn_checks gas_remaining
                 in
-                let step_result =
-                  handle_message prepped_message cstate bstate
-                in
+                let step_result = handle_message prepped_message cstate in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining
                 in

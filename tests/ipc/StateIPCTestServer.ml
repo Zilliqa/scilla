@@ -37,8 +37,12 @@ and value_type = NonMapVal of string | MapVal of value_table
 type type_table = (string, string) Hashtbl.t
 
 (* State of the full blockchain, i.e., for all addresses.
- * None indicates *this* address and Some indicates "external state". *)
-type blockchain_state = (string option, value_table * type_table) Hashtbl.t
+ * None indicates *this* address and Some indicates "external state". 
+ * The blockchain info (BLOCKNUMBER etc) is stored in the *this* key. *)
+type blockchain_state =
+  ( string option,
+    value_table * type_table * StateService.bcinfo_state )
+  Hashtbl.t
 
 let thread_pool : (string, blockchain_state) Hashtbl.t = Hashtbl.create 4
 
@@ -70,7 +74,7 @@ module MakeServer () = struct
   module IPCTestServer = IPCIdl (IDL.GenServer ())
 
   (* Global state of the server thread. *)
-  let table = Hashtbl.create 8
+  let table : blockchain_state = Hashtbl.create 8
 
   let binary_rpc conn =
     let ic = Unix.in_channel_of_descr conn in
@@ -127,7 +131,7 @@ module MakeServer () = struct
     in
     let contr_state = Hashtbl.find_opt table addr_opt in
     match contr_state with
-    | Some (vt, tt) -> (
+    | Some (vt, tt, _bcinfo) -> (
         let query = decode_serialized_query query in
         let t = Hashtbl.find_opt tt query.name in
         match query with
@@ -172,13 +176,15 @@ module MakeServer () = struct
               | MapVal m -> recurser_update ~new_val m tail))
     in
     let query = decode_serialized_query query in
-    let vt, tt =
+    let vt, tt, _bcinfo =
       match Hashtbl.find_opt table addr_opt with
-      | Some (vt, tt) -> (vt, tt)
+      | Some (vt, tt, bcinfo) -> (vt, tt, bcinfo)
       | None ->
-          let vt, tt = (Hashtbl.create 8, Hashtbl.create 8) in
-          Hashtbl.replace table addr_opt (vt, tt);
-          (vt, tt)
+          let vt, tt, bcinfo =
+            (Hashtbl.create 8, Hashtbl.create 8, Hashtbl.create 1)
+          in
+          Hashtbl.replace table addr_opt (vt, tt, bcinfo);
+          (vt, tt, bcinfo)
     in
     (* Update type if provided *)
     let () =
@@ -209,6 +215,34 @@ module MakeServer () = struct
 
   let set_ext_state_value caddr query value scilla_type =
     set_value_helper (Some caddr) query value (Some scilla_type)
+
+  let set_bcinfo ~query_name ~query_args value =
+    let bcit =
+      match Hashtbl.find_opt table None with
+      | Some (_, _, bcit) -> bcit
+      | None ->
+          let ((_, _, bcit) as entry) =
+            (Hashtbl.create 8, Hashtbl.create 8, Hashtbl.create 1)
+          in
+          Hashtbl.replace table None entry;
+          bcit
+    in
+    (match Hashtbl.find_opt bcit query_name with
+    | Some subm -> Hashtbl.replace subm query_args value
+    | None ->
+        let subm = Hashtbl.create 1 in
+        Hashtbl.replace subm query_args value;
+        Hashtbl.add bcit query_name subm);
+    pure ()
+
+  let fetch_bcinfo ~query_name ~query_args =
+    let _, _, bcit = Hashtbl.find table None in
+    match Hashtbl.find_opt bcit query_name with
+    | Some subm -> (
+        match Hashtbl.find_opt subm query_args with
+        | Some value -> pure (true, value)
+        | None -> pure (false, ""))
+    | None -> pure (false, "")
 end
 
 let start_server ~sock_addr =
@@ -223,6 +257,10 @@ let start_server ~sock_addr =
           IDL.T.return @@ ServerModule.update_state_value q v);
       ServerModule.IPCTestServer.set_ext_state_value (fun addr q v t ->
           IDL.T.return @@ ServerModule.set_ext_state_value addr q v t);
+      ServerModule.IPCTestServer.set_bcinfo (fun query_name query_args value ->
+          IDL.T.return @@ ServerModule.set_bcinfo ~query_name ~query_args value);
+      ServerModule.IPCTestServer.fetch_bcinfo (fun query_name query_args ->
+          IDL.T.return @@ ServerModule.fetch_bcinfo ~query_name ~query_args);
       ServerModule.IPCTestServer.fetch_ext_state_value (fun a q ->
           IDL.T.return @@ ServerModule.fetch_ext_state_value a q);
       let server = ServerModule.prepare_server sock_addr in

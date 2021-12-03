@@ -2,8 +2,13 @@
   "gas_remaining": "7973",
   "errors": [
     {
+      "error_message": "Unknown field Unknown in blockchain JSON",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
       "error_message":
-        "Mismatch in input blockchain variables:\nexpected:\n{ [BLOCKNUMBER : BNum] }\nprovided:\n{ [Unknown : BNum -> (BNum 100)] }\n",
+        "Failed to parse json tests/runner/helloWorld/blockchain_8.json:\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
