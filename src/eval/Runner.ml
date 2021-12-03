@@ -606,16 +606,15 @@ let run_with_args args =
                   else
                     (* Retrieve block chain state  *)
                     let bcinfo =
-                      (try
-                         JSON.BlockChainState.get_json_data
-                           args.input_blockchain
-                       with Invalid_json s ->
-                         fatal_error_gas_scale Gas.scale_factor
-                           (s
-                           @ mk_error0
-                               (sprintf "Failed to parse json %s:\n"
-                                  args.input_blockchain))
-                           gas_remaining)
+                      try
+                        JSON.BlockChainState.get_json_data args.input_blockchain
+                      with Invalid_json s ->
+                        fatal_error_gas_scale Gas.scale_factor
+                          (s
+                          @ mk_error0
+                              (sprintf "Failed to parse json %s:\n"
+                                 args.input_blockchain))
+                          gas_remaining
                     in
                     (* Retrieve state variables *)
                     let curargs, cur_bal, ext_states =
@@ -660,7 +659,8 @@ let run_with_args args =
                           { caddr = addr; cstate = fields' })
                     in
                     let () =
-                      StateService.initialize ~sm:Local ~fields ~ext_states ~bcinfo
+                      StateService.initialize ~sm:Local ~fields ~ext_states
+                        ~bcinfo
                     in
                     (cstate, gas_remaining)
                 in

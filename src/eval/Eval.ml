@@ -902,8 +902,7 @@ Handle message:
 * cstate : ContractState.t - current contract state
 * bstate : (string * type * literal) list - blockchain state
 *)
-let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
-    =
+let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
