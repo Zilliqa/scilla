@@ -28,6 +28,7 @@ RUN apt-get update \
     libsecp256k1-dev \
     libboost-system-dev \
     libboost-test-dev \
+    libboost-dev \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
