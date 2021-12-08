@@ -516,7 +516,7 @@ module BlockChainState = struct
         let value = member_exn "value" j in
         match vname with
         | "BLOCKNUMBER" ->
-            Caml.Hashtbl.replace state "BLOCKNUMBER"
+            Caml.Hashtbl.replace state ContractUtil.blocknum_name
               (let subm = Caml.Hashtbl.create 1 in
                Caml.Hashtbl.add subm "" (to_string_exn value);
                subm)

@@ -325,10 +325,10 @@ module Configuration = struct
 
   let bc_lookup _st k =
     match k with
-    | "BLOCKNUMBER" ->
+    | b when String.(b = ContractUtil.blocknum_name) ->
         let%bind bnum_s =
           fromR
-          @@ StateService.fetch_bcinfo ~query_name:"BLOCKNUMBER" ~query_args:""
+          @@ StateService.fetch_bcinfo ~query_name:ContractUtil.blocknum_name ~query_args:""
         in
         pure (EvalLiteral.BNum bnum_s)
     | _ -> fail0 ("Unknown blockchain info query: " ^ k)
