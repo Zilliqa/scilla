@@ -106,7 +106,7 @@ let foutput_deploy env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
  * multiple test cases, each suffixed with _i up to _n (both inclusive)
  *)
 let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
-    n additional_libs init_name =
+    n additional_libs init_name is_library =
   if i > n then []
   else
     (* Create a contract test with an option to disable JSON validation (fast parsing). *)
@@ -128,7 +128,7 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
           "-init";
           dir ^/ init_name ^. "json";
           "-i";
-          contract_dir ^/ name ^. "scilla";
+          (contract_dir ^/ name ^. if is_library then "scillib" else "scilla");
           (* stdlib is in src/stdlib *)
           "-libdir";
           env.stdlib_dir test_ctxt;
@@ -184,18 +184,18 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
     (* If this test is expected to succeed, we know that the JSONs are all "good".
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
-    if Poly.(exit_code = succ_code) then
+    if Poly.(exit_code = succ_code && not is_library) then
       test ~ipc_mode:true
       ::
       test ~ipc_mode:false
       ::
       build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name
+        additional_libs init_name is_library
     else
       test ~ipc_mode:false
       ::
       build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name
+        additional_libs init_name is_library
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -205,7 +205,15 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
 let build_contract_tests ?(pplit = true) env name exit_code i n additional_libs
     =
   build_contract_tests_with_init_file ~pplit env name exit_code i n
-    additional_libs "init"
+    additional_libs "init" false
+
+(*
+ * Used to test message passing to libraries. This should cost gas for message processing,
+ * but should otherwise be ignored silently
+ *)
+let build_library_tests env name i n =
+  build_contract_tests_with_init_file ~pplit:false env name succ_code i n []
+    "init" true
 
 let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     =
@@ -330,6 +338,7 @@ let contract_tests env =
                 "testlib2_init"
                 >: build_contract_init_test env succ_code "TestLib2" "init"
                      ~is_library:true ~ipc_mode:false;
+                "testlib2" >::: build_library_tests env "TestLib2" 1 1;
                 "testlib3_init"
                 >: build_contract_init_test env succ_code
                      "0x111256789012345678901234567890123456abef" "init"
@@ -379,16 +388,16 @@ let contract_tests env =
                 >::: build_contract_tests env "wallet" succ_code 1 11 [];
                 "wallet_2"
                 >::: build_contract_tests_with_init_file env "wallet_2"
-                       succ_code 1 8 [] "init";
+                       succ_code 1 8 [] "init" false;
                 "wallet_2"
                 >::: build_contract_tests_with_init_file env "wallet_2"
-                       succ_code 11 12 [] "init";
+                       succ_code 11 12 [] "init" false;
                 "wallet_2"
                 >::: build_contract_tests_with_init_file env "wallet_2"
-                       succ_code 14 40 [] "init";
+                       succ_code 14 40 [] "init" false;
                 "wallet_2"
                 >::: build_contract_tests_with_init_file env "wallet_2"
-                       succ_code 42 42 [] "init";
+                       succ_code 42 42 [] "init" false;
                 "one_msg_test"
                 >::: build_contract_tests env "one-msg" succ_code 1 1 [];
                 "one_msg1_test"
