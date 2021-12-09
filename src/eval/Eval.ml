@@ -53,8 +53,8 @@ let reserved_names =
 let pp_result r exclude_names gas_remaining =
   let enames = List.append exclude_names reserved_names in
   match r with
-  | Error (s, _) -> sprint_scilla_error_list s
-  | Ok ((e, env), _) ->
+  | Error (s, _, _) -> sprint_scilla_error_list s
+  | Ok ((e, env), _, _) ->
       let filter_prelude (k, _) =
         not @@ List.mem enames k ~equal:[%equal: EvalName.t]
       in
@@ -331,8 +331,8 @@ and try_apply_as_type_closure v arg_type =
    the result, but also the remaining gas.
 
 *)
-let init_gas_kont r gas' =
-  match r with Ok z -> Ok (z, gas') | Error msg -> Error (msg, gas')
+let init_gas_kont r gas' seman' =
+  match r with Ok z -> Ok (z, gas', seman') | Error msg -> Error (msg, gas', seman')
 
 (* [Continuation for Expression Evaluation]
 
@@ -345,12 +345,12 @@ let init_gas_kont r gas' =
    the result is passed further to the callee's continuation `k`.
 
 *)
-let exp_eval_wrapper_no_cps expr env k gas =
-  let eval_res = exp_eval expr env init_gas_kont gas in
-  let res, remaining_gas =
-    match eval_res with Ok (z, g) -> (Ok z, g) | Error (m, g) -> (Error m, g)
+let exp_eval_wrapper_no_cps expr env k gas seman =
+  let eval_res = exp_eval expr env init_gas_kont gas seman in
+  let res, remaining_gas, current_seman =
+    match eval_res with Ok (z, g, s) -> (Ok z, g, s) | Error (m, g, s) -> (Error m, g, s)
   in
-  k res remaining_gas
+  k res remaining_gas current_seman
 
 open EvalSyntax
 

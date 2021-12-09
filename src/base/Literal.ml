@@ -113,6 +113,9 @@ module type ScillaLiteral = sig
   end
 
   module Bystrx : BYSTRX
+  
+  (* Dynamically collecting semantics *)
+  type seman_collect = String.t List.t
 
   type t =
     | StringLit of string
@@ -136,8 +139,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
-            scilla_error list * uint64 )
+          seman_collect -> 
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64 * seman_collect,
+            scilla_error list * uint64 * seman_collect )
           result )
         CPSMonad.t)
     (* A type abstraction *)
@@ -146,8 +150,9 @@ module type ScillaLiteral = sig
         ( t,
           scilla_error list,
           uint64 ->
-          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
-            scilla_error list * uint64 )
+          seman_collect -> 
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64 * seman_collect,
+            scilla_error list * uint64 * seman_collect )
           result )
         CPSMonad.t)
   [@@deriving sexp]
@@ -337,6 +342,9 @@ module MkLiteral (T : ScillaType) = struct
     let to_bystr = Fn.id
   end
 
+  (* Dynamically collecting semantics *)
+  type seman_collect = String.t List.t
+
   type t =
     | StringLit of string
     (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
@@ -359,8 +367,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
-            scilla_error list * uint64 )
+          seman_collect -> 
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64 * seman_collect,
+            scilla_error list * uint64 * seman_collect )
           result )
         CPSMonad.t)
     (* A type abstraction *)
@@ -369,8 +378,9 @@ module MkLiteral (T : ScillaType) = struct
         ( t,
           scilla_error list,
           uint64 ->
-          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64,
-            scilla_error list * uint64 )
+          seman_collect -> 
+          ( (t * (LType.TIdentifier.Name.t * t) list) * uint64 * seman_collect,
+            scilla_error list * uint64 * seman_collect )
           result )
         CPSMonad.t)
   [@@deriving sexp]

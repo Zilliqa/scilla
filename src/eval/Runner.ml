@@ -44,8 +44,8 @@ module RunnerName = RunnerSyntax.SIdentifier.Name
 let check_libs clibs elibs name gas_limit =
   let ls = init_libraries clibs elibs in
   (* Are libraries ok? *)
-  match ls Eval.init_gas_kont gas_limit with
-  | Ok (res, gas_remaining) ->
+  match ls Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+  | Ok (res, gas_remaining, _) ->
       plog
         (sprintf
            "\n\
@@ -58,25 +58,25 @@ let check_libs clibs elibs name gas_limit =
                    EvalUtil.EvalName.as_string (fst x))))
            name);
       (res, gas_remaining)
-  | Error (err, gas_remaining) ->
+  | Error (err, gas_remaining, _) ->
       fatal_error_gas_scale Gas.scale_factor err gas_remaining
 
 let check_contr_wrapper libs_env cconstraint cfields initargs curargs gas_limit
     =
   let ls = check_contr libs_env cconstraint cfields initargs curargs in
-  match ls Eval.init_gas_kont gas_limit with
-  | Ok (res, gas_remaining) -> (res, gas_remaining)
-  | Error (err, gas_remaining) ->
-      fatal_error_gas_scale Gas.scale_factor err gas_remaining
+  match ls Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+  | Ok (res, gas_remaining, _) -> (res, gas_remaining)
+  | Error (err, gas_remaining, _) ->
+      fatal_error_gas_scale Gas.scale_factor err gas_remaining 
 
 (****************************************************)
 (*     Checking initialized contract state          *)
 (****************************************************)
 let check_extract_cstate name res gas_limit =
-  match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) ->
+  match res Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+  | Error (err, remaining_gas, _) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((_, cstate, dyn_checks), remaining_gas) ->
+  | Ok ((_, cstate, dyn_checks), remaining_gas, _) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
       (cstate, remaining_gas, dyn_checks)
 
@@ -84,10 +84,10 @@ let check_extract_cstate name res gas_limit =
 (*           Checking prepared message              *)
 (****************************************************)
 let check_prepare_message res gas_limit =
-  match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) ->
+  match res Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+  | Error (err, remaining_gas, _) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((preppred_msg, dyn_checks), remaining_gas) ->
+  | Ok ((preppred_msg, dyn_checks), remaining_gas, _) ->
       plog "[Preparing message]\nSuccess!\n";
       (preppred_msg, dyn_checks, remaining_gas)
 
@@ -96,10 +96,10 @@ let check_prepare_message res gas_limit =
 (*****************************************************)
 
 let check_after_step res gas_limit =
-  match res Eval.init_gas_kont gas_limit with
-  | Error (err, remaining_gas) ->
+  match res Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+  | Error (err, remaining_gas, _) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((cstate, outs, events, accepted_b), remaining_gas) ->
+  | Ok ((cstate, outs, events, accepted_b), remaining_gas, _) ->
       plog
         (sprintf "Success! Here's what we got:\n"
         (* sprintf "%s" (ContractState.pp cstate) ^ *)
@@ -362,7 +362,7 @@ let deploy_library args gas_remaining =
 
           (* Checking initialized libraries! *)
           let _, gas_remaining' =
-            check_libs clibs elibs args.input gas_remaining
+            check_libs clibs elibs args.input gas_remaining 
           in
           let _ =
             validate_get_init_json args.input_init gas_remaining' dis_lmod.smver

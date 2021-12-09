@@ -91,20 +91,20 @@ let run () =
           (* Since this is not a contract, we have no in-contract lib defined. *)
           let envres = Eval.init_libraries None elibs in
           let env, gas_remaining =
-            match envres Eval.init_gas_kont gas_limit with
-            | Ok (env', gas_remaining) -> (env', gas_remaining)
-            | Error (err, gas_remaining) ->
+            match envres Eval.init_gas_kont gas_limit [] with (* Seman_init *)
+            | Ok (env', gas_remaining, _) -> (env', gas_remaining) (* TODO: update to extract the collected semantics *)
+            | Error (err, gas_remaining, _) ->
                 fatal_error_gas_scale Gas.scale_factor err gas_remaining
           in
           let lib_fnames = List.map ~f:(fun (name, _) -> name) env in
-          let res' = Eval.(exp_eval dis_e env init_gas_kont gas_remaining) in
+          let res' = Eval.(exp_eval dis_e env init_gas_kont gas_remaining) [] in (* Seman_init *)
           match res' with
-          | Ok (_, gas_remaining) ->
+          | Ok (_, gas_remaining, _) -> (* TODO: update to extract the collected semantics *)
               let gas_remaining' =
                 Gas.finalize_remaining_gas cli.gas_limit gas_remaining
               in
               printf "%s\n" (Eval.pp_result res' lib_fnames gas_remaining')
-          | Error (el, gas_remaining) ->
+          | Error (el, gas_remaining, _) ->
               fatal_error_gas_scale Gas.scale_factor el gas_remaining)
       | Error e -> fatal_error e)
   | Error e -> fatal_error e

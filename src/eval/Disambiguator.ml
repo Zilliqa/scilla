@@ -662,9 +662,9 @@ let init_lib_entries libs this_address =
 
 (* Combined init_module and init_contract *)
 let init_module (md : Dis.PostDisSyntax.cmodule) initargs elibs =
-  (* Initialize libraries - ignore gas *)
+  (* Initialize libraries - ignore gas and semantics *)
   match
-    Eval.init_libraries md.libs elibs (fun x _ -> x) Stdint.Uint64.max_int
+    Eval.init_libraries md.libs elibs (fun x _ _ -> x) Stdint.Uint64.max_int [] (* Seman_init *)
   with
   | Error s -> fatal_error s
   | Ok libenv -> (
@@ -673,8 +673,8 @@ let init_module (md : Dis.PostDisSyntax.cmodule) initargs elibs =
       (* Evaluate constraint, and abort if false - ignore gas *)
       match
         Eval.init_fields env md.contr.cfields
-          (fun x _ -> x)
-          Stdint.Uint64.max_int
+          (fun x _ _ -> x)
+          Stdint.Uint64.max_int [] (* Seman_init *)
       with
       | Error s -> fatal_error s
       | Ok field_values -> field_values)
