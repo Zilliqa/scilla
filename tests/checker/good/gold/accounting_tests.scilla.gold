@@ -54,7 +54,11 @@
       { "vname": "Test_Send_12", "params": [] },
       { "vname": "Test_Send_13", "params": [] },
       { "vname": "Test_Send_14", "params": [] },
-      { "vname": "Test_Send_15", "params": [] }
+      { "vname": "Test_Send_15", "params": [] },
+      { "vname": "Test_Send_16", "params": [] },
+      { "vname": "Test_Send_17", "params": [] },
+      { "vname": "Test_Send_18", "params": [] },
+      { "vname": "Test_Send_19", "params": [] }
     ],
     "procedures": [
       { "vname": "AssertReset", "params": [] },

@@ -428,3 +428,113 @@ transition Test_Send_15()
   msgs = one_msg msg1;
   send msgs
 end
+
+(* Check that all outgoing amounts are deducted before invoking the first transition (cash in the envelope) *)
+transition Test_Send_16()
+  AssertReset;
+  cur_bal <- _balance;
+  out_amount <- outgoing_amount;
+  tmp_expected_balance = builtin sub cur_bal out_amount;
+  expected_balance_as_seen_from_support = builtin sub tmp_expected_balance out_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : expected_balance_as_seen_from_support};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  msg2 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : expected_balance_as_seen_from_support};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg3 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : expected_balance_as_seen_from_support};
+  msgs3 = one_msg msg3;
+  send msgs3
+end
+
+(* Check that all outgoing amounts are deducted before invoking the first transition (cash in the envelope),
+   but that money is returned from the first message if it is not accepted. *)
+transition Test_Send_17()
+  AssertReset;
+  cur_bal <- _balance;
+  out_amount <- outgoing_amount;
+  final_expected_balance = builtin sub cur_bal out_amount;
+  first_expected_balance = builtin sub final_expected_balance out_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "NoAcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : first_expected_balance};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  msg2 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : final_expected_balance};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg3 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : final_expected_balance};
+  msgs3 = one_msg msg3;
+  send msgs3
+end
+
+(* Check that all outgoing amounts are deducted before invoking the first transition (cash in the envelope),
+   but that money from the last message is returned if not accepted. *)
+transition Test_Send_18()
+  AssertReset;
+  cur_bal <- _balance;
+  out_amount <- outgoing_amount;
+  final_expected_balance = builtin sub cur_bal out_amount;
+  first_expected_balance = builtin sub final_expected_balance out_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "AcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : first_expected_balance};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  msg2 = { _recipient : support_contract;
+           _tag : "NoAcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : first_expected_balance};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg3 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : final_expected_balance};
+  msgs3 = one_msg msg3;
+  send msgs3
+end
+
+(* Check that all outgoing amounts are deducted before invoking the first transition (cash in the envelope),
+   but that money from all messages are returned if not accepted. *)
+transition Test_Send_19()
+  AssertReset;
+  cur_bal <- _balance; out_amount <- outgoing_amount;
+  middle_expected_balance = builtin sub cur_bal out_amount;
+  first_expected_balance = builtin sub middle_expected_balance out_amount;
+  msg1 = { _recipient : support_contract;
+           _tag : "NoAcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : first_expected_balance};
+  msgs1 = one_msg msg1;
+  send msgs1;
+  msg2 = { _recipient : support_contract;
+           _tag : "NoAcceptAndCheckSenderBalance";
+           _amount : out_amount;
+           expected_balance : middle_expected_balance};
+  msgs2 = one_msg msg2;
+  send msgs2;
+  msg3 = { _recipient : _this_address;
+           _tag : "CheckSenderBalance";
+           _amount : Uint128 0;
+           expected_balance : cur_bal};
+  msgs3 = one_msg msg3;
+  send msgs3
+end

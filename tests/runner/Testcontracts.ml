@@ -480,7 +480,7 @@ let contract_tests env =
                 "type_casts"
                 >::: build_contract_tests env "type_casts" succ_code 1 37 [];
                 "accounting_tests"
-                >::: build_contract_tests env "accounting_tests" succ_code 1 22
+                >::: build_contract_tests env "accounting_tests" succ_code 1 25
                        [];
                 "accounting_tests_support"
                 >::: build_contract_tests env "accounting_tests_support"

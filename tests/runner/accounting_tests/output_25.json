@@ -1,0 +1,39 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7889",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "AcceptAndCheckSenderBalance",
+      "_amount": "10",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
+      "params": [
+        { "vname": "expected_balance", "type": "Uint128", "value": "10" }
+      ]
+    },
+    {
+      "_tag": "NoAcceptAndCheckSenderBalance",
+      "_amount": "10",
+      "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
+      "params": [
+        { "vname": "expected_balance", "type": "Uint128", "value": "10" }
+      ]
+    },
+    {
+      "_tag": "CheckSenderBalance",
+      "_amount": "0",
+      "_recipient": "0x673b712c3e47bf98fae068370f9e5a2a1c1c8047",
+      "params": [
+        { "vname": "expected_balance", "type": "Uint128", "value": "20" }
+      ]
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "10" },
+    { "vname": "test_string_1", "type": "String", "value": "Hello" },
+    { "vname": "test_string_2", "type": "String", "value": "World" },
+    { "vname": "outgoing_amount", "type": "Uint128", "value": "10" },
+    { "vname": "max_outgoing_msgs", "type": "Uint128", "value": "3" }
+  ],
+  "events": []
+}
