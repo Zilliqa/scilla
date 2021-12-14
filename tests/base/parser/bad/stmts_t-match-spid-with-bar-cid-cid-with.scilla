@@ -1,0 +1,17 @@
+scilla_version 0
+
+library TestLib
+
+type T =
+| C
+
+let a = let x = C in Some { T } x
+
+contract Test
+()
+
+transition arbitrary ()
+  match a with
+  | Some C -> accept
+  end
+end  

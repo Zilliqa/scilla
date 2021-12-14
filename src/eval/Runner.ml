@@ -57,7 +57,15 @@ let check_libs clibs elibs name gas_limit =
               (List.rev_map res ~f:(fun x ->
                    EvalUtil.EvalName.as_string (fst x))))
            name);
-      gas_remaining
+      (res, gas_remaining)
+  | Error (err, gas_remaining) ->
+      fatal_error_gas_scale Gas.scale_factor err gas_remaining
+
+let check_contr_wrapper libs_env cconstraint cfields initargs curargs gas_limit
+    =
+  let ls = check_contr libs_env cconstraint cfields initargs curargs in
+  match ls Eval.init_gas_kont gas_limit with
+  | Ok (res, gas_remaining) -> (res, gas_remaining)
   | Error (err, gas_remaining) ->
       fatal_error_gas_scale Gas.scale_factor err gas_remaining
 
@@ -68,9 +76,9 @@ let check_extract_cstate name res gas_limit =
   match res Eval.init_gas_kont gas_limit with
   | Error (err, remaining_gas) ->
       fatal_error_gas_scale Gas.scale_factor err remaining_gas
-  | Ok ((_, cstate, field_vals, dyn_checks), remaining_gas) ->
+  | Ok ((_, cstate, dyn_checks), remaining_gas) ->
       plog (sprintf "[Initializing %s's fields]\nSuccess!\n" name);
-      (cstate, remaining_gas, field_vals, dyn_checks)
+      (cstate, remaining_gas, dyn_checks)
 
 (****************************************************)
 (*           Checking prepared message              *)
@@ -353,7 +361,7 @@ let deploy_library args gas_remaining =
           let clibs = Some dis_lmod.libs in
 
           (* Checking initialized libraries! *)
-          let gas_remaining' =
+          let _, gas_remaining' =
             check_libs clibs elibs args.input gas_remaining
           in
           let _ =
@@ -388,21 +396,18 @@ let run_with_args args =
       else Uint64.sub initial_gas_limit cost
     else
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
-      (* libraries can only be deployed, not "run". *)
-      if is_library then
-        fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf
-                "Cannot run a library contract. They can only be deployed\n"))
-          Uint64.zero
-      else if Uint64.compare initial_gas_limit cost < 0 then
+      if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
           (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
   in
 
-  if is_library then deploy_library args gas_remaining
+  if is_library then
+    if is_deployment then deploy_library args gas_remaining
+    else
+      (* Messages to libraries are ignored, but tolerated *)
+      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
@@ -465,7 +470,7 @@ let run_with_args args =
             let clibs = dis_cmod.libs in
 
             (* Checking initialized libraries! *)
-            let gas_remaining =
+            let libs_env, gas_remaining =
               check_libs clibs elibs args.input gas_remaining
             in
             let initargs =
@@ -490,13 +495,17 @@ let run_with_args args =
                     accepted_b ),
                   gas ) =
               if is_deployment then (
+                let field_vals, gas_remaining =
+                  check_contr_wrapper libs_env dis_cmod.contr.cconstraint
+                    dis_cmod.contr.cfields initargs [] gas_remaining
+                in
                 (* Initializing the contract's state, just for checking things. *)
                 let init_res =
-                  init_module dis_cmod initargs [] Uint128.zero bstate elibs
+                  init_module libs_env dis_cmod initargs Uint128.zero bstate
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
-                let cstate', gas_remaining, field_vals, dyn_checks =
+                let cstate', gas_remaining, dyn_checks =
                   check_extract_cstate args.input init_res gas_remaining
                 in
                 (* If the data store is not local, we must update the store with the initial field values.
@@ -531,7 +540,6 @@ let run_with_args args =
                     perform_dynamic_typechecks dyn_checks gas_remaining
                   in
                   match
-                    (* TODO: Move gas accounting for initialization here? It's currently inside init_module. *)
                     let%bind () =
                       Result.ignore_m
                       @@ mapM field_vals' ~f:(fun (s, _t, v) ->
@@ -580,9 +588,9 @@ let run_with_args args =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
-                      init_module dis_cmod initargs [] cur_bal bstate elibs
+                      init_module libs_env dis_cmod initargs cur_bal bstate
                     in
-                    let cstate, gas_remaining, _, _dyn_checks =
+                    let cstate, gas_remaining, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
 
@@ -612,14 +620,17 @@ let run_with_args args =
                                  args.input_state))
                           gas_remaining
                     in
-
+                    let field_vals, _ignore_gas_remaining =
+                      check_contr_wrapper libs_env dis_cmod.contr.cconstraint
+                        dis_cmod.contr.cfields initargs curargs gas_remaining
+                    in
                     (* Initializing the contract's state *)
                     let init_res =
-                      init_module dis_cmod initargs curargs cur_bal bstate elibs
+                      init_module libs_env dis_cmod initargs cur_bal bstate
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
-                    let cstate, gas_remaining, field_vals, _dyn_checks =
+                    let cstate, gas_remaining, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
                     in
 

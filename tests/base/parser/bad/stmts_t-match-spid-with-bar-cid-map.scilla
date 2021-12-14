@@ -1,0 +1,14 @@
+scilla_version 0
+
+library TestLib
+
+let a = True
+
+contract Test
+()
+
+transition arbitrary ()
+  match a with
+  | Pair Map -> accept
+  end
+end  

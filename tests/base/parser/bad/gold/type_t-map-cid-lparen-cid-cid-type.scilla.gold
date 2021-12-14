@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "This is an invalid map type, the map value is likely incorrect. The map value expects a list of valid ADT constructor arguments for the ADT, possibly.\n",
+        "Invalid type or pattern. If this is a type, then this is likely due to an illegal map value type. If this is a pattern-match, then it is likely due to a misplaced or missing double arrow ('=>').\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-lparen-cid-cid-type.scilla",
         "line": 5,
