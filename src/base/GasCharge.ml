@@ -34,7 +34,7 @@ end = struct
   type t = int [@@deriving sexp]
 
   let create i =
-    if i > 0 then pure i else fail0 "PositiveInt: Constructed failed."
+    if i > 0 then pure i else fail0 ~kind:"PositiveInt: Constructed failed." ?inst:None
 
   let get i = i
 end
@@ -125,25 +125,25 @@ module ScillaGasCharge (N : QualifiedName) = struct
           let%bind i2 = recurser g2 in
           match (i1, i2) with
           | GInt i1', GInt i2' -> pure @@ GInt (i1' + i2')
-          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+          | _ -> fail0 ~kind:"GasCharge: Cannot evaluate float charge" ?inst:None)
       | ProdOf (g1, g2) -> (
           let%bind i1 = recurser g1 in
           let%bind i2 = recurser g2 in
           match (i1, i2) with
           | GInt i1', GInt i2' -> pure @@ GInt (i1' * i2')
-          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+          | _ -> fail0 ~kind:"GasCharge: Cannot evaluate float charge" ?inst:None)
       | MinOf (g1, g2) -> (
           let%bind i1 = recurser g1 in
           let%bind i2 = recurser g2 in
           match (i1, i2) with
           | GInt i1', GInt i2' -> pure @@ GInt (Int.min i1' i2')
-          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+          | _ -> fail0 ~kind:"GasCharge: Cannot evaluate float charge" ?inst:None)
       | DivCeil (g1, g2) -> (
           let div_ceil x y = if x % y = 0 then x / y else (x / y) + 1 in
           let%bind g1_i = recurser g1 in
           match g1_i with
           | GInt g1_i' -> pure @@ GInt (div_ceil g1_i' (PositiveInt.get g2))
-          | _ -> fail0 "GasCharge: Cannot evaluate float charge")
+          | _ -> fail0 ~kind:"GasCharge: Cannot evaluate float charge" ?inst:None)
       | LogOf g ->
           let logger uf =
             let f = match uf with GFloat f -> f | GInt i -> Float.of_int i in

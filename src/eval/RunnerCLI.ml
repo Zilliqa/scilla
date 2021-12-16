@@ -235,7 +235,7 @@ let parse args ~exe_name =
               with _ ->
                 PrettyPrinters.fatal_error
                   (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid balance %s\n" i))
+                     ~kind:"Invalid balance" ~inst:i)
             in
             v_balance := Some g),
         "Account balance" );

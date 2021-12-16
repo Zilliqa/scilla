@@ -108,7 +108,7 @@ let scilla_error_to_json elist =
   let err_to_json (e : scilla_error) =
     `Assoc
       [
-        ("error_message", `String e.emsg);
+        ("error_message", `String (mk_error_description e));
         ("start_location", loc_to_json e.startl);
         ("end_location", loc_to_json e.endl);
       ]
@@ -142,7 +142,7 @@ let scilla_error_to_jstring ?(pp = true) elist =
 let scilla_error_to_sstring elist =
   let strip_nl s = Str.global_replace (Str.regexp "[\n]") " " s in
   let pp e =
-    let msg = strip_nl e.emsg in
+    let msg = strip_nl (mk_error_description e) in
     sprintf "%s:%d:%d: error: %s" e.startl.fname e.startl.lnum e.startl.cnum msg
   in
   List.fold elist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ pp e) ^ "\n"

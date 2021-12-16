@@ -616,30 +616,25 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
           sprintf "Error in throw %s:\n" is),
       sloc )
 
-  let wrap_with_info (msg, sloc) res =
+  let wrap_with_info ~kind ?inst sloc res =
+    Result.map_error res ~f:(fun errs -> mk_error1 ~kind ?inst sloc @ errs)
+
+  let wrap_err_helper failure res =
     match res with
     | Ok _ -> res
-    | Error e -> Error ({ emsg = msg; startl = sloc; endl = dummy_loc } :: e)
+      (* Handle a special case where we're dealing with the most precise error. *)
+    | Error [ e' ] ->
+      let m, l = failure in
+      if [%equal: loc] e'.startl dummy_loc then
+        Error (mk_error1 ~kind:(m ^ e'.ekind) ?inst:e'.einst l)
+      else Error (mk_error2 ~kind:(m ^ e'.ekind) ?inst:e'.einst e'.startl e'.endl)
+    | _ ->
+      let kind, sloc = failure in
+      wrap_with_info ~kind ?inst:None sloc res
 
   let wrap_err e phase ?(opt = "") res =
-    match res with
-    | Ok _ -> res
-    (* Handle a special case where we're dealing with the most precise error. *)
-    | Error [ e' ] ->
-        let m, l = get_failure_msg e phase opt in
-        if [%equal: loc] e'.startl dummy_loc then
-          Error (mk_error1 (m ^ e'.emsg) l)
-        else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
-    | _ -> wrap_with_info (get_failure_msg e phase opt) res
+    wrap_err_helper (get_failure_msg e phase opt) res
 
   let wrap_serr s phase ?(opt = "") res =
-    match res with
-    | Ok _ -> res
-    (* Handle a special case where we're dealing with the most precise error. *)
-    | Error [ e' ] ->
-        let m, l = get_failure_msg_stmt s phase opt in
-        if [%equal: loc] e'.startl dummy_loc then
-          Error (mk_error1 (m ^ e'.emsg) l)
-        else Error (mk_error2 (m ^ e'.emsg) e'.startl e'.endl)
-    | _ -> wrap_with_info (get_failure_msg_stmt s phase opt) res
+    wrap_err_helper (get_failure_msg_stmt s phase opt) res
 end

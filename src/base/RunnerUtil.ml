@@ -59,20 +59,21 @@ let get_init_this_address_and_extlibs filename =
       then
         fatal_error
         @@ mk_error0
-             (sprintf "Duplicate extlib map entries in init JSON file %s."
-                filename)
+             ~kind:"Duplicate extlib map entries in init JSON file"
+             ~inst:filename
       else (this_address, name_addr_pairs)
     with Invalid_json s ->
       fatal_error
-        (s @ mk_error0 (sprintf "Unable to parse JSON file %s. " filename))
+        (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:filename)
 
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib name sloc =
-  let errmsg = sprintf "Failed to import library %s. " name in
   let fname, this_address, initf =
     match StdlibTracker.find_lib_dir name with
-    | None -> fatal_error @@ mk_error1 (errmsg ^ "Not found.\n") sloc
+    | None ->
+        let errmsg = sprintf "Failed to import library (not found)" in
+        fatal_error @@ mk_error1 ~kind:errmsg ~inst:name sloc
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
@@ -84,7 +85,7 @@ let import_lib name sloc =
         (libf, this_address, extlibs)
   in
   match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
-  | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
+  | Error s -> fatal_error (s @ (mk_error1 ~kind:"Failed to parse" ?inst:None) sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
       (lmod, this_address, initf)
@@ -109,7 +110,7 @@ let import_libs names_and_namespaces init_address_map =
                   sprintf "Cyclic dependence found when importing %s."
                     (as_error_string libname)
             in
-            fatal_error @@ mk_error1 errmsg (get_rep libname)
+            fatal_error @@ mk_error1 ~kind:errmsg ?inst:None (get_rep libname)
           else
             let ilib_address =
               Option.value
@@ -132,8 +133,8 @@ let import_libs names_and_namespaces init_address_map =
                 fatal_error
                   (s
                   @ mk_error1
-                      (sprintf "Failed to disambiguate imported library %s.\n"
-                         (as_string libname))
+                      ~kind:"Failed to disambiguate imported library"
+                      ~inst:(as_string libname)
                       (get_rep libname))
             | Ok dis_lib ->
                 let libnode =
@@ -151,11 +152,12 @@ let import_libs names_and_namespaces init_address_map =
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
     (mk_error0
-       ("A path to Scilla stdlib not found. Please set "
-      ^ StdlibTracker.scilla_stdlib_env
-      ^ " environment variable, or pass through command-line argument for this \
-         script.\n" ^ "Example:\n" ^ exe_name
-      ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
+       ~kind:"A path to Scilla stdlib not found"
+       ~inst:("Please set "
+        ^ StdlibTracker.scilla_stdlib_env
+        ^ " environment variable, or pass through command-line argument for this \
+          script.\n" ^ "Example:\n" ^ exe_name
+        ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =

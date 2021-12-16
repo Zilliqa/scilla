@@ -102,7 +102,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 let%bind lcost = literal_cost l in
                 walk ll (acc_cost + lcost)
             | ADTValue (c, _, _) when is_nil_ctr_name c -> pure (acc_cost + 1)
-            | _ -> fail0 "Malformed list while computing literal cost"
+            | _ -> fail0 ~kind:"Malformed list while computing literal cost" ?inst:None
           in
           walk als 0
         else if List.is_empty ll then pure 1
@@ -172,7 +172,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
            * without type info (Eval doesn't run the type checker). To know this
            * statically, call builtin_cost below, providing argument types. *)
           pure ee
-      | GasExpr _ -> fail0 "Unexpected gas charge"
+      | GasExpr _ -> fail0 ~kind:"Unexpected gas charge" ?inst:None
     in
     pure (e', erep)
 
@@ -246,7 +246,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 | None -> GasGasCharge.StaticCost 1
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
-          | GasStmt _ -> fail0 "Unexpected gas charge"
+          | GasStmt _ -> fail0 ~kind:"Unexpected gas charge" ?inst:None
         in
 
         let%bind rem_stmts' = stmts_cost rem_stmts in
@@ -334,7 +334,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_strrev, [ s ] -> pure @@ GasGasCharge.SizeOf (GI.get_id s)
     | Builtin_to_string, [ l ] | Builtin_to_ascii, [ l ] ->
         pure @@ GasGasCharge.SizeOf (GI.get_id l)
-    | _ -> fail0 @@ "Gas cost error for string built-in"
+    | _ -> fail0 ~kind:"Gas cost error for string built-in" ?inst:None
 
   let crypto_coster op _targs args types =
     match (op, types, args) with
@@ -449,7 +449,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | Builtin_alt_bn128_pairing_product, _, [ pairs ] ->
         let list_len = GasGasCharge.LengthOf (GI.get_id pairs) in
         pure (GasGasCharge.ProdOf (GasGasCharge.StaticCost 40, list_len))
-    | _ -> fail0 @@ "Gas cost error for hash built-in"
+    | _ -> fail0 ~kind:"Gas cost error for hash built-in" ?inst:None
 
   let map_coster op _targs args _arg_types =
     match args with
@@ -466,12 +466,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               (GasGasCharge.SumOf
                  (GasGasCharge.StaticCost 1, GasGasCharge.LengthOf (GI.get_id m)))
         )
-    | _ -> fail0 @@ "Gas cost error for map built-in"
+    | _ -> fail0 ~kind:"Gas cost error for map built-in" ?inst:None
 
   let to_nat_coster _ _targs args _arg_types =
     match args with
     | [ a ] -> pure (GasGasCharge.ValueOf (GI.get_id a))
-    | _ -> fail0 @@ "Gas cost error for to_nat built-in"
+    | _ -> fail0 ~kind:"Gas cost error for to_nat built-in" ?inst:None
 
   let int_conversion_coster w _ _targs _args arg_types =
     let base = 4 in
@@ -482,8 +482,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         if w = 32 || w = 64 then pure (GasGasCharge.StaticCost base)
         else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
         else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
-        else fail0 @@ "Gas cost error for integer conversion"
-    | _ -> fail0 @@ "Gas cost due to incorrect arguments for int conversion"
+        else fail0 ~kind:"Gas cost error for integer conversion" ?inst:None
+    | _ -> fail0 ~kind:"Gas cost due to incorrect arguments for int conversion" ?inst:None
 
   let int_coster op _targs args arg_types =
     let base = 4 in
@@ -498,7 +498,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost (base * 5),
                      GasGasCharge.ValueOf (GI.get_id p) ))
-          | _ -> fail0 @@ "Gas cost error for built-in pow")
+          | _ -> fail0 ~kind:"Gas cost error for built-in pow" ?inst:None)
       | Builtin_isqrt -> (
           match args with
           | [ a ] ->
@@ -506,7 +506,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost base,
                      GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id a)) ))
-          | _ -> fail0 "Invalid argument type to isqrt")
+          | _ -> fail0 ~kind:"Invalid argument type to isqrt" ?inst:None)
       | _ -> pure (GasGasCharge.StaticCost base)
     in
     let%bind w =
@@ -514,15 +514,15 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       | a :: _ -> (
           match int_width a with
           | Some w -> pure w
-          | None -> fail0 "int_coster: cannot determine integer width")
-      | _ -> fail0 @@ "Gas cost error for integer built-in"
+          | None -> fail0 ~kind:"int_coster: cannot determine integer width" ?inst:None)
+      | _ -> fail0 ~kind:"Gas cost error for integer built-in" ?inst:None
     in
     if w = 32 || w = 64 then pure base'
     else if w = 128 then
       pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 2))
     else if w = 256 then
       pure (GasGasCharge.ProdOf (base', GasGasCharge.StaticCost 4))
-    else fail0 @@ "Gas cost error for integer built-in"
+    else fail0 ~kind:"Gas cost error for integer built-in" ?inst:None
 
   let bnum_coster _op _targs _args _arg_types =
     pure (GasGasCharge.StaticCost 32)
@@ -630,13 +630,11 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                match expected with TypeVar _ -> true | _ -> false)
              types arg_types
       then fcoster op targ_types arg_ids arg_types (* this can fail too *)
-      else fail0 @@ "Name or arity doesn't match"
-    in
-    let msg =
-      sprintf "Unable to determine gas cost for \"%s\"" (pp_builtin op)
+      else fail0 ~kind:"Name or arity doesn't match" ?inst:None
     in
     let%bind _, cost =
-      tryM (builtin_records_find op) ~f:matcher ~msg:(fun () -> mk_error0 msg)
+      tryM (builtin_records_find op) ~f:matcher ~msg:(fun () ->
+        mk_error0 ~kind:"Unable to determine gas cost for builtin" ~inst:(pp_builtin op))
     in
     pure cost
 end

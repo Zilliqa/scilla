@@ -34,7 +34,7 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   module FEPType = FESyntax.SType
 
   (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
-  let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
+  let fail_err msg lexbuf = fail1 ~kind:msg ?inst:None (toLoc lexbuf.lex_curr_p)
 
   let parse_lexbuf checkpoint_starter lexbuf filename =
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
@@ -61,7 +61,7 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     in
     try MInter.loop_handle success failure supplier checkpoint with
     | Lexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
-    | Syntax.SyntaxError (msg, loc) -> fail1 ("Syntax error: " ^ msg) loc
+    | Syntax.SyntaxError (msg, loc) -> fail1 ~kind:("Syntax error: " ^ msg) ?inst:None loc
     | Parser.Error -> fail_err "Syntax error." lexbuf
 
   let parse_file checkpoint_starter filename =
