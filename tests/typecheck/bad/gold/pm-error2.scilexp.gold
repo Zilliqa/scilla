@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Types don't match: pattern uses a constructor of type Option, but value of type Bool is given.",
+        "Wrong constructor in pattern matching: Expected a constructor of type Bool, but a constructor of type Option is given",
       "start_location": {
         "file": "typecheck/bad/pm-error2.scilexp",
         "line": 3,

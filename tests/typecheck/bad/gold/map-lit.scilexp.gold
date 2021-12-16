@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error: cannot apply \"put\" built-in to argument(s) of type(s) [Map (Uint32) (Uint32); Uint32; Uint64].",
+        "Type error: cannot apply \"put\" built-in to argument(s) of type(s): [Map (Uint32) (Uint32); Uint32; Uint64]",
       "start_location": {
         "file": "typecheck/bad/map-lit.scilexp",
         "line": 8,

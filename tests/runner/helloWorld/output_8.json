@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Mismatch in input blockchain variables:\nexpected:\n{ [BLOCKNUMBER : BNum] }\nprovided:\n{ [Unknown : BNum -> (BNum 100)] }\n",
+        "Mismatch in input blockchain variables: expected:\n{ [BLOCKNUMBER : BNum] }\nprovided:\n{ [Unknown : BNum -> (BNum 100)] }\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

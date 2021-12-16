@@ -2,13 +2,13 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ZilGame:\n",
+      "error_message": "Type error(s) in contract: ZilGame\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Error during pattern-match checking of library check_validity:\n",
+        "Error during pattern-match checking of library: check_validity",
       "start_location": {
         "file": "checker/bad/zil_mod.scilla",
         "line": 69,
@@ -18,7 +18,7 @@
     },
     {
       "error_message":
-        "Type error in pattern matching on `xa` of type Pair (Bool) (Option (ByStr32)) (or one of its branches):\nPattern 3 is unreachable.",
+        "Type error in pattern matching on `xa` of type Pair (Bool) (Option (ByStr32)) (or one of its branches):\nPattern is unreachable: 3",
       "start_location": {
         "file": "checker/bad/zil_mod.scilla",
         "line": 80,
