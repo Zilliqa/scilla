@@ -44,15 +44,20 @@ let json_exn_wrapper ?filename thunk =
       match filename with
       | Some f ->
           raise
-            (mk_invalid_json ~kind:(Printf.sprintf "Unknown error parsing JSON %s" f) ?inst:None)
+            (mk_invalid_json
+               ~kind:(Printf.sprintf "Unknown error parsing JSON %s" f)
+               ?inst:None)
       | None ->
-          raise (mk_invalid_json ~kind:(Printf.sprintf "Unknown error parsing JSON") ?inst:None))
+          raise
+            (mk_invalid_json
+               ~kind:(Printf.sprintf "Unknown error parsing JSON")
+               ?inst:None))
 
 let member_exn m j =
   let thunk () = Basic.Util.member m j in
   let v = json_exn_wrapper thunk in
   match v with
-  | `Null -> raise (mk_invalid_json ~kind:("Member not found in json") ~inst:m)
+  | `Null -> raise (mk_invalid_json ~kind:"Member not found in json" ~inst:m)
   | j -> j
 
 let to_string_exn j =
@@ -137,7 +142,8 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
             fun j ->
               UintLit
                 (Uint256L (Integer256.Uint256.of_string (to_string_exn j)))
-        | _ -> raise (mk_invalid_json ~kind:"Invalid primitive type" ?inst:None))
+        | _ -> raise (mk_invalid_json ~kind:"Invalid primitive type" ?inst:None)
+        )
     | MapType (kt, vt) -> (
         let kp = recurser kt in
         let vp = recurser vt in
@@ -178,7 +184,9 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                 | `Assoc _ ->
                     let arguments = member_exn "arguments" j |> Util.to_list in
                     if List.length tmap <> List.length arguments then
-                      raise (mk_invalid_json ~kind:"Invalid arguments to ADT in JSON" ?inst:None)
+                      raise
+                        (mk_invalid_json
+                           ~kind:"Invalid arguments to ADT in JSON" ?inst:None)
                     else
                       let arg_lits =
                         List.map2_exn arg_parsers arguments ~f:(fun p a ->
@@ -187,7 +195,10 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                             | Incomplete ->
                                 raise
                                   (mk_invalid_json
-                                     ~kind:"Attempt to call an incomplete JSON parser" ?inst:None)
+                                     ~kind:
+                                       "Attempt to call an incomplete JSON \
+                                        parser"
+                                     ?inst:None)
                             | Parser p' -> p' a)
                       in
                       ADTValue (cn.cname, tlist, arg_lits)
@@ -200,7 +211,9 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                     then
                       raise
                         (mk_invalid_json
-                           ~kind:"ADT value is a JSON array, but type is not List" ?inst:None)
+                           ~kind:
+                             "ADT value is a JSON array, but type is not List"
+                           ?inst:None)
                     else
                       let eparser = List.nth_exn arg_parsers 0 in
                       let eparser' =
@@ -208,7 +221,9 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                         | Incomplete ->
                             raise
                               (mk_invalid_json
-                                 ~kind:"Attempt to call an incomplete JSON parser" ?inst:None)
+                                 ~kind:
+                                   "Attempt to call an incomplete JSON parser"
+                                 ?inst:None)
                         | Parser p' -> p'
                       in
                       let etyp = List.nth_exn tmap 0 in
@@ -217,7 +232,9 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
                           (* Apply eparser thunk, and then apply to argument *)
                           build_cons_lit (eparser' vl) etyp acc)
                         ~init:(build_nil_lit etyp)
-                | _ -> raise (mk_invalid_json ~kind:"Invalid ADT in JSON" ?inst:None)
+                | _ ->
+                    raise
+                      (mk_invalid_json ~kind:"Invalid ADT in JSON" ?inst:None)
               in
               AssocDictionary.insert (JSONName.as_string cn.cname) parser maps)
         in
@@ -227,13 +244,17 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
             | `Assoc _ -> member_exn "constructor" j |> to_string_exn
             | `List _ ->
                 "Cons" (* for efficiency, Lists can be stored flatly. *)
-            | _ -> raise (mk_invalid_json ~kind:"Invalid construct in ADT JSON" ?inst:None)
+            | _ ->
+                raise
+                  (mk_invalid_json ~kind:"Invalid construct in ADT JSON"
+                     ?inst:None)
           in
           match AssocDictionary.lookup cn cn_parsers with
           | Some parser -> parser j
           | None ->
               raise
-                (mk_invalid_json ~kind:"Unknown constructor in ADT JSON" ~inst:cn)
+                (mk_invalid_json ~kind:"Unknown constructor in ADT JSON"
+                   ~inst:cn)
         in
         (* Create parser *)
         let p = adt_parser cn_parsers in

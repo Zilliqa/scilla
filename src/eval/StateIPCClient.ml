@@ -42,9 +42,10 @@ let translate_res res =
   match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
       fail0
-        ~kind:(Printf.sprintf
-           "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code
-           e.message)
+        ~kind:
+          (Printf.sprintf
+             "StateIPCClient: Error in IPC access: (code:%d, message:%s)."
+             e.code e.message)
         ?inst:None
   | Ok res' -> pure res'
 
@@ -52,7 +53,9 @@ let ipcclient_exn_wrapper thunk =
   try thunk () with
   | Unix.Unix_error (_, s1, s2) ->
       fail0 ~kind:("StateIPCClient: Unix error: " ^ s1 ^ s2) ?inst:None
-  | _ -> fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call" ?inst:None
+  | _ ->
+      fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call"
+        ?inst:None
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
@@ -80,7 +83,9 @@ let deserialize_literal s tp =
     fail
       (s
       @ mk_error0
-          ~kind:"StateIPCClient: Error deserializing literal fetched from IPC call" ?inst:None)
+          ~kind:
+            "StateIPCClient: Error deserializing literal fetched from IPC call"
+          ?inst:None)
 
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -124,8 +129,9 @@ let rec deserialize_value value tp =
           pure (IPCCLiteral.Map ((kt, vt), mlit))
       | _ ->
           fail0
-            ~kind:"StateIPCClient: Type mismatch deserializing value. Unexpected \
-             protobuf map."
+            ~kind:
+              "StateIPCClient: Type mismatch deserializing value. Unexpected \
+               protobuf map."
             ?inst:None)
 
 let encode_serialized_value value =

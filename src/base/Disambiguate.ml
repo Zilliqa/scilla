@@ -150,9 +150,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             match List.Assoc.find nm_dict n ~equal:String.( = ) with
             | None ->
                 fail1
-                  ~kind:(sprintf "Name %s is not defined in the namespace %s" n ns)
-                  ?inst:None
-                  error_loc
+                  ~kind:
+                    (sprintf "Name %s is not defined in the namespace %s" n ns)
+                  ?inst:None error_loc
             | Some adr ->
                 (* Name defined at adr. *)
                 pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)))
@@ -165,8 +165,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       match get_id id with
       | SimpleLocal n -> pure (GlobalName.QualifiedGlobal (this_address, n), n)
       | QualifiedLocal _ ->
-          fail0
-            ~kind:"Illegal variable, type or constructor name"
+          fail0 ~kind:"Illegal variable, type or constructor name"
             ~inst:(as_error_string (get_id id))
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
@@ -341,11 +340,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       (* Closures and type abstractions should not appear in disambiguation phase *)
       | Clo _ ->
           raise
-            (mk_internal_error ~kind:"Closure literal found in disambiguation phase" ?inst:None)
+            (mk_internal_error
+               ~kind:"Closure literal found in disambiguation phase" ?inst:None)
       | TAbs _ ->
           raise
             (mk_internal_error
-               ~kind:"Type abstraction literal found in disambiguation phase" ?inst:None)
+               ~kind:"Type abstraction literal found in disambiguation phase"
+               ?inst:None)
     in
     recurser l
 

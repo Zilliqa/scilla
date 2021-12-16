@@ -226,10 +226,8 @@ struct
           let sloc =
             match lopt with Some l -> ER.get_loc l | None -> dummy_loc
           in
-          fail1
-            ~kind:"Couldn't resolve the identifier in gas use analysis"
-            ~inst:id
-            sloc
+          fail1 ~kind:"Couldn't resolve the identifier in gas use analysis"
+            ~inst:id sloc
 
     (* retain only those entries "k" for which "f k" is true. *)
     let filterS env ~f = filter ~f env
@@ -387,7 +385,8 @@ struct
    *)
   let substitute_actuals f (params, ressize, gup) actuals =
     if List.length params != List.length actuals then
-      fail1 ~kind:"Number of actual arguments and formal parameters mismatch" ?inst:None
+      fail1 ~kind:"Number of actual arguments and formal parameters mismatch"
+        ?inst:None
         (ER.get_loc (get_rep f))
     else
       (* replace param with actual in sizeref. *)
@@ -589,7 +588,9 @@ struct
   let substitute_resolved_actuals_sizeref_list ressize params actuals =
     if List.length params != List.length actuals then
       fail0
-        ~kind: "Number of actual arguments and formal parameters mismatch in sizeref substitution."
+        ~kind:
+          "Number of actual arguments and formal parameters mismatch in \
+           sizeref substitution."
         ?inst:None
     else
       substitute_resolved_actual_sizeref (List.combine params actuals) ressize
@@ -597,7 +598,9 @@ struct
   let substitute_resolved_actuals_guref_list gup params actuals =
     if List.length params != List.length actuals then
       fail0
-        ~kind:"Number of actual arguments and formal parameters mismatch in guref substitution."
+        ~kind:
+          "Number of actual arguments and formal parameters mismatch in guref \
+           substitution."
         ?inst:None
     else polynomial_replacer (List.combine params actuals) gup
 
@@ -669,7 +672,8 @@ struct
               (* Solve for "Length()" applications of the fold iterator. *)
               let%bind sr' =
                 if List.length args' <> 2 then
-                  fail0 ~kind:"Incorrect number of arguments to fold iterator" ?inst:None
+                  fail0 ~kind:"Incorrect number of arguments to fold iterator"
+                    ?inst:None
                 else
                   (* We want the accumulator argument to the fold iterator. *)
                   let accarg =
@@ -780,8 +784,7 @@ struct
         let%bind genv'' = bind_pattern genv' msref arg1 in
         pure genv''
     | Constructor (cname, _) ->
-        fail0
-          ~kind:"Unsupported constructor in gas analysis"
+        fail0 ~kind:"Unsupported constructor in gas analysis"
           ~inst:(GUAIdentifier.as_error_string cname)
 
   (* built-in op costs are propotional to size of data they operate on. *)
@@ -1044,10 +1047,8 @@ struct
                      (add_pn (sizeref_to_pol compsize0)
                         (sizeref_to_pol compsize1))
           else
-            fail1
-              ~kind:"Unsupported constructor in gas analysis"
-              ~inst:(as_error_string cname)
-              (ER.get_loc rep)
+            fail1 ~kind:"Unsupported constructor in gas analysis"
+              ~inst:(as_error_string cname) (ER.get_loc rep)
         in
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
@@ -1078,9 +1079,7 @@ struct
           let%bind args, bsize, bgu = gua_expr genv' branch in
           pure (args, bsize, add_pn bgu cc)
     | Fixpoint (f, _, _) ->
-        fail1
-          ~kind:"Fixpoint not supported"
-          ~inst:(as_error_string f)
+        fail1 ~kind:"Fixpoint not supported" ~inst:(as_error_string f)
           (ER.get_loc (get_rep f))
     | TFun (_, body) ->
         (* Nothing to do except analyzing the body. *)
@@ -1108,7 +1107,8 @@ struct
         in
         pure ([], SPol splist, cc)
     | GasExpr _ ->
-        fail0 ~kind:"GasUseAnalysis: AST has explicit charges, not supported." ?inst:None
+        fail0 ~kind:"GasUseAnalysis: AST has explicit charges, not supported."
+          ?inst:None
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =

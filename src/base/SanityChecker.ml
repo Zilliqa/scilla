@@ -68,8 +68,7 @@ struct
             let e' =
               if is_mem_id i rem then
                 e
-                @ mk_error1
-                    ~kind:"Identifier used more than once"
+                @ mk_error1 ~kind:"Identifier used more than once"
                     ~inst:(as_error_string i)
                     (gloc @@ get_rep i)
               else e
@@ -127,9 +126,10 @@ struct
           else
             e
             @ mk_error1
-                ~kind:("Missing " ^ amount_label ^ " or " ^ recipient_label ^ " in Message")
-                ?inst:None
-                eloc
+                ~kind:
+                  ("Missing " ^ amount_label ^ " or " ^ recipient_label
+                 ^ " in Message")
+                ?inst:None eloc
         else if
           (* It must be an event or an exception. *)
           List.exists msg ~f:(fun (s, _) ->
@@ -155,10 +155,11 @@ struct
           | Some (s, _) ->
               e
               @ mk_error1
-                  ~kind:(sprintf "Parameter %s in %s %s cannot be explicit.\n"
-                     (as_error_string s)
-                     (component_type_to_string c.comp_type)
-                     (as_error_string c.comp_name))
+                  ~kind:
+                    (sprintf "Parameter %s in %s %s cannot be explicit.\n"
+                       (as_error_string s)
+                       (component_type_to_string c.comp_type)
+                       (as_error_string c.comp_name))
                   ?inst:None
                   (SR.get_loc @@ get_rep c.comp_name)
           | None -> e)
@@ -176,8 +177,9 @@ struct
       | Some (s, _) ->
           e
           @ mk_error1
-              ~kind:(sprintf "Contract parameter %s cannot be explicit.\n"
-                 (as_error_string s))
+              ~kind:
+                (sprintf "Contract parameter %s cannot be explicit.\n"
+                   (as_error_string s))
               ?inst:None
               (ER.get_loc @@ get_rep s)
       | None -> e

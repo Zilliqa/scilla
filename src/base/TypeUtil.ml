@@ -227,11 +227,11 @@ functor
               let open Datatypes.DataTypeDictionary in
               let%bind adt = lookup_name ~sloc:(get_rep n) (get_id n) in
               if List.length ts <> List.length adt.tparams then
-                fail1
-                  ~kind:"ADT type constructor arity mismatch"
-                  ~inst:(sprintf "ADT type %s expects %d arguments but got %d"
-                     (as_error_string n) (List.length adt.tparams)
-                     (List.length ts))
+                fail1 ~kind:"ADT type constructor arity mismatch"
+                  ~inst:
+                    (sprintf "ADT type %s expects %d arguments but got %d"
+                       (as_error_string n) (List.length adt.tparams)
+                       (List.length ts))
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
@@ -242,7 +242,8 @@ functor
               else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
-                  ~kind:(sprintf "Unbound type variable in type %s" (pp_typ_error t))
+                  ~kind:
+                    (sprintf "Unbound type variable in type %s" (pp_typ_error t))
                   ~inst:a
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address None -> pure ()
@@ -267,8 +268,7 @@ functor
             let sloc =
               match lopt with Some l -> R.get_loc l | None -> dummy_loc
             in
-            fail1
-              ~kind:"Couldn't resolve identifier"
+            fail1 ~kind:"Couldn't resolve identifier"
               ~inst:(TUName.as_error_string id)
               sloc
 
@@ -303,7 +303,8 @@ module TypeUtilities = struct
 
   type typeCheckerErrorType = TypeError | GasError
 
-  let [@warning "-16"] mk_type_error0 ~kind ?inst = (TypeError, mk_error0 ~kind ?inst)
+  let[@warning "-16"] mk_type_error0 ~kind ?inst =
+    (TypeError, mk_error0 ~kind ?inst)
 
   let mk_type_error1 ~kind ?inst loc = (TypeError, mk_error1 ~kind ?inst loc)
 
@@ -341,9 +342,10 @@ module TypeUtilities = struct
       =
     if type_assignable ~expected ~actual then pure ()
     else
-      fail1
-        ~kind:"Type unassignable"
-        ~inst:(sprintf "%s expected, but %s provided" (pp_typ expected) (pp_typ actual))
+      fail1 ~kind:"Type unassignable"
+        ~inst:
+          (sprintf "%s expected, but %s provided" (pp_typ expected)
+             (pp_typ actual))
         lc
 
   let rec is_ground_type t =
@@ -463,7 +465,9 @@ module TypeUtilities = struct
     else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
     then pure TUType.exception_typ
     else
-      fail1 ~kind:"Invalid message construct. Not any of send, event or exception." ?inst:None lc
+      fail1
+        ~kind:"Invalid message construct. Not any of send, event or exception."
+        ?inst:None lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =
@@ -472,7 +476,8 @@ module TypeUtilities = struct
     | MapType (_, vt'), 1 -> pure vt'
     | MapType (_, vt'), nkeys' when nkeys' > 1 ->
         map_access_type vt' (nindices - 1)
-    | _, _ -> fail0 ~kind:"Cannot index into map: Too many index keys." ?inst:None
+    | _, _ ->
+        fail0 ~kind:"Cannot index into map: Too many index keys." ?inst:None
 
   (* The depth of a nested map. *)
   let rec map_depth mt =
@@ -481,10 +486,9 @@ module TypeUtilities = struct
   let address_field_type f t =
     let is_balance = [%equal: TUName.t] (get_id f) ContractUtil.balance_label in
     let not_declared () =
-      fail0
-        ~kind:"Field is not declared in address type"
-        ~inst:(sprintf "%s is not declared in %s"
-           (as_error_string f) (pp_typ t))
+      fail0 ~kind:"Field is not declared in address type"
+        ~inst:
+          (sprintf "%s is not declared in %s" (as_error_string f) (pp_typ t))
     in
     match t with
     | Address None ->
@@ -502,8 +506,7 @@ module TypeUtilities = struct
           | Some ft -> pure ft
           | None -> not_declared ())
     | _ ->
-        fail0
-          ~kind:"Attempting to read field from non-address type"
+        fail0 ~kind:"Attempting to read field from non-address type"
           ~inst:(pp_typ t)
 
   let pp_typ_list_error ts =
@@ -523,21 +526,23 @@ module TypeUtilities = struct
     | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
     | _ ->
-        fail1
-          ~kind:"Ill-typed function application"
-          ~inst:(sprintf
-             "The type\n\
-              %s\n\
-              doesn't apply, as a function, to the arguments of types\n\
-              %s."
-             (pp_typ_error ft)
-             (pp_typ_list_error argtypes))
+        fail1 ~kind:"Ill-typed function application"
+          ~inst:
+            (sprintf
+               "The type\n\
+                %s\n\
+                doesn't apply, as a function, to the arguments of types\n\
+                %s."
+               (pp_typ_error ft)
+               (pp_typ_list_error argtypes))
           lc
 
   let proc_type_applies ~lc formals actuals =
     map2M formals actuals
       ~f:(fun expected actual -> assert_type_assignable ~expected ~actual ~lc)
-      ~msg:(fun () -> mk_error1 ~kind:"Incorrect number of arguments to procedure" ?inst:None lc)
+      ~msg:(fun () ->
+        mk_error1 ~kind:"Incorrect number of arguments to procedure" ?inst:None
+          lc)
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
@@ -573,11 +578,11 @@ module TypeUtilities = struct
 
   let validate_param_length ~lc cn plen alen =
     if plen <> alen then
-      fail1
-        ~kind:"Constructor type arguments arity mismatch"
-        ~inst:(sprintf "%s expects %d type arguments, but got %d."
-           (TUName.as_error_string cn)
-           plen alen)
+      fail1 ~kind:"Constructor type arguments arity mismatch"
+        ~inst:
+          (sprintf "%s expects %d type arguments, but got %d."
+             (TUName.as_error_string cn)
+             plen alen)
         lc
     else pure ()
 
@@ -630,15 +635,15 @@ module TypeUtilities = struct
           let%bind () = validate_param_length ~lc cn plen alen in
           pure targs
         else
-          fail1
-            ~kind:"Wrong constructor in pattern matching"
-            ~inst:(sprintf
-               "Expected a constructor of type %s, but a constructor of type %s is given"
-               (as_string name)
-               (TUName.as_string adt.tname))
+          fail1 ~kind:"Wrong constructor in pattern matching"
+            ~inst:
+              (sprintf
+                 "Expected a constructor of type %s, but a constructor of type \
+                  %s is given"
+                 (as_string name)
+                 (TUName.as_string adt.tname))
             (get_rep name)
-    | _ ->
-        fail1 ~kind:"Not an algebraic data type" ~inst:(pp_typ_error atyp) lc
+    | _ -> fail1 ~kind:"Not an algebraic data type" ~inst:(pp_typ_error atyp) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
@@ -661,8 +666,7 @@ module TypeUtilities = struct
         | Some _ ->
             fail1
               ~kind:"Not all types of pattern matching branches are equivalent"
-              ~inst:(pp_typ_list_error ts)
-              lc)
+              ~inst:(pp_typ_list_error ts) lc)
 
   (****************************************************************)
   (*                     Typing literals                          *)
@@ -715,11 +719,11 @@ module TypeUtilities = struct
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)
           if not @@ [%equal: TUName.t] (get_id tname) adt.tname then
-            fail0
-              ~kind:"Literal constructor does not belong to expected type"
-              ~inst:(sprintf "%s does not belong to %s"
-                 (TUName.as_error_string cname)
-                 (TUIdentifier.as_error_string tname))
+            fail0 ~kind:"Literal constructor does not belong to expected type"
+              ~inst:
+                (sprintf "%s does not belong to %s"
+                   (TUName.as_error_string cname)
+                   (TUIdentifier.as_error_string tname))
           else
             (* Elaborate constructor using expected type arguments *)
             let%bind c_fun_typ = elab_constr_type ~lc cname targs in
@@ -773,14 +777,16 @@ module TypeUtilities = struct
               let%bind t' = is_wellformed_lit l in
               if not @@ [%equal: TUType.t] t t' then
                 fail0
-                  ~kind:"Message/Event has inconsistent values and types at field"
+                  ~kind:
+                    "Message/Event has inconsistent values and types at field"
                   ~inst:n
               else if acc then pure (is_legal_message_field_type t)
               else pure false)
             ~init:true m
         in
         if not all_legal then
-          fail0 ~kind:"Message/Event has invalid / non-storable parameters" ?inst:None
+          fail0 ~kind:"Message/Event has invalid / non-storable parameters"
+            ?inst:None
         else pure msg_typ
     | Map ((kt, vt), kv) ->
         if is_legal_map_key_type kt then
@@ -798,33 +804,31 @@ module TypeUtilities = struct
                      && type_assignable ~expected:vt ~actual:vt'))
               kv (pure true)
           in
-          if not valid then
-            fail0 ~kind:"Malformed literal" ~inst:(pp_literal l)
+          if not valid then fail0 ~kind:"Malformed literal" ~inst:(pp_literal l)
             (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else
-          fail0 ~kind:"Not a primitive map key type" ~inst:(pp_typ_error kt)
+        else fail0 ~kind:"Not a primitive map key type" ~inst:(pp_typ_error kt)
     | ADTValue (cname, ts, args) ->
         let%bind adt, constr = DataTypeDictionary.lookup_constructor cname in
         let tparams = adt.tparams in
         let tname = adt.tname in
         if not (List.length tparams = List.length ts) then
-          fail0
-            ~kind:"Type parameters arity mismatch for ADT constructor"
-            ~inst:(sprintf
-               "Wrong number of type parameters for ADT %s (%i) in constructor \
-                %s."
-               (TUName.as_error_string tname)
-               (List.length ts)
-               (TUName.as_error_string cname))
+          fail0 ~kind:"Type parameters arity mismatch for ADT constructor"
+            ~inst:
+              (sprintf
+                 "Wrong number of type parameters for ADT %s (%i) in \
+                  constructor %s."
+                 (TUName.as_error_string tname)
+                 (List.length ts)
+                 (TUName.as_error_string cname))
         else if not (List.length args = constr.arity) then
-          fail0
-            ~kind:"Arity mismatch for ADT constructor"
-            ~inst:(sprintf
-               "Wrong number of arguments to ADT %s (%i) in constructor %s."
-               (TUName.as_error_string tname)
-               (List.length args)
-               (TUName.as_error_string cname))
+          fail0 ~kind:"Arity mismatch for ADT constructor"
+            ~inst:
+              (sprintf
+                 "Wrong number of arguments to ADT %s (%i) in constructor %s."
+                 (TUName.as_error_string tname)
+                 (List.length args)
+                 (TUName.as_error_string cname))
           (* Verify that the types of args match that declared. *)
         else
           let res = ADT (mk_loc_id tname, ts) in
@@ -835,8 +839,7 @@ module TypeUtilities = struct
                 type_assignable ~expected ~actual)
           in
           if not args_valid then
-            fail0
-              ~kind:"Malformed ADT. Arguments do not match expected types"
+            fail0 ~kind:"Malformed ADT. Arguments do not match expected types"
               ~inst:(pp_literal l)
           else pure @@ res
     | Clo _ -> fail0 ~kind:"Cannot type-check runtime closure" ?inst:None

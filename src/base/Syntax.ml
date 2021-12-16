@@ -621,16 +621,19 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
 
   let wrap_err_helper failure res =
     match res with
-    | Ok _ -> res
-      (* Handle a special case where we're dealing with the most precise error. *)
+    | Ok _ ->
+        res
+        (* Handle a special case where we're dealing with the most precise error. *)
     | Error [ e' ] ->
-      let m, l = failure in
-      if [%equal: loc] e'.startl dummy_loc then
-        Error (mk_error1 ~kind:(m ^ e'.ekind) ?inst:e'.einst l)
-      else Error (mk_error2 ~kind:(m ^ e'.ekind) ?inst:e'.einst e'.startl e'.endl)
+        let m, l = failure in
+        if [%equal: loc] e'.startl dummy_loc then
+          Error (mk_error1 ~kind:(m ^ e'.ekind) ?inst:e'.einst l)
+        else
+          Error
+            (mk_error2 ~kind:(m ^ e'.ekind) ?inst:e'.einst e'.startl e'.endl)
     | _ ->
-      let kind, sloc = failure in
-      wrap_with_info ~kind ?inst:None sloc res
+        let kind, sloc = failure in
+        wrap_with_info ~kind ?inst:None sloc res
 
   let wrap_err e phase ?(opt = "") res =
     wrap_err_helper (get_failure_msg e phase opt) res

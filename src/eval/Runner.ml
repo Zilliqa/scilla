@@ -131,8 +131,8 @@ let input_state_json filename =
     | Some v -> v
     | None ->
         raise
-        @@ mk_invalid_json
-             ~kind:"Field missing" ~inst:(RunnerName.as_string balance_label)
+        @@ mk_invalid_json ~kind:"Field missing"
+             ~inst:(RunnerName.as_string balance_label)
   in
   let bal_int =
     match bal_lit with
@@ -141,7 +141,9 @@ let input_state_json filename =
         x
     | _ ->
         raise
-          (mk_invalid_json ~kind:(RunnerName.as_string balance_label ^ " invalid") ?inst:None)
+          (mk_invalid_json
+             ~kind:(RunnerName.as_string balance_label ^ " invalid")
+             ?inst:None)
   in
   let no_bal_states =
     List.filter states ~f:(fun (x, _, _) ->
@@ -217,8 +219,7 @@ let assert_no_address_type_in_literal l gas_remaining =
     | ADTValue (_, _, ls) -> List.iter ls ~f:recurser
     | Msg _ | Clo _ | TAbs _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             ~kind:"Unknown literal in json file" ~inst:(pp_literal l))
+          (mk_error0 ~kind:"Unknown literal in json file" ~inst:(pp_literal l))
           gas_remaining
   in
   recurser l
@@ -330,7 +331,9 @@ let deploy_library args gas_remaining =
               args.input_init
           in
           plog msg;
-          fatal_error_gas_scale Gas.scale_factor (mk_error0 ~kind:msg ?inst:None) gas_remaining
+          fatal_error_gas_scale Gas.scale_factor
+            (mk_error0 ~kind:msg ?inst:None)
+            gas_remaining
       | Some this_address ->
           let elibs =
             List.map
@@ -390,8 +393,7 @@ let run_with_args args =
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             ~kind:"Ran out of gas when parsing contract/init files"
+          (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
              ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
@@ -436,8 +438,7 @@ let run_with_args args =
             in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0
-                 ~kind:"Ran out of gas when parsing contract/init files"
+              (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
                  ?inst:None)
               gas_remaining
         | Some this_address ->
@@ -486,8 +487,7 @@ let run_with_args args =
               with Invalid_json s ->
                 fatal_error_gas_scale Gas.scale_factor
                   (s
-                  @ mk_error0
-                      ~kind:"Failed to parse json"
+                  @ mk_error0 ~kind:"Failed to parse json"
                       ~inst:args.input_blockchain)
                   gas_remaining
             in
@@ -531,8 +531,7 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              ~kind:"Failed to parse json"
+                          @ mk_error0 ~kind:"Failed to parse json"
                               ~inst:args.input_state)
                           gas_remaining
                     else field_vals
@@ -580,8 +579,7 @@ let run_with_args args =
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
                       (s
-                      @ mk_error0
-                          ~kind:"Failed to parse json"
+                      @ mk_error0 ~kind:"Failed to parse json"
                           ~inst:args.input_message)
                       gas_remaining
                 in
@@ -617,8 +615,7 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              ~kind:"Failed to parse json"
+                          @ mk_error0 ~kind:"Failed to parse json"
                               ~inst:args.input_state)
                           gas_remaining
                     in
@@ -692,7 +689,9 @@ let run_with_args args =
                     | Ok fv, Ok () -> fv
                     | _ ->
                         fatal_error_gas_scale Gas.scale_factor
-                          (mk_error0 ~kind:"Error finalizing state from StateService" ?inst:None)
+                          (mk_error0
+                             ~kind:"Error finalizing state from StateService"
+                             ?inst:None)
                           gas
                 in
 

@@ -78,8 +78,8 @@ let to_list_exn j =
 
 let build_prim_lit_exn t v =
   let exn () =
-    mk_invalid_json ~kind:("Invalid value in JSON")
-                    ~inst:(v ^ " of type " ^ pp_typ t)
+    mk_invalid_json ~kind:"Invalid value in JSON"
+      ~inst:(v ^ " of type " ^ pp_typ t)
   in
   let build_prim_literal_of_type t v =
     match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
@@ -109,9 +109,10 @@ let rec json_to_adtargs cname tlist ajs =
       let p = Int.to_string provided in
       let e = Int.to_string expected in
       raise
-        (mk_invalid_json
-           ~kind:"Malformed ADT constructor"
-           ~inst:(JSONName.as_error_string cname ^ ": expected " ^ e ^ " args, but provided " ^ p ^ "."))
+        (mk_invalid_json ~kind:"Malformed ADT constructor"
+           ~inst:
+             (JSONName.as_error_string cname
+             ^ ": expected " ^ e ^ " args, but provided " ^ p ^ "."))
   in
   let dt =
     match DataTypeDictionary.lookup_constructor cname with
@@ -140,7 +141,9 @@ and read_adt_json name j tlist_verify =
         if not (is_list_adt_name dt.tname) then
           raise
             (Invalid_json
-               (mk_error0 ~kind:"ADT value is a JSON array, but type is not List" ?inst:None))
+               (mk_error0
+                  ~kind:"ADT value is a JSON array, but type is not List"
+                  ?inst:None))
         else
           let etyp = List.nth_exn tlist_verify 0 in
           List.fold_right vli
@@ -156,20 +159,18 @@ and read_adt_json name j tlist_verify =
         in
         if not @@ [%equal: Datatypes.adt] dt dt' then
           raise
-            (mk_invalid_json
-               ~kind:"ADT type does not match constructor"
+            (mk_invalid_json ~kind:"ADT type does not match constructor"
                ~inst:
                  (JSONName.as_error_string dt.tname
-                  ^ " does not match constructor "
-                  ^ JSONName.as_error_string constr));
+                 ^ " does not match constructor "
+                 ^ JSONName.as_error_string constr));
         let argtypes = member_exn "argtypes" j |> to_list_exn in
         let arguments = member_exn "arguments" j |> to_list_exn in
         let tlist = json_to_adttyps argtypes in
         json_to_adtargs constr tlist arguments
     | _ ->
         raise
-          (mk_invalid_json
-             ~kind:"JSON parsing: error parsing ADT"
+          (mk_invalid_json ~kind:"JSON parsing: error parsing ADT"
              ~inst:(JSONName.as_error_string name))
   in
   (* match tlist1 with adt's tlist. *)
@@ -182,15 +183,13 @@ and read_adt_json name j tlist_verify =
           let expected = pp_typ_list_error tlist1 in
           let observed = pp_typ_list_error tlist2 in
           raise
-            (mk_invalid_json
-              ~kind:"Type mismatch in parsing ADT"
-              ~inst:
+            (mk_invalid_json ~kind:"Type mismatch in parsing ADT"
+               ~inst:
                  (JSONName.as_error_string name
-                  ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed))
+                 ^ ". Expected: " ^ expected ^ " vs Observed: " ^ observed))
     | _ ->
         raise
-          (mk_invalid_json
-             ~kind:"Type mismatch in parsing ADT"
+          (mk_invalid_json ~kind:"Type mismatch in parsing ADT"
              ~inst:(JSONName.as_error_string name))
   in
   (* verify built ADT *)
@@ -207,7 +206,8 @@ and read_map_json kt vt j =
       let _ = mapvalues_from_json m kt vt vli in
       Map ((kt, vt), m)
   | `Null -> Map ((kt, vt), Caml.Hashtbl.create 0)
-  | _ -> raise (mk_invalid_json ~kind:"JSON parsing: error parsing Map" ?inst:None)
+  | _ ->
+      raise (mk_invalid_json ~kind:"JSON parsing: error parsing Map" ?inst:None)
 
 and mapvalues_from_json m kt vt l =
   List.iter l ~f:(fun first ->
@@ -217,7 +217,10 @@ and mapvalues_from_json m kt vt l =
         | PrimType _ | Address _ ->
             (* Addresses are handled as ByStr20 *)
             build_prim_lit_exn kt (to_string_exn kjson)
-        | _ -> raise (mk_invalid_json ~kind:"Key in Map JSON is not a PrimType" ?inst:None)
+        | _ ->
+            raise
+              (mk_invalid_json ~kind:"Key in Map JSON is not a PrimType"
+                 ?inst:None)
       in
       let vjson = member_exn "val" first in
       let vallit = json_to_lit_exn vt vjson in
@@ -235,7 +238,9 @@ and json_to_lit_exn t v =
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
   | FunType _ | TypeVar _ | PolyFun _ | Unit ->
-      let exn () = mk_invalid_json ~kind:"Invalid type in JSON" ~inst:(pp_typ t) in
+      let exn () =
+        mk_invalid_json ~kind:"Invalid type in JSON" ~inst:(pp_typ t)
+      in
       raise (exn ())
 
 let rec jobj_to_statevar json =
@@ -258,8 +263,8 @@ let rec jobj_to_statevar json =
                     raise
                     @@ mk_invalid_json
                          ~kind:
-                         "External contract fields cannot contain other \
-                          external fields"
+                           "External contract fields cannot contain other \
+                            external fields"
                          ?inst:None)
           in
           (addr, state') :: acc)
@@ -351,8 +356,7 @@ module ContractState = struct
         match Datatypes.scilla_list_to_ocaml lit with
         | Error _ ->
             raise
-              (mk_invalid_json
-                 ~kind:"Invalid entry in init json"
+              (mk_invalid_json ~kind:"Invalid entry in init json"
                  ~inst:(JSONName.as_error_string ContractUtil.extlibs_label))
         | Ok lit' ->
             (* lit' is a list of `Pair` literals. convert them to OCaml pairs. *)
@@ -367,13 +371,13 @@ module ContractState = struct
                     (name, Bystrx.hex_encoding bs)
                 | _ ->
                     raise
-                      (mk_invalid_json
-                         ~kind:"Invalid entry in init json"
-                         ~inst:(JSONName.as_error_string ContractUtil.extlibs_label))))
+                      (mk_invalid_json ~kind:"Invalid entry in init json"
+                         ~inst:
+                           (JSONName.as_error_string ContractUtil.extlibs_label)))
+        )
     | _ ->
         raise
-          (mk_invalid_json
-             ~kind:"Multiple entries in init json"
+          (mk_invalid_json ~kind:"Multiple entries in init json"
              ~inst:(JSONName.as_error_string ContractUtil.extlibs_label))
 
   (* Accessor for _this_address and _extlibs entries in init.json.
@@ -394,8 +398,7 @@ module ContractState = struct
           (* We allow init files without a _this_address entry in scilla-checker *)
       | _ ->
           raise
-            (mk_invalid_json
-               ~kind:"Multiple entries specified in init json"
+            (mk_invalid_json ~kind:"Multiple entries specified in init json"
                ~inst:(JSONName.as_string ContractUtil.this_address_label))
     in
     match this_address_init_opt with
@@ -448,7 +451,8 @@ module Message = struct
             | ExtrContrs _ ->
                 raise
                   (mk_invalid_json
-                     ~kind:"_external cannot be present in a message JSON" ?inst:None)
+                     ~kind:"_external cannot be present in a message JSON"
+                     ?inst:None)
           in
           (name, t, v))
     in
@@ -517,7 +521,9 @@ module BlockChainState = struct
         | ThisContr (name, t, v) -> (name, t, v)
         | ExtrContrs _ ->
             raise
-              (mk_invalid_json ~kind:"_external cannot be present in a message JSON" ?inst:None))
+              (mk_invalid_json
+                 ~kind:"_external cannot be present in a message JSON"
+                 ?inst:None))
 
   (* Validation against pre-defined block state variables
      is done in `Eval.check_blockchain_entries` *)

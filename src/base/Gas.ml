@@ -102,7 +102,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 let%bind lcost = literal_cost l in
                 walk ll (acc_cost + lcost)
             | ADTValue (c, _, _) when is_nil_ctr_name c -> pure (acc_cost + 1)
-            | _ -> fail0 ~kind:"Malformed list while computing literal cost" ?inst:None
+            | _ ->
+                fail0 ~kind:"Malformed list while computing literal cost"
+                  ?inst:None
           in
           walk als 0
         else if List.is_empty ll then pure 1
@@ -483,7 +485,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
         else if w = 128 then pure (GasGasCharge.StaticCost (base * 2))
         else if w = 256 then pure (GasGasCharge.StaticCost (base * 4))
         else fail0 ~kind:"Gas cost error for integer conversion" ?inst:None
-    | _ -> fail0 ~kind:"Gas cost due to incorrect arguments for int conversion" ?inst:None
+    | _ ->
+        fail0 ~kind:"Gas cost due to incorrect arguments for int conversion"
+          ?inst:None
 
   let int_coster op _targs args arg_types =
     let base = 4 in
@@ -514,7 +518,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       | a :: _ -> (
           match int_width a with
           | Some w -> pure w
-          | None -> fail0 ~kind:"int_coster: cannot determine integer width" ?inst:None)
+          | None ->
+              fail0 ~kind:"int_coster: cannot determine integer width"
+                ?inst:None)
       | _ -> fail0 ~kind:"Gas cost error for integer built-in" ?inst:None
     in
     if w = 32 || w = 64 then pure base'
@@ -634,7 +640,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     in
     let%bind _, cost =
       tryM (builtin_records_find op) ~f:matcher ~msg:(fun () ->
-        mk_error0 ~kind:"Unable to determine gas cost for builtin" ~inst:(pp_builtin op))
+          mk_error0 ~kind:"Unable to determine gas cost for builtin"
+            ~inst:(pp_builtin op))
     in
     pure cost
 end

@@ -249,9 +249,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         and inst =
           sprintf
             "Expression of type\n\
-              %s\n\
-              applied, as a type function, to type arguments\n\
-              %s."
+             %s\n\
+             applied, as a type function, to type arguments\n\
+             %s."
             (pp_typ_error tf) (pp_typ_list_error args)
         in
         fail @@ mk_type_error1 ~kind ~inst lc
@@ -374,9 +374,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         let alen = List.length actuals in
         if constr.arity <> alen then
           fail
-            (mk_type_error1
-               ~kind:"Constructor arity mismatch"
-               ~inst:(sprintf "%s expects %d arguments, but got %d." (as_string cname) constr.arity alen)
+            (mk_type_error1 ~kind:"Constructor arity mismatch"
+               ~inst:
+                 (sprintf "%s expects %d arguments, but got %d."
+                    (as_string cname) constr.arity alen)
                (SR.get_loc (get_rep cname)))
         else
           let%bind ftyp =
@@ -393,10 +394,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     | MatchExpr (x, clauses) ->
         if List.is_empty clauses then
           fail
-            (mk_type_error1
-               ~kind:"List of pattern matching clauses is empty"
-               ~inst:(pp_expr e)
-               (ER.get_loc rep))
+            (mk_type_error1 ~kind:"List of pattern matching clauses is empty"
+               ~inst:(pp_expr e) (ER.get_loc rep))
         else
           let%bind sctyp =
             fromR_TE @@ TEnv.resolveT tenv (get_id x) ~lopt:(Some (get_rep x))
@@ -442,8 +441,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         (* Make it illegal to declare a new type variable inside the scope of another type variable with the same name *)
         if TEnv.existsV tenv id then
           fail
-            (mk_type_error1
-               ~kind:"Type variable is already in use"
+            (mk_type_error1 ~kind:"Type variable is already in use"
                ~inst:(TCName.as_error_string id)
                (ER.get_loc (get_rep tvar)))
         else
@@ -486,10 +484,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             | Some fld_t
               when not @@ type_assignable ~expected:fld_t ~actual:seen_type ->
                 fail
-                  (mk_type_error1
-                     ~kind:"Type mismatch for Message field"
-                     ~inst:(sprintf "%s. Expected %s but got %s"
-                        fld (pp_typ_error fld_t) (pp_typ_error seen_type))
+                  (mk_type_error1 ~kind:"Type mismatch for Message field"
+                     ~inst:
+                       (sprintf "%s. Expected %s but got %s" fld
+                          (pp_typ_error fld_t) (pp_typ_error seen_type))
                      (ER.get_loc rep))
             | _ -> pure ()
           in
@@ -510,8 +508,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 pure @@ TypedSyntax.MVar (add_type_to_ident i t)
               else
                 fail
-                  (mk_type_error1
-                     ~kind:"Cannot serialize values of type"
+                  (mk_type_error1 ~kind:"Cannot serialize values of type"
                      ~inst:(pp_typ_error rtp)
                      (ER.get_loc (get_rep i)))
         in
@@ -557,7 +554,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | Unequal_lengths ->
           raise
             (mk_internal_error
-               ~kind:"Different number of actuals and Types of actuals" ?inst:None)
+               ~kind:"Different number of actuals and Types of actuals"
+               ?inst:None)
     in
     let typed_actuals =
       List.map actuals_with_types ~f:(fun (a, t) -> add_type_to_ident a t)
@@ -685,8 +683,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             if List.mem ~equal:[%equal: TCName.t] no_store_fields (get_id f)
             then
               fail
-                (mk_type_error1
-                   ~kind:"Writing to the field is prohibited"
+                (mk_type_error1 ~kind:"Writing to the field is prohibited"
                    ~inst:(as_error_string f)
                    (ER.get_loc (get_rep f)))
             else
@@ -851,7 +848,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             if List.is_empty clauses then
               fail
                 (mk_type_error0
-                   ~kind:"List of clauses for pattern matching statement is empty"
+                   ~kind:
+                     "List of clauses for pattern matching statement is empty"
                    ~inst:(pp_stmt s))
             else
               let%bind sctyp =
@@ -928,8 +926,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   pure typed_actuals
               | None ->
                   fail
-                    (mk_type_error1
-                       ~kind:"Procedure not found"
+                    (mk_type_error1 ~kind:"Procedure not found"
                        ~inst:(as_error_string p)
                        (SR.get_loc (get_rep p)))
             in
@@ -1022,7 +1019,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           else
             fail
               (mk_type_error1
-                 ~kind:(sprintf "Type cannot be used as %s parameter" component_type_string)
+                 ~kind:
+                   (sprintf "Type cannot be used as %s parameter"
+                      component_type_string)
                  ~inst:(pp_typ_error t)
                  (ER.get_loc (get_rep param))))
         comp_params
@@ -1069,8 +1068,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             pure @@ (typed_fs, ft, typed_expr) :: acc
           else
             fail
-              (mk_type_error1
-                 ~kind:"Values of this type cannot be stored"
+              (mk_type_error1 ~kind:"Values of this type cannot be stored"
                  ~inst:(pp_typ_error ft)
                  (ER.get_loc (get_rep fn))))
     in
@@ -1353,8 +1351,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
          List.fold_left cparams ~init:emsgs ~f:(fun acc_err (pname, ptype) ->
              if not @@ is_legal_contract_parameter_type ptype then
                let e =
-                 mk_error1
-                   ~kind:"Type cannot be used as a contract parameter"
+                 mk_error1 ~kind:"Type cannot be used as a contract parameter"
                    ~inst:(pp_typ_error ptype)
                    (ER.get_loc (get_rep pname))
                in

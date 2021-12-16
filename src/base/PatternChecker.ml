@@ -103,8 +103,7 @@ struct
             | Some (_, e) -> e
             | None ->
                 raise
-                  (mk_internal_error
-                     ~kind:"Pattern index too high (or low)"
+                  (mk_internal_error ~kind:"Pattern index too high (or low)"
                      ~inst:(Int.to_string i))
           in
           pure @@ Success e
@@ -114,7 +113,9 @@ struct
           match_pattern p1 t1 dsc1 ctx
             ((ps, ts, dscs) :: sps_rest)
             i rest_clauses
-      | _ -> fail0 ~kind:"Internal error - pattern match uses incorrect arity" ?inst:None
+      | _ ->
+          fail0 ~kind:"Internal error - pattern match uses incorrect arity"
+            ?inst:None
     and match_pattern p t dsc ctx sps_rest i rest_clauses =
       match p with
       | Wildcard | Binder _ ->
@@ -162,7 +163,8 @@ struct
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
     match Array.findi reachable ~f:(fun _ r -> not r) with
     | None -> pure @@ decision_tree (* All patterns reachable *)
-    | Some (i, _) -> fail0 ~kind:"Pattern is unreachable" ~inst:(Int.to_string (i + 1))
+    | Some (i, _) ->
+        fail0 ~kind:"Pattern is unreachable" ~inst:(Int.to_string (i + 1))
 
   (* TODO, Issue #270: look up relevant pattern in clauses and report it *)
 
@@ -319,10 +321,10 @@ struct
               pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
           | LibVar (entryname, t, lexp) ->
               let kind = "Error during pattern-match checking of library"
-              and inst = PCIdentifier.as_error_string entryname
-              in
+              and inst = PCIdentifier.as_error_string entryname in
               let%bind checked_lexp =
-                wrap_with_info ~kind ~inst (ER.get_loc (PCIdentifier.get_rep entryname))
+                wrap_with_info ~kind ~inst
+                  (ER.get_loc (PCIdentifier.get_rep entryname))
                 @@ pm_check_expr lexp
               in
               pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp))

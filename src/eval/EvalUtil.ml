@@ -80,8 +80,7 @@ module Env = struct
     match List.Assoc.find e i ~equal:[%equal: EvalName.t] with
     | Some v -> pure v
     | None ->
-        fail1
-          ~kind:"Identifier is not bound in environment"
+        fail1 ~kind:"Identifier is not bound in environment"
           ~inst:(EvalName.as_error_string i)
           (get_rep k)
 end
@@ -179,8 +178,7 @@ module Configuration = struct
     match sender with
     | EvalLiteral.ByStrX bs -> pure bs
     | _ ->
-        fail0
-          ~kind:"Incorrect type of _sender in environment"
+        fail0 ~kind:"Incorrect type of _sender in environment"
           ~inst:(pp_literal sender)
 
   let load st k =
@@ -194,8 +192,7 @@ module Configuration = struct
       match fval with
       | Some v -> pure v
       | _ ->
-          fail1
-            ~kind:"Error loading field"
+          fail1 ~kind:"Error loading field"
             ~inst:(EvalName.as_error_string i)
             (ER.get_loc (get_rep k))
 
@@ -225,14 +222,13 @@ module Configuration = struct
               @@ EvalLiteral.UintLit
                    (Uint128L Uint128.(sender_balance - amount))
           | _ ->
-              fail0
-                ~kind:"Unexpected sender balance or amount literal"
-                ~inst:(sprintf "sender balance = %s, amount = %s"
-                   (pp_literal v) (pp_literal amount_lit))
+              fail0 ~kind:"Unexpected sender balance or amount literal"
+                ~inst:
+                  (sprintf "sender balance = %s, amount = %s" (pp_literal v)
+                     (pp_literal amount_lit))
         else pure v
     | _ ->
-        fail1
-          ~kind:"Error loading field"
+        fail1 ~kind:"Error loading field"
           ~inst:(EvalName.as_error_string (get_id k))
           (ER.get_loc (get_rep k))
 
@@ -244,11 +240,10 @@ module Configuration = struct
     match fval with
     | _, Some ty -> pure ty
     | _ ->
-        fail0
-          ~kind:"Unable to fetch type for field at address"
-          ~inst:(sprintf "field %s, address %s"
-             (as_error_string k)
-             (EvalLiteral.Bystrx.hex_encoding caddr))
+        fail0 ~kind:"Unable to fetch type for field at address"
+          ~inst:
+            (sprintf "field %s, address %s" (as_error_string k)
+               (EvalLiteral.Bystrx.hex_encoding caddr))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
@@ -275,8 +270,7 @@ module Configuration = struct
               pure v_lit
           | None -> pure (build_none_lit vt))
       | None ->
-          fail1
-            ~kind:"Unable to fetch from map field %s"
+          fail1 ~kind:"Unable to fetch from map field %s"
             ~inst:(as_error_string m)
             (ER.get_loc (get_rep m))
     else
@@ -319,8 +313,9 @@ module Configuration = struct
     match List.zip ks vs with
     | Unequal_lengths ->
         fail0
-          ~kind:"Attempting to bind different number of keys and values in \
-           environment"
+          ~kind:
+            "Attempting to bind different number of keys and values in \
+             environment"
           ?inst:None
     | Ok kvs ->
         let filtered_env =
@@ -344,9 +339,9 @@ module Configuration = struct
       match sender_balance_l with
       | UintLit (Uint128L sender_balance) ->
           if Uint128.compare incoming' sender_balance > 0 then
-            fail0
-              ~kind:"Insufficient sender balance for acceptance"
-              ~inst:("Incoming vs sender_balance: "
+            fail0 ~kind:"Insufficient sender balance for acceptance"
+              ~inst:
+                ("Incoming vs sender_balance: "
                 ^ Uint128.to_string incoming'
                 ^ " vs "
                 ^ Uint128.to_string sender_balance)
@@ -361,12 +356,10 @@ module Configuration = struct
             let incoming_funds = Uint128.zero in
             pure @@ { st with balance; accepted; incoming_funds }
           else
-            fail0
-              ~kind:"Incoming balance is negative (somehow)"
+            fail0 ~kind:"Incoming balance is negative (somehow)"
               ~inst:(Uint128.to_string incoming')
       | _ ->
-          fail0
-            ~kind:"Unrecognized balance literal at sender"
+          fail0 ~kind:"Unrecognized balance literal at sender"
             ~inst:(pp_literal sender_balance_l)
 
   (* Finds a procedure proc_name, and returns the procedure and the
@@ -406,13 +399,10 @@ module Configuration = struct
           pure m'
         else
           fail0
-            ~kind:
-               "Message is missing a mandatory field or has duplicate \
-                fields"
+            ~kind:"Message is missing a mandatory field or has duplicate fields"
             ~inst:(pp_literal (Msg m))
     | _ ->
-        fail0
-          ~kind:"Literal is not a message, cannot be sent"
+        fail0 ~kind:"Literal is not a message, cannot be sent"
           ~inst:(pp_literal m')
 
   let send_messages conf ms =
@@ -442,16 +432,15 @@ module Configuration = struct
             ~kind:"Event is missing a mandatory field or has duplicate fields"
             ~inst:(pp_literal (Msg m))
     | _ ->
-        fail0
-          ~kind:"Literal is not a valid event argument:" ~inst:(pp_literal m')
+        fail0 ~kind:"Literal is not a valid event argument:"
+          ~inst:(pp_literal m')
 
   let create_event conf l =
     let open EvalLiteral in
     let%bind event =
       match l with
       | Msg _ -> pure @@ l
-      | _ ->
-          fail0 ~kind:"Incorrect event parameter(s)" ~inst:(pp_literal l)
+      | _ -> fail0 ~kind:"Incorrect event parameter(s)" ~inst:(pp_literal l)
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in
@@ -569,8 +558,8 @@ module EvalTypecheck = struct
     match t with
     | Address fts_opt -> pure fts_opt
     | _ ->
-        fail0
-          ~kind:"Unable to perform dynamic typecheck on type" ~inst:(pp_typ t)
+        fail0 ~kind:"Unable to perform dynamic typecheck on type"
+          ~inst:(pp_typ t)
 
   let assert_typecheck_remote_field_types ~caddr t =
     let open EvalType in
@@ -580,19 +569,17 @@ module EvalTypecheck = struct
     in
     match tc_res with
     | AddressNotInUse ->
-        fail0
-          ~kind:"Address not in use"
+        fail0 ~kind:"Address not in use"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | NoContractAtAddress ->
-        fail0
-          ~kind:"No contract found at address"
+        fail0 ~kind:"No contract found at address"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | FieldTypeMismatch ->
-        fail0
-          ~kind:"Address does not satisfy type"
-          ~inst:(sprintf "address is %s, expected type is %s"
-             (EvalLiteral.Bystrx.hex_encoding caddr)
-             (pp_typ t))
+        fail0 ~kind:"Address does not satisfy type"
+          ~inst:
+            (sprintf "address is %s, expected type is %s"
+               (EvalLiteral.Bystrx.hex_encoding caddr)
+               (pp_typ t))
     | Success -> pure ()
 
   let typecheck_remote_field_types ~caddr t =

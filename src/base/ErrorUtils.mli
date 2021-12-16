@@ -34,7 +34,12 @@ val get_loc_str : loc -> string
 
 (* `ekind` represents the reason for failure;
    `einst` can contain the concrete instance that causes the failure *)
-type scilla_error = { ekind : string; einst: string option; startl : loc; endl : loc }
+type scilla_error = {
+  ekind : string;
+  einst : string option;
+  startl : loc;
+  endl : loc;
+}
 
 val mk_error_description : scilla_error -> string
 

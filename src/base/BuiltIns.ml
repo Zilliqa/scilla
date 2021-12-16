@@ -38,8 +38,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   let builtin_fail name ls =
     fail0
-    ~kind:(sprintf "Cannot apply built-in %s to a list of arguments" name)
-    ~inst:(print_literal_list ls)
+      ~kind:(sprintf "Cannot apply built-in %s to a list of arguments" name)
+      ~inst:(print_literal_list ls)
 
   (* Convert int_lit to raw byte string. *)
   let bstring_from_int_lit = function
@@ -835,11 +835,16 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       let%bind _, res_type =
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
-              ~kind:(sprintf "Type error: cannot apply \"%s\" built-in to argument(s) of type(s)" (pp_builtin op))
-              ~inst:(sprintf "%s%s"
-                 (if List.is_empty targtypes then ""
-                  else sprintf "{%s} " (pp_typ_list_error targtypes))
-                 (pp_typ_list_error vargtypes))
+              ~kind:
+                (sprintf
+                   "Type error: cannot apply \"%s\" built-in to argument(s) of \
+                    type(s)"
+                   (pp_builtin op))
+              ~inst:
+                (sprintf "%s%s"
+                   (if List.is_empty targtypes then ""
+                   else sprintf "{%s} " (pp_typ_list_error targtypes))
+                   (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
       pure res_type

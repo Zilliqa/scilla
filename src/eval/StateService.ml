@@ -74,8 +74,9 @@ module MakeStateService () = struct
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
-          ~kind:(sprintf "StateService: Unable to determine the type of field %s."
-             (as_error_string fname))
+          ~kind:
+            (sprintf "StateService: Unable to determine the type of field %s."
+               (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
 
@@ -96,10 +97,11 @@ module MakeStateService () = struct
               (* Just an assert. *)
               if not @@ [%equal: SSType.t] vt' ret_val_type then
                 fail1
-                  ~kind:(sprintf
-                     "StateService: Failed indexing into map %s. Internal \
-                      error."
-                     (as_error_string fname))
+                  ~kind:
+                    (sprintf
+                       "StateService: Failed indexing into map %s. Internal \
+                        error."
+                       (as_error_string fname))
                   ?inst:None
                   (ER.get_loc (get_rep fname))
               else
@@ -117,18 +119,20 @@ module MakeStateService () = struct
                  we ran out of nested maps. *)
               | _ ->
                   fail1
-                    ~kind:(sprintf
-                       "StateService: Cannot index into map %s. Too many \
-                        index  keys."
-                       (as_error_string fname))
+                    ~kind:
+                      (sprintf
+                         "StateService: Cannot index into map %s. Too many \
+                          index  keys."
+                         (as_error_string fname))
                     ?inst:None
                     (ER.get_loc (get_rep fname)))
           (* this cannot occur. *)
           | [] ->
               fail1
-                ~kind:(sprintf
-                   "StateService: Internal error in retriving from map %s."
-                   (as_error_string fname))
+                ~kind:
+                  (sprintf
+                     "StateService: Internal error in retriving from map %s."
+                     (as_error_string fname))
                 ?inst:None
                 (ER.get_loc (get_rep fname))
         in
@@ -136,8 +140,9 @@ module MakeStateService () = struct
     | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ Some l
     | _ ->
         fail1
-          ~kind:(sprintf "StateService: field \"%s\" not found.\n"
-             (as_error_string fname))
+          ~kind:
+            (sprintf "StateService: field \"%s\" not found.\n"
+               (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
 
@@ -152,8 +157,9 @@ module MakeStateService () = struct
           match res with
           | None ->
               fail1
-                ~kind:(sprintf "StateService: Field %s not found on IPC server."
-                   (as_error_string fname))
+                ~kind:
+                  (sprintf "StateService: Field %s not found on IPC server."
+                     (as_error_string fname))
                 ?inst:None
                 (ER.get_loc (get_rep fname))
           | Some _res' -> pure @@ res)
@@ -226,10 +232,11 @@ module MakeStateService () = struct
                       | MapType (keytype, valtype) -> pure (keytype, valtype)
                       | _ ->
                           fail1
-                            ~kind:(sprintf
-                               "StateService: Cannot index into map %s due to \
-                                non-map type"
-                               (as_error_string fname))
+                            ~kind:
+                              (sprintf
+                                 "StateService: Cannot index into map %s due \
+                                  to non-map type"
+                                 (as_error_string fname))
                             ?inst:None
                             (ER.get_loc (get_rep fname))
                     in
@@ -242,17 +249,19 @@ module MakeStateService () = struct
                  we ran out of nested maps. *)
               | _ ->
                   fail1
-                    ~kind:(sprintf
-                       "StateService: Cannot index into map %s. Too many index \
-                        keys."
-                       (as_error_string fname))
+                    ~kind:
+                      (sprintf
+                         "StateService: Cannot index into map %s. Too many \
+                          index keys."
+                         (as_error_string fname))
                     ?inst:None
                     (ER.get_loc (get_rep fname)))
           (* this cannot occur. *)
           | [] ->
               fail1
-                ~kind:(sprintf "StateService: Internal error in updating map %s."
-                   (as_error_string fname))
+                ~kind:
+                  (sprintf "StateService: Internal error in updating map %s."
+                     (as_error_string fname))
                 ?inst:None
                 (ER.get_loc (get_rep fname))
         in
@@ -267,14 +276,17 @@ module MakeStateService () = struct
             pure ({ fname = f; ftyp = t; fval = Some fval' } :: fields')
         | None ->
             fail1
-              ~kind:(sprintf "StateService: Cannot remove non-map value %s from state"
-                 (as_error_string fname))
+              ~kind:
+                (sprintf
+                   "StateService: Cannot remove non-map value %s from state"
+                   (as_error_string fname))
               ?inst:None
               (ER.get_loc (get_rep fname)))
     | _ ->
         fail1
-          ~kind:(sprintf "StateService: Field \"%s\" not found.\n"
-             (as_error_string fname))
+          ~kind:
+            (sprintf "StateService: Field \"%s\" not found.\n"
+               (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
 
@@ -322,8 +334,9 @@ module MakeStateService () = struct
             match f.fval with
             | None ->
                 fail0
-                  ~kind:(sprintf "StateService: Field %s's value is not known"
-                     (SSName.as_error_string f.fname))
+                  ~kind:
+                    (sprintf "StateService: Field %s's value is not known"
+                       (SSName.as_error_string f.fname))
                   ?inst:None
             | Some l -> pure (f.fname, f.ftyp, l))
     | SS (IPC _, fl, _estates) ->
@@ -334,9 +347,10 @@ module MakeStateService () = struct
               | Some v -> pure (f.fname, f.ftyp, v)
               | None ->
                   fail0
-                    ~kind:(sprintf
-                       "StateService: Field %s's value not found on server"
-                       (SSName.as_error_string f.fname))
+                    ~kind:
+                      (sprintf
+                         "StateService: Field %s's value not found on server"
+                         (SSName.as_error_string f.fname))
                     ?inst:None)
         in
         pure sl

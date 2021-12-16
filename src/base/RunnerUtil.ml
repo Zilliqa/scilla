@@ -58,8 +58,7 @@ let get_init_this_address_and_extlibs filename =
           name_addr_pairs
       then
         fatal_error
-        @@ mk_error0
-             ~kind:"Duplicate extlib map entries in init JSON file"
+        @@ mk_error0 ~kind:"Duplicate extlib map entries in init JSON file"
              ~inst:filename
       else (this_address, name_addr_pairs)
     with Invalid_json s ->
@@ -85,7 +84,8 @@ let import_lib name sloc =
         (libf, this_address, extlibs)
   in
   match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
-  | Error s -> fatal_error (s @ (mk_error1 ~kind:"Failed to parse" ?inst:None) sloc)
+  | Error s ->
+      fatal_error (s @ (mk_error1 ~kind:"Failed to parse" ?inst:None) sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
       (lmod, this_address, initf)
@@ -132,10 +132,8 @@ let import_libs names_and_namespaces init_address_map =
             | Error s ->
                 fatal_error
                   (s
-                  @ mk_error1
-                      ~kind:"Failed to disambiguate imported library"
-                      ~inst:(as_string libname)
-                      (get_rep libname))
+                  @ mk_error1 ~kind:"Failed to disambiguate imported library"
+                      ~inst:(as_string libname) (get_rep libname))
             | Ok dis_lib ->
                 let libnode =
                   {
@@ -151,12 +149,11 @@ let import_libs names_and_namespaces init_address_map =
 
 let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
   fatal_error
-    (mk_error0
-       ~kind:"A path to Scilla stdlib not found"
-       ~inst:("Please set "
-        ^ StdlibTracker.scilla_stdlib_env
-        ^ " environment variable, or pass through command-line argument for this \
-          script.\n" ^ "Example:\n" ^ exe_name
+    (mk_error0 ~kind:"A path to Scilla stdlib not found"
+       ~inst:
+         ("Please set " ^ StdlibTracker.scilla_stdlib_env
+        ^ " environment variable, or pass through command-line argument for \
+           this script.\n" ^ "Example:\n" ^ exe_name
         ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)

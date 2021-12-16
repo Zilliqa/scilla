@@ -106,8 +106,7 @@ let eval_gas_charge env g =
             let ui = Integer256.Uint256.of_bytes_big_endian s 0 in
             pure @@ GasCharge.GFloat (Integer256.Uint256.to_float ui)
         | _ ->
-            fail0
-              ~kind:"Variable did not resolve to an integer"
+            fail0 ~kind:"Variable did not resolve to an integer"
               ~inst:(EvalName.as_error_string vstr))
     | SGasCharge.LengthOf vstr -> (
         let%bind l = Env.lookup env (mk_loc_id vstr) in
@@ -116,7 +115,10 @@ let eval_gas_charge env g =
         | ADTValue _ ->
             let%bind l' = Datatypes.scilla_list_to_ocaml l in
             pure @@ GasCharge.GInt (List.length l')
-        | _ -> fail0 ~kind:"eval_gas_charge: Can only take length of Maps and Lists" ?inst:None)
+        | _ ->
+            fail0
+              ~kind:"eval_gas_charge: Can only take length of Maps and Lists"
+              ?inst:None)
     | SGasCharge.MapSortCost vstr ->
         let%bind m = Env.lookup env (mk_loc_id vstr) in
         pure @@ GasCharge.GInt (EvalGas.map_sort_cost m)
@@ -126,7 +128,8 @@ let eval_gas_charge env g =
   in
   match%bind SGasCharge.eval resolver g with
   | GasCharge.GInt i -> pure i
-  | GasCharge.GFloat _ -> fail0 ~kind:"eval_gas evaluated to a float value" ?inst:None
+  | GasCharge.GFloat _ ->
+      fail0 ~kind:"eval_gas evaluated to a float value" ?inst:None
 
 let builtin_cost env f targs tps args_id =
   let open MonadUtil in
@@ -249,10 +252,10 @@ let rec exp_eval erep env =
       in
       let alen = List.length actuals in
       if constr.arity <> alen then
-        fail1
-          ~kind:"Constructor arity mismatch"
-          ~inst:(sprintf "%s expects %d arguments, but got %d."
-             (as_error_string cname) constr.arity alen)
+        fail1 ~kind:"Constructor arity mismatch"
+          ~inst:
+            (sprintf "%s expects %d arguments, but got %d."
+               (as_error_string cname) constr.arity alen)
           (SR.get_loc (get_rep cname))
       else
         (* Resolve the actuals *)
@@ -268,10 +271,8 @@ let rec exp_eval erep env =
       let%bind (_, e_branch), bnds =
         tryM clauses
           ~msg:(fun () ->
-            mk_error1
-              ~kind:"Match expression failed. No clause matched."
-              ?inst:None
-              loc)
+            mk_error1 ~kind:"Match expression failed. No clause matched."
+              ?inst:None loc)
           ~f:(fun (p, _) -> fromR @@ match_with_pattern v p)
       in
       (* Update the environment for the branch *)
@@ -290,7 +291,8 @@ let rec exp_eval erep env =
         let%bind fbody, _ = exp_eval body env1 in
         match fbody with
         | Clo f -> f arg
-        | _ -> fail0 ~kind:"Cannot apply fixpoint argument to a value" ?inst:None
+        | _ ->
+            fail0 ~kind:"Cannot apply fixpoint argument to a value" ?inst:None
       and clo_fix = Clo fix in
       pure (clo_fix, env)
   | TFun (tv, body) ->
@@ -312,18 +314,23 @@ let rec exp_eval erep env =
       let%bind cost = fromR @@ eval_gas_charge env g in
       let emsg = sprintf "Ran out of gas" in
       (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
-      checkwrap_op thunk (Uint64.of_int cost) (mk_error1 ~kind:emsg ?inst:None loc)
+      checkwrap_op thunk (Uint64.of_int cost)
+        (mk_error1 ~kind:emsg ?inst:None loc)
 
 (* Applying a function *)
 and try_apply_as_closure v arg =
   match v with
   | Clo clo -> clo arg
-  | _ -> fail0 ~kind:"Trying to apply a non-functional value" ~inst:(Env.pp_value v)
+  | _ ->
+      fail0 ~kind:"Trying to apply a non-functional value"
+        ~inst:(Env.pp_value v)
 
 and try_apply_as_type_closure v arg_type =
   match v with
   | TAbs tclo -> tclo arg_type
-  | _ -> fail0 ~kind:"Trying to type-apply a non-type closure" ~inst:(Env.pp_value v)
+  | _ ->
+      fail0 ~kind:"Trying to type-apply a non-type closure"
+        ~inst:(Env.pp_value v)
 
 (* [Initial Gas-Passing Continuation]
 
@@ -374,7 +381,9 @@ let rec stmt_eval conf stmts =
               let%bind l = Configuration.remote_load conf s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
-          | _ -> fail0 ~kind:"Expected remote load address to be ByStr20 value" ?inst:None)
+          | _ ->
+              fail0 ~kind:"Expected remote load address to be ByStr20 value"
+                ?inst:None)
       | Store (x, r) ->
           let%bind v = fromR @@ Configuration.lookup conf r in
           let%bind () = Configuration.store x v in
@@ -426,7 +435,9 @@ let rec stmt_eval conf stmts =
             match l with
             | ByStrX lbystr when Bystrx.width lbystr = Type.address_length ->
                 pure lbystr
-            | _ -> fail0 ~kind:"Expected address or ByStr20 in type cast" ?inst:None
+            | _ ->
+                fail0 ~kind:"Expected address or ByStr20 in type cast"
+                  ?inst:None
           in
           let%bind tc_res =
             fromR
@@ -441,9 +452,12 @@ let rec stmt_eval conf stmts =
             tryM clauses
               ~msg:(fun () ->
                 mk_error0
-                  ~kind:"Value does not match any clause of pattern matching statement"
-                  ~inst:(sprintf "%s\ndoes not match any clause of\n%s."
-                     (Env.pp_value v) (pp_stmt s)))
+                  ~kind:
+                    "Value does not match any clause of pattern matching \
+                     statement"
+                  ~inst:
+                    (sprintf "%s\ndoes not match any clause of\n%s."
+                       (Env.pp_value v) (pp_stmt s)))
               ~f:(fun (p, _) -> fromR @@ match_with_pattern v p)
           in
           (* Update the environment for the branch *)
@@ -498,7 +512,9 @@ let rec stmt_eval conf stmts =
                 pure @@ ": " ^ pp_literal e_resolved
             | None -> pure ""
           in
-          let err = mk_error1 ~kind:("Exception thrown" ^ estr) ?inst:None sloc in
+          let err =
+            mk_error1 ~kind:("Exception thrown" ^ estr) ?inst:None sloc
+          in
           let elist =
             List.map conf.component_stack ~f:(fun cname ->
                 {
@@ -512,7 +528,8 @@ let rec stmt_eval conf stmts =
       | GasStmt g ->
           let%bind cost = fromR @@ eval_gas_charge conf.env g in
           let err =
-            mk_error1 ~kind:"Ran out of gas after evaluating statement" ?inst:None sloc
+            mk_error1 ~kind:"Ran out of gas after evaluating statement"
+              ?inst:None sloc
           in
           let remaining_stmts () = stmt_eval conf sts in
           checkwrap_op remaining_stmts (Uint64.of_int cost) err)
@@ -573,16 +590,10 @@ let check_blockchain_entries entries =
   in
   if c1 && c2 then pure entries
   else
-    fail0
-      ~kind:
-         "Mismatch in input blockchain variables"
-      ~inst:(sprintf
-          "expected:\n\
-          %s\n\
-          provided:\n\
-          %s\n"
-         (pp_str_typ_map expected)
-         (pp_typ_literal_map entries))
+    fail0 ~kind:"Mismatch in input blockchain variables"
+      ~inst:
+        (sprintf "expected:\n%s\nprovided:\n%s\n" (pp_str_typ_map expected)
+           (pp_typ_literal_map entries))
 
 (*******************************************************)
 (*              Contract initialization                *)
@@ -679,8 +690,7 @@ let init_fields env fs =
     match v with
     | l when is_pure_literal l -> pure (fname, t, l)
     | _ ->
-        fail0
-          ~kind:"Closure cannot be stored in a field"
+        fail0 ~kind:"Closure cannot be stored in a field"
           ~inst:(EvalName.as_error_string fname)
   in
   mapM fs ~f:(fun (i, t, e) -> init_field (get_id i) t e)
@@ -709,9 +719,8 @@ let init_contract libenv cparams' cfields initargs' init_bal =
         match arg_dyn_checks with
         | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
         | None ->
-            fail0
-             ~kind:"No init entry found matching contract parameter"
-             ~inst:(as_error_string x))
+            fail0 ~kind:"No init entry found matching contract parameter"
+              ~inst:(as_error_string x))
   in
   (* There is a parameter for each init arg *)
   let%bind () =
@@ -719,8 +728,7 @@ let init_contract libenv cparams' cfields initargs' init_bal =
         if List.exists cparams ~f:(fun (x, _xt) -> EvalName.equal (get_id x) s)
         then pure ()
         else
-          fail0
-            ~kind:"Parameter is not specified in the contract"
+          fail0 ~kind:"Parameter is not specified in the contract"
             ~inst:(EvalName.as_error_string s))
   in
   (* Each init arg is unique *)
@@ -753,11 +761,10 @@ let create_cur_state_fields initcstate curcstate =
               else if not @@ [%equal: EvalType.t] xt t then
                 fail0
                   ~kind:"State type of field does not match the declared type"
-                  ~inst:(sprintf
-                     "Field %s : %s does not match the declared \
-                      type %s"
-                     (EvalName.as_error_string s)
-                     (pp_typ t) (pp_typ xt))
+                  ~inst:
+                    (sprintf "Field %s : %s does not match the declared type %s"
+                       (EvalName.as_error_string s)
+                       (pp_typ t) (pp_typ xt))
               else
                 (* Check that the literal matches the stated type *)
                 let%bind _dyn_checks =
@@ -767,11 +774,11 @@ let create_cur_state_fields initcstate curcstate =
                 pure true)
         in
         if not ex then
-          fail0
-            ~kind:"Field not defined in the contract"
-            ~inst:(sprintf "field %s of type %s"
-               (EvalName.as_error_string s)
-               (pp_typ t))
+          fail0 ~kind:"Field not defined in the contract"
+            ~inst:
+              (sprintf "field %s of type %s"
+                 (EvalName.as_error_string s)
+                 (pp_typ t))
         else pure ())
   in
   (* We allow fields in initcstate that isn't in curcstate *)
@@ -879,8 +886,7 @@ let check_message_entries cparams_o entries =
         match entry_dyn_checks with
         | Some dyn_checks -> pure @@ dyn_checks @ acc_dyn_checks
         | None ->
-            fail0
-              ~kind:"No message entry found matching parameter"
+            fail0 ~kind:"No message entry found matching parameter"
               ~inst:(as_error_string x))
   in
   (* There is a parameter for each entry *)
@@ -926,10 +932,10 @@ let post_process_msgs cstate outs =
   if compare cstate.balance to_be_transferred < 0 then
     fail0
       ~kind:"The balance is too low to transfer all the funds in the messages"
-      ~inst:(sprintf
-         "balance = %s, amount to transfer = %s"
-         (to_string cstate.balance)
-         (to_string to_be_transferred))
+      ~inst:
+        (sprintf "balance = %s, amount to transfer = %s"
+           (to_string cstate.balance)
+           (to_string to_be_transferred))
   else
     let balance = sub cstate.balance to_be_transferred in
     pure { cstate with balance }

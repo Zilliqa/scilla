@@ -57,7 +57,7 @@ let fail (s : scilla_error list) = Error s
 let pure e = return e
 
 (* fail with just a message (containing error kind and an instance of the error), no location info. *)
-let [@warning "-16"] fail0 ~kind ?inst = fail @@ mk_error0 ~kind ?inst
+let[@warning "-16"] fail0 ~kind ?inst = fail @@ mk_error0 ~kind ?inst
 
 (* fail with a message and start location. *)
 let fail1 ~kind ?inst sloc = fail @@ mk_error1 ~kind ?inst sloc

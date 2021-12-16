@@ -45,7 +45,8 @@ let raw_of_buffer b =
   let cs = Cstruct.of_bigarray b in
   Hex.to_string (Hex.of_cstruct cs)
 
-let resconv r = match r with Ok o -> Ok o | Error s -> fail0 ~kind:s ?inst:None
+let resconv r =
+  match r with Ok o -> Ok o | Error s -> fail0 ~kind:s ?inst:None
 
 let resopt m =
   match m with

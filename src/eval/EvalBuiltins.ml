@@ -505,7 +505,9 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               (bstring_from_uint_lit nl)
           with
           | Some nlbs -> pure @@ ByStrX nlbs
-          | None -> fail0 ~kind:"Internal error in converting UintLit to ByStrX" ?inst:None)
+          | None ->
+              fail0 ~kind:"Internal error in converting UintLit to ByStrX"
+                ?inst:None)
       | _ -> builtin_fail "Uint.to_bystrx: unsupported type" ls
   end
 
@@ -537,8 +539,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           if ge_big_int i2 (big_int_of_int 0) then
             pure @@ BNum (string_of_big_int (add_big_int i1 i2))
           else
-            fail0
-              ~kind:"Cannot add a negative value to a block"
+            fail0 ~kind:"Cannot add a negative value to a block"
               ~inst:(string_of_uint_lit y)
       | _ -> builtin_fail "BNum.badd" ls
 
@@ -1096,12 +1097,16 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       let%bind _, (res_type, exec) =
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
-              ~kind:(sprintf "Type error: cannot apply \"%s\" built-in to argument(s) of type(s)" (pp_builtin op))
+              ~kind:
+                (sprintf
+                   "Type error: cannot apply \"%s\" built-in to argument(s) of \
+                    type(s)"
+                   (pp_builtin op))
               ~inst:
-                 (sprintf "%s %s"
-                    (if List.is_empty targtypes then ""
-                      else sprintf "{%s} " (pp_typ_list_error targtypes))
-                    (pp_typ_list_error vargtypes))
+                (sprintf "%s %s"
+                   (if List.is_empty targtypes then ""
+                   else sprintf "{%s} " (pp_typ_list_error targtypes))
+                   (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
       pure (res_type, exec)

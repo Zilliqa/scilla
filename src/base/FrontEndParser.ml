@@ -61,7 +61,8 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     in
     try MInter.loop_handle success failure supplier checkpoint with
     | Lexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
-    | Syntax.SyntaxError (msg, loc) -> fail1 ~kind:("Syntax error: " ^ msg) ?inst:None loc
+    | Syntax.SyntaxError (msg, loc) ->
+        fail1 ~kind:("Syntax error: " ^ msg) ?inst:None loc
     | Parser.Error -> fail_err "Syntax error." lexbuf
 
   let parse_file checkpoint_starter filename =
