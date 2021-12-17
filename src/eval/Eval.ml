@@ -513,7 +513,7 @@ let rec stmt_eval conf stmts =
             | None -> pure ""
           in
           let err =
-            mk_error1 ~kind:("Exception thrown" ^ estr) ?inst:None sloc
+            mk_error1 ~kind:"Exception thrown" ~inst:estr sloc
           in
           let elist =
             List.map conf.component_stack ~f:(fun cname ->
