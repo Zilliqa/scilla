@@ -51,7 +51,7 @@ type scilla_error = {
 (* combine the error kind and the concrete error instance *)
 let mk_error_description err =
   let optional_instance =
-    match err.einst with Some einst -> ": " ^ einst | None -> ""
+    match err.einst with None | Some "" -> "" | Some einst -> ": " ^ einst
   in
   err.ekind ^ optional_instance
 
