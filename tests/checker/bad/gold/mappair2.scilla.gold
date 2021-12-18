@@ -2,7 +2,7 @@
   "gas_remaining": "7909",
   "errors": [
     {
-      "error_message": "Identifier malMessage1 used more than once\n",
+      "error_message": "Identifier used more than once: malMessage1",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 93,
@@ -11,7 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier num1 used more than once\n",
+      "error_message": "Identifier used more than once: num1",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 106,
@@ -20,7 +20,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Missing _amount or _recipient in Message\n",
+      "error_message": "Missing _amount or _recipient in Message",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 95,
@@ -29,7 +29,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier status used more than once\n",
+      "error_message": "Identifier used more than once: status",
       "start_location": {
         "file": "checker/bad/mappair2.scilla",
         "line": 108,

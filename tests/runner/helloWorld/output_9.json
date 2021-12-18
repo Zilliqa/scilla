@@ -2,13 +2,14 @@
   "gas_remaining": "7957",
   "errors": [
     {
-      "error_message": "Invalid String value Hello\u0016World in JSON",
+      "error_message":
+        "Invalid value in JSON: Hello\u0016World of type String",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Failed to parse json tests/runner/helloWorld/message_9.json:\n",
+        "Failed to parse json: tests/runner/helloWorld/message_9.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

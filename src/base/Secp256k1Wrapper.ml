@@ -45,12 +45,13 @@ let raw_of_buffer b =
   let cs = Cstruct.of_bigarray b in
   Hex.to_string (Hex.of_cstruct cs)
 
-let resconv r = match r with Ok o -> Ok o | Error s -> fail0 s
+let resconv r =
+  match r with Ok o -> Ok o | Error s -> fail0 ~kind:s ?inst:None
 
 let resopt m =
   match m with
   | Some m' -> pure m'
-  | None -> fail0 "ECDSA: Failed to handle message"
+  | None -> fail0 ~kind:"ECDSA: Failed to handle message" ?inst:None
 
 let pk_from_sk sk =
   let sk' = buffer_of_raw sk in

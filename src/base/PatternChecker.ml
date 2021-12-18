@@ -90,7 +90,7 @@ struct
     let rec traverse_clauses dsc i rest_clauses =
       match rest_clauses with
       | [] ->
-          fail0 @@ "Non-exhaustive pattern match."
+          fail0 ~kind:"Non-exhaustive pattern match." ?inst:None
           (* TODO, Issue #210: Give counter-example based on dsc *)
       | (p1, _) :: rest_clauses' -> match_pattern p1 t dsc [] [] i rest_clauses'
     and traverse_pattern ctx sps i rest_clauses =
@@ -103,8 +103,8 @@ struct
             | Some (_, e) -> e
             | None ->
                 raise
-                  (mk_internal_error
-                     (sprintf "Pattern index %d too high (or low)" i))
+                  (mk_internal_error ~kind:"Pattern index too high (or low)"
+                     ~inst:(Int.to_string i))
           in
           pure @@ Success e
       | ([], [], []) :: sps_rest ->
@@ -113,7 +113,9 @@ struct
           match_pattern p1 t1 dsc1 ctx
             ((ps, ts, dscs) :: sps_rest)
             i rest_clauses
-      | _ -> fail0 @@ "Internal error - pattern match uses incorrect arity"
+      | _ ->
+          fail0 ~kind:"Internal error - pattern match uses incorrect arity"
+            ?inst:None
     and match_pattern p t dsc ctx sps_rest i rest_clauses =
       match p with
       | Wildcard | Binder _ ->
@@ -161,7 +163,8 @@ struct
     let%bind decision_tree = traverse_clauses (Neg []) 0 clauses in
     match Array.findi reachable ~f:(fun _ r -> not r) with
     | None -> pure @@ decision_tree (* All patterns reachable *)
-    | Some (i, _) -> fail0 @@ sprintf "Pattern %d is unreachable." (i + 1)
+    | Some (i, _) ->
+        fail0 ~kind:"Pattern is unreachable" ~inst:(Int.to_string (i + 1))
 
   (* TODO, Issue #270: look up relevant pattern in clauses and report it *)
 
@@ -284,13 +287,14 @@ struct
 
   let pm_check_component t =
     let { comp_type; comp_name; comp_params; comp_body } = t in
-    let msg =
-      sprintf "Error during pattern-match checking of %s %s:\n"
+    let kind = "Error during pattern-match checking of component"
+    and inst =
+      sprintf "%s %s:\n"
         (component_type_to_string comp_type)
         (PCIdentifier.as_error_string comp_name)
     in
     let%bind checked_body =
-      wrap_with_info (msg, SR.get_loc (PCIdentifier.get_rep comp_name))
+      wrap_with_info ~kind ~inst (SR.get_loc (PCIdentifier.get_rep comp_name))
       @@ pm_check_stmts comp_body
     in
     pure
@@ -316,12 +320,11 @@ struct
               in
               pure @@ CheckedPatternSyntax.LibTyp (tname, lifted_typs)
           | LibVar (entryname, t, lexp) ->
-              let msg =
-                sprintf "Error during pattern-match checking of library %s:\n"
-                  (PCIdentifier.as_error_string entryname)
-              in
+              let kind = "Error during pattern-match checking of library"
+              and inst = PCIdentifier.as_error_string entryname in
               let%bind checked_lexp =
-                wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep entryname))
+                wrap_with_info ~kind ~inst
+                  (ER.get_loc (PCIdentifier.get_rep entryname))
                 @@ pm_check_expr lexp
               in
               pure @@ CheckedPatternSyntax.LibVar (entryname, t, checked_lexp))
@@ -346,12 +349,10 @@ struct
   let pm_check_fields fs =
     mapM
       ~f:(fun (i, t, e) ->
-        let msg =
-          sprintf "Error during pattern-match checking of field %s:\n"
-            (PCIdentifier.as_error_string i)
-        in
+        let kind = "Error during pattern-match checking of field"
+        and inst = PCIdentifier.as_error_string i ^ "\n" in
         let%bind checked_e =
-          wrap_with_info (msg, ER.get_loc (PCIdentifier.get_rep i))
+          wrap_with_info ~kind ~inst (ER.get_loc (PCIdentifier.get_rep i))
           @@ pm_check_expr e
         in
         pure @@ (i, t, checked_e))
@@ -389,11 +390,9 @@ struct
   let pm_check_module md rlibs elibs =
     let { smver = mod_smver; libs; elibs = mod_elibs; contr } = md in
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
-    let init_msg =
-      sprintf "Type error(s) in contract %s:\n"
-        (PCIdentifier.as_error_string ctr_cname)
-    in
-    wrap_with_info (init_msg, dummy_loc)
+    let kind = "Type error(s) in contract"
+    and inst = PCIdentifier.as_error_string ctr_cname ^ "\n" in
+    wrap_with_info ~kind ~inst dummy_loc
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in
        let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in
 

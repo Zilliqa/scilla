@@ -3,13 +3,13 @@
   "errors": [
     {
       "error_message":
-        "ADT 0xabfeccdc9012345678901234567890f777564322.AddressADT not found",
+        "ADT not found: 0xabfeccdc9012345678901234567890f777564322.AddressADT",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Failed to parse json tests/runner/remote_state_reads/state_124.json:\n",
+        "Failed to parse json: tests/runner/remote_state_reads/state_124.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

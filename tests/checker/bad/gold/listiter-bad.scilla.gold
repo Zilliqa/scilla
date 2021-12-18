@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: List (listiter-bad.LIAdt) expected, but List (Int32) provided.",
+        "Type unassignable: List (listiter-bad.LIAdt) expected, but List (Int32) provided",
       "start_location": {
         "file": "checker/bad/listiter-bad.scilla",
         "line": 20,

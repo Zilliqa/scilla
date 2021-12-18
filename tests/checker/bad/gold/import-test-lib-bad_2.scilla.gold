@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ImportNestedTestLibBad2:\n",
+      "error_message": "Type error(s) in contract: ImportNestedTestLibBad2",
       "start_location": {
         "file": "checker/bad/import-test-lib-bad_2.scilla",
         "line": 18,
@@ -11,7 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "ADT BaseType1 not found",
+      "error_message": "ADT not found: BaseType1",
       "start_location": {
         "file": "checker/bad/import-test-lib-bad_2.scilla",
         "line": 21,

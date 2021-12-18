@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: Bool expected, but Option (Bool) provided.",
+        "Type unassignable: Bool expected, but Option (Bool) provided",
       "start_location": {
         "file": "checker/bad/remote_read_bad_3.scilla",
         "line": 17,

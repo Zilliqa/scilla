@@ -56,10 +56,12 @@ struct
           let%bind eventname =
             match epld with
             | MLit l -> (
-                match l with StringLit s -> pure s | _ -> fail1 emsg bloc)
+                match l with
+                | StringLit s -> pure s
+                | _ -> fail1 ~kind:emsg ?inst:None bloc)
             (* Variables are not allowed for eventname_label to ensure that
                all possible events can be determined statically. *)
-            | MVar _ -> fail1 emsg bloc
+            | MVar _ -> fail1 ~kind:emsg ?inst:None bloc
           in
           (* Get the type of the event parameters. *)
           let filtered_m =
@@ -106,8 +108,10 @@ struct
               in
               if not @@ matcher m_types tlist then
                 fail1
-                  (Printf.sprintf "Parameter mismatch for event %s. %s vs %s\n"
-                     eventname (printer tlist) (printer m_types))
+                  ~kind:
+                    (Printf.sprintf "Parameter mismatch for event %s" eventname)
+                  ~inst:
+                    (Printf.sprintf "%s vs %s" (printer tlist) (printer m_types))
                   bloc
               else pure acc
           | None ->

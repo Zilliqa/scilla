@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Cannot apply built-in Uint.mul: an overflow/underflow occurred to a list of arguments:[  (Uint32 99999),\n  (Uint32 99999)].",
+        "Cannot apply built-in Uint.mul: an overflow/underflow occurred to a list of arguments: [  (Uint32 99999),\n  (Uint32 99999)]",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

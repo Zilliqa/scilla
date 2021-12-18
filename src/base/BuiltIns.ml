@@ -38,8 +38,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
   let builtin_fail name ls =
     fail0
-    @@ sprintf "Cannot apply built-in %s to a list of arguments:%s." name
-         (print_literal_list ls)
+      ~kind:(sprintf "Cannot apply built-in %s to a list of arguments" name)
+      ~inst:(print_literal_list ls)
 
   (* Convert int_lit to raw byte string. *)
   let bstring_from_int_lit = function
@@ -121,8 +121,8 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ PrimType pt ] -> (
           match pt with
           | String_typ | Bystr_typ -> elab_tfun_with_args_no_gas strlen_type ts
-          | _ -> fail0 "Failed to elaborate")
-      | _, _ -> fail0 "Failed to elaborate"
+          | _ -> fail0 ~kind:"Failed to elaborate" ?inst:None)
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_string_arity = 1
 
@@ -134,11 +134,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | Int_typ _ | Uint_typ _ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_string_type ts
-          | _ -> fail0 "Failed to elaborate")
+          | _ -> fail0 ~kind:"Failed to elaborate" ?inst:None)
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_ascii_arity = 1
 
@@ -150,11 +150,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas to_ascii_type ts
-          | _ -> fail0 "Failed to elaborate")
+          | _ -> fail0 ~kind:"Failed to elaborate" ?inst:None)
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let strrev_arity = 1
 
@@ -166,11 +166,11 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           match pt with
           | String_typ | Bystrx_typ _ | Bystr_typ ->
               elab_tfun_with_args_no_gas strrev_type ts
-          | _ -> fail0 "Failed to elaborate")
+          | _ -> fail0 ~kind:"Failed to elaborate" ?inst:None)
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas to_string_type
             [ bystrx_typ Type.address_length ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
   end
 
   (* Instantiating the functors *)
@@ -200,7 +200,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let binop_arity = 2
 
@@ -211,7 +211,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_int_type i1 ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let pow_arity = 2
 
@@ -223,7 +223,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ i1; i2 ] when is_int_type i1 && [%equal: BIType.t] i2 uint32_typ
         ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_int_arity = 1
 
@@ -238,7 +238,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ (PrimType String_typ as t) ] ->
           let ityp = PrimType (Int_typ w) in
           elab_tfun_with_args_no_gas sc [ t; ityp ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
   end
 
   (* Unsigned integer operation *)
@@ -254,7 +254,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let binop_arity = 2
 
@@ -265,7 +265,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ i1; i2 ] when [%equal: BIType.t] i1 i2 && is_uint_type i1 ->
           elab_tfun_with_args_no_gas sc [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let pow_arity = 2
 
@@ -277,7 +277,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ i1; i2 ] when is_uint_type i1 && [%equal: BIType.t] i2 uint32_typ
         ->
           elab_tfun_with_args_no_gas t [ i1 ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let isqrt_arity = 1
 
@@ -286,7 +286,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let isqrt_elab t targs ts =
       match (targs, ts) with
       | [], [ i ] when is_uint_type i -> elab_tfun_with_args_no_gas t [ i ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_uint_arity = 1
 
@@ -301,7 +301,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ (PrimType String_typ as t) ] ->
           let ityp = PrimType (Uint_typ w) in
           elab_tfun_with_args_no_gas sc [ t; ityp ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_nat_arity = 1
 
@@ -319,7 +319,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         ->
           elab_tfun_with_args_no_gas sc
             [ t; PrimType (Bystrx_typ (int_bit_width_to_int w / 8)) ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
   end
 
   (***********************************************************)
@@ -348,7 +348,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType Bnum_typ; PrimType (Uint_typ _) ] ->
           elab_tfun_with_args_no_gas sc ts
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let bsub_arity = 2
 
@@ -362,7 +362,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ PrimType Bnum_typ; PrimType Bnum_typ ] ->
           elab_tfun_with_args_no_gas sc ts
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
   end
 
   (***********************************************************)
@@ -389,7 +389,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
           elab_tfun_with_args_no_gas sc [ bstyp1 ]
       | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc [ PrimType Bystr_typ ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let hash_type =
       tfun_typ "'A" @@ fun_typ (tvar "'A") (bystrx_typ hash_length)
@@ -400,7 +400,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       match (targs, ts) with
       | [], [ t ] when is_legal_hash_argument_type t ->
           elab_tfun_with_args_no_gas sc ts
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     (* RIPEMD-160 is a 160 bit hash, so define a separate type for it. *)
     let ripemd160hash_type =
@@ -421,7 +421,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ t ] when is_bystrx_type t -> elab_tfun_with_args_no_gas sc ts
       | [], [ t ] when is_address_type t ->
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let substr_arity = 3
 
@@ -442,7 +442,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         when is_address_type t
              && Type.address_length <= int_bit_width_to_int x / 8 ->
           elab_tfun_with_args_no_gas sc [ bystrx_typ Type.address_length ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let bech32_to_bystr20_type =
       fun_typ string_typ
@@ -478,7 +478,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
             (ts @ [ bystrx_typ (Type.address_length + Type.address_length) ])
       | [], [ PrimType Bystr_typ; PrimType Bystr_typ ] ->
           elab_tfun_with_args_no_gas sc (ts @ [ bystr_typ ])
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let[@warning "-32"] ec_gen_key_pair_type =
       fun_typ unit_typ
@@ -630,7 +630,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
         ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let put_arity = 3
 
@@ -646,7 +646,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
         when type_assignable ~expected:kt ~actual:kt'
              && type_assignable ~expected:vt ~actual:vt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     (* Must take result type into the account *)
     let get_arity = 2
@@ -661,7 +661,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ MapType (kt, vt); kt' ]
         when type_assignable ~expected:kt ~actual:kt' ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let remove_arity = 2
 
@@ -675,7 +675,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | [], [ MapType (kt, vt); u ] when type_assignable ~expected:kt ~actual:u
         ->
           elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_list_arity = 1
 
@@ -687,7 +687,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let to_list_elab sc targs ts =
       match (targs, ts) with
       | [], [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let size_arity = 1
 
@@ -699,7 +699,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     let size_elab sc targs ts =
       match (targs, ts) with
       | [], [ MapType (kt, vt) ] -> elab_tfun_with_args_no_gas sc [ kt; vt ]
-      | _, _ -> fail0 "Failed to elaborate"
+      | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
   end
 
   (* Identity elaborator *)
@@ -829,19 +829,22 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
                 fun_type_applies type_elab vargtypes ~lc:(ER.get_loc rep)
               in
               pure res_type
-            else fail0 @@ "Name or arity don't match"
+            else fail0 ~kind:"Name or arity don't match" ?inst:None
       in
       let dict = built_in_multidict op in
       let%bind _, res_type =
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
-              (sprintf
-                 "Type error: cannot apply \"%s\" built-in to argument(s) of \
-                  type(s) %s%s."
-                 (pp_builtin op)
-                 (if List.is_empty targtypes then ""
-                 else sprintf "{%s} " (pp_typ_list_error targtypes))
-                 (pp_typ_list_error vargtypes))
+              ~kind:
+                (sprintf
+                   "Type error: cannot apply \"%s\" built-in to argument(s) of \
+                    type(s)"
+                   (pp_builtin op))
+              ~inst:
+                (sprintf "%s%s"
+                   (if List.is_empty targtypes then ""
+                   else sprintf "{%s} " (pp_typ_list_error targtypes))
+                   (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
       pure res_type

@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Insufficient sender balance for acceptance. Incoming vs sender_balance: 100 vs 50",
+        "Insufficient sender balance for acceptance: Incoming vs sender_balance: 100 vs 50",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
