@@ -436,15 +436,17 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                (add_type_to_ident f (mk_qual_tp t), t, typed_b),
              (mk_qual_tp t, rep) )
     | TFun (tvar, body) ->
-        let id = get_id tvar in
+        let _id = get_id tvar in
         (* XXX this is a workaround for alpha-renaming *)
         (* Make it illegal to declare a new type variable inside the scope of another type variable with the same name *)
+        (*
         if TEnv.existsV tenv id then
           fail
             (mk_type_error1 ~kind:"Type variable is already in use"
                ~inst:(TCName.as_error_string id)
                (ER.get_loc (get_rep tvar)))
         else
+        *)
           let%bind ((_, (bt, _)) as typed_b) =
             with_extended_env tenv Fn.id [] [ tvar ] (type_expr body)
           in
