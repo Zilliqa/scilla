@@ -29,8 +29,8 @@ release:
 # Build only scilla-checker and scilla-runner
 slim:
 	./scripts/build_deps.sh
-	dune build --profile release src/runners/scilla_runner.exe
-	dune build --profile release src/runners/scilla_checker.exe
+	dune build --profile release src/runners/scilla_runner.exe @install
+	dune build --profile release src/runners/scilla_checker.exe @install
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
