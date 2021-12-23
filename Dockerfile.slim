@@ -1,7 +1,7 @@
 # escape=\
 ARG BASE_IMAGE=ubuntu:18.04
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} as builder
 
 ARG MAJOR_VERSION=0
 
