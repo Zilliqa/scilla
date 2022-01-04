@@ -2,7 +2,7 @@
   "gas_remaining": "4001901",
   "errors": [
     {
-      "error_message": "Not a functional value: (Int64 1).",
+      "error_message": "Trying to apply a non-functional value: (Int64 1)",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

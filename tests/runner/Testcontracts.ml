@@ -503,7 +503,7 @@ let contract_tests env =
                 >::: build_contract_tests env "map_corners_test" fail_code 111
                        113 [];
                 "polynetwork"
-                >::: build_contract_tests env "Polynetwork" fail_code 25 28 [];
+                >::: build_contract_tests env "Polynetwork" fail_code 25 29 [];
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];

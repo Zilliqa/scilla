@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "Type variable 'A is already in use\n",
+      "error_message": "Type variable is already in use: 'A",
       "start_location": {
         "file": "typecheck/bad/type-renaming-really-bad.scilexp",
         "line": 5,

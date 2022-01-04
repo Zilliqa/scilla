@@ -59,7 +59,7 @@ let disambiguate e (std_lib : GlobalSyntax.libtree list) =
     }
   in
   match disambiguate_exp imp_dicts e with
-  | Error _ -> fail0 (sprintf "Failed to disambiguate\n")
+  | Error _ -> fail0 ~kind:"Failed to disambiguate" ?inst:None
   | Ok e -> pure e
 
 let run () =

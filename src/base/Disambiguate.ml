@@ -99,7 +99,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   let check_duplicate_dict_entry nm_dict name_key msg error_loc =
     match List.Assoc.find nm_dict name_key ~equal:String.( = ) with
     | None -> pure () (* Name has not already been defined *)
-    | Some addr -> fail1 (sprintf "%s %s" msg addr) error_loc
+    | Some addr -> fail1 ~kind:(sprintf "%s %s" msg addr) ?inst:None error_loc
 
   (* Name has already been defined *)
 
@@ -144,14 +144,15 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         match
           List.Assoc.find dict (Some ns) ~equal:[%equal: String.t option]
         with
-        | None -> fail1 (sprintf "Unknown namespace %s" ns) error_loc
+        | None -> fail1 ~kind:"Unknown namespace" ~inst:ns error_loc
         | Some nm_dict -> (
             (* Check the names in the namespace *)
             match List.Assoc.find nm_dict n ~equal:String.( = ) with
             | None ->
                 fail1
-                  (sprintf "Name %s is not defined in the namespace %s" n ns)
-                  error_loc
+                  ~kind:
+                    (sprintf "Name %s is not defined in the namespace %s" n ns)
+                  ?inst:None error_loc
             | Some adr ->
                 (* Name defined at adr. *)
                 pure (GlobalName.QualifiedGlobal (adr, n), as_string nm)))
@@ -164,9 +165,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       match get_id id with
       | SimpleLocal n -> pure (GlobalName.QualifiedGlobal (this_address, n), n)
       | QualifiedLocal _ ->
-          fail0
-          @@ sprintf "Illegal variable, type or constructor name %s"
-               (as_error_string (get_id id))
+          fail0 ~kind:"Illegal variable, type or constructor name"
+            ~inst:(as_error_string (get_id id))
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
 
@@ -179,7 +179,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       match get_id id with
       | SimpleLocal n -> pure (GlobalName.SimpleGlobal n, n)
       | QualifiedLocal (_, _) ->
-          fail0 @@ sprintf "Illegal name: %s" (as_error_string (get_id id))
+          fail0 ~kind:"Illegal name" ~inst:(as_error_string (get_id id))
     in
     pure @@ PostDisSyntax.SIdentifier.mk_id dis_name (get_rep id)
 
@@ -340,11 +340,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       (* Closures and type abstractions should not appear in disambiguation phase *)
       | Clo _ ->
           raise
-            (mk_internal_error "Closure literal found in disambiguation phase")
+            (mk_internal_error
+               ~kind:"Closure literal found in disambiguation phase" ?inst:None)
       | TAbs _ ->
           raise
             (mk_internal_error
-               "Type abstraction literal found in disambiguation phase")
+               ~kind:"Type abstraction literal found in disambiguation phase"
+               ?inst:None)
     in
     recurser l
 
@@ -899,7 +901,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             = strip_filename_extension
                 (SR.get_loc (PostDisIdentifier.get_rep extlib.libn.lname)).fname))
     with
-    | None -> fail0 @@ sprintf "Unrecognized library address %s" lib_address
+    | None -> fail0 ~kind:"Unrecognized library address" ~inst:lib_address
     | Some extlib -> pure extlib.libn
 
   let build_dict_for_lib lib_address lib =

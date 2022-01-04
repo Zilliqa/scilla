@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "ADT Int54 not found",
+      "error_message": "ADT not found: Int54",
       "start_location": {
         "file": "typecheck/bad/fun3.scilexp",
         "line": 2,

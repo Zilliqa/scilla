@@ -2,7 +2,7 @@
   "gas_remaining": "7915",
   "errors": [
     {
-      "error_message": "Contract constraint violation.\n",
+      "error_message": "Contract constraint violation",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

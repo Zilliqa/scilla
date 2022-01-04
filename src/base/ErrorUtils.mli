@@ -32,15 +32,24 @@ val dummy_loc : loc
 
 val get_loc_str : loc -> string
 
-type scilla_error = { emsg : string; startl : loc; endl : loc }
+(* `ekind` represents the reason for failure;
+   `einst` can contain the concrete instance that causes the failure *)
+type scilla_error = {
+  ekind : string;
+  einst : string option;
+  startl : loc;
+  endl : loc;
+}
+
+val mk_error_description : scilla_error -> string
 
 val sprint_scilla_error_list : scilla_error list -> string
 
-val mk_error0 : string -> scilla_error list
+val mk_error0 : kind:string -> ?inst:string -> scilla_error list
 
-val mk_error1 : string -> loc -> scilla_error list
+val mk_error1 : kind:string -> ?inst:string -> loc -> scilla_error list
 
-val mk_error2 : string -> loc -> loc -> scilla_error list
+val mk_error2 : kind:string -> ?inst:string -> loc -> loc -> scilla_error list
 
 type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
@@ -59,11 +68,11 @@ val reset_warnings : unit -> unit
 
 exception Invalid_json of scilla_error list
 
-val mk_invalid_json : string -> exn
+val mk_invalid_json : kind:string -> ?inst:string -> exn
 
 exception InternalError of scilla_error list
 
-val mk_internal_error : string -> exn
+val mk_internal_error : kind:string -> ?inst:string -> exn
 
 exception FatalError of string
 

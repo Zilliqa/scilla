@@ -112,7 +112,7 @@ let map_json_input_strings_to_names map =
   List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
       | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
-      | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
+      | _ -> raise (mk_invalid_json ~kind:"invalid name in json input" ~inst:x))
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
@@ -131,8 +131,8 @@ let input_state_json filename =
     | Some v -> v
     | None ->
         raise
-        @@ mk_invalid_json
-             (sprintf "%s field missing" (RunnerName.as_string balance_label))
+        @@ mk_invalid_json ~kind:"Field missing"
+             ~inst:(RunnerName.as_string balance_label)
   in
   let bal_int =
     match bal_lit with
@@ -141,7 +141,9 @@ let input_state_json filename =
         x
     | _ ->
         raise
-          (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
+          (mk_invalid_json
+             ~kind:(RunnerName.as_string balance_label ^ " invalid")
+             ?inst:None)
   in
   let no_bal_states =
     List.filter states ~f:(fun (x, _, _) ->
@@ -163,7 +165,7 @@ let output_message_json gas_remaining mlist =
       | Msg m -> JSON.Message.message_to_json m
       | _ ->
           fatal_error_gas_scale Gas.scale_factor
-            (mk_error0 "Attempt to send non-message construct.")
+            (mk_error0 ~kind:"Attempt to send non-message construct" ?inst:None)
             gas_remaining))
 
 let output_event_json elist =
@@ -179,7 +181,7 @@ let assert_no_address_type_in_type t gas_remaining =
     | PrimType _ -> ()
     | Address _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 "Address type not allowed in json file")
+          (mk_error0 ~kind:"Address type not allowed in json file" ?inst:None)
           gas_remaining
     | MapType (kt, vt) ->
         let () = recurser kt in
@@ -187,7 +189,7 @@ let assert_no_address_type_in_type t gas_remaining =
     | ADT (_, ts) -> List.iter ts ~f:recurser
     | FunType _ | TypeVar _ | PolyFun _ | Unit ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 (sprintf "Illegal type in json file: %s" (pp_typ t)))
+          (mk_error0 ~kind:"Illegal type in json file" ~inst:(pp_typ t))
           gas_remaining
   in
   recurser t
@@ -198,7 +200,7 @@ let assert_no_address_type_in_literal l gas_remaining =
   let open RunnerType in
   let throw_address_type_error () =
     fatal_error_gas_scale Gas.scale_factor
-      (mk_error0 "Address type not allowed in json file")
+      (mk_error0 ~kind:"Address type not allowed in json file" ?inst:None)
       gas_remaining
   in
   let rec recurser l =
@@ -217,8 +219,7 @@ let assert_no_address_type_in_literal l gas_remaining =
     | ADTValue (_, _, ls) -> List.iter ls ~f:recurser
     | Msg _ | Clo _ | TAbs _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf "Unknown literal in json file: %s" (pp_literal l)))
+          (mk_error0 ~kind:"Unknown literal in json file" ~inst:(pp_literal l))
           gas_remaining
   in
   recurser l
@@ -229,7 +230,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
       fatal_error_gas_scale Gas.scale_factor
-        (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
+        (s @ mk_error0 ~kind:"Failed to parse json" ~inst:init_file)
         gas_remaining
   in
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
@@ -241,7 +242,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
            (n, l))
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
-  let emsg = mk_error0 "Scilla version mismatch\n" in
+  let emsg = mk_error0 ~kind:"Scilla version mismatch" ?inst:None in
   let rgas =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
@@ -284,7 +285,7 @@ let perform_dynamic_typechecks checks gas_remaining =
       sprintf "Gas charge type %s must be handled by GasCharge\n"
         (RG.GasGasCharge.pp_gas_charge g)
     in
-    Error (mk_error0 msg)
+    Error (mk_error0 ~kind:msg ?inst:None)
   in
   List.fold_left checks ~init:gas_remaining ~f:(fun gas_remaining (t, caddr) ->
       (* The gas cost is static, but we go through the gas cost mechanism for maintainability *)
@@ -294,7 +295,7 @@ let perform_dynamic_typechecks checks gas_remaining =
         | Ok (GasCharge.GInt cost) -> Uint64.of_int cost
         | Ok (GasCharge.GFloat _) ->
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0 "GasCharge evaluated to float")
+              (mk_error0 ~kind:"GasCharge evaluated to float" ?inst:None)
               gas_remaining
         | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining
       in
@@ -330,7 +331,9 @@ let deploy_library args gas_remaining =
               args.input_init
           in
           plog msg;
-          fatal_error_gas_scale Gas.scale_factor (mk_error0 msg) gas_remaining
+          fatal_error_gas_scale Gas.scale_factor
+            (mk_error0 ~kind:msg ?inst:None)
+            gas_remaining
       | Some this_address ->
           let elibs =
             List.map
@@ -390,15 +393,15 @@ let run_with_args args =
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf "Ran out of gas when parsing contract/init files.\n"))
+          (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+             ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
     else
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 (sprintf "Ran out of gas when parsing message.\n"))
+          (mk_error0 ~kind:"Ran out of gas when parsing message" ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
   in
@@ -435,8 +438,8 @@ let run_with_args args =
             in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0
-                 (sprintf "Ran out of gas when parsing contract/init files.\n"))
+              (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+                 ?inst:None)
               gas_remaining
         | Some this_address ->
             let elibs =
@@ -521,9 +524,8 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                          @ mk_error0 ~kind:"Failed to parse json"
+                              ~inst:args.input_state)
                           gas_remaining
                     else field_vals
                   in
@@ -570,9 +572,8 @@ let run_with_args args =
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
                       (s
-                      @ mk_error0
-                          (sprintf "Failed to parse json %s:\n"
-                             args.input_message))
+                      @ mk_error0 ~kind:"Failed to parse json"
+                          ~inst:args.input_message)
                       gas_remaining
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
@@ -609,8 +610,10 @@ let run_with_args args =
                         fatal_error_gas_scale Gas.scale_factor
                           (s
                           @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_blockchain))
+                              ~kind:
+                                (sprintf "Failed to parse json %s:\n"
+                                   args.input_blockchain)
+                              ?inst:None)
                           gas_remaining
                     in
                     (* Retrieve state variables *)
@@ -619,9 +622,8 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                          @ mk_error0 ~kind:"Failed to parse json"
+                              ~inst:args.input_state)
                           gas_remaining
                     in
                     let field_vals, _ignore_gas_remaining =
@@ -690,7 +692,9 @@ let run_with_args args =
                     | Ok fv, Ok () -> fv
                     | _ ->
                         fatal_error_gas_scale Gas.scale_factor
-                          (mk_error0 "Error finalizing state from StateService")
+                          (mk_error0
+                             ~kind:"Error finalizing state from StateService"
+                             ?inst:None)
                           gas
                 in
 

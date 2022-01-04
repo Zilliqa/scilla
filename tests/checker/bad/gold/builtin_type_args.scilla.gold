@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type error: cannot apply \"add\" built-in to argument(s) of type(s) {[Uint128]} [Uint128; Uint128].",
+        "Type error: cannot apply \"add\" built-in to argument(s) of type(s): {[Uint128]} [Uint128; Uint128]",
       "start_location": {
         "file": "checker/bad/builtin_type_args.scilla",
         "line": 10,

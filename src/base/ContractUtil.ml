@@ -61,16 +61,17 @@ module MessagePayload = struct
   let get_value_for_entry lab f es =
     match List.find es ~f:(fun (x, _, _) -> String.(x = lab)) with
     | None ->
-        fail0
-        @@ sprintf "No field \"%s\" in message [%s]." lab
-             (pp_typ_literal_map es)
+        fail0 ~kind:"Missing field in message"
+          ~inst:
+            (sprintf "No field \"%s\" in message [%s]." lab
+               (pp_typ_literal_map es))
     | Some (_, _, p) ->
         f p
         |> Option.value
              ~default:
                (fail0
-               @@ sprintf "Wrong value of the entry \"%s\": %s." lab
-                    (pp_literal p))
+                  ~kind:(sprintf "Wrong value of the entry \"%s\"" lab)
+                  ~inst:(pp_literal p))
 
   let get_tag =
     get_value_for_entry tag_label (function
@@ -96,14 +97,12 @@ module MessagePayload = struct
             if Uint128.(compare i zero) >= 0 then Some (pure i)
             else
               Some
-                (fail0
-                @@ sprintf "Amount should be non-negative: %s"
-                     (Uint128.to_string i))
+                (fail0 ~kind:"Amount should be non-negative"
+                   ~inst:(Uint128.to_string i))
           with Failure _ ->
             Some
-              (fail0
-              @@ sprintf "Could not convert string %s to Stdint.Uint128."
-                   (Uint128.to_string i)))
+              (fail0 ~kind:"Could not convert string to Stdint.Uint128"
+                 ~inst:(Uint128.to_string i)))
       | _ -> None)
 
   let get_other_entries es =

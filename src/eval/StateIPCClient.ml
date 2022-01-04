@@ -42,16 +42,20 @@ let translate_res res =
   match res |> IDL.T.get |> M.run with
   | Error (e : RPCError.err_t) ->
       fail0
-        (Printf.sprintf
-           "StateIPCClient: Error in IPC access: (code:%d, message:%s)." e.code
-           e.message)
+        ~kind:
+          (Printf.sprintf
+             "StateIPCClient: Error in IPC access: (code:%d, message:%s)."
+             e.code e.message)
+        ?inst:None
   | Ok res' -> pure res'
 
 let ipcclient_exn_wrapper thunk =
   try thunk () with
   | Unix.Unix_error (_, s1, s2) ->
-      fail0 ("StateIPCClient: Unix error: " ^ s1 ^ s2)
-  | _ -> fail0 "StateIPCClient: Unexpected error making JSON-RPC call"
+      fail0 ~kind:("StateIPCClient: Unix error: " ^ s1 ^ s2) ?inst:None
+  | _ ->
+      fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call"
+        ?inst:None
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
@@ -79,7 +83,9 @@ let deserialize_literal s tp =
     fail
       (s
       @ mk_error0
-          "StateIPCClient: Error deserializing literal fetched from IPC call")
+          ~kind:
+            "StateIPCClient: Error deserializing literal fetched from IPC call"
+          ?inst:None)
 
 (* Map fields are serialized into Ipcmessage_types.MVal
    Other fields are serialized using serialize_literal into bytes/string. *)
@@ -123,28 +129,30 @@ let rec deserialize_value value tp =
           pure (IPCCLiteral.Map ((kt, vt), mlit))
       | _ ->
           fail0
-            "StateIPCClient: Type mismatch deserializing value. Unexpected \
-             protobuf map.")
+            ~kind:
+              "StateIPCClient: Type mismatch deserializing value. Unexpected \
+               protobuf map."
+            ?inst:None)
 
 let encode_serialized_value value =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_val value encoder;
     pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
-  with e -> fail0 (Exn.to_string e)
+  with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 let decode_serialized_value value =
   try
     let decoder = Pbrt.Decoder.of_bytes value in
     pure @@ Ipcmessage_pb.decode_proto_scilla_val decoder
-  with e -> fail0 (Exn.to_string e)
+  with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 let encode_serialized_query query =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_query query encoder;
     pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
-  with e -> fail0 (Exn.to_string e)
+  with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
  * If a map key is not found, then None is returned, otherwise (Some value) is returned. *)
@@ -303,4 +311,4 @@ let fetch_bcinfo ~socket_addr ~query_name ~query_args =
   in
   match res with
   | true, res' -> pure @@ res'
-  | false, _ -> fail0 "Error fetching blockchain info"
+  | false, _ -> fail0 ~kind:"Error fetching blockchain info" ?inst:None

@@ -176,9 +176,14 @@ module TypeUtilities : sig
 
   type typeCheckerErrorType = TypeError | GasError
 
-  val mk_type_error0 : string -> typeCheckerErrorType * scilla_error list
+  val mk_type_error0 :
+    kind:string -> ?inst:string -> typeCheckerErrorType * scilla_error list
 
-  val mk_type_error1 : string -> loc -> typeCheckerErrorType * scilla_error list
+  val mk_type_error1 :
+    kind:string ->
+    ?inst:string ->
+    loc ->
+    typeCheckerErrorType * scilla_error list
 
   val wrap_error_with_errortype :
     typeCheckerErrorType ->

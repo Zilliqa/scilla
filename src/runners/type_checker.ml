@@ -53,7 +53,7 @@ open TypeCheckerUtil
 (* Check that the expression parses *)
 let check_parsing filename =
   match FEParser.parse_file Parser.Incremental.exp_term filename with
-  | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
+  | Error _ -> fail0 ~kind:"Failed to parse input file" ~inst:filename
   | Ok e ->
       plog
       @@ sprintf "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n"
