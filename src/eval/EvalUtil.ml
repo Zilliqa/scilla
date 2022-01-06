@@ -205,9 +205,10 @@ module Configuration = struct
     | Some v, _ -> pure v
     | _ ->
         fail1 ~kind:"Error loading remote field"
-          ~inst:(Printf.sprintf "%s at address %s"
-             (EvalName.as_error_string (get_id k))
-             (SLiteral.Bystrx.hex_encoding caddr))
+          ~inst:
+            (Printf.sprintf "%s at address %s"
+               (EvalName.as_error_string (get_id k))
+               (SLiteral.Bystrx.hex_encoding caddr))
           (ER.get_loc (get_rep k))
 
   let remote_field_type caddr k =
@@ -367,7 +368,9 @@ module Configuration = struct
               let%bind amount = fromR @@ MessagePayload.get_amount msg in
               pure Uint128.(run_total + amount)
           | _ ->
-              fail0 ~kind:"Literal verified as a message, but is not a message literal"
+              fail0
+                ~kind:
+                  "Literal verified as a message, but is not a message literal"
                 ~inst:(pp_literal msg_lit))
     in
     let old_emitted = conf.emitted in
@@ -376,9 +379,10 @@ module Configuration = struct
     let%bind balance =
       if Uint128.compare old_balance out_funds < 0 then
         fail0 ~kind:"Balance too low for outgoing message"
-          ~inst:(sprintf "Current balance: %s. Required balance: %s"
-             (Uint128.to_string old_balance)
-             (Uint128.to_string out_funds))
+          ~inst:
+            (sprintf "Current balance: %s. Required balance: %s"
+               (Uint128.to_string old_balance)
+               (Uint128.to_string out_funds))
       else pure @@ Uint128.(old_balance - out_funds)
     in
     pure { conf with emitted; balance }
