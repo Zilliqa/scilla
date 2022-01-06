@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7889",
+  "gas_remaining": "7888",
   "_accepted": "false",
   "messages": [
     {
@@ -12,7 +12,7 @@
       ]
     },
     {
-      "_tag": "AcceptAndCheckSenderBalance",
+      "_tag": "AcceptAndCheckSenderBalanceAgainstExpected",
       "_amount": "10",
       "_recipient": "0x3620c286757a29985cee194eb90064270fb65414",
       "params": [

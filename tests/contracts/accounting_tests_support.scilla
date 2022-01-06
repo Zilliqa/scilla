@@ -78,3 +78,9 @@ end
 transition NoAcceptAndCheckSenderBalance(expected_balance : Uint128)
   CheckSenderBalance expected_balance
 end
+
+transition AcceptAndCheckSenderBalanceAgainstExpected(expected_balance : Uint128)
+  CheckSenderBalance expected_balance;
+  accept;
+  CheckSenderBalance expected_balance
+end

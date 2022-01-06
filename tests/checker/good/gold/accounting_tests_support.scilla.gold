@@ -27,6 +27,10 @@
       {
         "vname": "NoAcceptAndCheckSenderBalance",
         "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
+      },
+      {
+        "vname": "AcceptAndCheckSenderBalanceAgainstExpected",
+        "params": [ { "vname": "expected_balance", "type": "Uint128" } ]
       }
     ],
     "procedures": [

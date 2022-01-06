@@ -437,13 +437,13 @@ transition Test_Send_16()
   tmp_expected_balance = builtin sub cur_bal out_amount;
   expected_balance_as_seen_from_support = builtin sub tmp_expected_balance out_amount;
   msg1 = { _recipient : support_contract;
-           _tag : "AcceptAndCheckSenderBalance";
+           _tag : "AcceptAndCheckSenderBalanceAgainstExpected";
            _amount : out_amount;
            expected_balance : expected_balance_as_seen_from_support};
   msgs1 = one_msg msg1;
   send msgs1;
   msg2 = { _recipient : support_contract;
-           _tag : "AcceptAndCheckSenderBalance";
+           _tag : "AcceptAndCheckSenderBalanceAgainstExpected";
            _amount : out_amount;
            expected_balance : expected_balance_as_seen_from_support};
   msgs2 = one_msg msg2;
@@ -471,7 +471,7 @@ transition Test_Send_17()
   msgs1 = one_msg msg1;
   send msgs1;
   msg2 = { _recipient : support_contract;
-           _tag : "AcceptAndCheckSenderBalance";
+           _tag : "AcceptAndCheckSenderBalanceAgainstExpected";
            _amount : out_amount;
            expected_balance : final_expected_balance};
   msgs2 = one_msg msg2;
@@ -493,7 +493,7 @@ transition Test_Send_18()
   final_expected_balance = builtin sub cur_bal out_amount;
   first_expected_balance = builtin sub final_expected_balance out_amount;
   msg1 = { _recipient : support_contract;
-           _tag : "AcceptAndCheckSenderBalance";
+           _tag : "AcceptAndCheckSenderBalanceAgainstExpected";
            _amount : out_amount;
            expected_balance : first_expected_balance};
   msgs1 = one_msg msg1;
