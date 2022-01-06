@@ -226,11 +226,8 @@ struct
           let sloc =
             match lopt with Some l -> ER.get_loc l | None -> dummy_loc
           in
-          fail1
-            (Printf.sprintf
-               "Couldn't resolve the identifier in gas use analysis: \"%s\".\n"
-               id)
-            sloc
+          fail1 ~kind:"Couldn't resolve the identifier in gas use analysis"
+            ~inst:id sloc
 
     (* retain only those entries "k" for which "f k" is true. *)
     let filterS env ~f = filter ~f env
@@ -388,7 +385,8 @@ struct
    *)
   let substitute_actuals f (params, ressize, gup) actuals =
     if List.length params != List.length actuals then
-      fail1 "Number of actual arguments and formal parameters mismatch"
+      fail1 ~kind:"Number of actual arguments and formal parameters mismatch"
+        ?inst:None
         (ER.get_loc (get_rep f))
     else
       (* replace param with actual in sizeref. *)
@@ -471,7 +469,7 @@ struct
           | Base id'' -> pure id''
           (* See TODO in definition of sizeref where SApp should have sizeref instead of ident. *)
           | _ ->
-              fail1 "Functions cannot be wrapped in ADTs"
+              fail1 ~kind:"Functions cannot be wrapped in ADTs" ?inst:None
                 (ER.get_loc (get_rep id)))
       | None -> pure id
     in
@@ -533,7 +531,7 @@ struct
                  | Error s -> raise (Resolv_error s))
         with
         | Resolv_error s -> fail s
-        | Polynomial_error s -> fail0 s
+        | Polynomial_error s -> fail0 ~kind:s ?inst:None
       in
       pol'
     in
@@ -554,7 +552,7 @@ struct
               | Base id'' -> pure id''
               (* See TODO in definition of sizeref where SApp should have guref instead of ident. *)
               | _ ->
-                  fail1 "Functions cannot be wrapped in ADTs"
+                  fail1 ~kind:"Functions cannot be wrapped in ADTs" ?inst:None
                     (ER.get_loc (get_rep id)))
           | None -> pure id
         in
@@ -583,23 +581,27 @@ struct
                | Error s -> raise (Resolv_error s))
       with
       | Resolv_error s -> fail s
-      | Polynomial_error s -> fail0 s
+      | Polynomial_error s -> fail0 ~kind:s ?inst:None
     in
     pol'
 
   let substitute_resolved_actuals_sizeref_list ressize params actuals =
     if List.length params != List.length actuals then
       fail0
-        "Number of actual arguments and formal parameters mismatch in sizeref \
-         substitution."
+        ~kind:
+          "Number of actual arguments and formal parameters mismatch in \
+           sizeref substitution."
+        ?inst:None
     else
       substitute_resolved_actual_sizeref (List.combine params actuals) ressize
 
   let substitute_resolved_actuals_guref_list gup params actuals =
     if List.length params != List.length actuals then
       fail0
-        "Number of actual arguments and formal parameters mismatch in guref \
-         substitution."
+        ~kind:
+          "Number of actual arguments and formal parameters mismatch in guref \
+           substitution."
+        ?inst:None
     else polynomial_replacer (List.combine params actuals) gup
 
   (* Resolve and expand variables and lambdas (whenever possible) in sr and pol. *)
@@ -670,7 +672,8 @@ struct
               (* Solve for "Length()" applications of the fold iterator. *)
               let%bind sr' =
                 if List.length args' <> 2 then
-                  fail0 "Incorrect number of arguments to fold iterator"
+                  fail0 ~kind:"Incorrect number of arguments to fold iterator"
+                    ?inst:None
                 else
                   (* We want the accumulator argument to the fold iterator. *)
                   let accarg =
@@ -697,7 +700,7 @@ struct
                    | Error s -> raise (Resolv_error s))
           with
           | Resolv_error s -> fail s
-          | Polynomial_error s -> fail0 s
+          | Polynomial_error s -> fail0 ~kind:s ?inst:None
         in
         pol'
       in
@@ -741,7 +744,7 @@ struct
                  | Error s -> raise (Resolv_error s))
         with
         | Resolv_error s -> fail s
-        | Polynomial_error s -> fail0 s
+        | Polynomial_error s -> fail0 ~kind:s ?inst:None
       in
       pol'
     in
@@ -781,9 +784,8 @@ struct
         let%bind genv'' = bind_pattern genv' msref arg1 in
         pure genv''
     | Constructor (cname, _) ->
-        fail0
-          (Printf.sprintf "Unsupported constructor %s in gas analysis."
-             (GUAIdentifier.as_error_string cname))
+        fail0 ~kind:"Unsupported constructor in gas analysis"
+          ~inst:(GUAIdentifier.as_error_string cname)
 
   (* built-in op costs are propotional to size of data they operate on. *)
   (* TODO: Have all numbers in one place. Integrate with Gas.ml *)
@@ -808,7 +810,7 @@ struct
 
     match ops with
     | Builtin_eq ->
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           (* TODO: Use max(a, b)? This one is ok for now for a worst case report. *)
           let%bind pn =
@@ -825,28 +827,28 @@ struct
             (*  eq (a, b) = a. *)
             | PrimType Bystr_typ -> pure @@ sp "a"
             | PrimType (Bystrx_typ w) -> pure @@ const_pn w
-            | _ -> fail1 (arg_err ops) opl
+            | _ -> fail1 ~kind:(arg_err ops) ?inst:None opl
           in
           pure ([ si "a"; si "b" ], ressize ops params, pn)
     | Builtin_concat ->
         (* concat(a, b) = a + b *)
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           pure ([ si "a"; si "b" ], ressize ops params, add_pn (sp "a") (sp "b"))
     | Builtin_substr ->
         (* substr(a, o, l) = a *)
-        if List.length params <> 3 then fail1 (arg_err ops) opl
+        if List.length params <> 3 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else pure ([ si "a"; si "o"; si "l" ], ressize ops params, sp "a")
     | Builtin_blt | Builtin_badd ->
         (* blt/badd(a, b) = 32 *)
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else pure ([ si "a"; si "b" ], ressize ops params, const_pn 32)
     | Builtin_to_bystr ->
         (* to_bystr(a) = a *)
-        if List.length params <> 1 then fail1 (arg_err ops) opl
+        if List.length params <> 1 then fail1 ~kind:(arg_err ops) opl
         else pure ([ si "a" ], ressize ops params, sp "a")
     | Builtin_bech32_to_bystr20 | Builtin_bystr20_to_bech32 ->
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           pure
             ( [ si "prefix"; si "addr" ],
@@ -855,12 +857,12 @@ struct
     | Builtin_sha256hash | Builtin_ripemd160hash | Builtin_keccak256hash
     | Builtin_schnorr_get_address ->
         (* hash(a) = a * 15. TODO: Support functions in polynomial. *)
-        if List.length params <> 1 then fail1 (arg_err ops) opl
+        if List.length params <> 1 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else pure ([ si "a" ], ressize ops params, mul_pn (sp "a") (const_pn 15))
     | Builtin_schnorr_verify ->
         (* sign(m) = (m * 15) + 250 *)
         (* TODO: Support functions in polynomial. *)
-        if List.length params <> 3 then fail1 (arg_err ops) opl
+        if List.length params <> 3 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           pure
             ( [ si "a"; si "m"; si "b" ],
@@ -868,11 +870,11 @@ struct
               add_pn (mul_pn (sp "m") (const_pn 15)) (const_pn 250) )
     | Builtin_contains | Builtin_get ->
         (* contains/get(m, key) = 1 *)
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else pure ([ si "m"; si "key" ], ressize ops params, const_pn 1)
     | Builtin_put ->
         (* put(m, key, value) = 1 + Length (m) *)
-        if List.length params <> 3 then fail1 (arg_err ops) opl
+        if List.length params <> 3 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure
@@ -881,14 +883,14 @@ struct
               add_pn pol (const_pn 1) )
     | Builtin_remove ->
         (* remove(m, key) = 1 + Length (m) *)
-        if List.length params <> 2 then fail1 (arg_err ops) opl
+        if List.length params <> 2 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure
             ([ si "m"; si "key" ], ressize ops params, add_pn pol (const_pn 1))
     | Builtin_to_list | Builtin_size ->
         (* 1 + length (m) *)
-        if List.length params <> 1 then fail1 (arg_err ops) opl
+        if List.length params <> 1 then fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           let pol = single_simple_pn (SizeOf (Length (Base (si "m")))) in
           pure ([ si "m" ], ressize ops params, add_pn pol (const_pn 1))
@@ -897,7 +899,7 @@ struct
     | Builtin_to_int256 | Builtin_to_uint32 | Builtin_to_uint64
     | Builtin_to_uint128 | Builtin_to_uint256 ->
         if List.length params <> 2 && List.length params <> 1 then
-          fail1 (arg_err ops) opl
+          fail1 ~kind:(arg_err ops) ?inst:None opl
         else
           let base =
             match ops with
@@ -918,7 +920,7 @@ struct
               | Some 32 | Some 64 -> pure base
               | Some 128 -> pure @@ (base * 2)
               | Some 256 -> pure @@ (base * 4)
-              | _ -> fail1 (arg_err ops) opl
+              | _ -> fail1 ~kind:(arg_err ops) ?inst:None opl
           in
           let sig_args =
             match ops with
@@ -928,7 +930,7 @@ struct
             | _ -> [ si "a" ]
           in
           pure (sig_args, ressize ops params, const_pn c)
-    | _ -> fail1 ("Unknown builtin " ^ pp_builtin ops) opl
+    | _ -> fail1 ~kind:"Unknown builtin" ~inst:(pp_builtin ops) opl
 
   (* Return gas use and result sizeref polynomials of evaluating an expression. *)
   let rec gua_expr genv (erep : expr_annot) =
@@ -1045,10 +1047,8 @@ struct
                      (add_pn (sizeref_to_pol compsize0)
                         (sizeref_to_pol compsize1))
           else
-            fail1
-              (Printf.sprintf "Unsupported constructor %s in gas analysis."
-                 (as_error_string cname))
-              (ER.get_loc rep)
+            fail1 ~kind:"Unsupported constructor in gas analysis"
+              ~inst:(as_error_string cname) (ER.get_loc rep)
         in
         pure ([], ressize, cc)
     | MatchExpr (x, clauses) ->
@@ -1079,8 +1079,7 @@ struct
           let%bind args, bsize, bgu = gua_expr genv' branch in
           pure (args, bsize, add_pn bgu cc)
     | Fixpoint (f, _, _) ->
-        fail1
-          (Printf.sprintf "Fixpoint %s not supported." (as_error_string f))
+        fail1 ~kind:"Fixpoint not supported" ~inst:(as_error_string f)
           (ER.get_loc (get_rep f))
     | TFun (_, body) ->
         (* Nothing to do except analyzing the body. *)
@@ -1108,7 +1107,8 @@ struct
         in
         pure ([], SPol splist, cc)
     | GasExpr _ ->
-        fail0 "GasUseAnalysis: AST has explicit charges, not supported."
+        fail0 ~kind:"GasUseAnalysis: AST has explicit charges, not supported."
+          ?inst:None
 
   (* Hardcode signature for folds. *)
   let analyze_folds genv =
@@ -1227,7 +1227,7 @@ struct
             in
             let gupol' = add_pn gupol (single_simple_pn (SizeOf s)) in
             gua_stmt genv gupol' sts
-        | _ -> fail1 "Unsupported statement" (SR.get_loc sloc))
+        | _ -> fail1 ~kind:"Unsupported statement" ?inst:None (SR.get_loc sloc))
 
   (* Bind identifiers to just sizeref wrappers of themselves. *)
   let identity_bind_ident_list genv idlist =

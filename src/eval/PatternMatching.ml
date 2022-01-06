@@ -38,10 +38,11 @@ let rec match_with_pattern v p =
       in
       (* Check that the pattern is well-formed *)
       if ctr.arity <> List.length ps then
-        fail0
-        @@ sprintf "Constructor %s requires %d parameters, but %d are provided."
-             (EvalName.as_error_string ctr.cname)
-             ctr.arity (List.length ps)
+        fail0 ~kind:"Pattern matching arity mismatch for constructor"
+          ~inst:
+            (sprintf "%s requires %d parameters, but %d are provided"
+               (EvalName.as_error_string ctr.cname)
+               ctr.arity (List.length ps))
       else
         (* Pattern is well-formed, processing the value *)
         (* In this branch ctr.arity = List.length ps *)
@@ -59,7 +60,7 @@ let rec match_with_pattern v p =
             (* We will need to catch this statically. *)
             pure @@ List.concat res_list
         | _ ->
-            fail0
-            @@ sprintf "Cannot match value %s againts pattern %s."
-                 (Env.pp_value v)
-                 (sexp_of_pattern p |> Sexplib.Sexp.to_string))
+            fail0 ~kind:"Cannot match value againts pattern"
+              ~inst:
+                (sprintf "%s does not match pattern %s" (Env.pp_value v)
+                   (sexp_of_pattern p |> Sexplib.Sexp.to_string)))

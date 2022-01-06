@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: Bool expected, but Uint128 provided.",
+        "Type unassignable: Bool expected, but Uint128 provided",
       "start_location": {
         "file": "checker/bad/constraint_type_illegal.scilla",
         "line": 9,

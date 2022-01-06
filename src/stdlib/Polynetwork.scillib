@@ -580,15 +580,15 @@ let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
     in
     let mapper = @list_map Signature ByStr20 in
     let signers = mapper mapf siglist in
-    (* Now check that at least "m" signers are in keepers list. *)
+    (* Now check that at least "m" keepers have signed. *)
     let eqquer = fun (a : ByStr20) => fun (b : ByStr20) => builtin eq a b in
     let memmer = @list_mem ByStr20 in
     let folder = @list_foldl ByStr20 Uint32 in
     let foldf =
       fun (n : Uint32) =>
-      fun (s : ByStr20) =>
-        let is_s_in_keepers = memmer eqquer s keepers in
-        match is_s_in_keepers with
+      fun (k : ByStr20) =>
+        let is_k_in_signers = memmer eqquer k signers in
+        match is_k_in_signers with
         | True =>
           let one = Uint32 1 in
           builtin add n one
@@ -596,7 +596,7 @@ let verifySig : ByStr -> List Signature -> List ByStr20 -> Uint32 -> Bool =
           n
         end
      in
-     let n = folder foldf zero_uint32 signers in
+     let n = folder foldf zero_uint32 keepers in
      let is_not_sufficient = builtin lt n m in
      negb is_not_sufficient
 

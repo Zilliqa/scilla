@@ -224,7 +224,7 @@ let check_version vernum =
       sprintf "Scilla version mismatch. Expected %d vs Contract %d\n" mver
         vernum
     in
-    fatal_error (mk_error0 emsg)
+    fatal_error (mk_error0 ~kind:emsg ?inst:None)
 
 let wrap_error_with_gas gas res =
   match res with Ok r -> Ok r | Error e -> Error (e, gas)
@@ -422,4 +422,4 @@ let run args ~exe_name =
   else if check_extension cli.input_file file_extn_contract then
     (* Check contract modules. *)
     check_cmodule cli
-  else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))
+  else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)

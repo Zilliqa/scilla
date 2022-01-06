@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "The balance (0) is too low to transfer all the funds in the messages (10)",
+        "Balance too low for outgoing message: Current balance: 0. Required balance: 10",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

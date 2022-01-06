@@ -3,13 +3,13 @@
   "errors": [
     {
       "error_message":
-        "ADT type Direction does not match constructor ShogiLib.Free",
+        "ADT type does not match constructor: Direction does not match constructor ShogiLib.Free",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Failed to parse json tests/runner/shogi/message_6.json:\n",
+        "Failed to parse json: tests/runner/shogi/message_6.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

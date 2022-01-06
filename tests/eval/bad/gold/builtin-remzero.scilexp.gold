@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Cannot apply built-in Int.rem: Division by zero error occurred to a list of arguments:[  (Int32 99999),\n  (Int32 0)].",
+        "Cannot apply built-in Int.rem: Division by zero error occurred to a list of arguments: [  (Int32 99999),\n  (Int32 0)]",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

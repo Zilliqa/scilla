@@ -2,13 +2,13 @@
   "errors": [
     {
       "error_message":
-        "Type mismatch in parsing ADT List. Expected: [ByStr20] vs Observed: [ByStr20 with end]",
+        "Type mismatch in parsing ADT: List. Expected: [ByStr20] vs Observed: [ByStr20 with end]",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Unable to parse JSON file tests/runner/address_list_as_cparam/init_illegal_nested_type.json. ",
+        "Unable to parse JSON file: tests/runner/address_list_as_cparam/init_illegal_nested_type.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

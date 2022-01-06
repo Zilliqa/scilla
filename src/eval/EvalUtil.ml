@@ -80,9 +80,8 @@ module Env = struct
     match List.Assoc.find e i ~equal:[%equal: EvalName.t] with
     | Some v -> pure v
     | None ->
-        fail1
-          (sprintf "Identifier \"%s\" is not bound in environment:\n"
-             (EvalName.as_error_string i))
+        fail1 ~kind:"Identifier is not bound in environment"
+          ~inst:(EvalName.as_error_string i)
           (get_rep k)
 end
 
@@ -97,8 +96,8 @@ module BlockchainState = struct
     | Some v -> pure v
     | None ->
         fail0
-        @@ sprintf "No value for key \"%s\" at in the blockchain state:\n%s" k
-             (pp_literal_map e)
+          ~kind:(sprintf "No value for key \"%s\" at in the blockchain state" k)
+          ~inst:(pp_literal_map e)
 end
 
 (**************************************************)
@@ -179,9 +178,8 @@ module Configuration = struct
     match sender with
     | EvalLiteral.ByStrX bs -> pure bs
     | _ ->
-        fail0
-          (sprintf "Incorrect type of _sender in environment: %s"
-             (pp_literal sender))
+        fail0 ~kind:"Incorrect type of _sender in environment"
+          ~inst:(pp_literal sender)
 
   let load st k =
     let i = get_id k in
@@ -194,9 +192,8 @@ module Configuration = struct
       match fval with
       | Some v -> pure v
       | _ ->
-          fail1
-            (Printf.sprintf "Error loading field %s"
-               (EvalName.as_error_string i))
+          fail1 ~kind:"Error loading field"
+            ~inst:(EvalName.as_error_string i)
             (ER.get_loc (get_rep k))
 
   let remote_load caddr k =
@@ -207,8 +204,8 @@ module Configuration = struct
     match fval with
     | Some v, _ -> pure v
     | _ ->
-        fail1
-          (Printf.sprintf "Error loading remote field %s at address %s"
+        fail1 ~kind:"Error loading remote field"
+          ~inst:(Printf.sprintf "%s at address %s"
              (EvalName.as_error_string (get_id k))
              (SLiteral.Bystrx.hex_encoding caddr))
           (ER.get_loc (get_rep k))
@@ -221,10 +218,10 @@ module Configuration = struct
     match fval with
     | _, Some ty -> pure ty
     | _ ->
-        fail0
-          (sprintf "Unable to fetch type for field %s at address %s"
-             (EvalLiteral.Bystrx.hex_encoding caddr)
-             (as_error_string k))
+        fail0 ~kind:"Unable to fetch type for field at address"
+          ~inst:
+            (sprintf "field %s, address %s" (as_error_string k)
+               (EvalLiteral.Bystrx.hex_encoding caddr))
 
   (* Update a map. If "vopt" is None, delete the key, else replace the key value with Some v. *)
   let map_update m klist vopt =
@@ -251,8 +248,8 @@ module Configuration = struct
               pure v_lit
           | None -> pure (build_none_lit vt))
       | None ->
-          fail1
-            (sprintf "Unable to fetch from map field %s" (as_error_string m))
+          fail1 ~kind:"Unable to fetch from map field %s"
+            ~inst:(as_error_string m)
             (ER.get_loc (get_rep m))
     else
       let%bind is_member =
@@ -294,8 +291,10 @@ module Configuration = struct
     match List.zip ks vs with
     | Unequal_lengths ->
         fail0
-          "Attempting to bind different number of keys and values in \
-           environment"
+          ~kind:
+            "Attempting to bind different number of keys and values in \
+             environment"
+          ?inst:None
     | Ok kvs ->
         let filtered_env =
           List.filter e ~f:(fun z ->
@@ -324,7 +323,7 @@ module Configuration = struct
           pure (p, p_rest)
       | _ :: p_rest -> finder p_rest
       | [] ->
-          fail0 @@ sprintf "Procedure %s not found." (as_error_string proc_name)
+          fail0 ~kind:"Procedure not found" ~inst:(as_error_string proc_name)
     in
     finder st.procedures
 
@@ -352,14 +351,11 @@ module Configuration = struct
           pure ()
         else
           fail0
-          @@ sprintf
-               "Message %s is missing a mandatory field or has duplicate \
-                fields."
-               (pp_literal (Msg m))
+            ~kind:"Message is missing a mandatory field or has duplicate fields"
+            ~inst:(pp_literal (Msg m))
     | _ ->
-        fail0
-        @@ sprintf "Literal %s is not a message, cannot be sent."
-             (pp_literal m')
+        fail0 ~kind:"Literal is not a message, cannot be sent"
+          ~inst:(pp_literal m')
 
   let send_messages conf ms =
     let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
@@ -371,23 +367,18 @@ module Configuration = struct
               let%bind amount = fromR @@ MessagePayload.get_amount msg in
               pure Uint128.(run_total + amount)
           | _ ->
-              fail0
-              @@ sprintf
-                   "Literal %s verified as a message, but is not a message \
-                    literal."
-                   (pp_literal msg_lit))
+              fail0 ~kind:"Literal verified as a message, but is not a message literal"
+                ~inst:(pp_literal msg_lit))
     in
     let old_emitted = conf.emitted in
     let emitted = old_emitted @ ls' in
     let old_balance = conf.balance in
     let%bind balance =
       if Uint128.compare old_balance out_funds < 0 then
-        fail0
-        @@ sprintf
-             "The balance (%s) is too low to transfer all the funds in the \
-              messages (%s)"
+        fail0 ~kind:"Balance too low for outgoing message"
+          ~inst:(sprintf "Current balance: %s. Required balance: %s"
              (Uint128.to_string old_balance)
-             (Uint128.to_string out_funds)
+             (Uint128.to_string out_funds))
       else pure @@ Uint128.(old_balance - out_funds)
     in
     pure { conf with emitted; balance }
@@ -409,20 +400,18 @@ module Configuration = struct
         if eventname_found && uniq_entries then pure m'
         else
           fail0
-          @@ sprintf
-               "Event %s is missing a mandatory field or has duplicate fields."
-               (pp_literal (Msg m))
+            ~kind:"Event is missing a mandatory field or has duplicate fields"
+            ~inst:(pp_literal (Msg m))
     | _ ->
-        fail0
-        @@ sprintf "Literal %s is not a valid event argument." (pp_literal m')
+        fail0 ~kind:"Literal is not a valid event argument:"
+          ~inst:(pp_literal m')
 
   let create_event conf l =
     let open EvalLiteral in
     let%bind event =
       match l with
       | Msg _ -> pure @@ l
-      | _ ->
-          fail0 @@ sprintf "Incorrect event parameter(s): %s\n" (pp_literal l)
+      | _ -> fail0 ~kind:"Incorrect event parameter(s)" ~inst:(pp_literal l)
     in
     let%bind event' = validate_event event in
     let old_events = conf.events in
@@ -540,8 +529,8 @@ module EvalTypecheck = struct
     match t with
     | Address fts_opt -> pure fts_opt
     | _ ->
-        fail0
-        @@ sprintf "Unable to perform dynamic typecheck on type %s\n" (pp_typ t)
+        fail0 ~kind:"Unable to perform dynamic typecheck on type"
+          ~inst:(pp_typ t)
 
   let assert_typecheck_remote_field_types ~caddr t =
     let open EvalType in
@@ -551,18 +540,17 @@ module EvalTypecheck = struct
     in
     match tc_res with
     | AddressNotInUse ->
-        fail0
-        @@ sprintf "Address %s not in use."
-             (EvalLiteral.Bystrx.hex_encoding caddr)
+        fail0 ~kind:"Address not in use"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | NoContractAtAddress ->
-        fail0
-        @@ sprintf "No contract found at address %s"
-             (EvalLiteral.Bystrx.hex_encoding caddr)
+        fail0 ~kind:"No contract found at address"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | FieldTypeMismatch ->
-        fail0
-        @@ sprintf "Address %s does not satisfy type %s\n"
-             (EvalLiteral.Bystrx.hex_encoding caddr)
-             (pp_typ t)
+        fail0 ~kind:"Address does not satisfy type"
+          ~inst:
+            (sprintf "address is %s, expected type is %s"
+               (EvalLiteral.Bystrx.hex_encoding caddr)
+               (pp_typ t))
     | Success -> pure ()
 
   let typecheck_remote_field_types ~caddr t =
