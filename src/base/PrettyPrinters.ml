@@ -92,7 +92,8 @@ and literal_to_json lit =
             ("argtypes", `List argtl);
             ("arguments", `List argl);
           ]
-  | _ -> `Null
+  | Msg m -> `Assoc (List.map m ~f:(fun (s, _t, l') -> (s, literal_to_json l')))
+  | Clo _ | TAbs _ -> `Null
 
 let literal_to_jstring ?(pp = false) lit =
   let j = literal_to_json lit in
