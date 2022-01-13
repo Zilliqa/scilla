@@ -123,6 +123,7 @@ let explist =
     "pm3.scilexp";
     "pm_app.scilexp";
     "pm_nesting.scilexp";
+    "pow_stress.scilexp";
     "string1.scilexp";
     "string2.scilexp";
     "times_two.scilexp";
