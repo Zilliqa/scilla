@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type Map (Int32) (ByStr20) cannot be used as procedure parameter",
+        "Type cannot be used as procedure parameter: Map (Int32) (ByStr20)",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 10,
@@ -12,7 +12,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure Proc1 not found.",
+      "error_message": "Procedure not found: Proc1",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 16,
@@ -22,7 +22,7 @@
     },
     {
       "error_message":
-        "Type Pair (Bool) (Map (Int32) (ByStr20)) cannot be used as procedure parameter",
+        "Type cannot be used as procedure parameter: Pair (Bool) (Map (Int32) (ByStr20))",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 20,
@@ -31,7 +31,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure Proc2 not found.",
+      "error_message": "Procedure not found: Proc2",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 28,
@@ -41,7 +41,7 @@
     },
     {
       "error_message":
-        "Type forall 'A. 'A -> Bool cannot be used as procedure parameter",
+        "Type cannot be used as procedure parameter: forall 'A. 'A -> Bool",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 32,
@@ -51,7 +51,7 @@
     },
     {
       "error_message":
-        "Type Bool -> Bool cannot be used as procedure parameter",
+        "Type cannot be used as procedure parameter: Bool -> Bool",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 37,
@@ -60,7 +60,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure Proc4 not found.",
+      "error_message": "Procedure not found: Proc4",
       "start_location": {
         "file": "checker/bad/procedure_map_arg.scilla",
         "line": 43,

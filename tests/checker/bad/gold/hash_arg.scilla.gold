@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s) ['A].",
+        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s): ['A]",
       "start_location": {
         "file": "checker/bad/hash_arg.scilla",
         "line": 9,
@@ -13,7 +13,7 @@
     },
     {
       "error_message":
-        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s) [Uint128 -> Uint128].",
+        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s): [Uint128 -> Uint128]",
       "start_location": {
         "file": "checker/bad/hash_arg.scilla",
         "line": 14,
@@ -23,7 +23,7 @@
     },
     {
       "error_message":
-        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s) [forall 'A. 'A -> 'A].",
+        "Type error: cannot apply \"sha256hash\" built-in to argument(s) of type(s): [forall 'A. 'A -> 'A]",
       "start_location": {
         "file": "checker/bad/hash_arg.scilla",
         "line": 19,

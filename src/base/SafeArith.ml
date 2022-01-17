@@ -52,6 +52,22 @@ module type IntRep = sig
   val max_int : t
 end
 
+(* We use exponentiation by squaring, https://en.wikipedia.org/wiki/Exponentiation_by_squaring
+    to avoid charging linear amount of gas w.r.t. the exponent value.
+    The function is not tail-recursive because we don't expect stack blowups on
+    on the arguments of several hundred bits *)
+let pow mul one a b =
+  let two = Uint32.of_int 2 in
+  let rec pow_aux x n =
+    if Uint32.compare n Uint32.zero = 0 then one
+    else if Uint32.compare n Uint32.one = 0 then x
+    else if Uint32.compare (Uint32.rem n two) Uint32.zero = 0 then
+      (* if the exponent is an even number... *)
+      pow_aux (mul x x) (Uint32.div n two)
+    else mul a (pow_aux (mul x x) (Uint32.div (Uint32.pred n) two))
+  in
+  pow_aux a b
+
 module SafeInt (Unsafe : IntRep) = struct
   let add a b =
     let open Unsafe in
@@ -102,12 +118,7 @@ module SafeInt (Unsafe : IntRep) = struct
   (* Division_by_zero is taken care of by underlying implementation. *)
   let rem = Unsafe.rem
 
-  let pow a b =
-    let rec pow_aux acc b' =
-      if Uint32.compare b' Uint32.zero = 0 then acc
-      else pow_aux (mul a acc) (Uint32.pred b')
-    in
-    pow_aux Unsafe.one b
+  let pow a b = pow mul Unsafe.one a b
 
   let lt a b = Unsafe.compare a b < 0
 end
@@ -138,12 +149,7 @@ module SafeUint (Unsafe : IntRep) = struct
   (* Division_by_zero is taken care of by underlying implementation. *)
   let rem = Unsafe.rem
 
-  let pow a b =
-    let rec pow_aux acc b' =
-      if Uint32.compare b' Uint32.zero = 0 then acc
-      else pow_aux (mul a acc) (Uint32.pred b')
-    in
-    pow_aux Unsafe.one b
+  let pow a b = pow mul Unsafe.one a b
 
   let lt a b = Unsafe.compare a b < 0
 

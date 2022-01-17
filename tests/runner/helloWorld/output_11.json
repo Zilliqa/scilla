@@ -2,13 +2,13 @@
   "gas_remaining": "7973",
   "errors": [
     {
-      "error_message": "_balance field missing",
+      "error_message": "Field missing: _balance",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Failed to parse json tests/runner/helloWorld/state_11.json:\n",
+        "Failed to parse json: tests/runner/helloWorld/state_11.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

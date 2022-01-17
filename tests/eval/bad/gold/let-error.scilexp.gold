@@ -2,7 +2,7 @@
   "gas_remaining": "4001901",
   "errors": [
     {
-      "error_message": "Identifier \"oops\" is not bound in environment:\n",
+      "error_message": "Identifier is not bound in environment: oops",
       "start_location": {
         "file": "eval/bad/let-error.scilexp",
         "line": 4,

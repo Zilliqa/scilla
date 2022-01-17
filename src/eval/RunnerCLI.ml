@@ -234,8 +234,7 @@ let parse args ~exe_name =
               try Stdint.Uint128.of_string i
               with _ ->
                 PrettyPrinters.fatal_error
-                  (ErrorUtils.mk_error0
-                     (Printf.sprintf "Invalid balance %s\n" i))
+                  (ErrorUtils.mk_error0 ~kind:"Invalid balance" ~inst:i)
             in
             v_balance := Some g),
         "Account balance" );

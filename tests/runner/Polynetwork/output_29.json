@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "5709",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Signature verification failed\"))])",
+      "start_location": {
+        "file": "tests/contracts/Polynetwork.scilla",
+        "line": 196,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from verifyHeaderAndExecuteTx",
+      "start_location": {
+        "file": "tests/contracts/Polynetwork.scilla",
+        "line": 134,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

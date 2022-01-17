@@ -2,13 +2,13 @@
   "gas_remaining": "7962",
   "errors": [
     {
-      "error_message": "Invalid Uint128 value -1 in JSON",
+      "error_message": "Invalid value in JSON: -1 of type Uint128",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
       "error_message":
-        "Failed to parse json tests/runner/UintParam/message_1.json:\n",
+        "Failed to parse json: tests/runner/UintParam/message_1.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

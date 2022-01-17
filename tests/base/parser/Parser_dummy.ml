@@ -48,6 +48,6 @@ let run () =
   else if check_extension input_file file_extn_expression then
     (* Check expressions. *)
     raise_if_error @@ parse_expr_from_file input_file
-  else fatal_error (mk_error0 (sprintf "Unknown file extension\n"))
+  else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)
 
 let () = try run () with FatalError msg -> exit_with_error msg

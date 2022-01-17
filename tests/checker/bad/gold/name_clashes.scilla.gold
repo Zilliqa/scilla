@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Identifier Proc1 used more than once\n",
+      "error_message": "Identifier used more than once: Proc1",
       "start_location": {
         "file": "checker/bad/name_clashes.scilla",
         "line": 7,
@@ -11,7 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier Proc2 used more than once\n",
+      "error_message": "Identifier used more than once: Proc2",
       "start_location": {
         "file": "checker/bad/name_clashes.scilla",
         "line": 17,
@@ -20,7 +20,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier Trans1 used more than once\n",
+      "error_message": "Identifier used more than once: Trans1",
       "start_location": {
         "file": "checker/bad/name_clashes.scilla",
         "line": 28,
@@ -29,7 +29,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier Trans2 used more than once\n",
+      "error_message": "Identifier used more than once: Trans2",
       "start_location": {
         "file": "checker/bad/name_clashes.scilla",
         "line": 38,

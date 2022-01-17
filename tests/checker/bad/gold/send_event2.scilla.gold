@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: Message expected, but Event provided.",
+        "Type unassignable: Message expected, but Event provided",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 178,
@@ -23,7 +23,7 @@
     },
     {
       "error_message":
-        "Type unassignable: Event expected, but Message provided.",
+        "Type unassignable: Event expected, but Message provided",
       "start_location": {
         "file": "checker/bad/send_event2.scilla",
         "line": 247,
