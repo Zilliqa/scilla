@@ -1,0 +1,6 @@
+(* this is a performance test introduced to catch performance degradation
+   by observing tests stall for a long time before proceeding to the next test,
+   or even failing with a timeout message *)
+let a = Uint64 1 in
+let b = Uint32 4000000000 in
+builtin pow a b

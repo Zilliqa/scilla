@@ -75,6 +75,8 @@ module Uint256 : sig
   val of_bytes_big_endian : Bytes.t -> int -> t
 
   val of_bytes_little_endian : Bytes.t -> int -> t
+
+  val of_int : int -> t
 end
 
 module Int256 : sig
@@ -133,6 +135,8 @@ module Int256 : sig
   val of_bytes_big_endian : Bytes.t -> int -> t
 
   val of_bytes_little_endian : Bytes.t -> int -> t
+
+  val of_int : int -> t
 end
 
 type int256 = Int256.t

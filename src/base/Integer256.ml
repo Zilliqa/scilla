@@ -314,6 +314,8 @@ module Uint256 = struct
 
   let[@warning "-32"] of_uint128 a =
     { low = Uint128.of_uint128 a; high = Uint128.zero }
+
+  let of_int a = { low = Uint128.of_int a; high = Uint128.zero }
 end
 
 (*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
@@ -431,6 +433,11 @@ module Int256 = struct
   let of_bytes_big_endian buf off = Uint256.of_bytes_big_endian buf off
 
   let of_bytes_little_endian buf off = Uint256.of_bytes_little_endian buf off
+
+  (* Not the most efficient implementation but it gets the job done.
+     I went for this solution because it is correct if Int256.of_string is correct:
+     it's easy to mess up with the fixed-width arithmetic *)
+  let of_int a = of_string (Int.to_string a)
 end
 
 type int256 = Int256.t

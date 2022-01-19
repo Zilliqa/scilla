@@ -501,7 +501,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               pure
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost (base * 5),
-                     GasGasCharge.ValueOf (GI.get_id p) ))
+                     GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id p)) ))
           | _ -> fail0 ~kind:"Gas cost error for built-in pow" ?inst:None)
       | Builtin_isqrt -> (
           match args with
