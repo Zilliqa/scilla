@@ -40,14 +40,14 @@ let build_ipc_addr_thread env test_ctxt start_mock_server =
   else env.ext_ipc_server test_ctxt
 
 let build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path
-    =
+    blockchain_json_path =
   if ipc_mode then
     let balance =
       StateIPCTest.setup_and_initialize ~start_mock_server
-        ~sock_addr:ipc_addr_thread ~state_json_path
+        ~sock_addr:ipc_addr_thread ~state_json_path ~blockchain_json_path
     in
     [ "-ipcaddress"; ipc_addr_thread; "-balance"; balance ]
-  else [ "-istate"; state_json_path ]
+  else [ "-istate"; state_json_path; "-iblockchain"; blockchain_json_path ]
 
 let get_interpreter_output env test_ctxt exit_code output_file s =
   if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
@@ -139,8 +139,6 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
           "-imessage";
           dir ^/ "message_" ^ istr ^. "json";
           "-jsonerrors";
-          "-iblockchain";
-          dir ^/ "blockchain_" ^ istr ^. "json";
           "-pplit";
           Bool.to_string pplit;
         ]
@@ -153,10 +151,11 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
         build_ipc_addr_thread env test_ctxt start_mock_server
       in
       let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
+      let blockchain_json_path = dir ^/ "blockchain_" ^ istr ^. "json" in
       let args_state =
         args_basic
         @ build_state_args ipc_mode start_mock_server ipc_addr_thread
-            state_json_path
+            state_json_path blockchain_json_path
       in
       let args' =
         List.fold_right additional_libs ~init:args_state
@@ -249,8 +248,6 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
       "-jsonerrors";
       "-gaslimit";
       testsuit_gas_limit;
-      "-iblockchain";
-      dir ^/ "blockchain_1" ^. "json";
     ]
   in
   let start_mock_server = do_start_mock_server env test_ctxt in
@@ -259,9 +256,10 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     if ipc_mode then
       (* A state json with _balance is required *)
       let state_json_path = dir ^/ init_name ^ "_state" ^. "json" in
+      let blockchain_json_path = dir ^/ "blockchain_1.json" in
       basic_args
       @ build_state_args ipc_mode start_mock_server ipc_addr_thread
-          state_json_path
+          state_json_path blockchain_json_path
     else basic_args
   in
   (* Use scilla-client instead of scilla-runner when running tests in server-mode *)

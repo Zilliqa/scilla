@@ -127,8 +127,8 @@ let validate_main usage =
     else msg
   in
   let msg =
-    (* input_blockchain.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_blockchain then
+    (* input_blockchain.json is not mandatory, but if provided, should be valid *)
+    if invalid_optional_fname !f_input_blockchain then
       msg ^ "Invalid input blockchain state\n"
     else msg
   in
@@ -144,14 +144,16 @@ let validate_main usage =
     if
       String.(
         !f_input_message <> ""
-        && (!f_input_state <> ""
-            && (!i_ipc_address <> "" || Option.is_some !v_balance)
-           || !f_input_state = ""
-              && (!i_ipc_address = "" || Option.is_none !v_balance)))
+        && ((!f_input_state <> ""
+             && (!i_ipc_address <> "" || Option.is_some !v_balance)
+            || !f_input_state = ""
+               && (!i_ipc_address = "" || Option.is_none !v_balance))
+           || not (Bool.equal (!f_input_blockchain = "") (!f_input_state = ""))
+           ))
     then
       msg
-      ^ "Input message provided, but either none or both of input state / (IPC \
-         address and balance) provided\n"
+      ^ "Input message provided, but either none or both of input state, \
+         blockchain info / (IPC address and balance) provided\n"
     else msg
   in
   (* If reinit is provided, then we can't have a message. *)
@@ -263,7 +265,7 @@ let parse args ~exe_name =
 
   let mandatory_usage =
     "Usage:\n" ^ exe_name ^ " -init init.json [-istate input_state.json]"
-    ^ " -iblockchain input_blockchain.json [-imessage input_message.json]"
+    ^ " [-iblockchain input_blockchain.json] [-imessage input_message.json]"
     ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib"
     ^ " -gaslimit limit" ^ "\n"
   in

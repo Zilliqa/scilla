@@ -239,9 +239,11 @@ let sort_mapkeys goldj outj =
 
 (* Start a mock server (if set) at ~sock_addr and initialize server
  * (external or mock server) state with ~state_json_path. *)
-let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
+let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path
+    ~blockchain_json_path =
   let open ContractUtil in
   let state = json_file_to_state state_json_path in
+  let bcinfo = JSON.BlockChainState.get_json_data blockchain_json_path in
 
   (* Setup a mock server within the testsuite? *)
   if start_mock_server then StateIPCTestServer.start_server ~sock_addr;
@@ -254,6 +256,16 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path =
         else Some (s, t))
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
+
+  (* Update the blockchain info into the IPC server. *)
+  Caml.Hashtbl.iter
+    (fun query_name subm ->
+      Caml.Hashtbl.iter
+        (fun query_args value ->
+          StateIPCTestClient.set_bcinfo ~query_name ~query_args value)
+        subm)
+    bcinfo;
+
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (addr_opt, (fname, tp, value)) ->
       match addr_opt with

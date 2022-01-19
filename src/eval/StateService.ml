@@ -40,6 +40,9 @@ type ss_field = {
   fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
 
+(* The blockchain info is a map from (query_name, query_args) to some info. *)
+type bcinfo_state = (string, (string, string) Caml.Hashtbl.t) Caml.Hashtbl.t
+
 type external_state = { caddr : SSLiteral.Bystrx.t; cstate : ss_field list }
 
 type service_mode =
@@ -49,15 +52,15 @@ type service_mode =
 
 type ss_state =
   | Uninitialized
-  | SS of service_mode * ss_field list * external_state list
+  | SS of service_mode * ss_field list * external_state list * bcinfo_state
 
 module MakeStateService () = struct
   (* Internal state for the state service. *)
   let ss_cur_state = ref Uninitialized
 
   (* Sets up the state service object. Should be called before any queries. *)
-  let initialize ~sm ~fields ~ext_states =
-    ss_cur_state := SS (sm, fields, ext_states)
+  let initialize ~sm ~fields ~ext_states ~bcinfo =
+    ss_cur_state := SS (sm, fields, ext_states, bcinfo)
 
   (* Finalize: no more queries. *)
   let finalize () = pure ()
@@ -65,7 +68,7 @@ module MakeStateService () = struct
   let assert_init () =
     match !ss_cur_state with
     | Uninitialized -> fail0 ~kind:"StateService: Uninitialized" ?inst:None
-    | SS (sm, fields, estates) -> pure (sm, fields, estates)
+    | SS (sm, fields, estates, bcinfo) -> pure (sm, fields, estates, bcinfo)
 
   let field_type fields fname =
     match
@@ -147,7 +150,7 @@ module MakeStateService () = struct
           (ER.get_loc (get_rep fname))
 
   let fetch ~fname ~keys =
-    let%bind sm, fields, _estates = assert_init () in
+    let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr -> (
         let%bind tp = field_type fields fname in
@@ -165,6 +168,27 @@ module MakeStateService () = struct
           | Some _res' -> pure @@ res)
     | Local -> fetch_local ~fname ~keys fields
 
+  let fetch_bcinfo ~query_name ~query_args =
+    let%bind sm, _fields, _estates, bcinfo = assert_init () in
+    match sm with
+    | IPC socket_addr ->
+        StateIPCClient.fetch_bcinfo ~socket_addr ~query_name ~query_args
+    | Local -> (
+        match Caml.Hashtbl.find_opt bcinfo query_name with
+        | Some subm -> (
+            match Caml.Hashtbl.find_opt subm query_args with
+            | Some res -> pure res
+            | None ->
+                fail0
+                  ~kind:
+                    ("fetch_bcinfo: query_args " ^ query_args ^ " for "
+                   ^ query_name ^ " not found")
+                  ?inst:None)
+        | None ->
+            fail0
+              ~kind:("fetch_bcinfo: query_name " ^ query_name ^ " not found")
+              ?inst:None)
+
   (* Common function for external state lookup.
      * If the caddr+fname+keys combination exists:
      *     If ~ignoreval is true: (None, Some type) is returned
@@ -172,7 +196,7 @@ module MakeStateService () = struct
      * Else: (None, None) is returned
   *)
   let external_fetch ~caddr ~fname ~keys ~ignoreval =
-    let%bind sm, _fields, estates = assert_init () in
+    let%bind sm, _fields, estates, _bcinfo = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
     | IPC socket_addr ->
@@ -291,19 +315,19 @@ module MakeStateService () = struct
           (ER.get_loc (get_rep fname))
 
   let update ~fname ~keys ~value =
-    let%bind sm, fields, estates = assert_init () in
+    let%bind sm, fields, estates, bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
         StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
     | Local ->
         let%bind fields' = update_local ~fname ~keys (Some value) fields in
-        let _ = ss_cur_state := SS (sm, fields', estates) in
+        let _ = ss_cur_state := SS (sm, fields', estates, bcinfo) in
         pure ()
 
   (* Is a key in a map. keys must be non-empty. *)
   let is_member ~fname ~keys =
-    let%bind sm, fields, _estates = assert_init () in
+    let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
@@ -315,7 +339,7 @@ module MakeStateService () = struct
 
   (* Remove a key from a map. keys must be non-empty. *)
   let remove ~fname ~keys =
-    let%bind sm, fields, _estates = assert_init () in
+    let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname in
@@ -329,7 +353,7 @@ module MakeStateService () = struct
   let get_full_state () =
     match !ss_cur_state with
     | Uninitialized -> fail0 ~kind:"StateService: Uninitialized" ?inst:None
-    | SS (Local, fl, _estates) ->
+    | SS (Local, fl, _estates, _bcstate) ->
         mapM fl ~f:(fun f ->
             match f.fval with
             | None ->
@@ -339,7 +363,7 @@ module MakeStateService () = struct
                        (SSName.as_error_string f.fname))
                   ?inst:None
             | Some l -> pure (f.fname, f.ftyp, l))
-    | SS (IPC _, fl, _estates) ->
+    | SS (IPC _, fl, _estates, _bcstate) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
               let%bind vopt = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in

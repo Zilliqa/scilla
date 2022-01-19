@@ -25,7 +25,11 @@ module IPCTestType = StateIPCTestClient.Type
 (* Start a mock server (if set) at ~sock_addr and initialize its
  * state with ~state_json_path. *)
 val setup_and_initialize :
-  start_mock_server:bool -> sock_addr:string -> state_json_path:string -> string
+  start_mock_server:bool ->
+  sock_addr:string ->
+  state_json_path:string ->
+  blockchain_json_path:string ->
+  string
 
 (* Get full state, and if a server was started in ~setup_and_initialize, shut it down. *)
 val get_final_finish :

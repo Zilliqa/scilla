@@ -979,7 +979,7 @@ let run_with_args args =
               (* ~ext_states not initialised, since they are not supported anyway *)
               let () =
                 OutputStateService.initialize ~sm ~fields:outputfields
-                  ~ext_states:[]
+                  ~ext_states:[] ~bcinfo:(Caml.Hashtbl.create 4)
               in
               let () =
                 List.iter outputfields ~f:(fun ssf ->

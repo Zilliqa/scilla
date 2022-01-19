@@ -568,32 +568,6 @@ and try_apply_as_procedure conf proc proc_rest actuals =
     }
 
 (*******************************************************)
-(*          BlockchainState initialization             *)
-(*******************************************************)
-
-let check_blockchain_entries entries =
-  let expected = [ (ContractUtil.blocknum_name, ContractUtil.blocknum_type) ] in
-  (* every entry must be expected *)
-  let c1 =
-    List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists expected ~f:(fun (x, xt) ->
-            String.(x = s) && [%equal: EvalType.t] xt t))
-  in
-  (* everything expected must be entered *)
-  (* everything expected must be entered *)
-  let c2 =
-    List.for_all expected ~f:(fun (x, xt) ->
-        List.exists entries ~f:(fun (s, t, _) ->
-            String.(x = s) && [%equal: EvalType.t] xt t))
-  in
-  if c1 && c2 then pure entries
-  else
-    fail0 ~kind:"Mismatch in input blockchain variables"
-      ~inst:
-        (sprintf "expected:\n%s\nprovided:\n%s\n" (pp_str_typ_map expected)
-           (pp_typ_literal_map entries))
-
-(*******************************************************)
 (*              Contract initialization                *)
 (*******************************************************)
 
@@ -806,14 +780,13 @@ let check_contr libs_env cconstraint cfields initargs curargs =
   pure curfield_vals
 
 (* Initialize a module with given arguments and initial balance *)
-let init_module libenv md initargs init_bal bstate =
+let init_module libenv md initargs init_bal =
   let { contr; _ } = md in
   let ({ cparams; cfields; _ } : contract) = contr in
   let%bind initcstate, pending_dyn_checks =
     init_contract libenv cparams cfields initargs init_bal
   in
   (* blockchain input provided is only validated and not used here. *)
-  let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
   pure (contr, cstate, pending_dyn_checks)
 
@@ -944,8 +917,7 @@ Handle message:
 * cstate : ContractState.t - current contract state
 * bstate : (string * type * literal) list - blockchain state
 *)
-let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
-    bstate =
+let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
@@ -966,7 +938,6 @@ let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
       fields;
       balance;
       accepted = false;
-      blockchain_state = List.map bstate ~f:(fun x -> (fst3 x, trd3 x));
       incoming_funds;
       procedures;
       component_stack = [ tname ];
