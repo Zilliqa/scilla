@@ -639,12 +639,22 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.MatchStmt (dis_x, dis_pss), var_dict_acc)
         | ReadFromBC (x, f) ->
+            let disambiguate_bcinfo = function
+              | CurBlockNum -> pure @@ PostDisSyntax.CurBlockNum
+              | Timestamp id ->
+                  let%bind dis_id =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      id
+                  in
+                  pure @@ PostDisSyntax.Timestamp dis_id
+            in
+            let%bind f' = disambiguate_bcinfo f in
             let%bind dis_x = name_def_as_simple_global x in
             (* x is now in scope as a local, so remove from var dictionary *)
             let new_var_dict =
               remove_local_id_from_dict var_dict_acc (as_string x)
             in
-            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f), new_var_dict)
+            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f'), new_var_dict)
         | TypeCast (x, r, t) ->
             let%bind dis_x = name_def_as_simple_global x in
             let%bind dis_r = name_def_as_simple_global r in

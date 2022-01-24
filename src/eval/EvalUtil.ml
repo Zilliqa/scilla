@@ -320,16 +320,32 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let bc_lookup _st k =
+  let bc_lookup st k =
     match k with
-    | b when String.(b = ContractUtil.blocknum_name) ->
+    | CurBlockNum ->
         let%bind bnum_s =
           fromR
           @@ StateService.fetch_bcinfo ~query_name:ContractUtil.blocknum_name
                ~query_args:""
         in
-        pure (EvalLiteral.BNum bnum_s)
-    | _ -> fail0 ~kind:("Unknown blockchain info query: " ^ k) ?inst:None
+        let%bind sbn = fromR @@ Literal.BNumLit.create bnum_s in
+        pure (EvalLiteral.BNum sbn)
+    | Timestamp s ->
+        let%bind bnum =
+          match%bind fromR @@ lookup st s with
+          | BNum bnl -> pure bnl
+          | lit ->
+              fail0 ~kind:"Timestamp argument of incorrect type. Expected BNum."
+                ~inst:(pp_literal lit)
+        in
+        let%bind bnum_s =
+          fromR
+          @@ StateService.fetch_bcinfo ~query_name:ContractUtil.timestamp_name
+               ~query_args:(Literal.BNumLit.get bnum)
+        in
+        pure
+          (EvalLiteral.UintLit
+             (EvalLiteral.Uint256L (Integer256.Uint256.of_string bnum_s)))
 
   let accept_incoming st =
     if st.accepted then (* Do nothing *)

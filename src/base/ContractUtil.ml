@@ -114,6 +114,7 @@ end
 (*****************************************************************)
 
 let blocknum_name = "BLOCKNUMBER"
+let timestamp_name = "TIMESTAMP"
 
 let blocknum_type = CUType.bnum_typ
 

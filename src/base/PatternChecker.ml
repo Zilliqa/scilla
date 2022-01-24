@@ -187,6 +187,11 @@ struct
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))
 
+  let lift_bcinfo = function
+    | CurBlockNum -> CheckedPatternSyntax.CurBlockNum
+    | Timestamp (Ident (s, r)) ->
+        CheckedPatternSyntax.Timestamp (PCIdentifier.mk_id s r)
+
   let rec pm_check_expr erep =
     let e, rep = erep in
     match e with
@@ -269,7 +274,7 @@ struct
               in
               pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
           | ReadFromBC (i, s) ->
-              pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
+              pure @@ (CheckedPatternSyntax.ReadFromBC (i, lift_bcinfo s), rep)
           | TypeCast (x, r, t) ->
               pure @@ (CheckedPatternSyntax.TypeCast (x, r, t), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)

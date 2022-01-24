@@ -242,8 +242,8 @@ end
 (*          Annotated scilla syntax                    *)
 (*******************************************************)
 
-module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
-  module SLiteral = Literal
+module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
+  module SLiteral = Lit
   module SType = SLiteral.LType
   module SIdentifier = SType.TIdentifier
   module SGasCharge = ScillaGasCharge (SIdentifier.Name)
@@ -295,6 +295,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
   (*                   Statements                        *)
   (*******************************************************)
 
+  type bcinfo_query =
+    | CurBlockNum
+    | Timestamp of ER.rep SIdentifier.t
+  [@@deriving sexp]
+
   type stmt_annot = stmt * SR.rep
 
   and stmt =
@@ -326,7 +331,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Literal : ScillaLiteral) = struct
         * ER.rep SIdentifier.t list
         * bool
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
-    | ReadFromBC of ER.rep SIdentifier.t * string
+    | ReadFromBC of ER.rep SIdentifier.t * bcinfo_query
     | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
     | AcceptPayment
     (* forall l p *)

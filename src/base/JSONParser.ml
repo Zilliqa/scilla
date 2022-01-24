@@ -116,7 +116,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
     | PrimType pt -> (
         match pt with
         | String_typ -> fun j -> StringLit (to_string_exn j)
-        | Bnum_typ -> fun j -> BNum (to_string_exn j)
+        | Bnum_typ -> fun j -> BNum (Literal.bnum_create_exn (to_string_exn j))
         | Bystr_typ -> fun j -> ByStr (Bystr.parse_hex (to_string_exn j))
         | Bystrx_typ _ -> fun j -> ByStrX (Bystrx.parse_hex (to_string_exn j))
         | Int_typ Bits32 ->

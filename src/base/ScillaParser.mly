@@ -74,6 +74,15 @@
   let build_bool_literal v loc =
     (Literal (SLiteral.build_bool_lit v), loc)
 
+  let build_bcfetch op args loc =
+    match op with
+    | "BLOCKNUMBER" -> CurBlockNum
+    | "TIMESTAMP" -> (
+      match args with
+      | [ id ] -> Timestamp(id)
+      | _ -> raise (SyntaxError ("TIMESTAMP takes a single blocknumber argument", loc)))
+    | _ -> raise (SyntaxError ("Unknown blockchain fetch operation " ^ op, loc))
+
 %}
 
 (* Identifiers *)
@@ -366,6 +375,9 @@ builtin_args :
 | args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
 
+bcfetch_args :
+| LPAREN; args = nonempty_list(sident); RPAREN { args }
+
 exp_term :
 | e = exp; EOF { e }
 
@@ -381,7 +393,10 @@ stmt:
 | r = remote_fetch_stmt { r }
 | l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
-| l = ID; FETCH; AND; c = CID { (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), c), toLoc $startpos) }
+| l = ID; FETCH; AND; c = CID; args_opt = option(bcfetch_args) { 
+    let bcinfo = build_bcfetch c (Option.value args_opt ~default:[]) (toLoc $startpos) in
+    (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), bcinfo), toLoc $startpos) 
+  }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)

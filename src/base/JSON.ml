@@ -76,6 +76,10 @@ let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
   json_exn_wrapper thunk
 
+let to_assoc_exn j =
+  let thunk () = Basic.Util.to_assoc j in
+  json_exn_wrapper thunk
+
 let build_prim_lit_exn t v =
   let exn () =
     mk_invalid_json ~kind:"Invalid value in JSON"
@@ -524,6 +528,13 @@ module BlockChainState = struct
             Caml.Hashtbl.replace state ContractUtil.blocknum_name
               (let subm = Caml.Hashtbl.create 1 in
                Caml.Hashtbl.add subm "" (to_string_exn value);
+               subm)
+        | "TIMESTAMP" ->
+            let ts = value |> to_assoc_exn in
+            Caml.Hashtbl.replace state ContractUtil.timestamp_name
+              (let subm = Caml.Hashtbl.create (List.length ts) in
+               List.iter ts ~f:(fun (bnum, timestamp) ->
+                   Caml.Hashtbl.add subm bnum (to_string_exn timestamp));
                subm)
         | _ ->
             raise
