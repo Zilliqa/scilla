@@ -344,8 +344,7 @@ module Configuration = struct
                ~query_args:(Literal.BNumLit.get bnum)
         in
         pure
-          (EvalLiteral.UintLit
-             (EvalLiteral.Uint256L (Integer256.Uint256.of_string bnum_s)))
+          (EvalLiteral.UintLit (EvalLiteral.Uint64L (Uint64.of_string bnum_s)))
 
   let accept_incoming st =
     if st.accepted then (* Do nothing *)
