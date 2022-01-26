@@ -491,7 +491,7 @@ let contract_tests env =
                 >::: build_contract_tests env "chain-call-balance-3" succ_code 1
                        1 [];
                 "timestamp"
-                >::: build_contract_tests env "timestamp" succ_code 1 1 [];
+                >::: build_contract_tests env "timestamp" succ_code 1 2 [];
               ];
          "these_tests_must_FAIL"
          >::: [

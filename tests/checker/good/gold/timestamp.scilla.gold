@@ -10,7 +10,7 @@
     "events": [
       {
         "vname": "TS",
-        "params": [ { "vname": "timestamp", "type": "Uint64" } ]
+        "params": [ { "vname": "timestamp", "type": "Option (Uint64)" } ]
       }
     ],
     "ADTs": [

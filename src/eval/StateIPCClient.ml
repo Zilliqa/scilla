@@ -311,4 +311,4 @@ let fetch_bcinfo ~socket_addr ~query_name ~query_args =
   in
   match res with
   | true, res' -> pure @@ res'
-  | false, _ -> fail0 ~kind:"Error fetching blockchain info" ?inst:None
+  | false, _ -> fail0 ~kind:"Error fetching blockchain info" ~inst:query_name

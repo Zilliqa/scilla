@@ -1,6 +1,6 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7966",
+  "gas_remaining": "7967",
   "_accepted": "false",
   "messages": [],
   "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
@@ -12,9 +12,9 @@
           "vname": "timestamp",
           "type": "Option (Uint64)",
           "value": {
-            "constructor": "Some",
+            "constructor": "None",
             "argtypes": [ "Uint64" ],
-            "arguments": [ "12218" ]
+            "arguments": []
           }
         }
       ]

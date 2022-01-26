@@ -804,7 +804,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                              ~lc:(ETR.get_loc (get_rep bn'))
                              ~expected:bnum_typ ~actual:targ
                       in
-                      pure (uint64_typ, TypedSyntax.Timestamp bn')
+                      pure (option_typ uint64_typ, TypedSyntax.Timestamp bn')
                   | _ ->
                       fail
                         (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
