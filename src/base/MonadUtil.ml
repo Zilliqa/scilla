@@ -245,7 +245,7 @@ module EvalMonad = struct
   let fromR r =
     match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
 
-  let out_of_gas_err = mk_error0 ~kind:"Ran out of gas" ?inst:None
+  let out_of_gas_err = mk_error0 ~kind:"Insufficient gas" ?inst:None
 
   (* [Wrappers for Gas Accounting]  *)
   let checkwrap_opR op_thunk cost k remaining_gas =

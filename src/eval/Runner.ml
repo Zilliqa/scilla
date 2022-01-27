@@ -393,7 +393,7 @@ let run_with_args args =
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+          (mk_error0 ~kind:"Insufficient gas to parse contract/init files"
              ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
@@ -401,7 +401,7 @@ let run_with_args args =
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 ~kind:"Ran out of gas when parsing message" ?inst:None)
+          (mk_error0 ~kind:"Insufficient gas to parse message" ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
   in
@@ -438,7 +438,7 @@ let run_with_args args =
             in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+              (mk_error0 ~kind:"Insufficient gas to parse contract/init files"
                  ?inst:None)
               gas_remaining
         | Some this_address ->

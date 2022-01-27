@@ -312,7 +312,7 @@ let rec exp_eval erep env =
   | GasExpr (g, e') ->
       let thunk () = exp_eval e' env in
       let%bind cost = fromR @@ eval_gas_charge env g in
-      let emsg = sprintf "Ran out of gas" in
+      let emsg = sprintf "Insufficient gas" in
       (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
       checkwrap_op thunk (Uint64.of_int cost)
         (mk_error1 ~kind:emsg ?inst:None loc)
