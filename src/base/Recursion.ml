@@ -116,6 +116,10 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     in
     walk p
 
+  let recursion_bcinfo = function
+    | CurBlockNum -> RecursionSyntax.CurBlockNum
+    | Timestamp s -> RecursionSyntax.Timestamp s
+
   let recursion_exp erep =
     let rec walk erep =
       let e, rep = erep in
@@ -203,7 +207,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 pss
             in
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
-        | ReadFromBC (x, f) -> pure @@ RecursionSyntax.ReadFromBC (x, f)
+        | ReadFromBC (x, f) ->
+            pure @@ RecursionSyntax.ReadFromBC (x, recursion_bcinfo f)
         | TypeCast (x, r, t) -> pure @@ RecursionSyntax.TypeCast (x, r, t)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)

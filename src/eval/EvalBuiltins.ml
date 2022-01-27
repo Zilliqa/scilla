@@ -43,7 +43,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     | StringLit s -> s
     | IntLit il -> bstring_from_int_lit il
     | UintLit uil -> bstring_from_uint_lit uil
-    | BNum s -> s
+    | BNum s -> Literal.BNumLit.get s
     | ByStr bs -> Bystr.to_raw_bytes bs
     | ByStrX bs -> Bystrx.to_raw_bytes bs
     | Msg entries ->
@@ -519,25 +519,32 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq _ ls _ =
       match ls with
-      | [ BNum x; BNum y ] -> pure @@ build_bool_lit Core_kernel.String.(x = y)
+      | [ BNum x; BNum y ] ->
+          pure
+          @@ build_bool_lit
+               Core_kernel.String.(
+                 Literal.BNumLit.get x = Literal.BNumLit.get y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt _ ls _ =
       match ls with
       | [ BNum x; BNum y ] ->
           pure
-            (let i1 = big_int_of_string x in
-             let i2 = big_int_of_string y in
+            (let i1 = big_int_of_string (Literal.BNumLit.get x) in
+             let i2 = big_int_of_string (Literal.BNumLit.get y) in
              build_bool_lit (lt_big_int i1 i2))
       | _ -> builtin_fail "BNum.blt" ls
 
     let badd _ ls _ =
       match ls with
       | [ BNum x; UintLit y ] ->
-          let i1 = big_int_of_string x in
+          let i1 = big_int_of_string (Literal.BNumLit.get x) in
           let i2 = big_int_of_string (string_of_uint_lit y) in
           if ge_big_int i2 (big_int_of_int 0) then
-            pure @@ BNum (string_of_big_int (add_big_int i1 i2))
+            let%bind res =
+              Literal.BNumLit.create (string_of_big_int (add_big_int i1 i2))
+            in
+            pure @@ BNum res
           else
             fail0 ~kind:"Cannot add a negative value to a block"
               ~inst:(string_of_uint_lit y)
@@ -546,8 +553,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let bsub _ ls _ =
       match ls with
       | [ BNum x; BNum y ] -> (
-          let i1 = big_int_of_string x in
-          let i2 = big_int_of_string y in
+          let i1 = big_int_of_string (Literal.BNumLit.get x) in
+          let i2 = big_int_of_string (Literal.BNumLit.get y) in
           let d = Big_int.sub_big_int i1 i2 in
           match
             build_prim_literal (Int_typ Bits256) (Big_int.string_of_big_int d)

@@ -136,6 +136,11 @@ struct
     | MLit l -> CFSyntax.MLit l
     | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
 
+  let cf_init_tag_bcinfo p =
+    match p with
+    | CurBlockNum -> CFSyntax.CurBlockNum
+    | Timestamp v -> CFSyntax.Timestamp (add_noinfo_to_ident v)
+
   let rec cf_init_tag_expr erep =
     let e, rep = erep in
     let res_e =
@@ -220,7 +225,8 @@ struct
                 ~f:(fun (p, ss) ->
                   (cf_init_tag_pattern p, List.map ~f:cf_init_tag_stmt ss))
                 pss )
-      | ReadFromBC (x, s) -> CFSyntax.ReadFromBC (add_noinfo_to_ident x, s)
+      | ReadFromBC (x, s) ->
+          CFSyntax.ReadFromBC (add_noinfo_to_ident x, cf_init_tag_bcinfo s)
       | TypeCast (x, r, t) ->
           CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment

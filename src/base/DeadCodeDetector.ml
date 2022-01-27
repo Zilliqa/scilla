@@ -227,10 +227,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               else (
                 warn "Unused remote map get statement to: " x ER.get_loc;
                 (live_vars, adts))
-          | ReadFromBC (x, _) ->
+          | ReadFromBC (x, bf) ->
               if not @@ SCIdentifier.is_mem_id x live_vars then
                 warn "Unused Read From BC statement to: " x ER.get_loc;
-              (live_vars, adts)
+              ( dedup_id_list
+                  (match bf with CurBlockNum -> [] | Timestamp bn -> [ bn ])
+                @ live_vars,
+                adts )
           | Throw topt -> (
               match topt with
               | Some x -> (dedup_id_list (x :: live_vars), adts)

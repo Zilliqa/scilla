@@ -102,17 +102,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   let strip_error_type res =
     match res with Ok (r, g) -> Ok (r, g) | Error ((_, e), g) -> Error (e, g)
 
-  (*****************************************************************)
-  (*               Blockchain component typing                     *)
-  (*****************************************************************)
-
-  let bc_types = [ (blocknum_name, blocknum_type) ]
-
-  let lookup_bc_type x =
-    match List.Assoc.find bc_types x ~equal:String.( = ) with
-    | Some t -> pure t
-    | None -> fail (mk_type_error0 ~kind:"Unknown blockchain field" ~inst:x)
-
   (**************************************************************)
   (*             Auxiliary functions for typing                 *)
   (**************************************************************)
@@ -803,7 +792,23 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    rep )
                  checked_stmts
         | ReadFromBC (x, bf) ->
-            let%bind bt = lookup_bc_type bf in
+            let%bind bt, bf' =
+              match bf with
+              | CurBlockNum -> pure (bnum_typ, TypedSyntax.CurBlockNum)
+              | Timestamp bn -> (
+                  match%bind type_actuals env.pure [ bn ] with
+                  | [ targ ], [ bn' ] ->
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep bn'))
+                             ~expected:bnum_typ ~actual:targ
+                      in
+                      pure (option_typ uint64_typ, TypedSyntax.Timestamp bn')
+                  | _ ->
+                      fail
+                        (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
+            in
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure [ (x, bt) ] []
                 (type_stmts sts get_loc)
@@ -811,7 +816,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.ReadFromBC (typed_x, bf), rep)
+                 (TypedSyntax.ReadFromBC (typed_x, bf'), rep)
                  checked_stmts
         | TypeCast (x, r, t) ->
             (* Only allow casts to address types *)

@@ -67,7 +67,8 @@ and adttyps_to_json tlist =
 and literal_to_json lit =
   let open PPLiteral in
   match lit with
-  | StringLit x | BNum x -> `String x
+  | StringLit x -> `String x
+  | BNum x -> `String (BNumLit.get x)
   | ByStr bs -> `String (Bystr.hex_encoding bs)
   | ByStrX bs -> `String (Bystrx.hex_encoding bs)
   | IntLit x -> `String (string_of_int_lit x)
@@ -223,7 +224,7 @@ let rec pp_literal_simplified l =
       "(Uint"
       ^ Int.to_string (uint_lit_width i)
       ^ " " ^ string_of_uint_lit i ^ ")"
-  | BNum b -> "(BNum " ^ b ^ ")"
+  | BNum b -> "(BNum " ^ BNumLit.get b ^ ")"
   | ByStr bs -> "(ByStr " ^ Bystr.hex_encoding bs ^ ")"
   | ByStrX bsx ->
       "(ByStr"

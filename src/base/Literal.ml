@@ -41,6 +41,29 @@ open ErrorUtils
 open Identifier
 open Type
 
+(* Poor man's dependent type to hold block numbers. *)
+module BNumLit : sig
+  type t [@@deriving sexp]
+
+  val create : string -> (t, scilla_error list) result
+
+  val get : t -> string
+end = struct
+  type t = string [@@deriving sexp]
+
+  let create bn =
+    let re = Str.regexp "[0-9]+$" in
+    if Str.string_match re bn 0 then pure bn
+    else fail0 ~kind:"BNumLit: Constructed failed." ?inst:None
+
+  let get bn = bn
+end
+
+let bnum_create_exn s =
+  match BNumLit.create s with
+  | Ok bn -> bn
+  | Error s -> raise @@ Invalid_argument (ErrorUtils.sprint_scilla_error_list s)
+
 module type ScillaLiteral = sig
   module LType : ScillaType
 
@@ -119,7 +142,7 @@ module type ScillaLiteral = sig
     (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
     | IntLit of int_lit
     | UintLit of uint_lit
-    | BNum of string
+    | BNum of BNumLit.t
     (* Byte string with a statically known length. *)
     | ByStrX of Bystrx.t
     (* Byte string without a statically known length. *)
@@ -342,7 +365,7 @@ module MkLiteral (T : ScillaType) = struct
     (* Cannot have different integer literals here directly as Stdint does not derive sexp. *)
     | IntLit of int_lit
     | UintLit of uint_lit
-    | BNum of string
+    | BNum of BNumLit.t
     (* Byte string with a statically known length. *)
     | ByStrX of Bystrx.t
     (* Byte string without a statically known length. *)
@@ -519,11 +542,10 @@ module MkLiteral (T : ScillaType) = struct
     match pt with
     | Int_typ _ | Uint_typ _ -> build_int pt v
     | String_typ -> Option.some_if (validate_string_literal v) (StringLit v)
-    | Bnum_typ ->
-        Option.some_if
-          (let re = Str.regexp "[0-9]+$" in
-           Str.string_match re v 0)
-          (BNum v)
+    | Bnum_typ -> (
+        match BNumLit.create v with
+        | Ok lit -> Some (BNum lit)
+        | Error _ -> None)
     | Bystr_typ -> Some (ByStr (Bystr.parse_hex v))
     | Bystrx_typ _ -> Some (ByStrX (Bystrx.parse_hex v))
     | _ -> None

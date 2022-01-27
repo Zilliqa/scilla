@@ -100,6 +100,9 @@ module type Syn = sig
   (*                   Statements                        *)
   (*******************************************************)
 
+  type bcinfo_query = CurBlockNum | Timestamp of ParserRep.rep SIdentifier.t
+  [@@deriving sexp]
+
   type stmt_annot = stmt * ParserRep.rep
 
   and stmt =
@@ -131,7 +134,7 @@ module type Syn = sig
         * bool
     | MatchStmt of
         ParserRep.rep SIdentifier.t * (pattern * stmt_annot list) list
-    | ReadFromBC of ParserRep.rep SIdentifier.t * string
+    | ReadFromBC of ParserRep.rep SIdentifier.t * bcinfo_query
     | TypeCast of
         ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t * SType.t
     | AcceptPayment
