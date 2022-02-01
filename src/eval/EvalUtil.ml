@@ -585,10 +585,10 @@ module EvalTypecheck = struct
         if not in_use then pure AddressNotInUse else pure Success
     | LibAddr ->
         let%bind in_use = is_library_addr ~caddr in
-        if not in_use then pure AddressNotInUse else pure Success
+        if not in_use then pure NoLibraryAtAddress else pure Success
     | CodeAddr ->
         let%bind in_use = is_library_or_contract_addr ~caddr in
-        if not in_use then pure AddressNotInUse else pure Success
+        if not in_use then pure NeitherCodeAtAddress else pure Success
     | ContrAddr fts ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in

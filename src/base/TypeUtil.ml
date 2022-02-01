@@ -483,7 +483,7 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let address_field_type f t =
+  let address_field_type loc f t =
     let preknown_field_type =
       if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
         Some ContractUtil.balance_type
@@ -492,9 +492,10 @@ module TypeUtilities = struct
       else None
     in
     let not_declared () =
-      fail0 ~kind:"Field is not declared in address type"
+      fail1 ~kind:"Field is not declared in address type"
         ~inst:
           (sprintf "%s is not declared in %s" (as_error_string f) (pp_typ t))
+        loc
     in
     match t with
     | Address AnyAddr
@@ -514,8 +515,9 @@ module TypeUtilities = struct
         | Some ft -> pure ft
         | None -> not_declared ())
     | _ ->
-        fail0 ~kind:"Invalid field read"
+        fail1 ~kind:"Invalid field read"
           ~inst:(TUIdentifier.as_string f ^ " from " ^ pp_typ t)
+          loc
 
   let pp_typ_list_error ts =
     let tss = List.map ~f:(fun t -> pp_typ_error t) ts in
