@@ -1,13 +1,3 @@
-#@ WARNING:
-#@ The following comment has been copied from "src/base/ParserFaults.messages".
-#@ It may need to be proofread, updated, moved, or removed.
-#@ WARNING:
-#@ The following comment has been copied from "src/base/ParserFaults.messages".
-#@ It may need to be proofread, updated, moved, or removed.
-#@ WARNING:
-#@ The following comment has been copied from "src/base/ParserFaults.messages".
-#@ It may need to be proofread, updated, moved, or removed.
-# 
 # This file is part of scilla.
 # 
 # Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -2322,7 +2312,7 @@ type_term: MAP LPAREN CID TYPE
 ## In state 25, spurious reduction of production scid -> CID
 ##
 
-Ends in an error in state: 97.
+Likely an incorrect map key type: only primitive types are supported.
 
 type_term: MAP LPAREN CID WITH END WITH
 ##
