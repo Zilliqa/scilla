@@ -76,6 +76,8 @@ let equivalent_types =
     (* Addresses *)
     ("ByStr20", "ByStr20");
     ("ByStr20 with end", "ByStr20 with end");
+    ("ByStr20 with library end", "ByStr20 with library end");
+    ("ByStr20 with _codehash end", "ByStr20 with _codehash end");
     ("ByStr20 with contract end", "ByStr20 with contract end");
     ( "ByStr20 with contract field x : Uint32 end",
       "ByStr20 with contract field x : Uint32 end" );
@@ -132,6 +134,10 @@ let assignable_but_not_equivalent_types =
   [
     (* Addresses *)
     ("ByStr20", "ByStr20 with end");
+    ("ByStr20", "ByStr20 with library end");
+    ("ByStr20", "ByStr20 with _codehash end");
+    ("ByStr20 with _codehash end", "ByStr20 with library end");
+    ("ByStr20 with _codehash end", "ByStr20 with contract end");
     ("ByStr20", "ByStr20 with contract end");
     ("ByStr20 with end", "ByStr20 with contract end");
     ("ByStr20 with end", "ByStr20 with contract field x : Uint32 end");
@@ -220,6 +226,7 @@ let not_assignable_in_either_direction_types =
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
+    ("ByStr20 with library end", "ByStr20 with contract end");
     ( "ByStr20 with contract field x : Int32 end",
       "ByStr20 with contract field x : Uint32 end" );
     ( "ByStr20 with contract field x : Int32 end",
