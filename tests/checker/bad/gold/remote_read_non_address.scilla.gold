@@ -2,8 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message":
-        "Attempting to read field from non-address type: ByStr20",
+      "error_message": "Invalid field read: _balance from ByStr20",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

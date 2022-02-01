@@ -109,6 +109,25 @@ module type ScillaType = sig
 
   module IdLoc_Comp : module type of IdLoc_Comp (TIdentifier)
 
+  (* The types of addresses we care about.
+   * Lattice:
+        AnyAddr
+           |
+        CodeAddr
+          / \
+    LibAddr CodeAddr
+   *)
+  type 'a addr_kind = 
+  (* Any address in use. *)
+  | AnyAddr
+  (* Address containing a library or contract. *)
+  | CodeAddr
+  (* Address containing a library. *)
+  | LibAddr
+  (* Address containing a contract. *)
+  | ContrAddr of 'a IdLoc_Comp.Map.t
+  [@@deriving sexp]
+
   type t =
     | PrimType of PrimType.t
     | MapType of t * t
@@ -117,7 +136,7 @@ module type ScillaType = sig
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of t IdLoc_Comp.Map.t option (* Some fts if a contract address, None if any address in use *)
+    | Address of t addr_kind
   [@@deriving sexp]
 
   val pp_typ : t -> string
@@ -197,7 +216,7 @@ module type ScillaType = sig
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
 
-  val address_typ : t IdLoc_Comp.Map.t option -> t
+  val address_typ : t addr_kind -> t
 end
 
 module MkType (I : ScillaIdentifier) = struct
@@ -208,6 +227,25 @@ module MkType (I : ScillaIdentifier) = struct
   (*******************************************************)
   module IdLoc_Comp = IdLoc_Comp (TIdentifier)
 
+  (* The types of addresses we care about.
+   * Lattice:
+        AnyAddr
+           |
+        CodeAddr
+          / \
+    LibAddr CodeAddr
+   *)
+  type 'a addr_kind = 
+  (* Any address in use. *)
+  | AnyAddr
+  (* Address containing a library or contract. *)
+  | CodeAddr
+  (* Address containing a library. *)
+  | LibAddr
+  (* Address containing a contract. *)
+  | ContrAddr of 'a IdLoc_Comp.Map.t
+  [@@deriving sexp]
+
   type t =
     | PrimType of PrimType.t
     | MapType of t * t
@@ -216,7 +254,7 @@ module MkType (I : ScillaIdentifier) = struct
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of t IdLoc_Comp.Map.t option (* Some fts if a contract address, None if any address in use *)
+    | Address of t addr_kind
   [@@deriving sexp]
 
   let pp_typ_helper is_error t =
@@ -234,8 +272,10 @@ module MkType (I : ScillaIdentifier) = struct
       | TypeVar tv -> tv
       | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
       | Unit -> sprintf "()"
-      | Address None -> "ByStr20 with end"
-      | Address (Some fts) ->
+      | Address AnyAddr -> "ByStr20 with end"
+      | Address CodeAddr -> "ByStr20 with * end"
+      | Address LibAddr -> "ByStr20 with library end"
+      | Address (ContrAddr fts) ->
           let elems =
             List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
                 sprintf "field %s : %s"
@@ -276,8 +316,8 @@ module MkType (I : ScillaIdentifier) = struct
       | PolyFun (arg, bt) ->
           let acc' = go bt acc in
           rem acc' arg
-      | Address None -> acc
-      | Address (Some fts) ->
+      | Address AnyAddr | Address LibAddr | Address CodeAddr -> acc
+      | Address (ContrAddr fts) ->
           IdLoc_Comp.Map.fold fts ~init:acc ~f:(fun ~key:_ ~data acc ->
               go data acc)
     in
@@ -312,9 +352,10 @@ module MkType (I : ScillaIdentifier) = struct
     | PolyFun (arg, t) ->
         if String.(tvar = arg) then tm
         else PolyFun (arg, subst_type_in_type tvar tp t)
-    | Address None -> tm
-    | Address (Some fts) ->
-        Address (Some (IdLoc_Comp.Map.map fts ~f:(subst_type_in_type tvar tp)))
+    | Address AnyAddr | Address LibAddr | Address CodeAddr-> tm
+    | Address (ContrAddr fts) ->
+        Address
+          (ContrAddr (IdLoc_Comp.Map.map fts ~f:(subst_type_in_type tvar tp)))
 
   (* note: this is sequential substitution of multiple variables,
             _not_ simultaneous substitution *)
@@ -337,9 +378,10 @@ module MkType (I : ScillaIdentifier) = struct
           let bt1 = subst_type_in_type arg tv_new bt in
           let bt2 = recursor bt1 (update_taken arg' taken) in
           PolyFun (arg', bt2)
-      | Address None -> t
-      | Address (Some fts) ->
-          Address (Some (IdLoc_Comp.Map.map fts ~f:(fun t -> recursor t taken)))
+      | Address AnyAddr | Address LibAddr | Address CodeAddr-> t
+      | Address (ContrAddr fts) ->
+          Address
+            (ContrAddr (IdLoc_Comp.Map.map fts ~f:(fun t -> recursor t taken)))
     in
     recursor
 
@@ -367,8 +409,9 @@ module MkType (I : ScillaIdentifier) = struct
           equiv t1_1 t2_1 && equiv t1_2 t2_2
       | PolyFun (v1, t1''), PolyFun (v2, t2'') ->
           String.equal v1 v2 && equiv t1'' t2''
-      | Address None, Address None -> true
-      | Address (Some fts1), Address (Some fts2) ->
+      | Address AnyAddr, Address AnyAddr | Address LibAddr, Address LibAddr ->
+          true
+      | Address (ContrAddr fts1), Address (ContrAddr fts2) ->
           IdLoc_Comp.Map.equal equiv fts1 fts2
       | _ -> false
     in
@@ -385,10 +428,11 @@ module MkType (I : ScillaIdentifier) = struct
     let from_typ' = canonicalize_tfun actual in
     let rec assignable to_typ from_typ =
       match (to_typ, from_typ) with
-      | Address None, Address _ ->
+      | Address AnyAddr, Address _ ->
           (* Any address is assignable to an address in use *)
           true
-      | Address (Some tfts), Address (Some ffts) ->
+      | Address LibAddr, Address LibAddr -> true
+      | Address (ContrAddr tfts), Address (ContrAddr ffts) ->
           (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
           IdLoc_Comp.Map.for_alli tfts ~f:(fun ~key:tf ~data:tft ->
               match IdLoc_Comp.Map.find ffts tf with

@@ -72,8 +72,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind () = is_adt_in_scope s in
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
-      | Address None -> pure ()
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
@@ -295,8 +295,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           (* Disallow polymorphic definitions for the time being. *)
           fail1 ~kind:"Type variables not allowed in type definitions"
             ?inst:None error_loc
-      | Address None -> pure ()
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t

@@ -156,8 +156,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-      | Address None -> 1
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> 1
+      | Address (ContrAddr fts) ->
           IdLoc_Comp.Map.fold fts ~init:1 ~f:(fun ~key:_ ~data:t acc ->
               acc + type_size t)
     in
@@ -172,8 +172,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | PolyFun (_, _) ->
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
-        | Address None -> 1
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> 1
+        | Address (ContrAddr fts) ->
             max 1
               (IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc ->
                    acc + cost t))
@@ -207,15 +207,15 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
-        | Address None -> pure t
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> pure t
+        | Address (ContrAddr fts) ->
             let%bind fts_res =
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:IdLoc_Comp.Map.empty
                 ~f:(fun acc (key, t) ->
                   let%bind dis_t = recurser t in
                   pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
             in
-            pure (Address (Some fts_res))
+            pure (Address (ContrAddr fts_res))
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
@@ -824,7 +824,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               fromR_TE
               @@ assert_type_assignable
                    ~lc:(ER.get_loc (get_rep r))
-                   ~expected:(address_typ None) ~actual:t
+                   ~expected:(address_typ AnyAddr) ~actual:t
             in
             let%bind r_typ =
               fromR_TE
