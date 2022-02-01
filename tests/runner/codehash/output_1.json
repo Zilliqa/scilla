@@ -6,7 +6,7 @@
   "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
   "events": [
     {
-      "_eventname": "test",
+      "_eventname": "Success",
       "params": [
         {
           "vname": "bar",
