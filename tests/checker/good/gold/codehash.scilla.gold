@@ -1,0 +1,89 @@
+{
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Codehash",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      {
+        "vname": "foo",
+        "params": [
+          { "vname": "addr", "type": "ByStr20 with _codehash end" }
+        ]
+      },
+      {
+        "vname": "foo2",
+        "params": [ { "vname": "addr", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "foo3",
+        "params": [ { "vname": "addr", "type": "ByStr20 with library end" } ]
+      },
+      {
+        "vname": "foo4",
+        "params": [
+          { "vname": "addr", "type": "ByStr20 with contract end" }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [
+      { "vname": "Failure", "params": [] },
+      {
+        "vname": "Success",
+        "params": [ { "vname": "bar", "type": "ByStr32" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "No transition in contract Codehash contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
