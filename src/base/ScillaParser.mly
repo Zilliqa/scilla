@@ -238,7 +238,7 @@ t_map_value_allow_targs :
 address_typ :
 | d = CID; WITH; END;
     { if d = "ByStr20"
-      then Address None
+      then Address AnyAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
@@ -247,7 +247,15 @@ address_typ :
         let fs' = List.fold_left (fun acc (id, t) -> 
           SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
         in
-        Address (Some fs')
+        Address (ContrAddr fs')
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; LIBRARY; END;
+    { if d = "ByStr20"
+      then Address LibAddr
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; c = SPID; END;
+    { if d = "ByStr20" && c = "_codehash"
+      then Address CodeAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | (* Adding this production in preparation for contract parameters *)
   d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;

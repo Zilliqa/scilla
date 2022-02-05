@@ -1,0 +1,14 @@
+[
+  {
+    "vname": "BLOCKNUMBER",
+    "type": "BNum",
+    "value": "100"
+  },
+  {
+    "vname": "TIMESTAMP",
+    "type": "Uint64",
+    "value": {
+      "101": "12218"
+    }
+  }
+]

@@ -52,9 +52,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let address_typecheck_cost t =
     let size =
       match t with
-      | Address (Some fts) ->
-          (* look up _this_address and every listed field *)
-          1 + IdLoc_Comp.Map.length fts
+      | Address t' -> (
+          match t' with
+          | ContrAddr fts ->
+              (* look up _this_address and every listed field *)
+              1 + IdLoc_Comp.Map.length fts
+          | LibAddr | CodeAddr | AnyAddr -> 0)
       | _ -> 0
     in
     let cost = 2 + size (* _balance and _nonce must also be looked up *) in

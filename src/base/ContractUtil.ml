@@ -44,11 +44,11 @@ module MessagePayload = struct
 
   let sender_label = "_sender"
 
-  let sender_type = CUType.address_typ None
+  let sender_type = CUType.address_typ AnyAddr
 
   let origin_label = "_origin"
 
-  let origin_type = CUType.address_typ None
+  let origin_type = CUType.address_typ AnyAddr
 
   let recipient_label = "_recipient"
 
@@ -142,6 +142,10 @@ let scilla_version_label = label_name_of_string "_scilla_version"
 let accepted_label = label_name_of_string "_accepted"
 
 let extlibs_label = label_name_of_string "_extlibs"
+
+let codehash_label = label_name_of_string "_codehash"
+
+let codehash_type = CUType.bystrx_typ 32
 
 let no_store_fields = [ balance_label ]
 

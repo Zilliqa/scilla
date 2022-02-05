@@ -519,6 +519,19 @@ module EvalTypecheck = struct
     in
     pure @@ Option.is_some this_typ_opt
 
+  (* Checks that _codehash is defined *)
+  let is_library_or_contract_addr ~caddr =
+    let this_id = EvalIdentifier.mk_loc_id codehash_label in
+    let%bind _, this_typ_opt =
+      StateService.external_fetch ~caddr ~fname:this_id ~keys:[] ~ignoreval:true
+    in
+    pure @@ Option.is_some this_typ_opt
+
+  let is_library_addr ~caddr =
+    let%bind is_library_or_contract_addr = is_library_or_contract_addr ~caddr in
+    let%bind is_contract_addr = is_contract_addr ~caddr in
+    pure (is_library_or_contract_addr && not is_contract_addr)
+
   (* Checks that balance > 0 || nonce > 0 *)
   let is_user_addr ~caddr =
     (* First check if the address is a user address with balance > 0 || nonce > 0 *)
@@ -561,42 +574,56 @@ module EvalTypecheck = struct
   type evalTCResult =
     | AddressNotInUse
     | NoContractAtAddress
+    | NoLibraryAtAddress
+    | NeitherCodeAtAddress
     | FieldTypeMismatch
     | Success
 
-  let typecheck_fts ~caddr fts_opt =
-    match fts_opt with
-    | None ->
+  let typecheck_addr ~caddr = function
+    | EvalType.AnyAddr ->
         let%bind in_use = is_address_in_use ~caddr in
         if not in_use then pure AddressNotInUse else pure Success
-    | Some fts ->
+    | LibAddr ->
+        let%bind in_use = is_library_addr ~caddr in
+        if not in_use then pure NoLibraryAtAddress else pure Success
+    | CodeAddr ->
+        let%bind in_use = is_library_or_contract_addr ~caddr in
+        if not in_use then pure NeitherCodeAtAddress else pure Success
+    | ContrAddr fts ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in
         if not contract_addr then pure NoContractAtAddress
         else
-          let%bind fts_ok = typecheck_remote_fields ~caddr fts in
+          let%bind fts_ok =
+            typecheck_remote_fields ~caddr
+              (EvalType.IdLoc_Comp.Map.to_alist fts)
+          in
           if not fts_ok then pure FieldTypeMismatch else pure Success
 
-  let get_fts_opt_from_address t =
+  let get_addrkind_from_address t =
     let open EvalType in
     match t with
-    | Address fts_opt -> pure fts_opt
+    | Address a -> pure a
     | _ ->
         fail0 ~kind:"Unable to perform dynamic typecheck on type"
           ~inst:(pp_typ t)
 
   let assert_typecheck_remote_field_types ~caddr t =
     let open EvalType in
-    let%bind fts_opt = get_fts_opt_from_address t in
-    let%bind tc_res =
-      typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt)
-    in
+    let%bind addrkind = get_addrkind_from_address t in
+    let%bind tc_res = typecheck_addr ~caddr addrkind in
     match tc_res with
     | AddressNotInUse ->
         fail0 ~kind:"Address not in use"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | NoContractAtAddress ->
         fail0 ~kind:"No contract found at address"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
+    | NoLibraryAtAddress ->
+        fail0 ~kind:"No library found at address"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
+    | NeitherCodeAtAddress ->
+        fail0 ~kind:"No code (library or contract) found at address"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | FieldTypeMismatch ->
         fail0 ~kind:"Address does not satisfy type"
@@ -607,12 +634,11 @@ module EvalTypecheck = struct
     | Success -> pure ()
 
   let typecheck_remote_field_types ~caddr t =
-    let open EvalType in
-    let%bind fts_opt = get_fts_opt_from_address t in
-    let%bind tc_res =
-      typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt)
-    in
+    let%bind addrkind = get_addrkind_from_address t in
+    let%bind tc_res = typecheck_addr ~caddr addrkind in
     match tc_res with
-    | AddressNotInUse | NoContractAtAddress | FieldTypeMismatch -> pure false
+    | AddressNotInUse | NoContractAtAddress | FieldTypeMismatch
+    | NoLibraryAtAddress | NeitherCodeAtAddress ->
+        pure false
     | Success -> pure true
 end

@@ -156,8 +156,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-      | Address None -> 1
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> 1
+      | Address (ContrAddr fts) ->
           IdLoc_Comp.Map.fold fts ~init:1 ~f:(fun ~key:_ ~data:t acc ->
               acc + type_size t)
     in
@@ -172,8 +172,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | PolyFun (_, _) ->
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
-        | Address None -> 1
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> 1
+        | Address (ContrAddr fts) ->
             max 1
               (IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc ->
                    acc + cost t))
@@ -207,15 +207,15 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
-        | Address None -> pure t
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> pure t
+        | Address (ContrAddr fts) ->
             let%bind fts_res =
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:IdLoc_Comp.Map.empty
                 ~f:(fun acc (key, t) ->
                   let%bind dis_t = recurser t in
                   pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
             in
-            pure (Address (Some fts_res))
+            pure (Address (ContrAddr fts_res))
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
@@ -605,10 +605,13 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     pure (typed_m, typed_keys, res)
 
   let type_remote_map_access env adr m keys =
+    let lc = get_rep adr in
     let%bind adr_type =
-      fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some (get_rep adr))
+      fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some lc)
     in
-    let%bind m_type = fromR_TE @@ address_field_type m (rr_typ adr_type).tp in
+    let%bind m_type =
+      fromR_TE @@ address_field_type (ER.get_loc lc) m (rr_typ adr_type).tp
+    in
     let%bind typed_keys, res = type_map_access_helper env m_type keys in
     let typed_m = add_type_to_ident m (mk_qual_tp m_type) in
     let typed_adr = add_type_to_ident adr (rr_typ adr_type) in
@@ -646,14 +649,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts
         | RemoteLoad (x, adr, f) ->
+            let lc = get_rep adr in
             let%bind pure', adr_type, ident_type =
               let%bind adr_typ =
-                fromR_TE
-                @@ TEnv.resolveT env.pure (get_id adr)
-                     ~lopt:(Some (get_rep adr))
+                fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some lc)
               in
               let%bind fr =
-                fromR_TE @@ address_field_type f (rr_typ adr_typ).tp
+                fromR_TE
+                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp
               in
               pure @@ ((x, fr), rr_typ adr_typ, mk_qual_tp fr)
             in
@@ -824,7 +827,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               fromR_TE
               @@ assert_type_assignable
                    ~lc:(ER.get_loc (get_rep r))
-                   ~expected:(address_typ None) ~actual:t
+                   ~expected:(address_typ AnyAddr) ~actual:t
             in
             let%bind r_typ =
               fromR_TE

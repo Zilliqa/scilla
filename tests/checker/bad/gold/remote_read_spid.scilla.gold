@@ -4,7 +4,11 @@
     {
       "error_message":
         "Field is not declared in address type: _this_address is not declared in ByStr20 with contract field f : Uint128 end",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/remote_read_spid.scilla",
+        "line": 6,
+        "column": 9
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

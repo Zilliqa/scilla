@@ -217,8 +217,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_t = recurse t in
           pure @@ PostDisType.PolyFun (tvar, dis_t)
       | Unit -> pure @@ PostDisType.Unit
-      | Address None -> pure @@ PostDisType.Address None
-      | Address (Some fts) ->
+      | Address AnyAddr -> pure @@ PostDisType.Address AnyAddr
+      | Address CodeAddr -> pure @@ PostDisType.Address CodeAddr
+      | Address LibAddr -> pure @@ PostDisType.Address LibAddr
+      | Address (ContrAddr fts) ->
           let%bind dis_fts =
             foldM (IdLoc_Comp.Map.to_alist fts)
               ~init:PostDisType.IdLoc_Comp.Map.empty ~f:(fun acc (id, t) ->
@@ -227,7 +229,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ PostDisType.IdLoc_Comp.Map.set acc ~key:dis_id ~data:dis_t)
           in
-          pure @@ PostDisType.Address (Some dis_fts)
+          pure @@ PostDisType.Address (ContrAddr dis_fts)
     in
 
     recurse t
