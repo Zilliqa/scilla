@@ -115,7 +115,7 @@ module type ScillaType = sig
            |
         CodeAddr
           / \
-    LibAddr CodeAddr
+    LibAddr ContrAddr
    *)
   type 'a addr_kind =
     (* Any address in use. *)
@@ -233,7 +233,7 @@ module MkType (I : ScillaIdentifier) = struct
            |
         CodeAddr
           / \
-    LibAddr CodeAddr
+    LibAddr ContrAddr
    *)
   type 'a addr_kind =
     (* Any address in use. *)
