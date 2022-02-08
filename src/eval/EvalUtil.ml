@@ -330,6 +330,14 @@ module Configuration = struct
         in
         let%bind sbn = fromR @@ Literal.BNumLit.create bnum_s in
         pure (EvalLiteral.BNum sbn)
+    | ChainID ->
+        let%bind cid_s =
+          fromR
+          @@ StateService.fetch_bcinfo ~query_name:ContractUtil.chainid_name
+               ~query_args:""
+        in
+        pure
+          (EvalLiteral.UintLit (EvalLiteral.Uint32L (Uint32.of_string cid_s)))
     | Timestamp s -> (
         let%bind bnum =
           match%bind fromR @@ lookup st s with

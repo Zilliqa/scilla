@@ -115,6 +115,8 @@ end
 
 let blocknum_name = "BLOCKNUMBER"
 
+let chainid_name = "CHAINID"
+
 let timestamp_name = "TIMESTAMP"
 
 let blocknum_type = CUType.bnum_typ

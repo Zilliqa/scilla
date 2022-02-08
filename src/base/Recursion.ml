@@ -118,6 +118,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_bcinfo = function
     | CurBlockNum -> RecursionSyntax.CurBlockNum
+    | ChainID -> RecursionSyntax.ChainID
     | Timestamp s -> RecursionSyntax.Timestamp s
 
   let recursion_exp erep =
