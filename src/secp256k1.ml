@@ -334,6 +334,8 @@ module Sign = struct
     let buflen = BA.length buf in
     if pos < 0 || pos > buflen - plain_bytes then
       invalid_arg "Sign.read_recoverable_exn: pos < 0 or pos > buflen - 64" ;
+    if recid < 0 || recid > 3 then
+      invalid_arg "Sign.read_recoverable_exn: recid must be 0, 1, 2 or 3" ;
     let signature = BA.create recoverable_bytes in
     if parse_recoverable ctx signature (BA.sub buf pos plain_bytes) recid then (R signature)
     else invalid_arg "Sign.read_recoverable_exn: signature could not be parsed"
