@@ -841,7 +841,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           match Snark.alt_bn128_pairing_product pairs' with
           | None -> pure @@ build_none_lit bool_typ
           | Some b -> pure @@ build_some_lit (build_bool_lit b) bool_typ)
-      | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
+      | _ -> builtin_fail "Crypto.alt_bn128_pairing_product" ls
   end
 
   (***********************************************************)
