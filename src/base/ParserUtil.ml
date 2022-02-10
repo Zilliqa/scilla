@@ -100,7 +100,10 @@ module type Syn = sig
   (*                   Statements                        *)
   (*******************************************************)
 
-  type bcinfo_query = CurBlockNum | Timestamp of ParserRep.rep SIdentifier.t
+  type bcinfo_query =
+    | CurBlockNum
+    | ChainID
+    | Timestamp of ParserRep.rep SIdentifier.t
   [@@deriving sexp]
 
   type stmt_annot = stmt * ParserRep.rep

@@ -798,6 +798,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind bt, bf' =
               match bf with
               | CurBlockNum -> pure (bnum_typ, TypedSyntax.CurBlockNum)
+              | ChainID -> pure (uint32_typ, TypedSyntax.ChainID)
               | Timestamp bn -> (
                   match%bind type_actuals env.pure [ bn ] with
                   | [ targ ], [ bn' ] ->
