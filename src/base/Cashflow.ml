@@ -139,6 +139,7 @@ struct
   let cf_init_tag_bcinfo p =
     match p with
     | CurBlockNum -> CFSyntax.CurBlockNum
+    | ChainID -> CFSyntax.ChainID
     | Timestamp v -> CFSyntax.Timestamp (add_noinfo_to_ident v)
 
   let rec cf_init_tag_expr erep =

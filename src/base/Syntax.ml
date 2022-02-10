@@ -295,7 +295,10 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
   (*                   Statements                        *)
   (*******************************************************)
 
-  type bcinfo_query = CurBlockNum | Timestamp of ER.rep SIdentifier.t
+  type bcinfo_query =
+    | CurBlockNum
+    | ChainID
+    | Timestamp of ER.rep SIdentifier.t
   [@@deriving sexp]
 
   type stmt_annot = stmt * SR.rep

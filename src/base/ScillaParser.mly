@@ -77,6 +77,7 @@
   let build_bcfetch op args loc =
     match op with
     | "BLOCKNUMBER" -> CurBlockNum
+    | "CHAINID" -> ChainID
     | "TIMESTAMP" -> (
       match args with
       | [ id ] -> Timestamp(id)

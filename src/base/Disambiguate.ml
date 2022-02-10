@@ -643,6 +643,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
         | ReadFromBC (x, f) ->
             let disambiguate_bcinfo = function
               | CurBlockNum -> pure @@ PostDisSyntax.CurBlockNum
+              | ChainID -> pure @@ PostDisSyntax.ChainID
               | Timestamp id ->
                   let%bind dis_id =
                     disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)

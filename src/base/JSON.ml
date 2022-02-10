@@ -529,6 +529,11 @@ module BlockChainState = struct
               (let subm = Caml.Hashtbl.create 1 in
                Caml.Hashtbl.add subm "" (to_string_exn value);
                subm)
+        | "CHAINID" ->
+            Caml.Hashtbl.replace state ContractUtil.chainid_name
+              (let subm = Caml.Hashtbl.create 1 in
+               Caml.Hashtbl.add subm "" (to_string_exn value);
+               subm)
         | "TIMESTAMP" ->
             let ts = value |> to_assoc_exn in
             Caml.Hashtbl.replace state ContractUtil.timestamp_name

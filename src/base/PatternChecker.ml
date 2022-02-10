@@ -189,6 +189,7 @@ struct
 
   let lift_bcinfo = function
     | CurBlockNum -> CheckedPatternSyntax.CurBlockNum
+    | ChainID -> CheckedPatternSyntax.ChainID
     | Timestamp (Ident (s, r)) ->
         CheckedPatternSyntax.Timestamp (PCIdentifier.mk_id s r)
 

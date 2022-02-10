@@ -231,7 +231,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               if not @@ SCIdentifier.is_mem_id x live_vars then
                 warn "Unused Read From BC statement to: " x ER.get_loc;
               ( dedup_id_list
-                  (match bf with CurBlockNum -> [] | Timestamp bn -> [ bn ])
+                  (match bf with
+                  | CurBlockNum | ChainID -> []
+                  | Timestamp bn -> [ bn ])
                 @ live_vars,
                 adts )
           | Throw topt -> (

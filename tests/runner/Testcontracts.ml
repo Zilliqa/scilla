@@ -492,6 +492,8 @@ let contract_tests env =
                        1 [];
                 "timestamp"
                 >::: build_contract_tests env "timestamp" succ_code 1 2 [];
+                "chainid"
+                >::: build_contract_tests env "chainid" succ_code 1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [
