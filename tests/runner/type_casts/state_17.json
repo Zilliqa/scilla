@@ -116,7 +116,8 @@
                 { "vname": "_balance", "type": "Uint128", "value": "0" },
                 { "vname": "f", "type": "Uint128", "value": "64" },
                 { "vname": "g", "type": "Bool", "value": { "constructor": "False", "argtypes": [], "arguments": [] } },
-                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" }
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
+                { "vname" : "_codehash", "type" : "ByStr32", "value" : "0x55345678901234567890123456789012345678ff123456789012345678901234" }
             ]
         }
     ]
