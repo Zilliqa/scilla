@@ -1,20 +1,15 @@
 {
-  "scilla_major_version": "0",
-  "gas_remaining": "7941",
-  "_accepted": "false",
-  "messages": [],
-  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
-  "events": [
+  "gas_remaining": "7956",
+  "errors": [
     {
-      "_eventname": "Success",
-      "params": [
-        {
-          "vname": "bar",
-          "type": "ByStr32",
-          "value":
-            "0x55345678901234567890123456789012345678ff123456789012345678901234"
-        }
-      ]
+      "error_message": "Error loading field: _codehash",
+      "start_location": {
+        "file": "tests/contracts/codehash.scilla",
+        "line": 31,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
     }
-  ]
+  ],
+  "warnings": []
 }

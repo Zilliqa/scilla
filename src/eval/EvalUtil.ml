@@ -564,7 +564,7 @@ module EvalTypecheck = struct
     (* True if the address is in use, false otherwise *)
     let%bind user_addr = is_user_addr ~caddr in
     if not user_addr then
-      let%bind contract_addr = is_contract_addr ~caddr in
+      let%bind contract_addr = is_library_or_contract_addr ~caddr in
       pure contract_addr
     else pure true
 
