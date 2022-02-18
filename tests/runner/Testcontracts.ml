@@ -490,6 +490,8 @@ let contract_tests env =
                 "chain-call-balance-3"
                 >::: build_contract_tests env "chain-call-balance-3" succ_code 1
                        1 [];
+                "codehash"
+                >::: build_contract_tests env "codehash" succ_code 1 4 [];
                 "timestamp"
                 >::: build_contract_tests env "timestamp" succ_code 1 2 [];
                 "chainid"
@@ -499,6 +501,8 @@ let contract_tests env =
          >::: [
                 "helloWorld_f"
                 >::: build_contract_tests env "helloWorld" fail_code 5 11 [];
+                "codehash"
+                >::: build_contract_tests env "codehash" fail_code 100 102 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
