@@ -812,7 +812,31 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   | _ ->
                       fail
                         (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
+              | ReplicateContr (addr, iparams) -> (
+                  match%bind type_actuals env.pure [ addr; iparams ] with
+                  | [ targ_addr; targ_iparams ], [ addr'; iparams' ] ->
+                      let contr_typ =
+                        address_typ (ContrAddr IdLoc_Comp.Map.empty)
+                      in
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep addr'))
+                             ~expected:contr_typ ~actual:targ_addr
+                      in
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep iparams'))
+                             ~expected:replicate_contr_typ ~actual:targ_iparams
+                      in
+                      pure
+                        (contr_typ, TypedSyntax.ReplicateContr (addr', iparams'))
+                  | _ ->
+                      fail
+                        (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
             in
+
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure [ (x, bt) ] []
                 (type_stmts sts get_loc)

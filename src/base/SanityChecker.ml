@@ -131,9 +131,11 @@ struct
                  ^ " in Message")
                 ?inst:None eloc
         else if
-          (* It must be an event or an exception. *)
+          (* It must be an event or an exception or a contract replication. *)
           List.exists msg ~f:(fun (s, _) ->
-              String.(s = eventname_label || s = exception_label))
+              String.(
+                s = eventname_label || s = exception_label
+                || s = replicate_contr_label))
         then e
         else e @ mk_error1 ~kind:"Invalid message construct" ?inst:None eloc
       in

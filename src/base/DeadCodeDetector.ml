@@ -233,7 +233,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               ( dedup_id_list
                   (match bf with
                   | CurBlockNum | ChainID -> []
-                  | Timestamp bn -> [ bn ])
+                  | Timestamp bn -> [ bn ]
+                  | ReplicateContr (addr, iparams) -> [ addr; iparams ])
                 @ live_vars,
                 adts )
           | Throw topt -> (

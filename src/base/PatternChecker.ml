@@ -192,6 +192,10 @@ struct
     | ChainID -> CheckedPatternSyntax.ChainID
     | Timestamp (Ident (s, r)) ->
         CheckedPatternSyntax.Timestamp (PCIdentifier.mk_id s r)
+    | ReplicateContr (Ident (s_addr, r_addr), Ident (s_iparams, r_iparams)) ->
+        CheckedPatternSyntax.ReplicateContr
+          ( PCIdentifier.mk_id s_addr r_addr,
+            PCIdentifier.mk_id s_iparams r_iparams )
 
   let rec pm_check_expr erep =
     let e, rep = erep in

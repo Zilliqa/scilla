@@ -1,0 +1,10 @@
+scilla_version 0
+
+contract Foo ()
+
+transition rep (bar : ByStr20 with contract end)
+  foo = { _replicate_contract : "" };
+  foo_addr <-& REPLICATE_CONTRACT (bar, foo);
+  e = { _eventname : "Replicated"; new_addr : foo_addr };
+  event e
+end

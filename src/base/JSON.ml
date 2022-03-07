@@ -511,6 +511,15 @@ module Message = struct
   let message_to_jstring ?(pp = false) message =
     let j = message_to_json message in
     if pp then Basic.pretty_to_string j else Basic.to_string j
+
+  let replicate_contr_to_json m =
+    let m' =
+      List.filter_map m ~f:(fun (f, t, l) ->
+          if String.equal f ContractUtil.MessagePayload.replicate_contr_label
+          then None
+          else Some (f, t, l))
+    in
+    `List (slist_to_json m')
 end
 
 module BlockChainState = struct
@@ -540,6 +549,13 @@ module BlockChainState = struct
               (let subm = Caml.Hashtbl.create (List.length ts) in
                List.iter ts ~f:(fun (bnum, timestamp) ->
                    Caml.Hashtbl.add subm bnum (to_string_exn timestamp));
+               subm)
+        | "REPLICATE_CONTRACT" ->
+            let ts = value |> to_assoc_exn in
+            Caml.Hashtbl.replace state ContractUtil.replicate_contract_name
+              (let subm = Caml.Hashtbl.create (List.length ts) in
+               List.iter ts ~f:(fun (addr, new_addr) ->
+                   Caml.Hashtbl.add subm addr (to_string_exn new_addr));
                subm)
         | _ ->
             raise
