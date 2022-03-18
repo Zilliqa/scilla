@@ -299,6 +299,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | CurBlockNum
     | ChainID
     | Timestamp of ER.rep SIdentifier.t
+    (* REPLICATE_CONTRACT(addr, init_params) *)
+    | ReplicateContr of (ER.rep SIdentifier.t * ER.rep SIdentifier.t)
   [@@deriving sexp]
 
   type stmt_annot = stmt * SR.rep

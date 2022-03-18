@@ -320,7 +320,7 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let bc_lookup st k =
+  let bc_lookup st k sloc =
     match k with
     | CurBlockNum ->
         let%bind bnum_s =
@@ -343,8 +343,8 @@ module Configuration = struct
           match%bind fromR @@ lookup st s with
           | BNum bnl -> pure bnl
           | lit ->
-              fail0 ~kind:"Timestamp argument of incorrect type. Expected BNum."
-                ~inst:(pp_literal lit)
+              fail1 ~kind:"Timestamp argument of incorrect type. Expected BNum."
+                ~inst:(pp_literal lit) sloc
         in
         match
           StateService.fetch_bcinfo ~query_name:ContractUtil.timestamp_name
@@ -357,6 +357,39 @@ module Configuration = struct
                     (EvalLiteral.Uint64L (Uint64.of_string bnum_s)))
                  EvalType.uint64_typ
         | Error _ -> pure @@ EvalLiteral.build_none_lit EvalType.uint64_typ)
+    | ReplicateContr (addr, iparams) -> (
+        let%bind params_j =
+          match%bind fromR @@ lookup st iparams with
+          | Msg m -> pure @@ JSON.Message.replicate_contr_to_json m
+          | lit ->
+              fail1 ~kind:"Expected ReplicateContr object."
+                ~inst:(pp_literal lit) sloc
+        in
+        let%bind addr_j =
+          match%bind fromR @@ lookup st addr with
+          | ByStrX b as b' when EvalLiteral.Bystrx.width b = Type.address_length
+            ->
+              pure @@ PrettyPrinters.literal_to_json b'
+          | lit -> fail0 ~kind:"Expected address object." ~inst:(pp_literal lit)
+        in
+        let ipc_arg = Yojson.to_string (`List [ addr_j; params_j ]) in
+        match
+          StateService.fetch_bcinfo
+            ~query_name:ContractUtil.replicate_contract_name ~query_args:ipc_arg
+        with
+        | Ok new_addr -> (
+            match
+              EvalLiteral.build_prim_literal (Bystrx_typ Type.address_length)
+                new_addr
+            with
+            | Some l -> pure l
+            | None ->
+                fail1 ~kind:"Error parsing new address of replicated contract"
+                  ?inst:None sloc)
+        | Error s ->
+            fail1 ~kind:"Error replicating contract"
+              ~inst:(ErrorUtils.sprint_scilla_error_list s)
+              sloc)
 
   let accept_incoming st =
     if st.accepted then (* Do nothing *)

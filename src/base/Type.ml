@@ -36,6 +36,7 @@ module PrimType = struct
     | Msg_typ
     | Event_typ
     | Exception_typ
+    | ReplicateContr_typ
     | Bystr_typ
     | Bystrx_typ of int
   [@@deriving equal, sexp, compare]
@@ -54,6 +55,7 @@ module PrimType = struct
     | Msg_typ -> Sexp.Atom "Message"
     | Event_typ -> Sexp.Atom "Event"
     | Exception_typ -> Sexp.Atom "Exception"
+    | ReplicateContr_typ -> Sexp.Atom "ReplicateContr"
     | Bystr_typ -> Sexp.Atom "ByStr"
     | Bystrx_typ b -> Sexp.Atom ("ByStr" ^ Int.to_string b)
 
@@ -79,6 +81,7 @@ module PrimType = struct
     | Msg_typ -> "Message"
     | Event_typ -> "Event"
     | Exception_typ -> "Exception"
+    | ReplicateContr_typ -> "ReplicateContr"
     | Bystr_typ -> "ByStr"
     | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 end
@@ -208,6 +211,8 @@ module type ScillaType = sig
   val event_typ : t
 
   val exception_typ : t
+
+  val replicate_contr_typ : t
 
   val bystr_typ : t
 
@@ -504,6 +509,8 @@ module MkType (I : ScillaIdentifier) = struct
   let event_typ = PrimType Event_typ
 
   let exception_typ = PrimType Exception_typ
+
+  let replicate_contr_typ = PrimType ReplicateContr_typ
 
   let bystr_typ = PrimType Bystr_typ
 

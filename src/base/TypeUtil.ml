@@ -464,10 +464,10 @@ module TypeUtilities = struct
     then pure TUType.event_typ
     else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
     then pure TUType.exception_typ
-    else
-      fail1
-        ~kind:"Invalid message construct. Not any of send, event or exception."
-        ?inst:None lc
+    else if
+      List.exists m ~f:(fun (x, _, _) -> String.(replicate_contr_label = x))
+    then pure TUType.replicate_contr_typ
+    else fail1 ~kind:"Invalid message construct." ?inst:None lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =

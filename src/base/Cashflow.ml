@@ -141,6 +141,9 @@ struct
     | CurBlockNum -> CFSyntax.CurBlockNum
     | ChainID -> CFSyntax.ChainID
     | Timestamp v -> CFSyntax.Timestamp (add_noinfo_to_ident v)
+    | ReplicateContr (addr, iparams) ->
+        CFSyntax.ReplicateContr
+          (add_noinfo_to_ident addr, add_noinfo_to_ident iparams)
 
   let rec cf_init_tag_expr erep =
     let e, rep = erep in
