@@ -75,8 +75,8 @@ module TestArith (SmallInt : Int) = struct
   let test_all_pow pow_op =
     let open Base in
     (* for integer `**` power function *)
-    for a_int = 0 to 3 do
-      for b_int = 0 to 4 do
+    for a_int = 0 to 2 do
+      for b_int = 0 to 6 do
         let b32 = Uint32.of_int b_int in
         let actual = SmallInt.to_int (pow_op (SmallInt.of_int a_int) b32) in
         let expected = a_int ** b_int in

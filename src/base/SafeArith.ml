@@ -64,7 +64,7 @@ let pow mul one a b =
     else if Uint32.compare (Uint32.rem n two) Uint32.zero = 0 then
       (* if the exponent is an even number... *)
       pow_aux (mul x x) (Uint32.div n two)
-    else mul a (pow_aux (mul x x) (Uint32.div (Uint32.pred n) two))
+    else mul x (pow_aux (mul x x) (Uint32.div (Uint32.pred n) two))
   in
   pow_aux a b
 
