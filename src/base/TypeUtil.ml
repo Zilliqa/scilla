@@ -661,7 +661,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail1 ~kind:"Checking an empty type list" ?inst:None lc
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not ([%equal: TUType.t] t t')) with
+        match List.find ts' ~f:(fun t' -> not (type_equivalent t t')) with
         | None -> pure ()
         | Some _ ->
             fail1
