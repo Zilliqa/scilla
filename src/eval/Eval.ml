@@ -426,7 +426,7 @@ let rec stmt_eval conf stmts =
               stmt_eval conf' sts
           | _ -> fail0 ~kind:"Expected address to be ByStr20 value" ?inst:None)
       | ReadFromBC (x, bf) ->
-          let%bind l = Configuration.bc_lookup conf bf in
+          let%bind l = Configuration.bc_lookup conf bf sloc in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
       | TypeCast (x, r, t) ->

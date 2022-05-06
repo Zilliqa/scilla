@@ -650,6 +650,16 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                       id
                   in
                   pure @@ PostDisSyntax.Timestamp dis_id
+              | ReplicateContr (addr, iparams) ->
+                  let%bind dis_addr =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      addr
+                  in
+                  let%bind dis_iparams =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      iparams
+                  in
+                  pure @@ PostDisSyntax.ReplicateContr (dis_addr, dis_iparams)
             in
             let%bind f' = disambiguate_bcinfo f in
             let%bind dis_x = name_def_as_simple_global x in

@@ -58,6 +58,8 @@ module MessagePayload = struct
 
   let exception_label = "_exception"
 
+  let replicate_contr_label = "_replicate_contract"
+
   let get_value_for_entry lab f es =
     match List.find es ~f:(fun (x, _, _) -> String.(x = lab)) with
     | None ->
@@ -118,6 +120,8 @@ let blocknum_name = "BLOCKNUMBER"
 let chainid_name = "CHAINID"
 
 let timestamp_name = "TIMESTAMP"
+
+let replicate_contract_name = "REPLICATE_CONTRACT"
 
 let blocknum_type = CUType.bnum_typ
 
