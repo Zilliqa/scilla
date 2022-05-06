@@ -437,6 +437,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "pm2.scilexp";
       "pm3.scilexp";
       "pm4.scilexp";
+      "pm5.scilexp";
       "pair.scilexp";
       "subst.scilexp";
       "nat_to_int.scilexp";
