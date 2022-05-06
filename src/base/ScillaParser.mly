@@ -82,6 +82,10 @@
       match args with
       | [ id ] -> Timestamp(id)
       | _ -> raise (SyntaxError ("TIMESTAMP takes a single blocknumber argument", loc)))
+    | "REPLICATE_CONTRACT" -> (
+      match args with
+      | [ addr; iparams ] -> ReplicateContr(addr, iparams)
+      | _ -> raise (SyntaxError ("Usage: REPLICATE_CONTRACT(addr, iparams)", loc)))
     | _ -> raise (SyntaxError ("Unknown blockchain fetch operation " ^ op, loc))
 
 %}
@@ -385,7 +389,7 @@ builtin_args :
 | LPAREN; RPAREN { [] }
 
 bcfetch_args :
-| LPAREN; args = nonempty_list(sident); RPAREN { args }
+| LPAREN; args = separated_list(COMMA, sident); RPAREN { args }
 
 exp_term :
 | e = exp; EOF { e }

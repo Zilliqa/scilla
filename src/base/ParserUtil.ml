@@ -104,6 +104,9 @@ module type Syn = sig
     | CurBlockNum
     | ChainID
     | Timestamp of ParserRep.rep SIdentifier.t
+    (* REPLICATE_CONTRACT(addr, init_params) *)
+    | ReplicateContr of
+        (ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t)
   [@@deriving sexp]
 
   type stmt_annot = stmt * ParserRep.rep

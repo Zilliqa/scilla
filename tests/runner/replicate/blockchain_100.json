@@ -1,0 +1,12 @@
+[
+  {
+    "vname": "BLOCKNUMBER",
+    "type": "BNum",
+    "value": "100"
+  },
+  {
+      "vname" : "REPLICATE_CONTRACT",
+      "type" : "ByStr20 with contract end",
+      "value" : {}
+  }
+]
