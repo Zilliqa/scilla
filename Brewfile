@@ -9,6 +9,6 @@ brew "libffi"
 brew "openssl@1.1"
 brew "boost"
 brew "pcre"
-brew "domt4/crypto/secp256k1", args: ["with-enable-module-recovery"]
+brew "domt4/crypto/secp256k1"
 brew "cmake"
 brew "gmp"
