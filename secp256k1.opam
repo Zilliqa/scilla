@@ -9,7 +9,7 @@ This library wrap the secp256k1 EC(DSA) library into an OCaml library. At the mo
 
 All exchanged data (pubkey, signature, seckey) are represented as hex strings.
 """
-version: "0.4.1"
+version: "0.4.4"
 maintainer: "Davide Gessa <gessadavide@gmail.com>"
 authors: [
   "Davide Gessa <gessadavide@gmail.com>"
