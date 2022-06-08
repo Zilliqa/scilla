@@ -1,42 +1,42 @@
 ########## Global owners ##########
 
-*                  @jjcnn @vaivaswatha @anton-trunov
+*                  @jjcnn @anton-trunov
 
 
 ########## Source code ##########
 
 ## default OCaml reviewers
-*.ml                @vaivaswatha @jjcnn @anton-trunov
-*.mli               @vaivaswatha @jjcnn @anton-trunov
+*.ml                @jjcnn @anton-trunov
+*.mli               @jjcnn @anton-trunov
 
 ## default C and C++ reviewers
-*.cpp              @vaivaswatha @AmritKumar
-*.c                @vaivaswatha @AmritKumar
-*.h                @vaivaswatha @AmritKumar
+*.cpp              
+*.c                
+*.h                
 
 
 ########## Build system, CI, opam ##########
 
-*dune*             @vaivaswatha @anton-trunov
-/.dockerignore     @vaivaswatha @Gnnng
-/.travis.yml       @vaivaswatha @Gnnng
-/Dockerfile*       @vaivaswatha @Gnnng
-/Makefile          @vaivaswatha @anton-trunov
-/scripts/build_openssl.sh @vaivaswatha
-*.opam             @vaivaswatha @anton-trunov
+*dune*             @anton-trunov
+/.dockerignore     
+/.travis.yml       
+/Dockerfile*       
+/Makefile          @anton-trunov
+/scripts/build_openssl.sh
+*.opam             @anton-trunov
 
 
 ########## Test suite ##########
 
 ## Scilla contracts in the testsuite
-/tests/*.scilla    @edisonljh @evesnow91 @AmritKumar @vaivaswatha @jjcnn
+/tests/*.scilla    @anton-trunov @jjcnn
 
 
 ########## Documentation ##########
 
-/README.md        @AmritKumar @jjcnn @vaivaswatha
-/INSTALL.md       @vaivaswatha @anton-trunov
-/docs/            @jjcnn
+/README.md        @jjcnn @anton-trunov
+/INSTALL.md       @anton-trunov
+/docs/            @jjcnn @anton-trunov
 
 
 ########## Tools ##########
@@ -47,4 +47,4 @@
 
 ########## GitHub metadata, including this file ##########
 
-/.github/         @AmritKumar @vaivaswatha @anton-trunov
+/.github/         @anton-trunov
