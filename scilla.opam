@@ -39,7 +39,7 @@ depends: [
   "ppx_deriving_rpc" {>= "6.0.0" & < "10.0~"}
   "secp256k1" {>= "0.4.4" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.8~"}
-  "yojson" {>= "1.7.0" & < "1.8~"}
+  "yojson" {>= "1.7.0" & < "2.1~"}
 ]
 build: [
   [ "./scripts/build_deps.sh" ]

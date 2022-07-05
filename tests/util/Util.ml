@@ -20,6 +20,11 @@ open Core_kernel
 open OUnit2
 open Scilla_base.ScillaUtil.FilePathInfix
 
+(* Parses and pretty-prints JSON to ignore whitespace changes
+   in the future versions of JSON pretty-printers *)
+let normalize_json s =
+  s |> Yojson.Basic.from_string |> Yojson.Basic.pretty_to_string
+
 (* Helper funcation borrowed from Batteries library *)
 let stream_to_string fl =
   let buf = Buffer.create 4096 in
@@ -79,14 +84,11 @@ let run_tests tests =
   in
   run_test_tt_main ("tests" >::: List.map ~f:(( |> ) env) tests)
 
-let output_verifier goldoutput_file msg print_diff output filter =
-  (* load all data from file *)
-  let gold_output = filter @@ In_channel.read_all goldoutput_file in
-  let output' = filter output in
+let output_verifier gold_output msg print_diff output =
   let pp_diff fmt =
     let open Patdiff_kernel in
-    let gold = Diff_input.{ name = goldoutput_file; text = gold_output } in
-    let out = Diff_input.{ name = "test output"; text = output' } in
+    let gold = Diff_input.{ name = "expected output"; text = gold_output } in
+    let out = Diff_input.{ name = "actual output"; text = output } in
     let open Patdiff.Compare_core in
     match diff_strings Configuration.default ~prev:gold ~next:out with
     | `Same -> ()
@@ -99,12 +101,12 @@ let output_verifier goldoutput_file msg print_diff output filter =
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~pp_diff:(fun fmt _ -> pp_diff fmt)
-      gold_output output' ~msg
+      gold_output output ~msg
   else
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~printer:(fun s -> s)
-      gold_output output' ~msg
+      gold_output output ~msg
 
 let output_updater goldoutput_file test_name data =
   Out_channel.write_all goldoutput_file ~data;
@@ -178,15 +180,22 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
           if provide_init_arg then args' @ [ "-init"; init_file ] else args'
         in
         let msg = cli_usage_on_err runner args in
+        (* load all data from file *)
+        let non_normalized_gold_output = In_channel.read_all goldoutput_file in
+        let gold_output =
+          if json_errors then
+            normalize_json non_normalized_gold_output
+          else
+            non_normalized_gold_output
+        in
         print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
-            let out = stream_to_string s in
+            let actual_output = stream_to_string s in
             if env.update_gold test_ctxt then
-              output_updater goldoutput_file input_file out
+              output_updater goldoutput_file input_file actual_output
             else
-              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
-                diff_filter)
+              output_verifier (diff_filter gold_output) msg (env.print_diff test_ctxt) (diff_filter actual_output))
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let tests env = "exptests" >::: build_exp_tests env tests
