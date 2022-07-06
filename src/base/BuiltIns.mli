@@ -18,7 +18,7 @@
 
 open Syntax
 open ErrorUtils
-open Core_kernel
+open Core
 open Literal
 module BILiteral = GlobalLiteral
 module BIType = BILiteral.LType

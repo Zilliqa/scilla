@@ -16,13 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Type
 open Literal
 open Syntax
 open MonadUtil
 open Stdint
-open Core_kernel.Result.Let_syntax
+open Core.Result.Let_syntax
 open PrettyPrinters
 module CULiteral = GlobalLiteral
 module CUType = CULiteral.LType

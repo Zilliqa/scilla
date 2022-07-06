@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 
 type args = {
@@ -106,12 +106,12 @@ let process_json_validation () = GlobalConfig.set_validate_json true
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
   let invalid_optional_fname fname =
-    not (String.is_empty fname || Sys.file_exists fname)
+    not (String.is_empty fname || Sys_unix.file_exists_exn fname)
   in
   let msg = "" in
   let msg =
     (* init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then "Invalid initialization file\n"
+    if not @@ Sys_unix.file_exists_exn !f_input_init then "Invalid initialization file\n"
     else msg
   in
   let msg =
@@ -134,7 +134,7 @@ let validate_main usage =
   in
   let msg =
     (* input file is mandatory *)
-    if not @@ Sys.file_exists !f_input then
+    if not @@ Sys_unix.file_exists_exn !f_input then
       msg ^ "Invalid input contract file\n"
     else msg
   in
@@ -179,7 +179,7 @@ let parse args ~exe_name =
         Arg.Unit
           (fun () ->
             DebugMessage.pout
-              (Core_kernel.sprintf "Scilla version: %s\n"
+              (Core.sprintf "Scilla version: %s\n"
                  PrettyPrinters.scilla_version_string);
             if true then exit 0;
             (* if "true" to avoid warning on exit 0 *)

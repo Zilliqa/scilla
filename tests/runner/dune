@@ -2,6 +2,6 @@
  (modes byte native)
  (name testcontracts)
  (wrapped true)
- (libraries core oUnit scilla_test stateIPCTest scilla_server_lib)
+ (libraries core core_unix oUnit scilla_test stateIPCTest scilla_server_lib)
  (preprocess
   (pps ppx_compare)))

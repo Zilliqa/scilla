@@ -3,5 +3,5 @@
  (names testsuite scilla_client)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))
- (libraries core oUnit testcontracts testexps testtypes testpm testgasexpr
+ (libraries core core_unix core_unix.command_unix core_unix.core_thread oUnit testcontracts testexps testtypes testpm testgasexpr
    testgascontracts testchecker))

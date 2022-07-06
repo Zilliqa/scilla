@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 open Scilla_base.ScillaUtil.FilePathInfix
 
@@ -42,8 +42,8 @@ type tsuite_env = {
 }
 
 let run_tests tests =
-  let tests_dir_default = Sys.getcwd () ^/ "tests" in
-  let stdlib_dir_default = Sys.getcwd () ^/ "src" ^/ "stdlib" in
+  let tests_dir_default = Sys_unix.getcwd () ^/ "tests" in
+  let stdlib_dir_default = Sys_unix.getcwd () ^/ "src" ^/ "stdlib" in
   let ext_ipc_server_default = "" in
   let tests_dir =
     Conf.make_string "tests_dir" tests_dir_default "Directory containing tests"

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -92,7 +92,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   open EvalMonad.Let_syntax
 
   let fromR errorType r =
-    match r with Error s -> fail (errorType, s) | Core_kernel.Ok a -> pure a
+    match r with Error s -> fail (errorType, s) | Core.Ok a -> pure a
 
   let fromR_TE r = fromR TypeError r
 

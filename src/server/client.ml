@@ -19,7 +19,7 @@
 open Core
 open Scilla_eval
 open Api
-module U = Unix
+module U = Core_unix
 module M = Idl.IdM
 module IDL = Idl.Make (M)
 

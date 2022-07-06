@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Result.Let_syntax
 open ErrorUtils
 open Stdint
@@ -243,7 +243,7 @@ module EvalMonad = struct
   let fail2 ~kind ?inst sloc eloc = fail @@ mk_error2 ~kind ?inst sloc eloc
 
   let fromR r =
-    match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
+    match r with Core.Error s -> fail s | Core.Ok a -> pure a
 
   let out_of_gas_err = mk_error0 ~kind:"Insufficient gas" ?inst:None
 

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 (* Add item a to list if it isn't already present. Use ~equal to check presence. *)
 let list_add_unique ~equal ls a = if List.mem ls a ~equal then ls else a :: ls
@@ -33,7 +33,7 @@ let int_fold ~init ~(f : 'a -> int -> 'a) n =
 
 (* Execute f() and print time taken. *)
 let ftimer name ~f =
-  let t = Core.Unix.gettimeofday () in
+  let t = Core_unix.gettimeofday () in
   let res = f () in
-  Printf.printf "%s,%f\n" name (Core.Unix.gettimeofday () -. t);
+  Printf.printf "%s,%f\n" name (Core_unix.gettimeofday () -. t);
   res

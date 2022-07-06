@@ -20,7 +20,7 @@
  * and initializing it with some initial data. *)
 
 open OUnit2
-open Core_kernel
+open Core
 open Yojson
 open Scilla_base
 open Scilla_eval

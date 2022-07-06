@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Printf
 open GlobalConfig
 open ErrorUtils
@@ -147,7 +147,7 @@ let import_libs names_and_namespaces init_address_map =
   in
   importer names_and_namespaces init_address_map []
 
-let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
+let stdlib_not_found_err ?(exe_name = (Sys.get_argv()).(0)) () =
   fatal_error
     (mk_error0 ~kind:"A path to Scilla stdlib not found"
        ~inst:
@@ -165,7 +165,7 @@ let import_all_libs ldirs =
      *)
     if not (Caml.Sys.file_exists dir) then []
     else
-      let files = Array.to_list (Sys.readdir dir) in
+      let files = Array.to_list (Sys_unix.readdir dir) in
       List.filter_map files ~f:(fun file ->
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then

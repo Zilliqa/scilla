@@ -45,8 +45,8 @@ let mk_handler callback args =
 
 (* Request handler. *)
 let handler rpc conn =
-  let ic = Unix.in_channel_of_descr conn in
-  let oc = Unix.out_channel_of_descr conn in
+  let ic = Core_unix.in_channel_of_descr conn in
+  let oc = Core_unix.out_channel_of_descr conn in
   let msg = Caml.input_line ic in
   let req = Jsonrpc.call_of_string msg in
   (* Here we're calling [M.run] to make sure that we are running the process,
@@ -67,20 +67,20 @@ let handler rpc conn =
    The [num_pending] is the maximal number of pending requests. *)
 let setup ~sock_path ~num_pending =
   (* Remove any existing socket file *)
-  Unix.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
+  Core_unix.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
-  Unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
-  let socket = Unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ()) in
-  Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_path);
-  Unix.listen socket ~backlog:num_pending;
+  Core_unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
+  let socket = Core_unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ()) in
+  Core_unix.bind socket ~addr:(Core_unix.ADDR_UNIX sock_path);
+  Core_unix.listen socket ~backlog:num_pending;
   pout @@ Printf.sprintf "Scilla Server is listening on %s\n" sock_path;
   Out_channel.flush stdout;
   socket
 
 let rec serve rpc ~socket =
-  let conn, _ = Unix.accept socket in
+  let conn, _ = Core_unix.accept socket in
   handler rpc conn;
-  Unix.close conn;
+  Core_unix.close conn;
   serve rpc ~socket
 
 let sock_path = "/tmp/scilla-server.sock"

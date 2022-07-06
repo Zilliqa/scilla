@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 open Scilla_base
 open ScillaUtil.FilePathInfix
@@ -118,7 +118,7 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
       >:: (* function to run scilla-runner and check exit code *)
       fun test_ctxt ->
       let tests_dir =
-        FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+        FilePath.make_relative (Sys_unix.getcwd ()) (env.tests_dir test_ctxt)
       in
       let contract_dir = tests_dir ^/ "contracts" in
       let dir = tests_dir ^/ "runner" ^/ name in
@@ -220,7 +220,7 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     =
   name ^ "_init" >:: fun test_ctxt ->
   let tests_dir =
-    FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+    FilePath.make_relative (Sys_unix.getcwd ()) (env.tests_dir test_ctxt)
   in
   (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
   let contract_dir = tests_dir ^/ "contracts" in

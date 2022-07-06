@@ -16,7 +16,7 @@
 
 open Literal
 open Syntax
-open Core_kernel
+open Core
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax

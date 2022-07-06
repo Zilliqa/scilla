@@ -25,7 +25,7 @@
    statements.  There might be valid reasons for writing such contracts,
    so again we only generate warnings not errors. *)
 
-open Core_kernel
+open Core
 open Literal
 open TypeUtil
 open ErrorUtils

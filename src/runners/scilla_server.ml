@@ -35,4 +35,4 @@ let cmd =
         Server.start ~server_implementation:Server.default_server_implementation
           ~sock_path ~num_pending)
 
-let () = Command.run cmd
+let () = Command_unix.run cmd

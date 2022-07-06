@@ -17,7 +17,7 @@
 *)
 
 open ErrorUtils
-open Core_kernel
+open Core
 open Literal
 module DTLiteral = GlobalLiteral
 module DTType = DTLiteral.LType

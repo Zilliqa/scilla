@@ -9,7 +9,7 @@ Checks for unused
 * Library imports
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Syntax
 open Literal

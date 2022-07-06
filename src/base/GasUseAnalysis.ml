@@ -17,7 +17,7 @@
 
 (* Gas Usage Analysis for Scilla contracts. *)
 
-open Core_kernel.Result.Let_syntax
+open Core.Result.Let_syntax
 open TypeUtil
 open Literal
 open Syntax
@@ -315,7 +315,7 @@ struct
       | SPol p -> (
           (* Find a "analyzable" Container term in the polynomial. *)
           let cterms, oterms =
-            Core_kernel.List.partition_tf p ~f:(fun (coef, vplist) ->
+            Core.List.partition_tf p ~f:(fun (coef, vplist) ->
                 match vplist with
                 (* We can only analyze "Length(accarg) + C" *)
                 | [

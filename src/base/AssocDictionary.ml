@@ -20,7 +20,7 @@
 (*   Dictionaries, i.e., maps from strings to values      *)
 (**********************************************************)
 
-open Core_kernel
+open Core
 
 (* Simple association list implementation of a dictionary. *)
 type key = string

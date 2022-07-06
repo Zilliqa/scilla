@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open Syntax
 open ErrorUtils
@@ -50,7 +50,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         let raw_entries =
           List.map entries ~f:(fun (s, _t, v) -> s ^ serialize_literal v)
         in
-        Core_kernel.String.concat ~sep:"" raw_entries
+        Core.String.concat ~sep:"" raw_entries
     | Map (_, tbl) ->
         let raw_strings =
           let tbl' =
@@ -66,10 +66,10 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               serialize_literal k :: serialize_literal v :: acc)
             [] tbl'
         in
-        Core_kernel.String.concat ~sep:"" raw_strings
+        Core.String.concat ~sep:"" raw_strings
     | ADTValue (cons_name, _, params) ->
         let raw_params = List.map params ~f:serialize_literal in
-        Core_kernel.String.concat ~sep:""
+        Core.String.concat ~sep:""
           (BIName.as_string cons_name :: raw_params)
     | Clo _fun -> "(Clo <fun>)"
     | TAbs _fun -> "(Tabs <fun>)"
@@ -522,7 +522,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ BNum x; BNum y ] ->
           pure
           @@ build_bool_lit
-               Core_kernel.String.(
+               Core.String.(
                  Literal.BNumLit.get x = Literal.BNumLit.get y)
       | _ -> builtin_fail "BNum.eq" ls
 
@@ -642,7 +642,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStrX bs ] when Bystrx.width bs <= width_bytes ->
           (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
           let rem = width_bytes - Bystrx.width bs in
-          let pad = Core_kernel.String.make rem '\000' in
+          let pad = Core.String.make rem '\000' in
           let bs_padded = Bytes.of_string (pad ^ Bystrx.to_raw_bytes bs) in
           let l =
             match x with
@@ -657,7 +657,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let bech32_to_bystr20 _ ls _ =
       match ls with
       | [ StringLit prfx; StringLit addr ] -> (
-          if Core_kernel.String.(prfx <> "zil") then
+          if Core.String.(prfx <> "zil") then
             fail0 ~kind:"Only zil bech32 addresses are supported" ?inst:None
           else
             match Bech32.decode_bech32_addr ~prfx ~addr with
@@ -674,7 +674,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let bystr20_to_bech32 _ ls _ =
       match ls with
       | [ StringLit prfx; ByStrX addr ] -> (
-          if Core_kernel.String.(prfx <> "zil") then
+          if Core.String.(prfx <> "zil") then
             fail0 ~kind:"Only zil bech32 addresses are supported" ?inst:None
           else
             match
@@ -797,7 +797,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           (* Hash the public key *)
           let pkh = sha256_hasher pks in
           (* and extract the least significant 20 bytes. *)
-          let addr = Core_kernel.String.suffix pkh 20 in
+          let addr = Core.String.suffix pkh 20 in
           match Bystrx.of_raw_bytes Type.address_length addr with
           | Some bs -> pure @@ ByStrX bs
           | None -> builtin_fail "schnorr_get_address: Internal error." ls)

@@ -17,7 +17,7 @@
 *)
 
 open ParserUtil
-open Core_kernel
+open Core
 open FrontEndParser
 open Literal
 
