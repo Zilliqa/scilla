@@ -17,7 +17,7 @@
 *)
 
 open ErrorUtils
-open Core_kernel
+open Core
 open Literal
 module DTLiteral = GlobalLiteral
 module DTType = DTLiteral.LType
@@ -75,47 +75,29 @@ module DataTypeDictionary : sig
 
   (* Get all known ADT constructors *)
   val get_all_ctrs : unit -> (adt * constructor) list
-
   val add_adt : adt -> loc -> (unit, scilla_error list) result
 
   (*  Built-in ADTs  *)
   val bool_typ : DTType.t
-
   val nat_typ : DTType.t
-
   val option_typ : DTType.t -> DTType.t
-
   val list_typ : DTType.t -> DTType.t
-
   val pair_typ : DTType.t -> DTType.t -> DTType.t
 end
 
 val is_true_ctr_name : DTName.t -> bool
-
 val is_false_ctr_name : DTName.t -> bool
-
 val is_bool_adt_name : DTName.t -> bool
-
 val is_nil_ctr_name : DTName.t -> bool
-
 val is_cons_ctr_name : DTName.t -> bool
-
 val is_list_adt_name : DTName.t -> bool
-
 val is_pair_ctr_name : DTName.t -> bool
-
 val is_pair_adt_name : DTName.t -> bool
-
 val is_zero_ctr_name : DTName.t -> bool
-
 val is_succ_ctr_name : DTName.t -> bool
-
 val is_nat_adt_name : DTName.t -> bool
-
 val is_none_ctr_name : DTName.t -> bool
-
 val is_some_ctr_name : DTName.t -> bool
-
 val is_option_adt_name : DTName.t -> bool
 
 val scilla_list_to_ocaml :
@@ -128,17 +110,11 @@ module SnarkTypes : sig
   open Scilla_crypto.Snark
 
   val scalar_type : DTType.t
-
   val g1point_type : DTType.t
-
   val g2point_type : DTType.t
-
   val g2comp_type : DTType.t
-
   val g1g2pair_type : DTType.t
-
   val g1g2pair_list_type : DTType.t
-
   val scilla_scalar_to_ocaml : DTLiteral.t -> (scalar, scilla_error list) result
 
   val scilla_g1point_to_ocaml :

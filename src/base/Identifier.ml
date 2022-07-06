@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 
 let flatten_name ns n = ns ^ "." ^ n
@@ -28,9 +28,7 @@ module type QualifiedName = sig
 
   (* User-friendly string *)
   val as_error_string : t -> string
-
   val parse_simple_name : string -> t
-
   val parse_qualified_name : string -> string -> t
 end
 
@@ -55,9 +53,7 @@ module LocalName = struct
     | QualifiedLocal (ns, n) -> flatten_name ns n
 
   let as_error_string = as_string
-
   let parse_simple_name n = SimpleLocal n
-
   let parse_qualified_name ns n = QualifiedLocal (ns, n)
 end
 
@@ -89,7 +85,6 @@ module GlobalName = struct
   (* Do not use derived equality, because the error string of imported names
      will be different from the error string where the name is used *)
   let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
-
   let compare ((an, _) : t) ((bn, _) : t) : int = [%compare: t_name] an bn
 
   let as_string = function
@@ -97,9 +92,7 @@ module GlobalName = struct
     | QualifiedGlobal (ns, n), _ -> flatten_name ns n
 
   let as_error_string = function _, s -> s
-
   let parse_simple_name n = (SimpleGlobal n, n)
-
   let parse_qualified_name ns n = (QualifiedGlobal (ns, n), flatten_name ns n)
 end
 
@@ -109,24 +102,16 @@ module type ScillaIdentifier = sig
   type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp]
 
   val mk_loc_id : Name.t -> loc t
-
   val mk_id : Name.t -> 'a -> 'a t
-
   val get_id : 'a t -> Name.t
-
   val get_rep : 'a t -> 'a
-
   val as_string : 'a t -> string
-
   val as_error_string : 'a t -> string
 
   (* A few utilities on id. *)
   val equal : 'a t -> 'b t -> bool
-
   val compare : 'a t -> 'b t -> int
-
   val dedup_id_list : 'a t list -> 'a t list
-
   val is_mem_id : 'a t -> 'a t list -> bool
 end
 
@@ -136,23 +121,15 @@ module MkIdentifier (Name : QualifiedName) = struct
   type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
 
   let mk_id i r = Ident (i, r)
-
   let mk_loc_id i = mk_id i dummy_loc
-
   let get_id i = match i with Ident (x, _) -> x
-
   let get_rep i = match i with Ident (_, l) -> l
-
   let as_string i = Name.as_string (get_id i)
-
   let as_error_string i = Name.as_error_string (get_id i)
 
   (* A few utilities on id. *)
   let equal a b = Name.equal (get_id a) (get_id b)
-
   let compare a b = Name.compare (get_id a) (get_id b)
-
   let dedup_id_list l = List.dedup_and_sort ~compare l
-
   let is_mem_id i l = List.exists l ~f:(equal i)
 end

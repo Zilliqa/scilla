@@ -16,27 +16,18 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "checker"; "bad"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-contractinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -117,23 +108,14 @@ end)
 
 module LibTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "checker"; "bad"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf" ]
-
   let additional_libdirs = [ [ "checker"; "bad"; "lib" ] ]
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -167,26 +149,15 @@ end)
  * importing libraries whose addresses are specified in the init JSON *)
 module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "checker"; "bad"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = []
-
   let provide_init_arg = true
-
   let diff_filter s = s
-
   let additional_libdirs = [ [ "checker"; "bad"; "lib" ] ]
-
   let tests = [ "extlib_dup_entry.scilla"; "bad_init.scilla" ]
-
   let exit_code : UnixLabels.process_status = WEXITED 1
 end)

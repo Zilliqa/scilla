@@ -9,7 +9,7 @@ Checks for unused
 * Library imports
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Syntax
 open Literal
@@ -75,7 +75,6 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   (* Distinguishing read-only, write-only, and unused fields *)
   let read_field = ref []
-
   let write_field = ref []
 
   (* Detect Dead Code in a cmod *)
@@ -148,7 +147,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 List.filter fvl ~f:(fun a ->
                     not @@ SCIdentifier.is_mem_id a bounds)
               in
-              (x :: fvl' @ res_fv, res_adts @ adts))
+              ((x :: fvl') @ res_fv, res_adts @ adts))
       | TFun (a, e) ->
           let e_fv, e_adts = expr_iter e in
           let e_fv' =
@@ -283,7 +282,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     in
                     (fvl' @ res_fv, adts @ res_adts))
               in
-              (i :: live_vars @ live_vars', adts @ adts')
+              ((i :: live_vars) @ live_vars', adts @ adts')
           | TypeCast (x, r, t) ->
               if SCIdentifier.is_mem_id x live_vars then
                 let live_vars_no_x =
@@ -295,7 +294,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               else (
                 warn "Unused type case statement to: " x ER.get_loc;
                 (live_vars, adts))
-          | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ v :: live_vars, adts)
+          | SendMsgs v | CreateEvnt v ->
+              (dedup_id_list @@ (v :: live_vars), adts)
           | AcceptPayment | GasStmt _ -> (live_vars, adts))
       | _ -> ([], [])
     in

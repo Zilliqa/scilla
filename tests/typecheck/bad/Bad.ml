@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 
 (* PART A: Test literal type checks. The only way to have malformed
@@ -174,23 +174,14 @@ let lit_typ_tests =
 (* PART B: Regular tests based on diffing outputs. *)
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "typecheck"; "bad"; f ]
-
   let runner = "type-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = []
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =

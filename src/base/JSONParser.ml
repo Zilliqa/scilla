@@ -18,7 +18,7 @@
 
 (* A fast JSON parser for states that performs no validations. *)
 
-open Core_kernel
+open Core
 open Yojson
 open ErrorUtils
 open TypeUtil

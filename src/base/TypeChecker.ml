@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -39,9 +39,7 @@ module TypecheckerERep (R : Rep) = struct
   type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp]
 
   let dummy_rep = (PlainTypes.mk_qualified_type Unit, R.dummy_rep)
-
   let get_loc r = match r with _, rr -> R.get_loc rr
-
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
 
   let address_rep =
@@ -55,13 +53,9 @@ module TypecheckerERep (R : Rep) = struct
     mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint32_typ)
 
   let bnum_rep = mk_rep R.bnum_rep (PlainTypes.mk_qualified_type bnum_typ)
-
   let string_rep = mk_rep R.string_rep (PlainTypes.mk_qualified_type string_typ)
-
   let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
-
   let get_rep_str r = match r with _, rr -> R.get_rep_str rr
-
   let get_type (r : rep) = fst r
 end
 
@@ -92,7 +86,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   open EvalMonad.Let_syntax
 
   let fromR errorType r =
-    match r with Error s -> fail (errorType, s) | Core_kernel.Ok a -> pure a
+    match r with Error s -> fail (errorType, s) | Core.Ok a -> pure a
 
   let fromR_TE r = fromR TypeError r
 
@@ -621,7 +615,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match repstmts with stmts, env -> (s :: stmts, env)
 
   let get_tenv_fields env = env.fields
-
   let get_tenv_pure env = env.pure
 
   let rec type_stmts stmts get_loc env =
@@ -707,8 +700,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Bind (x, e) ->
             let%bind ((_, (ityp, _)) as checked_e) = type_expr e env.pure in
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, ityp.tp) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, ityp.tp) ]
+                [] (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x ityp in
             pure
@@ -763,8 +757,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (v, v_type') ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (v, v_type') ]
+                [] (type_stmts sts get_loc)
             in
             (* Update annotations. *)
             pure
@@ -785,8 +780,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (v, v_type') ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (v, v_type') ]
+                [] (type_stmts sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -838,8 +834,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
 
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, bt) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, bt) ]
+                [] (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
             pure
@@ -870,8 +867,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_x = add_type_to_ident x res_typ in
             let typed_r = add_type_to_ident r (rr_typ r_typ) in
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, res_typ.tp) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, res_typ.tp) ]
+                [] (type_stmts sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -897,7 +895,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     let%bind typed_clause =
                       type_match_stmt_branch env sct ptrn ex get_loc
                     in
-                    pure @@ typed_clause :: checked_clauses_acc)
+                    pure @@ (typed_clause :: checked_clauses_acc))
               in
               let checked_clauses = List.rev checked_clauses_rev in
               let%bind checked_stmts = type_stmts sts get_loc env in
@@ -1098,7 +1096,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
             let _ = TEnv.addT fields_env fn (mk_qual_tp ft).tp in
-            pure @@ (typed_fs, ft, typed_expr) :: acc
+            pure @@ ((typed_fs, ft, typed_expr) :: acc)
           else
             fail
               (mk_type_error1 ~kind:"Values of this type cannot be stored"

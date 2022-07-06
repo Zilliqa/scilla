@@ -37,7 +37,6 @@ module OutputIdentifier = OutputType.TIdentifier
 module OutputName = OutputIdentifier.Name
 module Dis = Disambiguate.ScillaDisambiguation (ParserRep) (ParserRep)
 module OutputContractUtil = ScillaContractUtil (ParserRep) (ParserRep)
-
 module OutputStateService = StateService.MakeStateService ()
 
 (* ************************************************************************ * 
@@ -62,15 +61,10 @@ type args = {
 }
 
 let f_input_init = ref ""
-
 let f_input_state = ref ""
-
 let f_output_init = ref ""
-
 let f_output_state = ref ""
-
 let f_input = ref ""
-
 let i_ipc_address = ref ""
 
 let reset () =
@@ -82,17 +76,17 @@ let reset () =
   i_ipc_address := ""
 
 let validate_main usage =
-  let open Core_kernel in
+  let open Core in
   let msg = "" in
   let msg =
     (* input_init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then
+    if not @@ Sys_unix.file_exists_exn !f_input_init then
       "Invalid input initialization file\n"
     else msg
   in
   let msg =
     (* input file is mandatory *)
-    if not @@ Sys.file_exists !f_input then
+    if not @@ Sys_unix.file_exists_exn !f_input then
       msg ^ "Invalid input contract file\n"
     else msg
   in
@@ -104,7 +98,9 @@ let validate_main usage =
   in
   let msg =
     (* Either an input state or an ipc address must be provided *)
-    if (not @@ Sys.file_exists !f_input_state) && String.is_empty !i_ipc_address
+    if
+      (not @@ Sys_unix.file_exists_exn !f_input_state)
+      && String.is_empty !i_ipc_address
     then
       msg ^ "Either an input state file or an ipc address must be specified\n"
     else msg
@@ -113,7 +109,7 @@ let validate_main usage =
     (* If ostate is given, then input_state.json is mandatory, because the balance cannot be read using ipc *)
     if
       (not @@ String.is_empty !f_output_state)
-      && (not @@ Sys.file_exists !f_input_state)
+      && (not @@ Sys_unix.file_exists_exn !f_input_state)
     then
       msg ^ "Input state file is mandatory if output state file is expected\n"
     else msg
@@ -159,7 +155,7 @@ let parse argv ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
           PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg))
@@ -262,19 +258,12 @@ let disambiguate_type t this_address =
 (* JSONParser.ml *)
 
 let json_exn_wrapper = JSONParser.json_exn_wrapper
-
 let member_exn = JSONParser.member_exn
-
 let to_string_exn = JSONParser.to_string_exn
-
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
-
 let lookup_adt_name_exn = JSONParser.lookup_adt_name_exn
-
 let add_adt_parser = JSONParser.add_adt_parser
-
 let lookup_adt_parser_opt = JSONParser.lookup_adt_parser_opt
-
 let lookup_adt_parser = JSONParser.lookup_adt_parser
 
 (* Generate a parser. Parse directly into OutputLiteral *)
@@ -706,7 +695,6 @@ module InputStateService = struct
     open StateIPCIdl
     module M = Idl.IdM
     module IDL = Idl.Make (M)
-
     module IPCClient = IPCIdl (IDL.GenClient ())
 
     (* Translate JRPC result to our result. *)
@@ -722,7 +710,7 @@ module InputStateService = struct
 
     let ipcclient_exn_wrapper thunk =
       try thunk ()
-      with Unix.Unix_error (_, s1, s2) ->
+      with Core_unix.Unix_error (_, s1, s2) ->
         fatal_error
           (mk_error0
              ~kind:("StateIPCClient: Unix error: " ^ s1 ^ s2)
@@ -734,11 +722,13 @@ module InputStateService = struct
 
     let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
       let socket =
-        Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
+        Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+          ~protocol:0 ()
       in
-      Unix.connect socket ~addr:(Unix.ADDR_UNIX socket_addr);
+      Core_unix.connect socket ~addr:(Core_unix.ADDR_UNIX socket_addr);
       let ic, oc =
-        (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
+        ( Core_unix.in_channel_of_descr socket,
+          Core_unix.out_channel_of_descr socket )
       in
       let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
       DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
@@ -746,7 +736,7 @@ module InputStateService = struct
       let _ = IPCUtil.send_delimited oc msg_buf in
       (* Get response. *)
       let response = Caml.input_line ic in
-      Unix.close socket;
+      Core_unix.close socket;
       DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
       M.return @@ Jsonrpc.response_of_string response
 

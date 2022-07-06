@@ -16,7 +16,7 @@
 
 open Literal
 open Syntax
-open Core_kernel
+open Core
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -45,7 +45,6 @@ struct
   open TU
 
   let wrap_pmcheck_err e ?(opt = "") = wrap_err e "patternmatch checking" ~opt
-
   let wrap_pmcheck_serr s ?(opt = "") = wrap_serr s "patternmatch checking" ~opt
 
   (**************************************************************)
@@ -293,7 +292,7 @@ struct
               pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
-        pure @@ checked_s :: checked_stmts
+        pure @@ (checked_s :: checked_stmts)
 
   let pm_check_component t =
     let { comp_type; comp_name; comp_params; comp_body } = t in

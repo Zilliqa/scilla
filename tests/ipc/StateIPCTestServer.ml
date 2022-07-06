@@ -31,7 +31,6 @@ open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
 type value_table = (string, value_type) Hashtbl.t
-
 and value_type = NonMapVal of string | MapVal of value_table
 
 type type_table = (string, string) Hashtbl.t
@@ -45,13 +44,9 @@ type blockchain_state =
   Hashtbl.t
 
 let thread_pool : (string, blockchain_state) Hashtbl.t = Hashtbl.create 4
-
 let num_pending_requests = 5
-
 let fetch_message = "Fetching state value failed"
-
 let update_message = "Updating state value failed"
-
 let fail a = Error a
 
 let decode_serialized_value value =
@@ -77,24 +72,26 @@ module MakeServer () = struct
   let table : blockchain_state = Hashtbl.create 8
 
   let binary_rpc conn =
-    let ic = Unix.in_channel_of_descr conn in
-    let oc = Unix.out_channel_of_descr conn in
+    let ic = Core_unix.in_channel_of_descr conn in
+    let oc = Core_unix.out_channel_of_descr conn in
     let request = Jsonrpc.call_of_string (Caml.input_line ic) in
     let response = (IDL.server IPCTestServer.implementation) request |> M.run in
     IPCUtil.send_delimited oc (Jsonrpc.string_of_response response)
 
   let prepare_server sock_addr =
-    (try Unix.unlink sock_addr with Unix.Unix_error (Unix.ENOENT, _, _) -> ());
+    (try Core_unix.unlink sock_addr
+     with Core_unix.Unix_error (Core_unix.ENOENT, _, _) -> ());
     let socket =
-      Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
+      Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+        ~protocol:0 ()
     in
-    Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
-    Unix.listen socket ~backlog:num_pending_requests;
+    Core_unix.bind socket ~addr:(Core_unix.ADDR_UNIX sock_addr);
+    Core_unix.listen socket ~backlog:num_pending_requests;
     let server () =
       while true do
-        let conn, _ = Unix.accept socket in
+        let conn, _ = Core_unix.accept socket in
         binary_rpc conn;
-        Unix.close conn
+        Core_unix.close conn
       done
     in
     server
@@ -264,7 +261,9 @@ let start_server ~sock_addr =
       ServerModule.IPCTestServer.fetch_ext_state_value (fun a q ->
           IDL.T.return @@ ServerModule.fetch_ext_state_value a q);
       let server = ServerModule.prepare_server sock_addr in
-      let _ = Thread.create ~on_uncaught_exn:`Kill_whole_process server () in
+      let _ =
+        Core_thread.create ~on_uncaught_exn:`Kill_whole_process server ()
+      in
       Hashtbl.replace thread_pool sock_addr ServerModule.table
 
 let stop_server ~sock_addr =

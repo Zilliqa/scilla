@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Sexplib.Std
 open Literal
@@ -42,9 +42,7 @@ module type QualifiedTypes = sig
   type t
 
   val t_of_sexp : Sexp.t -> t
-
   val sexp_of_t : t -> Sexp.t
-
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 
@@ -53,18 +51,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   type resolve_result
 
   val rr_loc : resolve_result -> loc
-
   val rr_rep : resolve_result -> R.rep
-
   val rr_typ : resolve_result -> Q.t inferred_type
-
   val rr_pp : resolve_result -> string
-
   val mk_qual_tp : TUType.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
-
     type restore
 
     (* Make new type environment *)
@@ -135,9 +128,7 @@ functor
     type resolve_result = { qt : Q.t inferred_type; rep : R.rep }
 
     let rr_loc rr = R.get_loc rr.rep
-
     let rr_rep rr = rr.rep
-
     let rr_typ rr = rr.qt
 
     let rr_pp rr =
@@ -273,7 +264,6 @@ functor
               sloc
 
       let existsT env id = Hashtbl.mem env.tenv (TUName.as_string id)
-
       let existsV env id = Hashtbl.mem env.tvars (TUName.as_string id)
 
       let mk () =
@@ -315,13 +305,9 @@ module TypeUtilities = struct
 
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
-
   let tvar i = TypeVar i
-
   let tfun_typ i t = PolyFun (i, t)
-
   let map_typ k v = MapType (k, v)
-
   let unit_typ = Unit
 
   (* Return True if corresponding elements are `type_equiv`,
@@ -724,7 +710,7 @@ module TypeUtilities = struct
       | (Address _ as res_t), ByStrX bs
         when Bystrx.width bs = Type.address_length ->
           (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
-          pure @@ (res_t, bs) :: dyn_check_acc
+          pure @@ ((res_t, bs) :: dyn_check_acc)
       | ADT (tname, targs), ADTValue (cname, _, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)

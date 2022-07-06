@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open ParserUtil
 open MonadUtil
@@ -161,7 +161,6 @@ module Configuration = struct
   (*  Manipulations with configuration *)
 
   let store i l = fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
-
   let lookup st k = Env.lookup st.env k
 
   (* Helper function for remote fetches *)

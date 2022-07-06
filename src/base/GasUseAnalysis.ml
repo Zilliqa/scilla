@@ -17,7 +17,7 @@
 
 (* Gas Usage Analysis for Scilla contracts. *)
 
-open Core_kernel.Result.Let_syntax
+open Core.Result.Let_syntax
 open TypeUtil
 open Literal
 open Syntax
@@ -30,7 +30,6 @@ module ScillaGUA
       include Rep
 
       val get_type : rep -> PlainTypes.t inferred_type
-
       val mk_rep : loc -> PlainTypes.t inferred_type -> rep
     end) =
 struct
@@ -47,7 +46,6 @@ struct
   open GUASyntax
 
   let guaname_of_string = GUAName.parse_simple_name
-
   let mk_gua_id i = mk_id @@ guaname_of_string i
 
   let mk_typed_id i t =
@@ -315,7 +313,7 @@ struct
       | SPol p -> (
           (* Find a "analyzable" Container term in the polynomial. *)
           let cterms, oterms =
-            Core_kernel.List.partition_tf p ~f:(fun (coef, vplist) ->
+            Core.List.partition_tf p ~f:(fun (coef, vplist) ->
                 match vplist with
                 (* We can only analyze "Length(accarg) + C" *)
                 | [

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Sexplib.Std
 open! Int.Replace_polymorphic_compare
 open ErrorUtils
@@ -90,11 +90,8 @@ module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
   type t = loc TIdentifier.t
 
   let compare (a : t) (b : t) = TIdentifier.compare a b
-
   let equal (a : t) (b : t) = TIdentifier.equal a b
-
   let sexp_of_t = TIdentifier.sexp_of_t (fun l -> sexp_of_loc l)
-
   let t_of_sexp = TIdentifier.t_of_sexp (fun s -> loc_of_sexp s)
 end
 
@@ -109,7 +106,6 @@ end
 
 module type ScillaType = sig
   module TIdentifier : ScillaIdentifier
-
   module IdLoc_Comp : module type of IdLoc_Comp (TIdentifier)
 
   (* The types of addresses we care about.
@@ -143,7 +139,6 @@ module type ScillaType = sig
   [@@deriving sexp]
 
   val pp_typ : t -> string
-
   val pp_typ_error : t -> string
 
   (****************************************************************)
@@ -151,23 +146,14 @@ module type ScillaType = sig
   (****************************************************************)
 
   val free_tvars : t -> string list
-
   val mk_fresh_var : string list -> string -> string
-
   val refresh_tfun : t -> string list -> t
-
   val canonicalize_tfun : t -> t
-
   val equal : t -> t -> bool
-
   val type_equivalent : t -> t -> bool
-
   val type_assignable : expected:t -> actual:t -> bool
-
   val subst_type_in_type : string -> t -> t -> t
-
   val subst_types_in_type : (string * t) list -> t -> t
-
   val subst_type_in_type' : 'a TIdentifier.t -> t -> t -> t
 
   (****************************************************************)
@@ -175,52 +161,30 @@ module type ScillaType = sig
   (****************************************************************)
 
   val is_prim_type : t -> bool
-
   val is_address_type : t -> bool
-
   val is_int_type : t -> bool
-
   val is_uint_type : t -> bool
-
   val is_bystrx_type : t -> bool
-
   val int_width : t -> int option
-
   val int32_typ : t
-
   val int64_typ : t
-
   val int128_typ : t
-
   val int256_typ : t
-
   val uint32_typ : t
-
   val uint64_typ : t
-
   val uint128_typ : t
-
   val uint256_typ : t
-
   val string_typ : t
-
   val bnum_typ : t
-
   val msg_typ : t
-
   val event_typ : t
-
   val exception_typ : t
-
   val replicate_contr_typ : t
-
   val bystr_typ : t
-
   val bystrx_typ : int -> t
 
   (* Given a ByStrX, return integer X *)
   val bystrx_width : t -> int option
-
   val address_typ : t addr_kind -> t
 end
 
@@ -299,7 +263,6 @@ module MkType (I : ScillaIdentifier) = struct
     recurser t
 
   let pp_typ = pp_typ_helper false
-
   let pp_typ_error = pp_typ_helper true
 
   (****************************************************************)
@@ -485,35 +448,20 @@ module MkType (I : ScillaIdentifier) = struct
   (****************************************************************)
 
   let int32_typ = PrimType (Int_typ Bits32)
-
   let int64_typ = PrimType (Int_typ Bits64)
-
   let int128_typ = PrimType (Int_typ Bits128)
-
   let int256_typ = PrimType (Int_typ Bits256)
-
   let uint32_typ = PrimType (Uint_typ Bits32)
-
   let uint64_typ = PrimType (Uint_typ Bits64)
-
   let uint128_typ = PrimType (Uint_typ Bits128)
-
   let uint256_typ = PrimType (Uint_typ Bits256)
-
   let string_typ = PrimType String_typ
-
   let bnum_typ = PrimType Bnum_typ
-
   let msg_typ = PrimType Msg_typ
-
   let event_typ = PrimType Event_typ
-
   let exception_typ = PrimType Exception_typ
-
   let replicate_contr_typ = PrimType ReplicateContr_typ
-
   let bystr_typ = PrimType Bystr_typ
-
   let bystrx_typ b = PrimType (Bystrx_typ b)
 
   let int_width = function
@@ -523,16 +471,10 @@ module MkType (I : ScillaIdentifier) = struct
 
   (* Given a ByStrX string, return integer X *)
   let bystrx_width = function PrimType (Bystrx_typ w) -> Some w | _ -> None
-
   let address_typ fts = Address fts
-
   let is_prim_type = function PrimType _ -> true | _ -> false
-
   let is_address_type = function Address _ -> true | _ -> false
-
   let is_int_type = function PrimType (Int_typ _) -> true | _ -> false
-
   let is_uint_type = function PrimType (Uint_typ _) -> true | _ -> false
-
   let is_bystrx_type = function PrimType (Bystrx_typ _) -> true | _ -> false
 end

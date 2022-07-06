@@ -17,7 +17,7 @@
 *)
 
 open ParserUtil
-open Core_kernel
+open Core
 open FrontEndParser
 open Literal
 
@@ -44,15 +44,12 @@ let parse_type_wrapper expr =
   | Ok e -> e
 
 let rpname_of_string str = RPName.parse_simple_name str
-
 let rpid_of_string str = RPIdentifier.mk_loc_id @@ rpname_of_string str
 
 (* Folding over natural numbers *)
 module NatRec = struct
   let g = rpid_of_string "g"
-
   let fn = rpid_of_string "fn"
-
   let tvar = "'T"
 
   (* Adopted one, as fold_left and fold_right are equivalent for
@@ -60,11 +57,8 @@ module NatRec = struct
   module Foldl = struct
     (* The type of the fixpoint argument *)
     let fn_type = parse_type_wrapper "'T -> Nat -> 'T"
-
     let fix_type = fn_type
-
     let fold_type = parse_type_wrapper "('T -> Nat -> 'T) -> 'T -> Nat -> 'T"
-
     let fold_type_opt = Some (PolyFun (tvar, fold_type))
 
     [@@@ocamlformat "disable"]
@@ -81,20 +75,15 @@ module NatRec = struct
     [@@@ocamlformat "enable"]
 
     let id = rpid_of_string "nat_fold"
-
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-
     let fold_fixed = (Fun (fn, fn_type, fold_fix), loc)
-
     let fold = (TFun (rpid_of_string tvar, fold_fixed), loc)
-
     let entry = LibVar (id, fold_type_opt, fold)
   end
 
   module Foldk = struct
     (* The type of the fixpoint argument *)
     let fix_type = parse_type_wrapper "'T -> Nat -> 'T"
-
     let comb_type = parse_type_wrapper "'T -> Nat -> ('T -> 'T) -> 'T"
 
     let fold_type =
@@ -115,13 +104,9 @@ module NatRec = struct
     [@@@ocamlformat "enable"]
 
     let id = rpid_of_string "nat_foldk"
-
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-
     let fold_fixed = (Fun (fn, comb_type, fold_fix), loc)
-
     let fold = (TFun (rpid_of_string tvar, fold_fixed), loc)
-
     let entry = LibVar (id, fold_type_opt, fold)
   end
 end
@@ -129,11 +114,8 @@ end
 (* Folding over lists *)
 module ListRec = struct
   let f = rpid_of_string "f"
-
   let g = rpid_of_string "g"
-
   let avar = "'A"
-
   let bvar = "'B"
 
   module Foldl = struct
@@ -160,9 +142,7 @@ module ListRec = struct
     [@@@ocamlformat "enable"]
 
     let id = rpid_of_string "list_foldl"
-
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
     let fold =
@@ -196,9 +176,7 @@ module ListRec = struct
     [@@@ocamlformat "enable"]
 
     let id = rpid_of_string "list_foldr"
-
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-
     let fold_fixed = (Fun (f, f_type, fold_fix), loc)
 
     let fold =
@@ -234,9 +212,7 @@ module ListRec = struct
     [@@@ocamlformat "enable"]
 
     let id = rpid_of_string "list_foldk"
-
     let fold_fix = (Fixpoint (g, fix_type, fix_arg), loc)
-
     let fold_fixed = (Fun (f, comb_type, fold_fix), loc)
 
     let fold =

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Literal
 open Syntax
@@ -33,9 +33,7 @@ module type QualifiedTypes = sig
   type t
 
   val t_of_sexp : Sexp.t -> t
-
   val sexp_of_t : t -> Sexp.t
-
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 
@@ -44,18 +42,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   type resolve_result
 
   val rr_loc : resolve_result -> loc
-
   val rr_rep : resolve_result -> R.rep
-
   val rr_typ : resolve_result -> Q.t inferred_type
-
   val rr_pp : resolve_result -> string
-
   val mk_qual_tp : TUType.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
-
     type restore
 
     (* Make new type environment *)
@@ -131,13 +124,9 @@ module TypeUtilities : sig
 
   (* Useful generic types *)
   val fun_typ : TUType.t -> TUType.t -> TUType.t
-
   val tvar : string -> TUType.t
-
   val tfun_typ : string -> TUType.t -> TUType.t
-
   val map_typ : TUType.t -> TUType.t -> TUType.t
-
   val unit_typ : TUType.t
 
   (****************************************************************)
@@ -145,24 +134,17 @@ module TypeUtilities : sig
   (****************************************************************)
 
   val is_legal_message_field_type : TUType.t -> bool
-
   val is_legal_transition_parameter_type : TUType.t -> bool
-
   val is_legal_procedure_parameter_type : TUType.t -> bool
-
   val is_legal_contract_parameter_type : TUType.t -> bool
-
   val is_legal_field_type : TUType.t -> bool
-
   val is_legal_hash_argument_type : TUType.t -> bool
-
   val is_ground_type : TUType.t -> bool
 
   val get_msgevnt_type :
     (string * 'a * 'b) list -> loc -> (TUType.t, scilla_error list) result
 
   val map_access_type : TUType.t -> int -> (TUType.t, scilla_error list) result
-
   val map_depth : TUType.t -> int
 
   val address_field_type :

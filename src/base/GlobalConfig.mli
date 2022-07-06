@@ -20,38 +20,27 @@
 type debug_kind = Debug_None | Debug_Normal | Debug_Verbose
 
 val get_debug_level : unit -> debug_kind
-
 val set_debug_level : debug_kind -> unit
-
 val get_log_file : unit -> string
-
 val set_log_file : string -> unit
 
 (* Available trace levels *)
 type trace_kind = Trace_None | Trace_Statement | Trace_Expression
 
 val get_trace_level : unit -> trace_kind
-
 val set_trace_level : trace_kind -> unit
-
 val get_trace_file : unit -> string
-
 val set_trace_file : string -> unit
-
 val set_pp_lit : bool -> unit
-
 val get_pp_lit : unit -> bool
 
 (* Should error reporting be in JSON format? *)
 val set_use_json_errors : bool -> unit
-
 val use_json_errors : unit -> bool
 
 (* Should input JSONs be validated? *)
 val set_validate_json : bool -> unit
-
 val validate_json : unit -> bool
-
 val reset : unit -> unit
 
 module StdlibTracker : sig
@@ -78,9 +67,7 @@ module StdlibTracker : sig
 
   (* File extension for Scilla expressions. *)
   val file_extn_expression : string
-
   val add_deflib_adttyp : string -> string -> unit
-
   val lookup_deflib_adttyp : string -> string option
 
   (* Reset internal state. *)

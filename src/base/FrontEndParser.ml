@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Lexing
 open ErrorUtils
 open MonadUtil
@@ -79,15 +79,12 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     parse_lexbuf checkpoint_starter lexbuf "Prelude"
 
   let parse_type s = parse_string Parser.Incremental.type_term s
-
   let parse_expr s = parse_string Parser.Incremental.exp_term s
 
   let parse_expr_from_file filename =
     parse_file Parser.Incremental.exp_term filename
 
   let parse_expr_from_stdin () = parse_stdin Parser.Incremental.exp_term
-
   let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
-
   let parse_cmodule filename = parse_file Parser.Incremental.cmodule filename
 end

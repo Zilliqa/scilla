@@ -46,7 +46,7 @@
     | "ByStr" -> Bystr_typ
     | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
            if Str.string_match re d 0 then
-             let b = Core_kernel.Int.of_string (Str.matched_group 1 d) in
+             let b = Core.Int.of_string (Str.matched_group 1 d) in
              Bystrx_typ b
            else raise (SyntaxError ("Invalid primitive type", loc))
 
@@ -421,7 +421,7 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
+| THROW; mopt = option(sid); { Throw (Core.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
@@ -519,7 +519,7 @@ contract:
   comps = list(component)
   { { cname   = to_loc_id c (toLoc $startpos(c));
       cparams = params;
-      cconstraint = Core_kernel.Option.value ct ~default:(build_bool_literal true dummy_loc);
+      cconstraint = Core.Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
       ccomps = comps } }
 

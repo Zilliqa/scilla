@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Result.Let_syntax
 open ErrorUtils
 open MonadUtil
@@ -28,7 +28,6 @@ module PositiveInt : sig
   type t [@@deriving sexp]
 
   val create : int -> (t, scilla_error list) result
-
   val get : t -> int
 end = struct
   type t = int [@@deriving sexp]

@@ -37,7 +37,6 @@ val canonicalize_term : 'a term -> 'a term
 (* Check if two terms are equivalent. 
  * ~coef=false ignores co-efficients in the comparison. *)
 val eq_term : ?coef:bool -> 'a term -> 'a term -> bool
-
 val mul_term : 'a term -> 'a term -> 'a term
 
 (* If a term occurs more than once in a polynomial,

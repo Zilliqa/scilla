@@ -15,7 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Core_kernel
+open Core
 open Stdint
 open OUnit2
 open Scilla_base
@@ -32,7 +32,6 @@ module TestArith (SmallInt : Int) = struct
   type arith_error = Overflow | Underflow | Div_by_zero [@@deriving sexp]
 
   let min_small_int = SmallInt.(to_int min_int)
-
   let max_small_int = SmallInt.(to_int max_int)
 
   let test binop big_binop a_int b_int =

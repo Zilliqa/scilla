@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open Identifier
 open ParserUtil
@@ -155,8 +155,8 @@ let builtin_executor env f targs args_id =
   let res () = op targs arg_lits ret_typ in
   pure (res, Uint64.of_int cost)
 
-(* Replace address types with ByStr20 in a literal. 
-   This is to ensure that address types are treated as ByStr20 throughout the interpreter.  *)
+(* Replace address types with ByStr20 in a literal.
+   This is to ensure that address types are treated as ByStr20 throughout the interpreter. *)
 let replace_address_types l =
   let rec replace_in_type t =
     match t with
@@ -192,7 +192,7 @@ let replace_address_types l =
    The following evaluator is implemented in a monadic style, with the
    monad, at the moment to be CPS, with the specialised return result
    type as described in [Specialising the Return Type of Closures].
- *)
+*)
 
 let rec exp_eval erep env =
   let e, loc = erep in
@@ -337,7 +337,6 @@ and try_apply_as_type_closure v arg_type =
    The following function is used as an initial continuation to
    "bootstrap" the gas-aware computation and then retrieve not just
    the result, but also the remaining gas.
-
 *)
 let init_gas_kont r gas' =
   match r with Ok z -> Ok (z, gas') | Error msg -> Error (msg, gas')
@@ -351,7 +350,6 @@ let init_gas_kont r gas' =
    [Specialising the Return Type of Closures]). In short, it fully
    evaluates an expression with the fixed continuation, after which
    the result is passed further to the callee's continuation `k`.
-
 *)
 let exp_eval_wrapper_no_cps expr env k gas =
   let eval_res = exp_eval expr env init_gas_kont gas in
@@ -549,12 +547,8 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
-      (origin
-       ::
-       sender
-       ::
-       amount
-       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
+      (origin :: sender :: amount
+      :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
       (origin_value :: sender_value :: amount_value :: actuals)
   in
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
@@ -911,11 +905,11 @@ let post_process_msgs cstate outs =
     let balance = sub cstate.balance to_be_transferred in
     pure { cstate with balance }
 
-(* 
-Handle message:
-* tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
-* cstate : ContractState.t - current contract state
-* bstate : (string * type * literal) list - blockchain state
+(*
+   Handle message:
+   * tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
+   * cstate : ContractState.t - current contract state
+   * bstate : (string * type * literal) list - blockchain state
 *)
 let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
   let open ContractState in

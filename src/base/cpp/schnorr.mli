@@ -17,9 +17,7 @@
 *)
 
 val privkey_len : int
-
 val pubkey_len : int
-
 val signature_len : int
 
 (* Generate a private key / public key pair.

@@ -26,7 +26,6 @@ open IPCUtil
 module Type = TypeUtil.TUType
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module IPCClient = IPCIdl (IDL.GenClient ())
 
 (* The purpose of this Test Client is to initialize the test server with data during testing.
@@ -74,18 +73,19 @@ let translate_res res =
 
 let ipcclient_exn_wrapper thunk =
   try thunk () with
-  | Unix.Unix_error (_, s1, s2) ->
+  | Core_unix.Unix_error (_, s1, s2) ->
       assert_failure ("StateIPCTestClient: Unix error: " ^ s1 ^ s2)
   | _ ->
       assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call"
 
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
+    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+      ~protocol:0 ()
   in
-  Unix.connect socket ~addr:(Unix.ADDR_UNIX sock_addr);
+  Core_unix.connect socket ~addr:(Core_unix.ADDR_UNIX sock_addr);
   let ic, oc =
-    (Unix.in_channel_of_descr socket, Unix.out_channel_of_descr socket)
+    (Core_unix.in_channel_of_descr socket, Core_unix.out_channel_of_descr socket)
   in
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   (* Cannot use DebugMessage here as we're part of testsuite, and don't want to
@@ -95,7 +95,7 @@ let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let _ = IPCUtil.send_delimited oc msg_buf in
   (* Get response. *)
   let response = Caml.input_line ic in
-  Unix.close socket;
+  Core_unix.close socket;
   (* (Printf.printf "StateIPCTestClient: Response: %s\n" response); *)
   M.return @@ Jsonrpc.response_of_string response
 

@@ -19,7 +19,6 @@ open Base
 open Stdint
 
 exception IntOverflow
-
 exception IntUnderflow
 
 (*******************************************************)
@@ -30,25 +29,15 @@ module type IntRep = sig
   type t
 
   val compare : t -> t -> int
-
   val add : t -> t -> t
-
   val sub : t -> t -> t
-
   val mul : t -> t -> t
-
   val div : t -> t -> t
-
   val rem : t -> t -> t
-
   val shift_right : t -> int -> t
-
   val zero : t
-
   val one : t
-
   val min_int : t
-
   val max_int : t
 end
 
@@ -117,9 +106,7 @@ module SafeInt (Unsafe : IntRep) = struct
 
   (* Division_by_zero is taken care of by underlying implementation. *)
   let rem = Unsafe.rem
-
   let pow a b = pow mul Unsafe.one a b
-
   let lt a b = Unsafe.compare a b < 0
 end
 
@@ -148,9 +135,7 @@ module SafeUint (Unsafe : IntRep) = struct
 
   (* Division_by_zero is taken care of by underlying implementation. *)
   let rem = Unsafe.rem
-
   let pow a b = pow mul Unsafe.one a b
-
   let lt a b = Unsafe.compare a b < 0
 
   let isqrt n =

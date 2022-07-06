@@ -44,5 +44,4 @@ val append_full_state :
   string
 
 val json_from_string : string -> Yojson.Basic.t
-
 val json_to_string : Yojson.Basic.t -> string
