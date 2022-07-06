@@ -3,7 +3,7 @@
 OCAML_VERSION_RECOMMENDED=4.11.2
 # In case of upgrading ocamlformat version:
 # package.json also needs updating
-OCAMLFORMAT_VERSION=0.18.0
+OCAMLFORMAT_VERSION=0.22.4
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
