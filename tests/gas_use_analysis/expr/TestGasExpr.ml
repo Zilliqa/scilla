@@ -39,27 +39,16 @@ let explist =
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "gas_use_analysis"; "expr"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "gas_use_analysis"; "expr"; f ]
-
   let runner = "type-checker"
-
   let ignore_predef_args = true
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = [ "-gua"; "-contractinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
-
   let tests = explist
-
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 

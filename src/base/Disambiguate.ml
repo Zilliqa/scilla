@@ -42,7 +42,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   open PreDisSyntax
 
   let wrap_disambiguation_err e ?(opt = "") = wrap_err e "Disambiguation" ~opt
-
   let wrap_disambiguation_serr s ?(opt = "") = wrap_serr s "Disambiguation" ~opt
 
   (**************************************************************)
@@ -316,7 +315,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             foldrM msg_entries ~init:[] ~f:(fun acc (label, t, l) ->
                 let%bind res_l = recurser l in
                 let%bind res_t = disambiguate_type dicts.typ_dict t in
-                pure @@ (label, res_t, res_l) :: acc)
+                pure @@ ((label, res_t, res_l) :: acc))
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->

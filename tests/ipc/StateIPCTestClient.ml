@@ -26,7 +26,6 @@ open IPCUtil
 module Type = TypeUtil.TUType
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module IPCClient = IPCIdl (IDL.GenClient ())
 
 (* The purpose of this Test Client is to initialize the test server with data during testing.
@@ -81,7 +80,8 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM ~protocol:0 ()
+    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+      ~protocol:0 ()
   in
   Core_unix.connect socket ~addr:(Core_unix.ADDR_UNIX sock_addr);
   let ic, oc =

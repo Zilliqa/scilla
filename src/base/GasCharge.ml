@@ -28,7 +28,6 @@ module PositiveInt : sig
   type t [@@deriving sexp]
 
   val create : int -> (t, scilla_error list) result
-
   val get : t -> int
 end = struct
   type t = int [@@deriving sexp]

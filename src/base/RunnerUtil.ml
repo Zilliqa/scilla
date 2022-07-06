@@ -147,7 +147,7 @@ let import_libs names_and_namespaces init_address_map =
   in
   importer names_and_namespaces init_address_map []
 
-let stdlib_not_found_err ?(exe_name = (Sys.get_argv()).(0)) () =
+let stdlib_not_found_err ?(exe_name = (Sys.get_argv ()).(0)) () =
   fatal_error
     (mk_error0 ~kind:"A path to Scilla stdlib not found"
        ~inst:
@@ -299,7 +299,7 @@ let parse_cli args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist anon_handler mandatory_usage
         with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in

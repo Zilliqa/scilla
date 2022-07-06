@@ -69,8 +69,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         Core.String.concat ~sep:"" raw_strings
     | ADTValue (cons_name, _, params) ->
         let raw_params = List.map params ~f:serialize_literal in
-        Core.String.concat ~sep:""
-          (BIName.as_string cons_name :: raw_params)
+        Core.String.concat ~sep:"" (BIName.as_string cons_name :: raw_params)
     | Clo _fun -> "(Clo <fun>)"
     | TAbs _fun -> "(Tabs <fun>)"
 
@@ -306,11 +305,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_int32 _ ls _ = to_int_helper ls Bits32
-
     let to_int64 _ ls _ = to_int_helper ls Bits64
-
     let to_int128 _ ls _ = to_int_helper ls Bits128
-
     let to_int256 _ ls _ = to_int_helper ls Bits256
   end
 
@@ -478,11 +474,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_uint32 _ ls _ = to_uint_helper ls Bits32
-
     let to_uint64 _ ls _ = to_uint_helper ls Bits64
-
     let to_uint128 _ ls _ = to_uint_helper ls Bits128
-
     let to_uint256 _ ls _ = to_uint_helper ls Bits256
 
     let to_nat _ ls _ =
@@ -522,8 +515,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ BNum x; BNum y ] ->
           pure
           @@ build_bool_lit
-               Core.String.(
-                 Literal.BNumLit.get x = Literal.BNumLit.get y)
+               Core.String.(Literal.BNumLit.get x = Literal.BNumLit.get y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt _ ls _ =

@@ -42,7 +42,6 @@ type ss_field = {
 
 (* The blockchain info is a map from (query_name, query_args) to some info. *)
 type bcinfo_state = (string, (string, string) Caml.Hashtbl.t) Caml.Hashtbl.t
-
 type external_state = { caddr : SSLiteral.Bystrx.t; cstate : ss_field list }
 
 type service_mode =
@@ -383,5 +382,4 @@ end
 (* module MakeStateService *)
 
 module StateServiceInstance = MakeStateService ()
-
 include StateServiceInstance

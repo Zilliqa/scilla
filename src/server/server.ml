@@ -32,7 +32,6 @@ open IPCUtil
    You can easily put [ExnM] here and the code would stay unchanged. *)
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module Server = API (IDL.GenServer ())
 
 (* Makes a handler that executes the given [callback] with [args] and returns it. **)
@@ -70,7 +69,9 @@ let setup ~sock_path ~num_pending =
   Core_unix.(try unlink sock_path with Unix_error (ENOENT, _, _) -> ());
   (* Ensure that socket directory exists *)
   Core_unix.mkdir_p ~perm:0o0755 (Filename.dirname sock_path);
-  let socket = Core_unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ()) in
+  let socket =
+    Core_unix.(socket ~domain:PF_UNIX ~kind:SOCK_STREAM ~protocol:0 ())
+  in
   Core_unix.bind socket ~addr:(Core_unix.ADDR_UNIX sock_path);
   Core_unix.listen socket ~backlog:num_pending;
   pout @@ Printf.sprintf "Scilla Server is listening on %s\n" sock_path;
@@ -84,7 +85,6 @@ let rec serve rpc ~socket =
   serve rpc ~socket
 
 let sock_path = "/tmp/scilla-server.sock"
-
 let num_pending = 5
 
 let default_server_implementation () =

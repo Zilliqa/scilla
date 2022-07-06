@@ -35,37 +35,21 @@ type args = {
 }
 
 let f_input_init = ref ""
-
 let f_input_state = ref ""
-
 let f_input_message = ref ""
-
 let f_input_blockchain = ref ""
-
 let f_output = ref ""
-
 let f_input = ref ""
-
 let f_trace_file = ref ""
-
 let f_trace_level = ref ""
-
 let d_libs = ref []
-
 let v_gas_limit = ref Stdint.Uint64.zero
-
 let v_balance = ref None
-
 let b_pp_lit = ref true
-
 let b_json_errors = ref false
-
 let b_pp_json = ref true
-
 let b_validate_json = ref true
-
 let i_ipc_address = ref ""
-
 let b_reinit = ref false
 
 let reset () =
@@ -98,9 +82,7 @@ let process_trace () =
   | _ -> ()
 
 let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
-
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
-
 let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
@@ -111,7 +93,8 @@ let validate_main usage =
   let msg = "" in
   let msg =
     (* init.json is mandatory *)
-    if not @@ Sys_unix.file_exists_exn !f_input_init then "Invalid initialization file\n"
+    if not @@ Sys_unix.file_exists_exn !f_input_init then
+      "Invalid initialization file\n"
     else msg
   in
   let msg =
@@ -281,7 +264,7 @@ let parse args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
           PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg))

@@ -29,8 +29,7 @@
    Therefore, for now we have a compromise of fixing the result of
    evaluating expressions to be as below. In order to restore the
    genericity enabled by CPS, we provide an "impedance matcher",
-   described in [Continuation for Expression Evaluation]. 
-
+   described in [Continuation for Expression Evaluation].
 *)
 
 open Core
@@ -46,7 +45,6 @@ module BNumLit : sig
   type t [@@deriving sexp]
 
   val create : string -> (t, scilla_error list) result
-
   val get : t -> string
 end = struct
   type t = string [@@deriving sexp]
@@ -91,23 +89,14 @@ module type ScillaLiteral = sig
     type t [@@deriving sexp]
 
     val width : t -> int
-
     val parse_hex : string -> t
-
     val hex_encoding : t -> string
-
     val to_raw_bytes : t -> string
-
     val of_raw_bytes : int -> string -> t option
-
     val equal : t -> t -> bool
-
     val sub : t -> pos:int -> len:int -> t
-
     val length : t -> int
-
     val concat : t -> t -> t
-
     val rev : t -> t
   end
 
@@ -117,21 +106,13 @@ module type ScillaLiteral = sig
     type t [@@deriving sexp]
 
     val width : t -> int
-
     val parse_hex : string -> t
-
     val hex_encoding : t -> string
-
     val to_raw_bytes : t -> string
-
     val of_raw_bytes : int -> string -> t option
-
     val equal : t -> t -> bool
-
     val concat : t -> t -> t
-
     val rev : t -> t
-
     val to_bystr : t -> Bystr.t
   end
 
@@ -203,23 +184,14 @@ module type ScillaLiteral = sig
   (*******************************************************)
 
   val true_lit : t
-
   val false_lit : t
-
   val build_bool_lit : bool -> t
-
   val zero_lit : t
-
   val build_succ_lit : t -> t
-
   val build_some_lit : t -> LType.t -> t
-
   val build_none_lit : LType.t -> t
-
   val build_pair_lit : t -> LType.t -> t -> LType.t -> t
-
   val build_nil_lit : LType.t -> t
-
   val build_cons_lit : t -> LType.t -> t -> t
 end
 
@@ -237,7 +209,6 @@ module MkLiteral (T : ScillaType) = struct
   open Integer256
 
   let equal_int128 x y = Int128.compare x y = 0
-
   let equal_int256 x y = Int256.compare x y = 0
 
   type int_lit =
@@ -254,13 +225,9 @@ module MkLiteral (T : ScillaType) = struct
     | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
 
   let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
-
   let equal_uint32 x y = Uint32.compare x y = 0
-
   let equal_uint64 x y = Uint64.compare x y = 0
-
   let equal_uint128 x y = Uint128.compare x y = 0
-
   let equal_uint256 x y = Uint256.compare x y = 0
 
   type uint_lit =
@@ -282,23 +249,14 @@ module MkLiteral (T : ScillaType) = struct
     type t [@@deriving sexp]
 
     val width : t -> int
-
     val parse_hex : string -> t
-
     val hex_encoding : t -> string
-
     val to_raw_bytes : t -> string
-
     val of_raw_bytes : int -> string -> t option
-
     val equal : t -> t -> bool
-
     val sub : t -> pos:int -> len:int -> t
-
     val length : t -> int
-
     val concat : t -> t -> t
-
     val rev : t -> t
   end
 
@@ -315,20 +273,15 @@ module MkLiteral (T : ScillaType) = struct
         Hex.to_string (`Hex s_nopref)
 
     let hex_encoding bs = "0x" ^ Hex.show @@ Hex.of_string bs
-
     let to_raw_bytes = Fn.id
 
     let of_raw_bytes expected_width raw =
       Option.some_if (String.length raw = expected_width) raw
 
     let equal = String.equal
-
     let sub = String.sub
-
     let length = String.length
-
     let concat = ( ^ )
-
     let rev = String.rev
   end
 
@@ -336,21 +289,13 @@ module MkLiteral (T : ScillaType) = struct
     type t [@@deriving sexp]
 
     val width : t -> int
-
     val parse_hex : string -> t
-
     val hex_encoding : t -> string
-
     val to_raw_bytes : t -> string
-
     val of_raw_bytes : int -> string -> t option
-
     val equal : t -> t -> bool
-
     val concat : t -> t -> t
-
     val rev : t -> t
-
     val to_bystr : t -> Bystr.t
   end
 

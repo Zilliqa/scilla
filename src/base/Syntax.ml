@@ -26,7 +26,6 @@ exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
 let scilla_version = (0, 12, 0)
-
 let hash_length = 32
 
 (* Builtins *)
@@ -214,27 +213,18 @@ module type Rep = sig
   type rep
 
   val dummy_rep : rep
-
   val get_loc : rep -> loc
-
   val address_rep : rep
-
   val uint128_rep : rep
-
   val uint32_rep : rep
-
   val bnum_rep : rep
-
   val string_rep : rep
-
   val rep_of_sexp : Sexp.t -> rep
-
   val sexp_of_rep : rep -> Sexp.t
 
   (* TODO, Issue #179: These functions are only used in TypeCache.ml.
      See if they can be eliminated somehow *)
   val parse_rep : string -> rep
-
   val get_rep_str : rep -> string
 end
 
@@ -288,7 +278,6 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
 
   (* SExp printing for Expr for structural printing. *)
   let spp_expr e = sexp_of_expr e |> Sexplib.Sexp.to_string
-
   let pp_expr e = spp_expr e
 
   (*******************************************************)
@@ -347,11 +336,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
-
   let stmt_loc s = SR.get_loc (stmt_rep s)
-
   let spp_stmt s = sexp_of_stmt s |> Sexplib.Sexp.to_string
-
   let pp_stmt s = spp_stmt s
 
   (*******************************************************)

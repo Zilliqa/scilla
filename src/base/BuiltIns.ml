@@ -100,20 +100,15 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* let string_eq_type = FunType (string_typ, FunType (string_typ, )) *)
 
     let eq_arity = 2
-
     let eq_type = fun_typ string_typ @@ fun_typ string_typ bool_typ
-
     let concat_arity = 2
-
     let concat_type = fun_typ string_typ @@ fun_typ string_typ string_typ
-
     let substr_arity = 3
 
     let substr_type =
       fun_typ string_typ @@ fun_typ uint32_typ @@ fun_typ uint32_typ string_typ
 
     let strlen_arity = 1
-
     let strlen_type = tfun_typ "'A" (fun_typ (tvar "'A") uint32_typ)
 
     let strlen_elab _ targs ts =
@@ -125,7 +120,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_string_arity = 1
-
     let to_string_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
 
     let to_string_elab _ targs ts =
@@ -141,7 +135,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_ascii_arity = 1
-
     let to_ascii_type = tfun_typ "'A" (fun_typ (tvar "'A") string_typ)
 
     let to_ascii_elab _ targs ts =
@@ -157,7 +150,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let strrev_arity = 1
-
     let strrev_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
 
     let strrev_elab _ targs ts =
@@ -280,7 +272,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let isqrt_arity = 1
-
     let isqrt_type = tfun_typ "'A" (fun_typ (tvar "'A") (tvar "'A"))
 
     let isqrt_elab t targs ts =
@@ -304,9 +295,7 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       | _, _ -> fail0 ~kind:"Failed to elaborate" ?inst:None
 
     let to_nat_arity = 1
-
     let to_nat_type = fun_typ uint32_typ nat_typ
-
     let to_bystrx_arity = 1
 
     let to_bystrx_type =
@@ -329,13 +318,9 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     open Datatypes.DataTypeDictionary
 
     let eq_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
-
     let eq_arity = 2
-
     let blt_type = fun_typ bnum_typ @@ fun_typ bnum_typ bool_typ
-
     let blt_arity = 2
-
     let badd_arity = 2
 
     let badd_type =
@@ -408,12 +393,10 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
 
     (* ByStr -> Option ByStrX *)
     let to_bystrx_type x = fun_typ bystr_typ (option_typ (bystrx_typ x))
-
     let to_bystrx_arity = 1
 
     (* ByStrX -> ByStr *)
     let to_bystr_type = tfun_typ "'A" @@ fun_typ (tvar "'A") bystr_typ
-
     let to_bystr_arity = 1
 
     let to_bystr_elab sc targs ts =
@@ -565,7 +548,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
       bool_typ
 
     let ecdsa_verify_arity = 3
-
     let ecdsa_recover_pk_arity = 3
 
     let ecdsa_recover_pk_type =
@@ -602,7 +584,6 @@ module ScillaBuiltIns (SR : Rep) (ER : Rep) = struct
     (* alt_bn128_G1_neg : zksnark_g1point_typ ->
                           Option {zksnark_g1point_type} *)
     let alt_bn128_G1_neg_type = fun_typ g1point_type (option_typ g1point_type)
-
     let alt_bn128_G1_neg_arity = 1
 
     (* alt_bn128_pairing_product : List (g1g2pair_type) -> Option {Bool} *)

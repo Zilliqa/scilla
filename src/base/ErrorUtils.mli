@@ -27,9 +27,7 @@ type loc = {
 [@@deriving sexp, equal]
 
 val toLoc : Lexing.position -> loc
-
 val dummy_loc : loc
-
 val get_loc_str : loc -> string
 
 (* `ekind` represents the reason for failure;
@@ -42,28 +40,20 @@ type scilla_error = {
 }
 
 val mk_error_description : scilla_error -> string
-
 val sprint_scilla_error_list : scilla_error list -> string
-
 val mk_error0 : kind:string -> ?inst:string -> scilla_error list
-
 val mk_error1 : kind:string -> ?inst:string -> loc -> scilla_error list
-
 val mk_error2 : kind:string -> ?inst:string -> loc -> loc -> scilla_error list
 
 type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
 (* flag a warning, specifying a message and a warning "id".
    The "id" can be used to enable or disable specific warnings.
- *)
+*)
 val warn0 : string -> int -> unit
-
 val warn1 : string -> int -> loc -> unit
-
 val warn2 : string -> int -> loc -> loc -> unit
-
 val get_warnings : unit -> scilla_warning list
-
 val reset_warnings : unit -> unit
 
 exception Invalid_json of scilla_error list

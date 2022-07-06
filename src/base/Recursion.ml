@@ -364,7 +364,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     @@ let%bind recursion_entries =
          foldM lentries ~init:[] ~f:(fun rec_entries entry ->
              let%bind new_entry = recursion_lib_entry entry in
-             pure @@ new_entry :: rec_entries)
+             pure @@ (new_entry :: rec_entries))
        in
        pure
          {

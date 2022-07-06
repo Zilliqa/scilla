@@ -32,7 +32,6 @@ module TestArith (SmallInt : Int) = struct
   type arith_error = Overflow | Underflow | Div_by_zero [@@deriving sexp]
 
   let min_small_int = SmallInt.(to_int min_int)
-
   let max_small_int = SmallInt.(to_int max_int)
 
   let test binop big_binop a_int b_int =

@@ -122,27 +122,16 @@ let print_cli_usage flag bin args =
 
 module type TestSuiteInput = sig
   val tests : string list
-
   val gold_path : string -> string -> string list
-
   val test_path : string -> string list
-
   val runner : string
-
   val ignore_predef_args : bool
-
   val json_errors : bool
-
   val exit_code : UnixLabels.process_status
-
   val additional_libdirs : string list list
-
   val gas_limit : Stdint.uint64
-
   val custom_args : string list
-
   val provide_init_arg : bool
-
   val diff_filter : string -> string
 end
 
@@ -162,7 +151,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let goldoutput_file = make_filename (gold_path dir fname) in
         let additional_dirs = List.map ~f:make_filename additional_libdirs in
         let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
-        let path = string_of_path @@ stdlib :: additional_dirs in
+        let path = string_of_path @@ (stdlib :: additional_dirs) in
         let args' =
           if ignore_predef_args then custom_args @ [ input_file ]
           else
@@ -183,10 +172,8 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         (* load all data from file *)
         let non_normalized_gold_output = In_channel.read_all goldoutput_file in
         let gold_output =
-          if json_errors then
-            normalize_json non_normalized_gold_output
-          else
-            non_normalized_gold_output
+          if json_errors then normalize_json non_normalized_gold_output
+          else non_normalized_gold_output
         in
         print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
@@ -195,7 +182,9 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file actual_output
             else
-              output_verifier (diff_filter gold_output) msg (env.print_diff test_ctxt) (diff_filter actual_output))
+              output_verifier (diff_filter gold_output) msg
+                (env.print_diff test_ctxt)
+                (diff_filter actual_output))
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let tests env = "exptests" >::: build_exp_tests env tests

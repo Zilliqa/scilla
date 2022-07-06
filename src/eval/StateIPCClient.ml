@@ -29,9 +29,7 @@ open IPCUtil
 module ER = ParserRep
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module IPCClient = IPCIdl (IDL.GenClient ())
-
 module IPCCLiteral = GlobalLiteral
 module IPCCType = IPCCLiteral.LType
 module IPCCIdentifier = IPCCType.TIdentifier
@@ -59,7 +57,8 @@ let ipcclient_exn_wrapper thunk =
 
 let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =
-    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM ~protocol:0 ()
+    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+      ~protocol:0 ()
   in
   Core_unix.connect socket ~addr:(Core_unix.ADDR_UNIX socket_addr);
   let ic = Core_unix.in_channel_of_descr socket in

@@ -31,8 +31,10 @@ module JSONLiteral = GlobalLiteral
 module JSONType = JSONLiteral.LType
 module JSONIdentifier = JSONType.TIdentifier
 module JSONName = JSONIdentifier.Name
+
 module JSONBuiltIns =
   ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+
 module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (JSONLiteral)
 open JSONTypeUtilities
 open JSONIdentifier
@@ -50,11 +52,8 @@ type json_parsed_field =
 (****************************************************************)
 
 let json_exn_wrapper = JSONParser.json_exn_wrapper
-
 let member_exn = JSONParser.member_exn
-
 let to_string_exn = JSONParser.to_string_exn
-
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let from_file f =

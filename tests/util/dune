@@ -3,4 +3,5 @@
  (public_name scilla.test)
  (name scilla_test)
  (wrapped true)
- (libraries camlp-streams core core_unix.sys_unix oUnit fileutils scilla_base patdiff))
+ (libraries camlp-streams core core_unix.sys_unix oUnit fileutils scilla_base
+   patdiff))

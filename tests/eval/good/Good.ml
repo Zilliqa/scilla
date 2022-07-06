@@ -164,27 +164,16 @@ let explist =
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "eval"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "eval"; "good"; f ]
-
   let runner = "eval-runner"
-
   let ignore_predef_args = false
-
   let json_errors = false
-
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = []
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
-
   let tests = explist
-
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 

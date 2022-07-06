@@ -24,11 +24,8 @@ open Scilla_test.Util
 open OUnitTest
 
 let testsuit_gas_limit = "8000"
-
 let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
-
 let succ_code : UnixLabels.process_status = WEXITED 0
-
 let fail_code : UnixLabels.process_status = WEXITED 1
 
 let do_start_mock_server env test_ctxt =
@@ -186,17 +183,13 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
     if Poly.(exit_code = succ_code && not is_library) then
-      test ~ipc_mode:true
-      ::
-      test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name is_library
+      test ~ipc_mode:true :: test ~ipc_mode:false
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name is_library
     else
       test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name is_library
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name is_library
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for

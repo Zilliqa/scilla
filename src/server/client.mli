@@ -20,7 +20,5 @@ val rpc : sock_path:string -> Rpc.call -> Rpc.response
 (** Connects to a given [socket_path] and makes an RPC call *)
 
 val run : sock_path:string -> Api.args_t -> Rpc.response
-
 val check : sock_path:string -> Api.args_t -> Rpc.response
-
 val disambiguate : sock_path:string -> Api.args_t -> Rpc.response

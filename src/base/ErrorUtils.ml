@@ -78,7 +78,7 @@ let warnings_list = ref []
 
 (* flag a warning, specifying a message and a warning "id".
    The "id" can be used to enable or disable specific warnings.
- *)
+*)
 let warn0 msg id =
   let warning =
     { wmsg = msg; wstartl = dummy_loc; wendl = dummy_loc; wid = id }
@@ -94,7 +94,6 @@ let warn2 msg id sloc eloc =
   warnings_list := warning :: !warnings_list
 
 let get_warnings () = !warnings_list
-
 let reset_warnings () = warnings_list := []
 
 exception Invalid_json of scilla_error list

@@ -35,17 +35,11 @@ module IPCIdl (R : RPC) = struct
       }
 
   let implementation = implement description
-
   let query = Param.mk ~name:"query" Rpc.Types.string
-
   let value = Param.mk ~name:"value" Rpc.Types.string
-
   let scilla_type = Param.mk ~name:"scilla_type" Rpc.Types.string
-
   let addr = Param.mk ~name:"addr" Rpc.Types.string
-
   let query_name = Param.mk ~name:"query_name" Rpc.Types.string
-
   let query_args = Param.mk ~name:"query_args" Rpc.Types.string
 
   (* The return value for `fetchStateValue` will be a pair (found : bool, value : string)

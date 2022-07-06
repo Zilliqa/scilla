@@ -30,7 +30,6 @@ module ScillaGUA
       include Rep
 
       val get_type : rep -> PlainTypes.t inferred_type
-
       val mk_rep : loc -> PlainTypes.t inferred_type -> rep
     end) =
 struct
@@ -47,7 +46,6 @@ struct
   open GUASyntax
 
   let guaname_of_string = GUAName.parse_simple_name
-
   let mk_gua_id i = mk_id @@ guaname_of_string i
 
   let mk_typed_id i t =

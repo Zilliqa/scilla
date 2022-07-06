@@ -3,5 +3,5 @@
  (name stateIPCTest)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show))
- (libraries core core_unix core_unix.core_thread scilla_base oUnit rpclib unix rpclib.json rresult
-   ocaml-protoc scilla_eval))
+ (libraries core core_unix core_unix.core_thread scilla_base oUnit rpclib
+   unix rpclib.json rresult ocaml-protoc scilla_eval))

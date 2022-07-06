@@ -280,7 +280,6 @@ let not_assignable_in_either_direction_types =
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)
-
 let reverse_test eq (t1, t2) = (t2, t1, eq)
 
 let all_type_equiv_tests =
@@ -398,23 +397,14 @@ let ground_type_tests = "ground_type_tests" >::: all_ground_type_tests
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "typecheck"; "good"; f ]
-
   let runner = "type-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = [ "-typeinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =

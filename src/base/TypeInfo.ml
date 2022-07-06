@@ -129,11 +129,11 @@ struct
         | ReadFromBC (v, bf) ->
             List.map ~f:calc_ident_locs
               (v
-               ::
-               (match bf with
-               | CurBlockNum | ChainID -> []
-               | Timestamp s -> [ s ]
-               | ReplicateContr (addr, iparams) -> [ addr; iparams ]))
+              ::
+              (match bf with
+              | CurBlockNum | ChainID -> []
+              | Timestamp s -> [ s ]
+              | ReplicateContr (addr, iparams) -> [ addr; iparams ]))
         | TypeCast (v, r, _) -> [ calc_ident_locs v; calc_ident_locs r ]
         | AcceptPayment | GasStmt _ -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs
