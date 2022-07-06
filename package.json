@@ -15,9 +15,9 @@
     "fmt": "make fmt"
   },
   "dependencies": {
-    "@opam/angstrom": ">=0.11.0 <0.15.0",
-    "@opam/bisect_ppx": ">=2.0.0 <2.5.0",
-    "@opam/bitstring": ">=3.1.0 <3.2.0",
+    "@opam/angstrom": ">=0.11.0 <0.16.0",
+    "@opam/bisect_ppx": ">=2.0.0 <2.9.0",
+    "@opam/bitstring": ">=3.1.0 <4.2.0",
     "@opam/conf-boost": "*",
     "@opam/conf-cmake": "*",
     "@opam/conf-gcc": "*",
@@ -30,25 +30,25 @@
     "@opam/conf-pkg-config": "*",
     "@opam/conf-secp256k1": "*",
     "@opam/conf-zlib": "*",
-    "@opam/core": ">=v0.14.0 <v0.15.0",
+    "@opam/core": ">=v0.15.0 <v0.16.0",
     "@opam/dune": ">=2.0",
-    "@opam/cryptokit": ">=1.13 <1.15.0",
-    "@opam/ctypes": ">=0.14.0 <0.18.0",
-    "@opam/ctypes-foreign": ">=0.4.0 <0.5.0",
+    "@opam/cryptokit": ">=1.13 <1.18.0",
+    "@opam/ctypes": ">=0.14.0 <0.21.0",
+    "@opam/ctypes-foreign": "*",
     "@opam/fileutils": ">=0.5.3 <0.7.0",
-    "@opam/hex": ">=1.3.0 <1.5.0",
+    "@opam/hex": ">=1.3.0 <1.6.0",
     "@opam/menhir": "*",
-    "ocaml": ">=4.08.0 <4.13.0",
-    "@opam/ocaml-protoc": ">=1.2.0 <2.1.0",
-    "@opam/ounit": ">=2.0.8 <2.3.0",
-    "@opam/patdiff": ">=v0.14.0 <v0.15.0",
-    "@opam/ppx_deriving": ">=4.2.1 <4.6.0",
-    "@opam/ppx_sexp_conv": ">=v0.14.0 <v0.15.0",
-    "@opam/ppx_compare": ">=v0.14.0 <v0.15.0",
-    "@opam/ppx_deriving_rpc": ">=6.0.0 <8.0.0",
-    "@opam/secp256k1": ">=0.4.0 <0.5.0",
-    "@opam/stdint": ">=0.5.1 <0.7.0",
-    "@opam/yojson": ">=1.7.0 <1.8.0"
+    "ocaml": ">=4.11.0 <4.15.0",
+    "@opam/ocaml-protoc": ">=1.2.0 <2.3.0",
+    "@opam/ounit": ">=2.0.8 <2.2.6",
+    "@opam/patdiff": ">=v0.15.0 <v0.16.0",
+    "@opam/ppx_deriving": ">=4.2.1 <5.3.0",
+    "@opam/ppx_sexp_conv": ">=v0.15.0 <v0.16.0",
+    "@opam/ppx_compare": ">=v0.15.0 <v0.16.0",
+    "@opam/ppx_deriving_rpc": ">=6.0.0 <10.0.0",
+    "@opam/secp256k1": ">=0.4.4 <0.5.0",
+    "@opam/stdint": ">=0.5.1 <0.8.0",
+    "@opam/yojson": ">=1.7.0 <2.1.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
@@ -56,6 +56,6 @@
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
     "@opam/ocp-indent": "*",
     "@opam/utop": "*",
-    "ocaml": ">=4.08.0 <4.13.0"
+    "ocaml": ">=4.11.0 <4.15.0"
   }
 }
