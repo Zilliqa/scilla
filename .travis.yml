@@ -15,6 +15,18 @@ matrix:
     - os: linux
       dist: xenial
       env: OCAML_VERSION=4.11.2
+    - os: linux
+      dist: focal
+      env: OCAML_VERSION=4.14.0
+    - os: linux
+      dist: focal
+      env: OCAML_VERSION=4.13.1
+    - os: linux
+      dist: focal
+      env: OCAML_VERSION=4.12.1
+    - os: linux
+      dist: focal
+      env: OCAML_VERSION=4.11.2
     # - os: osx
     #  osx_image: xcode10.1
 
