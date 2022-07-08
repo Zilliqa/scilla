@@ -162,7 +162,7 @@ Disabling sandboxing is required since [WSL does not support Sandboxing](https:/
 To disable sandboxing, simply run:
 
 ```shell
-opam init --disable-sandboxing --compiler=4.11.2 --yes
+opam init --disable-sandboxing --compiler=ocaml-base-compiler.4.11.2 --yes
 ```
 
 7. Set up current shell to work with opam
@@ -230,7 +230,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
 
 #### Initialize opam
 ```shell
-opam init --compiler=4.11.2 --yes
+opam init --compiler=ocaml-base-compiler.4.11.2 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.
