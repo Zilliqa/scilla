@@ -13,6 +13,7 @@ RUN apt-get update \
     && apt-get install -y software-properties-common \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
+    git \
     curl \
     wget \
     cmake \
