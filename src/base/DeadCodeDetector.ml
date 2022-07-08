@@ -54,14 +54,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       (List.fold_left tys ~init:[] ~f:(fun iden_l ty ->
            iden_iter ty [] @ iden_l))
 
+  (* Returns used names of ADT types with their constructors. *)
   let rec user_types_in_literal lits =
     let res =
       List.fold_left lits ~init:[] ~f:(fun res_adts lit ->
           match lit with
           | SLiteral.Map ((ty1, ty2), _) ->
               user_types_in_adt [ ty1 ] @ user_types_in_adt [ ty2 ] @ res_adts
-          | SLiteral.ADTValue (_, tys, ts) ->
-              user_types_in_adt tys @ user_types_in_literal ts @ res_adts
+          | SLiteral.ADTValue (ctr, tys, ts) ->
+              [ctr] @ user_types_in_adt tys @ user_types_in_literal ts @ res_adts
           | _ -> [])
     in
     List.dedup_and_sort ~compare:SCIdentifier.Name.compare res
@@ -89,7 +90,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (******** Checking for dead expressions ********)
-    (* Returns free variables and used ADT types *)
+    (* Returns free variables, used ADT types with their constructors *)
     let rec expr_iter (expr, _) =
       match expr with
       | Literal l ->
@@ -104,8 +105,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           in
           (fvars, [])
       | App (f, actuals) -> (f :: actuals, [])
-      | Constr (_, tys, actuals) | Builtin (_, tys, actuals) ->
-          (actuals, user_types_in_adt tys)
+      | Constr (ctr, tys, actuals) ->
+          (actuals, user_types_in_adt tys @ [SCIdentifier.get_id ctr])
+      | Builtin (_, tys, actuals) -> (actuals, user_types_in_adt tys)
       | Fixpoint (a, ty, e) | Fun (a, ty, e) ->
           let e_fv, e_adts = expr_iter e in
           let e_fv_no_a =
@@ -324,18 +326,31 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     dedup_name_list (user_types_in_adt [ ty ] @ tyl @ adts')
               in
               (res_fv, res_adts)
-          | LibTyp (i, _) ->
+          | LibTyp (i, ctrs) ->
+              let ids_eq rep_id id =
+                SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
+              in
+              let used_ctrs, unused_ctrs =
+                List.partition_tf ctrs
+                  ~f:(fun ctr ->
+                        List.exists adts' ~f:(fun adt -> ids_eq ctr.cname adt))
+              in
               let adts'_no_i =
                 List.filter
                   ~f:(fun i' ->
-                    not @@ SCIdentifier.Name.equal (SCIdentifier.get_id i) i')
+                    not @@
+                      ((SCIdentifier.Name.equal (SCIdentifier.get_id i) i') ||
+                        List.exists used_ctrs
+                            ~f:(fun ctr -> ids_eq ctr.cname i')))
                   adts'
               in
-              if
-                not
-                @@ List.exists adts' ~f:(fun adt ->
-                       SCIdentifier.Name.equal (SCIdentifier.get_id i) adt)
-              then warn "Unused library ADT: " i ER.get_loc;
+              if List.is_empty used_ctrs &&
+                 not @@ List.exists adts' ~f:(fun adt -> ids_eq i adt) then
+                (warn "Unused library ADT: " i ER.get_loc)
+              else
+                List.iter unused_ctrs
+                  ~f:(fun ctr ->
+                    warn "Unused ADT constructor: " ctr.cname ER.get_loc);
               (freevars', adts'_no_i))
       | [] -> (freevars, adts)
     in

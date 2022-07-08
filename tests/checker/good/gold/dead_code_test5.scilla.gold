@@ -1,32 +1,36 @@
 {
   "cashflow_tags": {
-    "State variables": [
-      { "field": "param_val", "tag": "NoInfo" },
-      { "field": "f", "tag": "NotMoney" }
-    ],
+    "State variables": [],
     "ADT constructors": [
       {
-        "constraint_scope.MyTyp": [
-          { "constructor": "constraint_scope.Val2", "tags": [ "NoInfo" ] }
+        "dead_code_test5.TestType": [
+          { "constructor": "dead_code_test5.T", "tags": [ "NoInfo" ] }
         ]
       }
     ]
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Constraint",
-    "params": [ { "vname": "param_val", "type": "Bool" } ],
-    "fields": [ { "vname": "f", "type": "Bool", "depth": 0 } ],
-    "transitions": [],
+    "vname": "Dead5",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "dummy1", "params": [] },
+      { "vname": "dummy2", "params": [] }
+    ],
     "procedures": [],
-    "events": [],
+    "events": [
+      {
+        "vname": "Error",
+        "params": [ { "vname": "err_code", "type": "Uint32" } ]
+      }
+    ],
     "ADTs": [
       {
-        "tname": "constraint_scope.MyTyp",
+        "tname": "dead_code_test5.TestType",
         "tparams": [],
         "tmap": [
-          { "cname": "constraint_scope.Val1", "argtypes": [ "Bool" ] },
-          { "cname": "constraint_scope.Val2", "argtypes": [ "Uint128" ] }
+          { "cname": "dead_code_test5.T", "argtypes": [ "Uint128" ] }
         ]
       },
       {
@@ -65,73 +69,81 @@
         "tname": "Pair",
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "dead_code_test5.Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test5.InternalError", "argtypes": [] },
+          { "cname": "dead_code_test5.OtherError", "argtypes": [] }
+        ]
       }
     ]
   },
   "warnings": [
     {
-      "warning_message": "Unused field: f",
+      "warning_message": "Unused ADT constructor: OtherError",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 32,
-        "column": 7
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 8,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused ADT constructor: Val2",
+      "warning_message": "Unused bind statement to: map",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 9,
-        "column": 1
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 33,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused let expression: lib_val",
+      "warning_message": "Unused bind statement to: k",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 24,
-        "column": 7
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 34,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused let expression: param_val",
+      "warning_message": "Unused bind statement to: zero",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 26,
-        "column": 7
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 35,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused let expression: f",
+      "warning_message": "Unused bind statement to: v",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 28,
-        "column": 7
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 36,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Name param_val shadows a contract parameter.",
+      "warning_message": "Unused bind statement to: map2",
       "start_location": {
-        "file": "checker/good/constraint_scope.scilla",
-        "line": 26,
-        "column": 7
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 37,
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
+      "warning_id": 3
     },
     {
       "warning_message":
-        "No transition in contract Constraint contains an accept statement\n",
+        "No transition in contract Dead5 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -139,4 +151,3 @@
   ],
   "gas_remaining": "7999"
 }
-

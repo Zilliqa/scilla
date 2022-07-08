@@ -1,0 +1,38 @@
+scilla_version 0
+
+library Dead5
+
+(* OtherError is dead. *)
+type Error =
+  | InternalError
+  | OtherError
+let internal_error = InternalError
+
+let mk_error_event =
+  fun (err: Error) =>
+    let err_code =
+      match err with
+        | InternalError => Uint32 1
+        | OtherError => Uint32 2
+    end in
+    { _eventname: "Error"
+    ; err_code: err_code }
+
+(* TestType and T are used. *)
+type TestType =
+  | T of Uint128
+
+contract Dead5()
+
+transition dummy1 ()
+  err_e = mk_error_event internal_error;
+  event err_e
+end
+
+transition dummy2 ()
+  map = Emp String TestType;
+  k = "Hello";
+  zero = Uint128 0;
+  v = T zero;
+  map2 = builtin put map k v
+end
