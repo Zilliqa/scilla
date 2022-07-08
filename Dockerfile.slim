@@ -13,6 +13,7 @@ RUN apt-get update \
     && apt-get install -y software-properties-common \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
+    git \
     curl \
     wget \
     cmake \
@@ -26,6 +27,7 @@ RUN apt-get update \
     libffi-dev \
     libssl-dev \
     libsecp256k1-dev \
+    libboost-dev \
     libboost-system-dev \
     libboost-test-dev \
     libpcre3-dev \

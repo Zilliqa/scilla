@@ -153,7 +153,7 @@ zilliqa-docker:
 # Create an opam-based development environment
 .PHONY : opamdep
 opamdep:
-	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
+	opam init --compiler=ocaml-base-compiler.$(OCAML_VERSION_RECOMMENDED) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install --yes $(OPAM_DEV_DEPS)
@@ -164,7 +164,7 @@ dev-deps:
 
 .PHONY : opamdep-ci
 opamdep-ci:
-	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
+	opam init --disable-sandboxing --compiler=ocaml-base-compiler.$(OCAML_VERSION) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
