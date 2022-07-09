@@ -62,7 +62,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           | SLiteral.Map ((ty1, ty2), _) ->
               user_types_in_adt [ ty1 ] @ user_types_in_adt [ ty2 ] @ res_adts
           | SLiteral.ADTValue (ctr, tys, ts) ->
-              [ctr] @ user_types_in_adt tys @ user_types_in_literal ts @ res_adts
+              [ ctr ] @ user_types_in_adt tys @ user_types_in_literal ts
+              @ res_adts
           | _ -> [])
     in
     List.dedup_and_sort ~compare:SCIdentifier.Name.compare res
@@ -106,7 +107,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           (fvars, [])
       | App (f, actuals) -> (f :: actuals, [])
       | Constr (ctr, tys, actuals) ->
-          (actuals, user_types_in_adt tys @ [SCIdentifier.get_id ctr])
+          (actuals, user_types_in_adt tys @ [ SCIdentifier.get_id ctr ])
       | Builtin (_, tys, actuals) -> (actuals, user_types_in_adt tys)
       | Fixpoint (a, ty, e) | Fun (a, ty, e) ->
           let e_fv, e_adts = expr_iter e in
@@ -307,7 +308,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     let rec dcd_lib_entries lentries freevars adts param_adts =
       match lentries with
       | lentry :: rentries -> (
-          let freevars', adts' = dcd_lib_entries rentries freevars adts param_adts in
+          let freevars', adts' =
+            dcd_lib_entries rentries freevars adts param_adts
+          in
           match lentry with
           | LibVar (i, topt, lexp) ->
               let freevars'_no_i =
@@ -331,27 +334,27 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
               in
               let used_ctrs, unused_ctrs =
-                List.partition_tf ctrs
-                  ~f:(fun ctr ->
-                        List.exists adts' ~f:(fun adt -> ids_eq ctr.cname adt))
+                List.partition_tf ctrs ~f:(fun ctr ->
+                    List.exists adts' ~f:(fun adt -> ids_eq ctr.cname adt))
               in
               let adts'_no_i =
                 List.filter
                   ~f:(fun i' ->
-                    not @@
-                      (ids_eq i i' ||
-                       List.exists used_ctrs ~f:(fun ctr -> ids_eq ctr.cname i')))
+                    not
+                    @@ (ids_eq i i'
+                       || List.exists used_ctrs ~f:(fun ctr ->
+                              ids_eq ctr.cname i')))
                   adts'
               in
               if not @@ List.exists param_adts ~f:(fun adt -> ids_eq i adt) then
-                if List.is_empty used_ctrs &&
-                   not @@ List.exists adts' ~f:(fun adt -> ids_eq i adt) then
-                  (warn "Unused library ADT: " i ER.get_loc)
+                if
+                  List.is_empty used_ctrs
+                  && (not @@ List.exists adts' ~f:(fun adt -> ids_eq i adt))
+                then warn "Unused library ADT: " i ER.get_loc
                 else
-                  List.iter unused_ctrs
-                    ~f:(fun ctr ->
+                  List.iter unused_ctrs ~f:(fun ctr ->
                       warn "Unused ADT constructor: " ctr.cname ER.get_loc);
-                (freevars', adts'_no_i))
+              (freevars', adts'_no_i))
       | [] -> (freevars, adts)
     in
 
@@ -387,7 +390,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           in
           ( lv' @ res_fv,
             param_adts @ adts @ res_adts,
-            param_adts @ res_param_adts))
+            param_adts @ res_param_adts ))
     in
     let comps_lv' = dedup_id_list comps_lv in
     let comps_adts' = dedup_name_list comps_adts in
