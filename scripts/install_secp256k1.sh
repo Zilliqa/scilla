@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# shellcheck disable
 
 depsdir="deps"
 
+# shellcheck disable=SC1091
 source /etc/lsb-release
 
 
@@ -16,7 +16,7 @@ function install_prereq() {
 function install_from_source() {
         sudo apt-get install -y autoconf libtool
         echo "Install secp256k1"
-        ( cd ${depsdir}/${1} &&
+        ( cd "${depsdir}/${1}" &&
           ./autogen.sh &&
           ./configure --prefix=/usr --enable-module-recovery &&
           make && sudo make install )
@@ -27,8 +27,7 @@ function install_from_source() {
 function install_secp256k1() {
 	if [[ "${DISTRIB_RELEASE}" == "16.04" ]]; then
 		echo "Add the PPA repository for secp256k1"
-		sudo add-apt-repository ppa:tah83/secp256k1 -y
-		if (( $? )) ; then
+		if ! sudo add-apt-repository ppa:tah83/secp256k1 -y; then
 			echo "Add the repository failed"
 			exit 1
 		fi
