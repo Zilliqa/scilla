@@ -37,8 +37,6 @@ matrix:
 
 addons:
   apt:
-    sources:
-    - sourceline: 'ppa:tah83/secp256k1'
     packages:
     - ocaml
     - curl
@@ -52,7 +50,6 @@ addons:
     - libboost-test-dev
     - libpcre3-dev
     - aspcud
-    - libsecp256k1-dev
     # Needed to install shellcheck from its GitHub binary releases
     - xz-utils
   homebrew:
@@ -72,6 +69,7 @@ branches:
     - master
     - /^release-v.*$/
 before_install:
+- if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_secp256k1.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_shellcheck_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then bash ./scripts/install_cmake_ubuntu.sh; fi
