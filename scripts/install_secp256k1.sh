@@ -17,7 +17,7 @@ function install_from_source() {
         echo "Install secp256k1"
         ( cd ${depsdir}/${1} &&
           ./autogen.sh &&
-          ./configure --prefix=/usr &&
+          ./configure --prefix=/usr --enable-module-recovery &&
           make && sudo make install )
 
         echo "secp256k1 installation completed."
