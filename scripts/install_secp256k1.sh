@@ -10,7 +10,7 @@ function install_prereq() {
 	echo "Update the package repository cache"
 	sudo apt-get update
 	echo "Install software properties common"
-	sudo apt-get install -y software-properties-common
+	sudo apt-get install -y software-properties-common sudo
 }
 
 function install_from_source() {
