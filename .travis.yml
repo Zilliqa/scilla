@@ -26,6 +26,7 @@ matrix:
 addons:
   apt:
     packages:
+    - sudo
     - ocaml
     - curl
     - build-essential

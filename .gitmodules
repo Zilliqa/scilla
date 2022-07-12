@@ -4,6 +4,3 @@
 [submodule "deps/cryptoutils/src"]
 	path = deps/cryptoutils/src
 	url = https://github.com/Zilliqa/cryptoutils
-[submodule "deps/secp256k1"]
-	path = deps/secp256k1
-	url = https://github.com/bitcoin-core/secp256k1.git

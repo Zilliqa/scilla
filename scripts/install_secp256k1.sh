@@ -25,7 +25,8 @@ function install_from_source() {
 }
 
 function install_secp256k1() {
-	if [[ "${DISTRIB_RELEASE}" == "16.04" ]]; then
+    set -x
+	if [[ "${DISTRIB_RELEASE}" == "16.04" ]] || [[ "${DISTRIB_RELEASE}" == "18.04" ]]; then
 		echo "Add the PPA repository for secp256k1"
 		if ! sudo add-apt-repository ppa:tah83/secp256k1 -y; then
 			echo "Add the repository failed"
