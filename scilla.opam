@@ -20,7 +20,6 @@ depends: [
   "conf-m4" {build}
   "conf-openssl"
   "conf-pkg-config" {build}
-  "conf-secp256k1"
   "conf-zlib"
   "core" {>= "v0.15.0" & < "v0.16~"}
   "core_unix" {>= "v0.15.0" & < "v0.16~"}
