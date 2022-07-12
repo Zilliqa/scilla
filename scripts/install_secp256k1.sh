@@ -34,7 +34,7 @@ function install_secp256k1() {
 		sudo apt-get update
 		sudo apt-get install -y libsecp256k1-dev
 	elif [[ "${DISTRIB_RELEASE}" == "20.04" ]]; then
-		install_from_source secp256k1
+        sudo apt-get install -y libsecp256k1-dev
 	fi
 }
 

@@ -26,6 +26,7 @@ RUN apt-get update \
     libgmp-dev \
     libffi-dev \
     libssl-dev \
+    libsecp256k1-dev \
     libboost-system-dev \
     libboost-test-dev \
     libboost-dev \
@@ -38,7 +39,6 @@ ENV OCAML_VERSION 4.11.2
 ENV PATH="/root/.local/bin:${PATH}"
 
 RUN bash scripts/install_cmake_ubuntu.sh \
-    && bash scripts/install_secp256k1.sh \
     && make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
     && eval $(opam env) && \
