@@ -8,12 +8,12 @@ matrix:
       env: OCAML_VERSION=4.14.0
     - os: linux
       dist: xenial
-      env: OCAML_VERSION=4.13.1
+      env: OCAML_VERSION=4.11.2
     - os: linux
-      dist: xenial
-      env: OCAML_VERSION=4.12.1
+      dist: focal
+      env: OCAML_VERSION=4.14.0
     - os: linux
-      dist: xenial
+      dist: focal
       env: OCAML_VERSION=4.11.2
     # - os: osx
     #  osx_image: xcode10.1
@@ -25,9 +25,8 @@ matrix:
 
 addons:
   apt:
-    sources:
-    - sourceline: 'ppa:tah83/secp256k1'
     packages:
+    - sudo
     - ocaml
     - curl
     - build-essential
@@ -40,7 +39,6 @@ addons:
     - libboost-test-dev
     - libpcre3-dev
     - aspcud
-    - libsecp256k1-dev
     # Needed to install shellcheck from its GitHub binary releases
     - xz-utils
   homebrew:
@@ -60,6 +58,7 @@ branches:
     - master
     - /^release-v.*$/
 before_install:
+- if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_secp256k1.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_shellcheck_ubuntu.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then bash ./scripts/install_cmake_ubuntu.sh; fi
