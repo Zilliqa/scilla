@@ -92,16 +92,6 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library ADT: TestType",
-        "start_location": {
-          "file": "contracts/dead_code_test5.scilla",
-          "line": 22,
-          "column": 1
-        },
-        "end_location": { "file": "", "line": 0, "column": 0 },
-        "warning_id": 3
-    },
-    {
       "warning_message": "Unused bind statement to: map",
       "start_location": {
         "file": "contracts/dead_code_test5.scilla",
