@@ -47,10 +47,12 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     | ByStr bs -> Bystr.to_raw_bytes bs
     | ByStrX bs -> Bystrx.to_raw_bytes bs
     | Msg entries ->
-        let raw_entries =
-          List.map entries ~f:(fun (s, _t, v) -> s ^ serialize_literal v)
-        in
-        Core_kernel.String.concat ~sep:"" raw_entries
+        (* Sort keys so that message key permutations do not affect hashes  *)
+        entries
+        |> Caml.List.sort (fun (s1, _t1, _v1) (s2, _t2, _v2) ->
+               String.compare s1 s2)
+        |> List.map ~f:(fun (s, _t, v) -> s ^ ":" ^ serialize_literal v)
+        |> String.concat ~sep:";"
     | Map (_, tbl) ->
         let raw_strings =
           let tbl' =
@@ -66,8 +68,14 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               serialize_literal k :: serialize_literal v :: acc)
             [] tbl'
         in
-        Core_kernel.String.concat ~sep:"" raw_strings
+        String.concat ~sep:"" raw_strings
     | ADTValue (cons_name, _, params) ->
+        (* This serialization scheme may lead to hash collisions, but for
+           backwards compatibility reasons we cannot fix it, since there are
+           deployed contracts that hash ADTs.
+
+           Example: (Pair 0x1234 0x) and (Pair 0x12 0x34) serialize to the same
+           string, so the hash will be the same. *)
         let raw_params = List.map params ~f:serialize_literal in
         Core_kernel.String.concat ~sep:""
           (BIName.as_string cons_name :: raw_params)
