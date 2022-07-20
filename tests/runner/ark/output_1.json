@@ -1,0 +1,246 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7089",
+  "_accepted": "false",
+  "messages": [
+    {
+      "_tag": "TransferFrom",
+      "_amount": "0",
+      "_recipient": "0x1382ce590d4d64437cef3ba786b12e13707e2ec9",
+      "params": [
+        {
+          "vname": "token",
+          "type": "ByStr20",
+          "value": "0x4306f921c982766810cf342775fd79aa2d0d0e24"
+        },
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0x89cd85b04ad8d9dd64522c34adbd25e9d6ad9e56"
+        },
+        {
+          "vname": "to",
+          "type": "ByStr20",
+          "value": "0xd2e93873971ac7c97ddcaf575e73379679f15a8e"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "4399999999999999" }
+      ]
+    },
+    {
+      "_tag": "TransferFrom",
+      "_amount": "0",
+      "_recipient": "0x1382ce590d4d64437cef3ba786b12e13707e2ec9",
+      "params": [
+        {
+          "vname": "token",
+          "type": "ByStr20",
+          "value": "0x4306f921c982766810cf342775fd79aa2d0d0e24"
+        },
+        {
+          "vname": "from",
+          "type": "ByStr20",
+          "value": "0x89cd85b04ad8d9dd64522c34adbd25e9d6ad9e56"
+        },
+        {
+          "vname": "to",
+          "type": "ByStr20",
+          "value": "0x1499856ca9a32e717e9e872923fd3f4740af99e7"
+        },
+        { "vname": "amount", "type": "Uint128", "value": "600000000000001" }
+      ]
+    },
+    {
+      "_tag": "TransferFrom",
+      "_amount": "0",
+      "_recipient": "0x8a79bac7a6383211ae902f34e86c6b729906346d",
+      "params": [
+        {
+          "vname": "to",
+          "type": "ByStr20",
+          "value": "0x89cd85b04ad8d9dd64522c34adbd25e9d6ad9e56"
+        },
+        { "vname": "token_id", "type": "Uint256", "value": "2947" }
+      ]
+    }
+  ],
+  "states": [
+    { "vname": "_balance", "type": "Uint128", "value": "0" },
+    {
+      "vname": "voided_cheques",
+      "type": "Map (ByStr33) (Map (ByStr32) (Bool))",
+      "value": [
+        {
+          "key":
+            "0x03be4cb1259bb5d83113d917af231659d8fb2f0c6d48a6fd4bf22e9cc517705a50",
+          "val": [
+            {
+              "key":
+                "0xf7bd9ccfaea3a09a44d278c14fca30201e4cc379c5053b73b4f89532d7d668a3",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        },
+        {
+          "key":
+            "0x03e25f3388f168f30fea176ec18dd853447448991cde55037dd98e0a9a4a625168",
+          "val": [
+            {
+              "key":
+                "0xcb91f8769980ffb4c1a0a4a627d7eeb0cb24cda5cad178ef35f94a7b721e00e7",
+              "val": {
+                "constructor": "True",
+                "argtypes": [],
+                "arguments": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "vname": "fee_address",
+      "type": "ByStr20",
+      "value": "0x1499856ca9a32e717e9e872923fd3f4740af99e7"
+    },
+    {
+      "vname": "current_owner",
+      "type": "Option (ByStr20)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "ByStr20" ],
+        "arguments": [ "0x22ed1259dfc29843a481f3801a95429761095366" ]
+      }
+    },
+    {
+      "vname": "pending_owner",
+      "type": "Option (ByStr20)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "ByStr20" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "token_proxy",
+      "type": "Option (ByStr20)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "ByStr20" ],
+        "arguments": [ "0x1382ce590d4d64437cef3ba786b12e13707e2ec9" ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "_eventname": "ExecuteTradeSuccess",
+      "params": [
+        {
+          "vname": "initiator",
+          "type": "ByStr20",
+          "value": "0xd2e93873971ac7c97ddcaf575e73379679f15a8e"
+        },
+        {
+          "vname": "token",
+          "type": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.NFT",
+          "value": {
+            "constructor": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.NFT",
+            "argtypes": [],
+            "arguments": [
+              "0x8a79bac7a6383211ae902f34e86c6b729906346d", "2947"
+            ]
+          }
+        },
+        {
+          "vname": "seller",
+          "type": "ByStr20",
+          "value": "0xd2e93873971ac7c97ddcaf575e73379679f15a8e"
+        },
+        {
+          "vname": "buyer",
+          "type": "ByStr20",
+          "value": "0x89cd85b04ad8d9dd64522c34adbd25e9d6ad9e56"
+        },
+        {
+          "vname": "proceeds",
+          "type": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Coins",
+          "value": {
+            "constructor": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Coins",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Token",
+                "argtypes": [],
+                "arguments": [ "0x4306f921c982766810cf342775fd79aa2d0d0e24" ]
+              },
+              "4399999999999999"
+            ]
+          }
+        },
+        {
+          "vname": "fees",
+          "type": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Coins",
+          "value": {
+            "constructor": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Coins",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Token",
+                "argtypes": [],
+                "arguments": [ "0x4306f921c982766810cf342775fd79aa2d0d0e24" ]
+              },
+              "600000000000001"
+            ]
+          }
+        },
+        {
+          "vname": "sell_cheque",
+          "type": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Cheque",
+          "value": {
+            "constructor":
+              "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Cheque",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Sell",
+                "argtypes": [],
+                "arguments": []
+              },
+              "2204866",
+              "1238047380",
+              "0x03be4cb1259bb5d83113d917af231659d8fb2f0c6d48a6fd4bf22e9cc517705a50",
+              "0xaf72d24afb730c1f4102530084db47017d05f5e90e33c4df11516ae76bb1a8ce1524b36e673c82a2ca26103a70df5e4a8e5b8948e1ce5172ac5e9178089e8b84"
+            ]
+          }
+        },
+        {
+          "vname": "buy_cheque",
+          "type": "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Cheque",
+          "value": {
+            "constructor":
+              "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Cheque",
+            "argtypes": [],
+            "arguments": [
+              {
+                "constructor":
+                  "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03.Buy",
+                "argtypes": [],
+                "arguments": []
+              },
+              "2221523",
+              "1989626882",
+              "0x03e25f3388f168f30fea176ec18dd853447448991cde55037dd98e0a9a4a625168",
+              "0xf93692e97cfd3608f70fe5727dd855f2b6576686100a080ba9cda3587301949a6d07bce9a7f2e9075217adc3c1d5e9fe8e012961de1f08a7d291324314ab0dea"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

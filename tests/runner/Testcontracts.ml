@@ -492,6 +492,8 @@ let contract_tests env =
                 >::: build_contract_tests env "chainid" succ_code 1 1 [];
                 "replicate"
                 >::: build_contract_tests env "replicate" succ_code 1 1 [];
+                "ark-store-hashes-in-mutable-maps"
+                >::: build_contract_tests env "ark" succ_code 1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -584,6 +586,8 @@ let contract_tests env =
                 >: build_contract_init_test env fail_code
                      "address_list_as_cparam" "init_address_type"
                      ~is_library:false ~ipc_mode:true;
+                "ark-store-hashes-in-mutable-maps-idempotent"
+                >::: build_contract_tests env "ark" fail_code 2 2 [];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

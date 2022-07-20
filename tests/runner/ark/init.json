@@ -1,0 +1,32 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0x5b90fcc2dca4081abced87c41dc0949f3a0a9a03"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "1822539"
+    },
+    {
+        "vname" : "contract_owner",
+        "type" : "ByStr20", 
+        "value" : "0x22ed1259DFC29843A481F3801A95429761095366"
+    },
+    {
+        "vname" : "initial_fee_address",
+        "type" : "ByStr20", 
+        "value" : "0x1499856Ca9A32E717E9E872923FD3f4740af99e7"
+    },
+    {
+        "vname" : "chain_id",
+        "type" : "Uint32", 
+        "value" : "1"
+    }
+]
