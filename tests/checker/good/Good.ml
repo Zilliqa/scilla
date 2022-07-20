@@ -92,6 +92,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "timestamp.scilla";
       "codehash.scilla";
       "chainid.scilla";
+      "ark.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
