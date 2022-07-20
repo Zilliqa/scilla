@@ -185,6 +185,17 @@
     },
     {
       "warning_message":
+        "A hashing builtin is applied to argument \"order\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/simple-dex.scilla",
+        "line": 28,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
         "No transition in contract SimpleDex contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },

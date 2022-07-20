@@ -52,6 +52,9 @@ struct
   (* Warning level to use when warning about shadowing of contract parameters and fields. *)
   let warning_level_name_shadowing = 2
 
+  (* Warning level to use when contract hashes maps / messages / ADTs *)
+  let warning_level_hash_compound_types = 3
+
   (* ************************************** *)
   (* ******** Basic Sanity Checker ******** *)
   (* ************************************** *)
@@ -384,6 +387,83 @@ struct
       shadowing_libentries lmod.libs.lentries
   end
 
+  (* ********************************************** *)
+  (* ******** Check hashing builtins usage ******** *)
+  (* ********************************************** *)
+
+  module CheckHashingBuiltinsUsage = struct
+    let rec expr_iter (e, _annot) =
+      match e with
+      | Builtin ((builtin, _annot), _typ_args, args) -> (
+          match builtin with
+          | Builtin_sha256hash | Builtin_keccak256hash | Builtin_ripemd160hash
+            ->
+              forallM args ~f:(fun arg ->
+                  let type_of_arg = (ER.get_type (get_rep arg)).tp in
+                  match type_of_arg with
+                  | MapType _ | ADT _
+                  | PrimType (Msg_typ | Event_typ | Exception_typ) ->
+                      warn1
+                        (Printf.sprintf
+                           "A hashing builtin is applied to argument \"%s\" \
+                            whose compound type makes it prone to hash \
+                            collisions. Consider using values of more \
+                            primitive types in your hashing scheme."
+                           (as_error_string arg))
+                        warning_level_hash_compound_types
+                        (ER.get_loc (get_rep arg));
+                      pure ()
+                  | _ -> pure ())
+          | _ -> pure ())
+      | Literal _ | Message _ | Constr _ | Var _ | TApp _ | App _ -> pure ()
+      | Fun (_, _, e) | Fixpoint (_, _, e) | TFun (_, e) | GasExpr (_, e) ->
+          expr_iter e
+      | Let (_id, _opt_typ, e_lhs, e_rhs) ->
+          let%bind () = expr_iter e_lhs in
+          expr_iter e_rhs
+      | MatchExpr (_id, clauses) ->
+          forallM clauses ~f:(fun (_pat, mbody) -> expr_iter mbody)
+
+    let in_libentries (rlibs : lib_entry list) =
+      forallM rlibs ~f:(function
+        | LibVar (_id, _opt_typ, e) -> expr_iter e
+        | LibTyp _ -> pure ())
+
+    let in_cmod (cmod : cmodule) =
+      (* Check for hash builtins usage in the contract constraint *)
+      let%bind () = expr_iter cmod.contr.cconstraint in
+
+      (* Check for hash builtins in the contract's library *)
+      let%bind () =
+        match cmod.libs with
+        | None -> pure ()
+        | Some { lname = _; lentries } -> in_libentries lentries
+      in
+
+      (* Go through each field initializers *)
+      let%bind () =
+        forallM cmod.contr.cfields ~f:(fun (_field, _typ, init_e) ->
+            expr_iter init_e)
+      in
+
+      (* Go through each procedure/transition *)
+      forallM cmod.contr.ccomps ~f:(fun component ->
+          (* Traverse statements *)
+          let rec stmt_iter stmts =
+            foldM stmts ~init:() ~f:(fun _acc (s, _) ->
+                match s with
+                | Bind (_, e) -> expr_iter e
+                | MatchStmt (_, clauses) ->
+                    forallM clauses ~f:(fun (_pat, mbody) -> stmt_iter mbody)
+                | Load _ | RemoteLoad _ | MapGet _ | RemoteMapGet _
+                | ReadFromBC _ | TypeCast _ | Store _ | MapUpdate _ | SendMsgs _
+                | AcceptPayment | GasStmt _ | CreateEvnt _ | Throw _
+                | CallProc _ | Iterate _ ->
+                    pure ())
+          in
+          stmt_iter component.comp_body)
+  end
+
   (* ************************************** *)
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
@@ -394,6 +474,8 @@ struct
     let%bind () = CheckShadowing.shadowing_libentries rlibs in
     let%bind () = forallM ~f:CheckShadowing.shadowing_libtree elibs in
     let%bind () = CheckShadowing.shadowing_cmod cmod in
+    let%bind () = CheckHashingBuiltinsUsage.in_libentries rlibs in
+    let%bind () = CheckHashingBuiltinsUsage.in_cmod cmod in
     DCD.dc_cmod cmod elibs;
     pure ()
 
