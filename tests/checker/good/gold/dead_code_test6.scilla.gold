@@ -1,0 +1,88 @@
+{
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Dead6",
+    "params": [],
+    "fields": [],
+    "transitions": [ { "vname": "dummy", "params": [] } ],
+    "procedures": [
+      {
+        "vname": "Event",
+        "params": [ { "vname": "err", "type": "dead_code_test6.Error" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "Error",
+        "params": [ { "vname": "err_code", "type": "Uint32" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "dead_code_test6.Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test6.InternalError", "argtypes": [] },
+          { "cname": "dead_code_test6.OtherError", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Unused ADT constructor: OtherError",
+      "start_location": {
+        "file": "contracts/dead_code_test6.scilla",
+        "line": 8,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract Dead6 contains an accept statement\n",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}

@@ -386,13 +386,18 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     warn "Unused transition parameter: " cparam ER.get_loc
                 | CompProc ->
                     warn "Unused procedure parameter: " cparam ER.get_loc);
-          (* Take out the type of bound parameters*)
+          (* Take out the type of bound parameters *)
           let param_adts =
             user_types_in_adt @@ List.map comp.comp_params ~f:snd
           in
           ( lv' @ res_fv,
             param_adts @ adts @ res_adts,
-            param_adts @ res_param_adts ))
+            (* We need only parameters from transitions, because they could
+               receive any constructor from the outside, so all of these
+               constructors are not dead. *)
+            match comp.comp_type with
+            | CompTrans -> param_adts
+            | CompProc -> [] @ res_param_adts ))
     in
     let comps_lv' = dedup_id_list comps_lv in
     let comps_adts' = dedup_name_list comps_adts in
