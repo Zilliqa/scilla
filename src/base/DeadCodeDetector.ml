@@ -42,10 +42,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   (* Return a list of names of ADTs as Name from a type *)
   (* Used to finding dead user defined ADTs *)
-  let user_types_in_adt tys =
+  let rec user_types_in_adt tys =
     let rec iden_iter ty acc =
       match ty with
-      | SCType.ADT (iden, _) -> SCIdentifier.get_id iden :: acc
+      | SCType.ADT (iden, ctrs) ->
+          [ SCIdentifier.get_id iden ] @ user_types_in_adt ctrs @ acc
       | SCType.MapType (ty1, ty2) | SCType.FunType (ty1, ty2) ->
           iden_iter ty1 [] @ iden_iter ty2 []
       | _ -> []
