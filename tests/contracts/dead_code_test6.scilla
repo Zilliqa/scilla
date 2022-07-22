@@ -1,0 +1,33 @@
+scilla_version 0
+
+library Dead6
+
+(* OtherError is dead. *)
+type Error =
+  | InternalError
+  | OtherError
+
+let mk_error_event =
+  fun (err: Error) =>
+    let err_code =
+      match err with
+        | InternalError => Uint32 1
+        | OtherError => Uint32 2
+    end in
+    { _eventname: "Error"
+    ; err_code: err_code }
+
+contract Dead6()
+
+(* Procedure receives an `Error` type, but this is a constant defined in
+the transition. So, OtherError is dead. *)
+procedure Event(err : Error)
+  err_e = mk_error_event err;
+  event err_e
+end
+
+transition dummy ()
+  error = InternalError;
+  Event error
+end
+
