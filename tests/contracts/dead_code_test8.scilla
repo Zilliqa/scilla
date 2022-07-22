@@ -1,0 +1,10 @@
+scilla_version 0
+
+library Dead8
+
+contract Dead8 ()
+
+transition Foo ()
+  alive = True;
+  dead = alive
+end
