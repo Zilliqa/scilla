@@ -295,7 +295,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     ~f:(fun i -> not @@ SCIdentifier.equal x i)
                     live_vars
                 in
-                (r :: live_vars_no_x, user_types_in_adt [ t ])
+                (r :: live_vars_no_x, adts @ user_types_in_adt [ t ])
               else (
                 warn "Unused type case statement to: " x ER.get_loc;
                 (live_vars, adts))
