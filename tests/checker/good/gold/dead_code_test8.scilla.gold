@@ -1,20 +1,11 @@
 {
-  "cashflow_tags": {
-    "State variables": [],
-    "ADT constructors": [
-      {
-        "map_key_test.TestType": [
-          { "constructor": "map_key_test.T", "tags": [ "NoInfo" ] }
-        ]
-      }
-    ]
-  },
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Test",
+    "vname": "Dead8",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "testMapKey5", "params": [] } ],
+    "transitions": [ { "vname": "Foo", "params": [] } ],
     "procedures": [],
     "events": [],
     "ADTs": [
@@ -25,11 +16,6 @@
           { "cname": "Some", "argtypes": [ "'A" ] },
           { "cname": "None", "argtypes": [] }
         ]
-      },
-      {
-        "tname": "map_key_test.TestType",
-        "tparams": [],
-        "tmap": [ { "cname": "map_key_test.T", "argtypes": [ "Uint128" ] } ]
       },
       {
         "tname": "Bool",
@@ -64,18 +50,17 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused bind statement to: map2",
+      "warning_message": "Unused bind statement to: dead",
       "start_location": {
-        "file": "contracts/map_key_test.scilla",
-        "line": 16,
+        "file": "contracts/dead_code_test8.scilla",
+        "line": 9,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract Test contains an accept statement\n",
+      "warning_message": "No transition in contract Dead8 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -83,4 +68,3 @@
   ],
   "gas_remaining": "7999"
 }
-

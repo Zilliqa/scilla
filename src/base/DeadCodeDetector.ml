@@ -262,8 +262,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   dedup_name_list @@ adts' @ adts )
               else (
                 warn "Unused bind statement to: " i ER.get_loc;
-                let _, adts' = expr_iter e in
-                (live_vars, dedup_name_list @@ adts' @ adts))
+                let e_live_vars, adts' = expr_iter e in
+                ( dedup_id_list @@ e_live_vars @ live_vars,
+                  dedup_name_list @@ adts' @ adts ))
           | MatchStmt (i, pslist) ->
               let live_vars', adts' =
                 (* No live variables when analysing MatchStmt, as seen when checking tests/contracts/dead_code_test4.scilla *)
