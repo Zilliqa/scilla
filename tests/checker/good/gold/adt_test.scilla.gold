@@ -75,10 +75,20 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused library ADT: TestType1",
+      "warning_message": "Unused ADT constructor: Item2",
       "start_location": {
         "file": "checker/good/adt_test.scilla",
-        "line": 8,
+        "line": 10,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: Item1",
+      "start_location": {
+        "file": "checker/good/adt_test.scilla",
+        "line": 9,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -105,8 +115,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract BadLib contains an accept statement\n",
+      "warning_message": "No transition in contract BadLib contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -114,4 +123,3 @@
   ],
   "gas_remaining": "7999"
 }
-
