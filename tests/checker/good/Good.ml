@@ -88,6 +88,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "dead_code_test4.scilla";
       "dead_code_test5.scilla";
       "dead_code_test6.scilla";
+      "dead_code_test7.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
     ]
