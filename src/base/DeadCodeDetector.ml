@@ -333,6 +333,17 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               in
               (res_fv, res_adts)
           | LibTyp (i, ctrs) ->
+              (* Saving user-defined ADTs from the constructors right here is
+                 safe, because we are traversing library elements in the
+                 reverse order. Scilla doesn't support forward declarations, so
+                 they will be saved before we find their occurrences. *)
+              let ctr_adts =
+                List.fold_left ctrs ~init:[] ~f:(fun acc ctr ->
+                    acc
+                    @ List.fold_left ctr.c_arg_types ~init:[] ~f:(fun acc ty ->
+                          acc @ user_types_in_adt [ ty ]))
+              in
+              let adts' = dedup_name_list @@ adts' @ ctr_adts in
               let ids_eq rep_id id =
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
               in
