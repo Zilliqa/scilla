@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 
 let explist =
@@ -171,7 +171,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let ignore_predef_args = false
 
-  let json_errors = true
+  let json_errors = false
 
   let gas_limit = Stdint.Uint64.of_int 4002000
 

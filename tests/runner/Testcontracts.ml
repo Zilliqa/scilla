@@ -57,10 +57,11 @@ let get_interpreter_output env test_ctxt exit_code output_file s =
 let output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
     =
   if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt) then
-    output_updater goldoutput_file test_name out
+    output_updater goldoutput_file test_name out ~json_errors:true
   else
-    output_verifier goldoutput_file msg (env.print_diff test_ctxt) out (fun s ->
-        s)
+    let non_normalized_gold_output = In_channel.read_all goldoutput_file in
+    let gold_output = normalize_json non_normalized_gold_output in
+    output_verifier gold_output msg (env.print_diff test_ctxt) out
 
 let foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
     output_file goldoutput_file msg s =
