@@ -209,6 +209,16 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Unreachable pattern InvalidContract",
+      "start_location": {
+        "file": "contracts/wallet_2.scilla",
+        "line": 65,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused library value: mk_contract_initialized_event",
       "start_location": {
         "file": "contracts/wallet_2.scilla",
@@ -241,3 +251,4 @@
   ],
   "gas_remaining": "7856"
 }
+

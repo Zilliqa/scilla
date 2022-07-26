@@ -68,6 +68,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Unreachable pattern OtherError",
+      "start_location": {
+        "file": "contracts/dead_code_test6.scilla",
+        "line": 15,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused ADT constructor: OtherError",
       "start_location": {
         "file": "contracts/dead_code_test6.scilla",
@@ -86,3 +96,4 @@
   ],
   "gas_remaining": "7999"
 }
+

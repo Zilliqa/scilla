@@ -109,6 +109,49 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
            |> List.append acc)
     |> dedup_name_list
 
+  (** [report_unreachable_pm_arms cmod reported_ctrs] shows warnings for
+      pattern-matching arms that check for unused user-defined ADT
+      constructors. *)
+  let report_unreachable_pm_arms (cmod : cmodule) reported_ctrs =
+    let report id = warn "Unreachable pattern " id SR.get_loc in
+    let rec report_unreachable = function
+      | Constructor (id, plist) ->
+          if
+            List.mem reported_ctrs (SCIdentifier.get_id id)
+              ~equal:SCIdentifier.Name.equal
+          then report id
+          else List.iter plist ~f:report_unreachable
+      | Wildcard | Binder _ -> ()
+    in
+    let report_unreachable_adapter (p, _) = report_unreachable p in
+    let rec report_expr (expr, _) =
+      match expr with
+      | Let (_, _, lhs, rhs) ->
+          report_expr lhs;
+          report_expr rhs
+      | Fun (_, _, body) -> report_expr body
+      | MatchExpr (_, plist) -> List.iter plist ~f:report_unreachable_adapter
+      | TFun (_, body) -> report_expr body
+      | Literal _ | Var _ | GasExpr _ | Fixpoint _ | TApp _ | Message _
+      | Builtin _ | Constr _ | App _ ->
+          ()
+    in
+    let report_stmt (stmt, _) =
+      match stmt with
+      | Bind (_, e) -> report_expr e
+      | MatchStmt (_, pslist) -> List.iter pslist ~f:report_unreachable_adapter
+      | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | GasStmt _
+      | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _ ->
+          ()
+    in
+    Option.iter cmod.libs ~f:(fun l ->
+        List.iter l.lentries ~f:(function
+          | LibVar (_, _, ea) -> report_expr ea
+          | LibTyp _ -> ()));
+    List.iter cmod.contr.ccomps ~f:(fun comp ->
+        List.iter comp.comp_body ~f:(fun stmt -> report_stmt stmt))
+
   (* Detect Dead Code in a cmod *)
   let dc_cmod (cmod : cmodule) (elibs : libtree list) =
     (* Marking a field is used for read or write *)
@@ -346,7 +389,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     let rec dcd_lib_entries lentries freevars adts param_adts used_adts =
       match lentries with
       | lentry :: rentries -> (
-          let freevars', adts' =
+          let freevars', adts', reported_ctrs =
             dcd_lib_entries rentries freevars adts param_adts used_adts
           in
           match lentry with
@@ -366,7 +409,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 | Some ty ->
                     dedup_name_list (user_types_in_adt [ ty ] @ tyl @ adts')
               in
-              (res_fv, res_adts)
+              (res_fv, res_adts, reported_ctrs)
           | LibTyp (i, ctrs) ->
               let ids_eq rep_id id =
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
@@ -385,14 +428,20 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                               ids_eq ctr.cname i')))
                   adts'
               in
-              if not @@ (in_list param_adts || in_list used_adts) then
-                if List.is_empty used_ctrs && (not @@ in_list adts') then
-                  warn "Unused library ADT: " i ER.get_loc
-                else
-                  List.iter unused_ctrs ~f:(fun ctr ->
-                      warn "Unused ADT constructor: " ctr.cname ER.get_loc);
-              (freevars', adts'_no_i))
-      | [] -> (freevars, adts)
+              let reported_ctrs' =
+                if not @@ (in_list param_adts || in_list used_adts) then
+                  if List.is_empty used_ctrs && (not @@ in_list adts') then (
+                    warn "Unused library ADT: " i ER.get_loc;
+                    [])
+                  else
+                    List.fold_left unused_ctrs ~init:reported_ctrs
+                      ~f:(fun acc ctr ->
+                        warn "Unused ADT constructor: " ctr.cname ER.get_loc;
+                        acc @ [ SCIdentifier.get_id ctr.cname ])
+                else []
+              in
+              (freevars', adts'_no_i, reported_ctrs'))
+      | [] -> (freevars, adts, [])
     in
 
     (* Detect Dead Code in a library. *)
@@ -480,11 +529,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         | CompTrans -> ());
 
     (* Iterate through contract library *)
-    let lv_clibs, lv_adts =
+    let lv_clibs, lv_adts, reported_ctrs =
       match cmod.libs with
       | Some l -> dcd_lib l lv_contract lv_adts comp_param_adts'
-      | None -> (lv_contract, lv_adts)
+      | None -> (lv_contract, lv_adts, [])
     in
+
+    report_unreachable_pm_arms cmod reported_ctrs;
 
     (* Iterate through elibs to check if imported library is used *)
     List.iter elibs ~f:(fun elib ->
