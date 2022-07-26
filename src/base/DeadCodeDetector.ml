@@ -408,8 +408,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                receive any constructor from the outside, so all of these
                constructors are not dead. *)
             match comp.comp_type with
-            | CompTrans -> param_adts
-            | CompProc -> [] @ res_param_adts ))
+            | CompTrans -> param_adts @ res_param_adts
+            | CompProc -> res_param_adts ))
     in
     let comps_lv' = dedup_id_list comps_lv in
     let comps_adts' = dedup_name_list comps_adts in
