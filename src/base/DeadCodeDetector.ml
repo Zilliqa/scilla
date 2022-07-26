@@ -21,6 +21,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCLiteral = GlobalLiteral
   module SCType = SCLiteral.LType
   module SCIdentifier = SCType.TIdentifier
+
+  module SCIdentifierComp = struct
+    include SCIdentifier.Name
+    include Comparable.Make (SCIdentifier.Name)
+  end
+
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
   open SCIdentifier
@@ -45,8 +51,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   let rec user_types_in_adt tys =
     let rec iden_iter ty acc =
       match ty with
-      | SCType.ADT (iden, ctrs) ->
-          [ SCIdentifier.get_id iden ] @ user_types_in_adt ctrs @ acc
+      | SCType.ADT (iden, targs) ->
+          [ SCIdentifier.get_id iden ] @ user_types_in_adt targs @ acc
       | SCType.MapType (ty1, ty2) | SCType.FunType (ty1, ty2) ->
           iden_iter ty1 [] @ iden_iter ty2 []
       | _ -> []
@@ -80,6 +86,29 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   let read_field = ref []
 
   let write_field = ref []
+
+  (** [collect_adts_to_ctrs lentries] collects a mapping from ADTs to their
+      constructor definitions. *)
+  let collect_adts_to_ctrs lentries =
+    List.fold_left lentries
+      ~init:(Map.empty (module SCIdentifierComp))
+      ~f:(fun m lentry ->
+        match lentry with
+        | LibTyp (id, ctr_defs) ->
+            Map.set m ~key:(SCIdentifier.get_id id) ~data:ctr_defs
+        | LibVar _ -> m)
+
+  (** [collect_used_adts adts_to_ctrs] returns a list of ADT and
+      constructor names used in the constructors of user-defined ADTs. *)
+  let collect_used_adts adts_to_ctrs =
+    Map.data adts_to_ctrs
+    |> List.fold_left ~init:[] ~f:(fun acc ctr_defs ->
+           List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
+               List.fold_left ctr_def.c_arg_types ~init:[] ~f:(fun acc ty ->
+                   acc @ user_types_in_adt [ ty ])
+               |> List.append acc)
+           |> List.append acc)
+    |> dedup_name_list
 
   (* Detect Dead Code in a cmod *)
   let dc_cmod (cmod : cmodule) (elibs : libtree list) =
@@ -300,13 +329,19 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | _ -> ([], [])
     in
 
+    let adts_to_ctrs =
+      Option.value_map cmod.libs
+        ~default:(Map.empty (module SCIdentifierComp))
+        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
+    in
+
     (******** Checking for dead library function/variable/type definitions ********)
     (* DCD library entries. *)
-    let rec dcd_lib_entries lentries freevars adts param_adts =
+    let rec dcd_lib_entries lentries freevars adts param_adts used_adts =
       match lentries with
       | lentry :: rentries -> (
           let freevars', adts' =
-            dcd_lib_entries rentries freevars adts param_adts
+            dcd_lib_entries rentries freevars adts param_adts used_adts
           in
           match lentry with
           | LibVar (i, topt, lexp) ->
@@ -327,23 +362,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               in
               (res_fv, res_adts)
           | LibTyp (i, ctrs) ->
-              (* Saving user-defined ADTs from the constructors right here is
-                 safe, because we are traversing library elements in the
-                 reverse order. Scilla doesn't support forward declarations, so
-                 they will be saved before we find their occurrences. *)
-              let ctr_adts =
-                List.fold_left ctrs ~init:[] ~f:(fun acc ctr ->
-                    acc
-                    @ List.fold_left ctr.c_arg_types ~init:[] ~f:(fun acc ty ->
-                          acc @ user_types_in_adt [ ty ]))
-              in
-              let adts' = dedup_name_list @@ adts' @ ctr_adts in
               let ids_eq rep_id id =
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
               in
+              let in_list ?(i = i) l = List.exists l ~f:(fun a -> ids_eq i a) in
               let used_ctrs, unused_ctrs =
                 List.partition_tf ctrs ~f:(fun ctr ->
-                    List.exists adts' ~f:(fun adt -> ids_eq ctr.cname adt))
+                    in_list ~i:ctr.cname adts' || in_list ~i:ctr.cname used_adts)
               in
               let adts'_no_i =
                 List.filter
@@ -354,11 +379,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                               ids_eq ctr.cname i')))
                   adts'
               in
-              if not @@ List.exists param_adts ~f:(fun adt -> ids_eq i adt) then
-                if
-                  List.is_empty used_ctrs
-                  && (not @@ List.exists adts' ~f:(fun adt -> ids_eq i adt))
-                then warn "Unused library ADT: " i ER.get_loc
+              if not @@ (in_list param_adts || in_list used_adts) then
+                if List.is_empty used_ctrs && (not @@ in_list adts') then
+                  warn "Unused library ADT: " i ER.get_loc
                 else
                   List.iter unused_ctrs ~f:(fun ctr ->
                       warn "Unused ADT constructor: " ctr.cname ER.get_loc);
@@ -368,7 +391,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     (* Detect Dead Code in a library. *)
     let dcd_lib lib freevars adts param_adts =
-      dcd_lib_entries lib.lentries freevars adts param_adts
+      collect_used_adts adts_to_ctrs
+      |> dcd_lib_entries lib.lentries freevars adts param_adts
     in
 
     (* START *)
