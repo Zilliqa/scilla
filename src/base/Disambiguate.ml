@@ -669,7 +669,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             pure @@ (PostDisSyntax.ReadFromBC (dis_x, f'), new_var_dict)
         | TypeCast (x, r, t) ->
             let%bind dis_x = name_def_as_simple_global x in
-            let%bind dis_r = name_def_as_simple_global r in
+            let%bind dis_r =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) r
+            in
             let%bind dis_t = disambiguate_type dicts.typ_dict t in
             let new_var_dict =
               remove_local_id_from_dict var_dict_acc (as_string x)
