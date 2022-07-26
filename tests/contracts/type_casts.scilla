@@ -2,6 +2,8 @@ scilla_version 0
 
 library CastLib
 
+let zero_address : ByStr20 = 0x0000000000000000000000000000000000000000
+
 (* Tests various aspects of address type casts *)
 
 contract CastContract ()
@@ -175,4 +177,9 @@ transition CastTest7(x : ByStr20)
     end
   | None =>
   end
+end
+
+transition CastTest8()
+  (* cast an address defined in the contract library *)
+  maybe_contract_address <-& zero_address as ByStr20 with contract end
 end

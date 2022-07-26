@@ -111,15 +111,15 @@
         "params": [
           {
             "vname": "x",
-            "type":
-              "ByStr20 with contract field f : Uint256, field g : Bool end"
+            "type": "ByStr20 with contract field f : Uint256, field g : Bool end"
           }
         ]
       },
       {
         "vname": "CastTest7",
         "params": [ { "vname": "x", "type": "ByStr20" } ]
-      }
+      },
+      { "vname": "CastTest8", "params": [] }
     ],
     "procedures": [],
     "events": [],
@@ -168,7 +168,7 @@
       "warning_message": "Write only field: test_7_h_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 173,
+        "line": 175,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -178,7 +178,7 @@
       "warning_message": "Write only field: test_7_g_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 170,
+        "line": 172,
         "column": 7
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -188,7 +188,7 @@
       "warning_message": "Write only field: test_6_4_g_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 152,
+        "line": 154,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -198,7 +198,7 @@
       "warning_message": "Write only field: test_6_4_failed_cast",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 155,
+        "line": 157,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -208,7 +208,7 @@
       "warning_message": "Write only field: test_6_4_f_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 149,
+        "line": 151,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -218,7 +218,7 @@
       "warning_message": "Write only field: test_6_4_bal_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 146,
+        "line": 148,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -228,7 +228,7 @@
       "warning_message": "Write only field: test_6_3_g_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 134,
+        "line": 136,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -238,7 +238,7 @@
       "warning_message": "Write only field: test_6_3_f_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 131,
+        "line": 133,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -248,7 +248,7 @@
       "warning_message": "Write only field: test_6_3_bal_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 128,
+        "line": 130,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -258,7 +258,7 @@
       "warning_message": "Write only field: test_6_2_g_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 116,
+        "line": 118,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -268,7 +268,7 @@
       "warning_message": "Write only field: test_6_2_f_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 113,
+        "line": 115,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -278,7 +278,7 @@
       "warning_message": "Write only field: test_6_2_bal_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 110,
+        "line": 112,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -288,7 +288,7 @@
       "warning_message": "Write only field: test_6_1_g_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 98,
+        "line": 100,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -298,7 +298,7 @@
       "warning_message": "Write only field: test_6_1_f_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 95,
+        "line": 97,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -308,7 +308,7 @@
       "warning_message": "Write only field: test_6_1_bal_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 92,
+        "line": 94,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -318,7 +318,7 @@
       "warning_message": "Write only field: test_5_2_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 80,
+        "line": 82,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -328,7 +328,7 @@
       "warning_message": "Write only field: test_5_1_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 68,
+        "line": 70,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -338,7 +338,7 @@
       "warning_message": "Write only field: test_4_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 56,
+        "line": 58,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -348,7 +348,7 @@
       "warning_message": "Write only field: test_3_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 46,
+        "line": 48,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -358,7 +358,7 @@
       "warning_message": "Write only field: test_2_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 40,
+        "line": 42,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -368,15 +368,34 @@
       "warning_message": "Write only field: test_1_res",
       "start_location": {
         "file": "contracts/type_casts.scilla",
-        "line": 34,
+        "line": 36,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract CastContract contains an accept statement\n",
+      "warning_message": "Unused library value: zero_address",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 5,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused type case statement to: maybe_contract_address",
+      "start_location": {
+        "file": "contracts/type_casts.scilla",
+        "line": 184,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract CastContract contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1

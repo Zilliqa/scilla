@@ -108,9 +108,21 @@ let output_verifier gold_output msg print_diff output =
       ~printer:(fun s -> s)
       gold_output output ~msg
 
-let output_updater goldoutput_file test_name data =
-  Out_channel.write_all goldoutput_file ~data;
-  Printf.printf "Updated gold output for test %s\n" test_name
+(* XXX: in case of json_errors we should probably not do string conversions
+        and operate directly on the JSON's AST *)
+let output_updater goldoutput_file test_name data ~json_errors =
+  let update_goldoutput_file () =
+    Out_channel.write_all goldoutput_file ~data;
+    Printf.printf "Updated gold output for test %s\n" test_name
+  in
+  if json_errors then (
+    let normalized_gold =
+      normalize_json @@ In_channel.read_all goldoutput_file
+    in
+    let normalized_actual = normalize_json @@ data in
+    if String.( <> ) normalized_gold normalized_actual then
+      update_goldoutput_file ())
+  else update_goldoutput_file ()
 
 let prepare_cli_usage bin args = bin ^ " " ^ String.concat ~sep:" " args
 
@@ -181,6 +193,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             let actual_output = stream_to_string s in
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file actual_output
+                ~json_errors
             else
               output_verifier (diff_filter gold_output) msg
                 (env.print_diff test_ctxt)
