@@ -650,7 +650,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ StringLit prfx; StringLit addr ] -> (
           if Core.String.(prfx <> "zil") then
-            fail0 ~kind:"Only zil bech32 addresses are supported" ?inst:None
+            pure @@ build_none_lit (bystrx_typ Type.address_length)
           else
             match Bech32.decode_bech32_addr ~prfx ~addr with
             | Some bys20 -> (
@@ -659,22 +659,23 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                     pure
                     @@ build_some_lit (ByStrX b)
                          (bystrx_typ Type.address_length)
-                | None -> fail0 ~kind:"Invalid bech32 decode" ?inst:None)
-            | None -> fail0 ~kind:"bech32 decoding failed" ?inst:None)
+                | None ->
+                    pure @@ build_none_lit (bystrx_typ Type.address_length))
+            | None -> pure @@ build_none_lit (bystrx_typ Type.address_length))
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
 
     let bystr20_to_bech32 _ ls _ =
       match ls with
       | [ StringLit prfx; ByStrX addr ] -> (
           if Core.String.(prfx <> "zil") then
-            fail0 ~kind:"Only zil bech32 addresses are supported" ?inst:None
+            pure @@ build_none_lit (bystrx_typ Type.address_length)
           else
             match
               Bech32.encode_bech32_addr ~prfx ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 ->
                 pure @@ build_some_lit (StringLit bech32) string_typ
-            | None -> fail0 ~kind:"bech32 encoding failed" ?inst:None)
+            | None -> pure @@ build_none_lit (bystrx_typ Type.address_length))
       | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
 
     let concat _ ls _ =
