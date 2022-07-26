@@ -1,23 +1,30 @@
 {
-  "cashflow_tags": {
-    "State variables": [],
-    "ADT constructors": [
-      {
-        "adt_test.TestType1": [
-          { "constructor": "adt_test.Item1", "tags": [ "NoInfo" ] }
-        ]
-      }
-    ]
-  },
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "BadLib",
+    "vname": "Dead",
     "params": [],
     "fields": [],
-    "transitions": [],
+    "transitions": [
+      {
+        "vname": "Foo",
+        "params": [ { "vname": "x", "type": "dead_code_test10.C" } ]
+      }
+    ],
     "procedures": [],
     "events": [],
     "ADTs": [
+      {
+        "tname": "dead_code_test10.C",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test10.C", "argtypes": [] },
+          {
+            "cname": "dead_code_test10.C1",
+            "argtypes": [ "dead_code_test10.B" ]
+          }
+        ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -27,18 +34,13 @@
         ]
       },
       {
-        "tname": "adt_test.TestType2",
+        "tname": "dead_code_test10.B",
         "tparams": [],
         "tmap": [
-          { "cname": "adt_test.Item3", "argtypes": [ "adt_test.TestType1" ] }
-        ]
-      },
-      {
-        "tname": "adt_test.TestType1",
-        "tparams": [],
-        "tmap": [
-          { "cname": "adt_test.Item1", "argtypes": [ "Uint32" ] },
-          { "cname": "adt_test.Item2", "argtypes": [] }
+          {
+            "cname": "dead_code_test10.B1",
+            "argtypes": [ "dead_code_test10.A" ]
+          }
         ]
       },
       {
@@ -70,32 +72,29 @@
         "tparams": [ "'A", "'B" ],
         "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
       },
-      { "tname": "adt_test.TestType3", "tparams": [], "tmap": [] }
+      {
+        "tname": "dead_code_test10.A",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test10.A1", "argtypes": [] },
+          { "cname": "dead_code_test10.A2", "argtypes": [] }
+        ]
+      }
     ]
   },
   "warnings": [
     {
-      "warning_message": "Unused library ADT: TestType2",
+      "warning_message": "Unused transition parameter: x",
       "start_location": {
-        "file": "checker/good/adt_test.scilla",
-        "line": 12,
-        "column": 1
+        "file": "contracts/dead_code_test10.scilla",
+        "line": 17,
+        "column": 16
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library ADT: TestType3",
-      "start_location": {
-        "file": "checker/good/adt_test.scilla",
-        "line": 16,
-        "column": 1
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "No transition in contract BadLib contains an accept statement\n",
+      "warning_message": "No transition in contract Dead contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
@@ -103,4 +102,3 @@
   ],
   "gas_remaining": "7999"
 }
-
