@@ -46,6 +46,9 @@ let explist =
     "builtin-bsub.scilexp";
     "builtin-bech32-1.scilexp";
     "builtin-bech32-2.scilexp";
+    "builtin-bech32-3.scilexp";
+    "builtin-bech32-4.scilexp";
+    "builtin-bech32-5.scilexp";
     "builtin-isqrt.scilexp";
     "builtin-eq-bystr.scilexp";
     "cons.scilexp";

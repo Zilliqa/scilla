@@ -1,0 +1,4 @@
+(None),
+{ [prefix -> (String "zil")],
+  [bech32str -> (String "zil102n74869xnvdwq3yh8p0k9jjgtejruft268tg9")] }
+Gas remaining: 4001871
