@@ -2,23 +2,28 @@
   "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "Dead6",
+    "vname": "Dead12",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "dummy", "params": [] } ],
+    "transitions": [ { "vname": "bar", "params": [] } ],
     "procedures": [
       {
-        "vname": "Event",
-        "params": [ { "vname": "err", "type": "dead_code_test6.Error" } ]
+        "vname": "foo",
+        "params": [ { "vname": "b", "type": "dead_code_test12.B" } ]
       }
     ],
-    "events": [
-      {
-        "vname": "Error",
-        "params": [ { "vname": "err_code", "type": "Uint32" } ]
-      }
-    ],
+    "events": [],
     "ADTs": [
+      {
+        "tname": "dead_code_test12.B",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "dead_code_test12.B1",
+            "argtypes": [ "dead_code_test12.A" ]
+          }
+        ]
+      },
       {
         "tname": "Option",
         "tparams": [ "'A" ],
@@ -28,11 +33,11 @@
         ]
       },
       {
-        "tname": "dead_code_test6.Error",
+        "tname": "dead_code_test12.A",
         "tparams": [],
         "tmap": [
-          { "cname": "dead_code_test6.InternalError", "argtypes": [] },
-          { "cname": "dead_code_test6.OtherError", "argtypes": [] }
+          { "cname": "dead_code_test12.A1", "argtypes": [] },
+          { "cname": "dead_code_test12.A2", "argtypes": [] }
         ]
       },
       {
@@ -68,27 +73,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unreachable pattern OtherError",
-      "start_location": {
-        "file": "contracts/dead_code_test6.scilla",
-        "line": 15,
-        "column": 11
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused ADT constructor: OtherError",
-      "start_location": {
-        "file": "contracts/dead_code_test6.scilla",
-        "line": 8,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "No transition in contract Dead6 contains an accept statement\n",
+      "warning_message": "No transition in contract Dead12 contains an accept statement\n",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
