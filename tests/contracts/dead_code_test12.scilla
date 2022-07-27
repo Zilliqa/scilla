@@ -1,0 +1,26 @@
+scilla_version 0
+
+library Dead12
+
+type A =
+| A1 (* A1 should be reported. A is used in the constructors of B, but all
+        occurrences of B is defined locally, so we see that A1 is unused. *)
+| A2
+type B =
+| B1 of A
+
+let a2 = A2
+
+contract Dead12()
+
+procedure foo(b : B)
+  match b with
+  | B1 (A1) => (* Unreachable pattern *)
+  | B1 (A2) =>
+  end
+end
+
+transition bar()
+  b = B1 a2;
+  foo b
+end
