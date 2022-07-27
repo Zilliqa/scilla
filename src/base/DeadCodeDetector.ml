@@ -75,6 +75,20 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
     List.dedup_and_sort ~compare:SCIdentifier.Name.compare res
 
+  (** [user_types_in_ctr ctr_def] returns user names of ADT and constructors
+      occurred in the constructor definition. *)
+  let user_types_in_ctr ctr_def =
+    List.fold_left ctr_def.c_arg_types ~init:[] ~f:(fun acc ty ->
+        acc @ user_types_in_adt [ ty ])
+
+  let user_types_in_ctrs ctr_defs =
+    List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
+        user_types_in_ctr ctr_def |> List.append acc)
+
+  let ctr_names (ctr_defs : ctr_def list) =
+    List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
+        [ SCIdentifier.get_id ctr_def.cname ] |> List.append acc)
+
   let dedup_id_list = SCIdentifier.dedup_id_list
 
   let dedup_name_list l =
@@ -97,17 +111,33 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             Map.set m ~key:(SCIdentifier.get_id id) ~data:ctr_defs
         | LibVar _ -> m)
 
-  (** [collect_used_adts adts_to_ctrs] returns a list of ADT and
-      constructor names used in the constructors of user-defined ADTs. *)
-  let collect_used_adts adts_to_ctrs =
+  (** [collect_adts_in_adts adts_to_ctrs] returns a list of ADT and constructor
+      names used in constructors other of user-defined ADTs. *)
+  let collect_adts_in_adts adts_to_ctrs =
     Map.data adts_to_ctrs
     |> List.fold_left ~init:[] ~f:(fun acc ctr_defs ->
-           List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
-               List.fold_left ctr_def.c_arg_types ~init:[] ~f:(fun acc ty ->
-                   acc @ user_types_in_adt [ ty ])
-               |> List.append acc)
-           |> List.append acc)
+           user_types_in_ctrs ctr_defs |> List.append acc)
     |> dedup_name_list
+
+  (** [collect_adts_in_params adts_to_ctrs param_adts] returns a list of ADT
+      and constructor names transitively used in transition parameters. *)
+  let collect_adts_in_params adts_to_ctrs param_adts =
+    let rec aux adt =
+      Map.find adts_to_ctrs adt
+      |> Option.fold ~init:[] ~f:(fun acc ctr_defs ->
+             user_types_in_ctrs ctr_defs
+             |> (fun adts ->
+                  List.fold_left adts ~init:adts ~f:(fun acc adt ->
+                      Map.find adts_to_ctrs adt
+                      |> Option.fold ~init:[] ~f:(fun acc ctr_defs ->
+                             ctr_names ctr_defs |> List.append acc)
+                      |> List.append acc))
+             |> List.fold_left ~init:acc ~f:(fun acc adt ->
+                    [ adt ] @ aux adt @ acc))
+      |> dedup_name_list
+    in
+    List.fold_left param_adts ~init:[] ~f:(fun acc adt ->
+        aux adt |> List.append acc)
 
   (** [report_unreachable_pm_arms cmod reported_ctrs] shows warnings for
       pattern-matching arms that check for unused user-defined ADT
@@ -429,8 +459,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   adts'
               in
               let reported_ctrs' =
-                if not @@ (in_list param_adts || in_list used_adts) then
-                  if List.is_empty used_ctrs && (not @@ in_list adts') then (
+                if not @@ in_list param_adts then
+                  if
+                    List.is_empty used_ctrs
+                    && (not @@ in_list adts')
+                    && (not @@ in_list used_adts)
+                  then (
                     warn "Unused library ADT: " i ER.get_loc;
                     [])
                   else
@@ -446,7 +480,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     (* Detect Dead Code in a library. *)
     let dcd_lib lib freevars adts param_adts =
-      collect_used_adts adts_to_ctrs
+      collect_adts_in_adts adts_to_ctrs
+      |> List.append @@ collect_adts_in_params adts_to_ctrs param_adts
+      |> dedup_name_list
       |> dcd_lib_entries lib.lentries freevars adts param_adts
     in
 
