@@ -18,8 +18,7 @@
 
   A constructor of any used ADT is considered as used if it one of:
   * Instantiated in the source code of the contract or of its library
-  * Is a part of an ADT that is used as a parameter of the transition or the
-    type function
+  * Is a part of an ADT that is used as a parameter of a transition
   Otherwise, it will be reported as unused and reported. *)
 
 open Core
