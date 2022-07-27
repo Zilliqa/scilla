@@ -1,13 +1,25 @@
-(*
-Checks for unused
-* Procedures and their parameters
-* Mutable Fields
-* Immutable contract parameters
-* Pattern-matching binders
-* Library functions (and their parameters) and types
-* Let bindings
-* Library imports
-*)
+(**
+  DeadCodeDetector module checks for unused:
+  * Procedures and their parameters
+  * Mutable Fields
+  * Immutable contract parameters
+  * Pattern-matching binders and arms
+  * Library functions (and their parameters) and types
+  * Let bindings
+  * Library imports
+  * User-defined ADTs and their constructors
+
+  An ADT is considered as used if it one of:
+  * Occurs in type annotations of the source code elements after typechecking
+    is finished.
+  * Used in constructors of other user-defined ADTs
+  * Used as an argument of a type function
+  Otherwise, it will be considered as unused and reported.
+
+  A constructor of any used ADT is considered as used if it one of:
+  * Instantiated in the source code of the contract or of its library
+  * Is a part of an ADT that is used as a parameter of a transition
+  Otherwise, it will be reported as unused and reported. *)
 
 open Core
 open ErrorUtils
