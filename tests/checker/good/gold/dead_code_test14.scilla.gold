@@ -50,7 +50,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused type case statement to: maybe_contract_address",
+      "warning_message": "Unused type cast statement to: maybe_contract_address",
       "start_location": {
         "file": "contracts/dead_code_test14.scilla",
         "line": 10,
