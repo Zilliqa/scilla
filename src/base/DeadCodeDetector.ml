@@ -77,15 +77,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   let rec user_types_in_literal lits =
     let dedup = List.dedup_and_sort ~compare:SCIdentifier.Name.compare in
     List.fold_left lits ~init:([], []) ~f:(fun (acc_adts, acc_ctrs) lit ->
-      match lit with
-      | SLiteral.Map ((ty1, ty2), _) ->
-          ( user_types_in_adt [ ty1 ] @ user_types_in_adt [ ty2 ] @ acc_adts,
-            acc_ctrs)
-      | SLiteral.ADTValue (ctr, tys, ts) ->
-          let ts_adts, ts_ctrs = user_types_in_literal ts in
-          (user_types_in_adt tys @ ts_adts @ acc_adts, ts_ctrs @ [ ctr ])
-      | _ -> ([], []))
-    |> (fun (adts, ctrs) -> dedup adts, dedup ctrs)
+        match lit with
+        | SLiteral.Map ((ty1, ty2), _) ->
+            ( user_types_in_adt [ ty1 ] @ user_types_in_adt [ ty2 ] @ acc_adts,
+              acc_ctrs )
+        | SLiteral.ADTValue (ctr, tys, ts) ->
+            let ts_adts, ts_ctrs = user_types_in_literal ts in
+            (user_types_in_adt tys @ ts_adts @ acc_adts, ts_ctrs @ [ ctr ])
+        | _ -> ([], []))
+    |> fun (adts, ctrs) -> (dedup adts, dedup ctrs)
 
   (** [user_types_in_ctr ctr_def] returns user names of ADT and constructors
       occurred in the constructor definition. *)
@@ -206,11 +206,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (******** Checking for dead expressions ********)
-    (** Returns free variables, used ADT types and their constructors *)
+    (* Returns free variables, used ADT types and their constructors *)
     let rec expr_iter (expr, _) =
       match expr with
       | Literal l ->
-          let (lit_adts, lit_ctrs) = user_types_in_literal [ l ] in
+          let lit_adts, lit_ctrs = user_types_in_literal [ l ] in
           ([], dedup_name_list lit_adts, dedup_name_list lit_ctrs)
       | Var v -> ([ v ], [], [])
       | TApp (v, tys) -> ([ v ], user_types_in_adt tys, [])
@@ -229,7 +229,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           let e_fv_no_a =
             List.filter ~f:(fun i -> not @@ SCIdentifier.equal i a) e_fv
           in
-          (e_fv_no_a, dedup_name_list @@ user_types_in_adt [ ty ] @ e_adts, e_ctrs)
+          ( e_fv_no_a,
+            dedup_name_list @@ user_types_in_adt [ ty ] @ e_adts,
+            e_ctrs )
       | Let (i, _, lhs, rhs) ->
           let fv_rhs, adts_rhs, ctrs_rhs = expr_iter rhs in
           let fvrhs_no_i =
@@ -277,8 +279,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (******** Checking for dead statements ********)
-    (** Returns free variables, used ADTs and their constructors *)
-    let rec stmt_iter (stmts : stmt_annot list) : ER.rep t list * Name.t list * Name.t list =
+    (* Returns free variables, used ADTs and their constructors *)
+    let rec stmt_iter (stmts : stmt_annot list) :
+        ER.rep t list * Name.t list * Name.t list =
       match stmts with
       | (s, _) :: rest_stmts -> (
           let live_vars, adts, ctrs = stmt_iter rest_stmts in
@@ -354,7 +357,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   | Timestamp bn -> [ bn ]
                   | ReplicateContr (addr, iparams) -> [ addr; iparams ])
                 @ live_vars,
-                adts, ctrs )
+                adts,
+                ctrs )
           | Throw topt -> (
               match topt with
               | Some x -> (dedup_id_list (x :: live_vars), adts, ctrs)
@@ -548,10 +552,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     (* Iterate through field initialisations *)
     let fields_lv, fields_adts, fields_ctrs =
       List.fold_left cmod.contr.cfields
-        ~init:(comps_lv' @ cons_lv, comps_adts' @ cons_adt, comps_ctrs' @ cons_ctrs)
+        ~init:
+          (comps_lv' @ cons_lv, comps_adts' @ cons_adt, comps_ctrs' @ cons_ctrs)
         ~f:(fun (res_fv, res_adts, res_ctrs) (_, ty, fexp) ->
           let f_lv, f_adt, f_ctr = expr_iter fexp in
-          (f_lv @ res_fv, user_types_in_adt [ ty ] @ f_adt @ res_adts, f_ctr @ res_ctrs))
+          ( f_lv @ res_fv,
+            user_types_in_adt [ ty ] @ f_adt @ res_adts,
+            f_ctr @ res_ctrs ))
     in
 
     (* Note: fields_lv' and fields_adts' also contains data from contraints and components *)
