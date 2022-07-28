@@ -375,17 +375,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library value: zero_address",
-      "start_location": {
-        "file": "contracts/type_casts.scilla",
-        "line": 5,
-        "column": 5
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused type case statement to: maybe_contract_address",
+      "warning_message": "Unused type cast statement to: maybe_contract_address",
       "start_location": {
         "file": "contracts/type_casts.scilla",
         "line": 184,
