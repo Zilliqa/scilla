@@ -6,6 +6,14 @@ type A =
 | A1
 | A2 (* unused *)
 
+(* unused constructor but used ADT *)
+type B =
+| B1
+
+(* unused constructor but used ADT *)
+type C =
+| C
+
 let a1 = A1
 
 let opt =
@@ -16,6 +24,8 @@ let opt =
   | None => default end
 
 let opt_a1 = let f = @opt A in f a1
+let opt_b = @opt B
+let opt_c = @opt C
 
 contract Dead13()
 

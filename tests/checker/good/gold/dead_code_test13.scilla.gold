@@ -10,6 +10,16 @@
     "events": [],
     "ADTs": [
       {
+        "tname": "dead_code_test13.C",
+        "tparams": [],
+        "tmap": [ { "cname": "dead_code_test13.C", "argtypes": [] } ]
+      },
+      {
+        "tname": "dead_code_test13.B",
+        "tparams": [],
+        "tmap": [ { "cname": "dead_code_test13.B1", "argtypes": [] } ]
+      },
+      {
         "tname": "Option",
         "tparams": [ "'A" ],
         "tmap": [
@@ -68,10 +78,50 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Unused ADT constructor: B1",
+      "start_location": {
+        "file": "contracts/dead_code_test13.scilla",
+        "line": 11,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: C",
+      "start_location": {
+        "file": "contracts/dead_code_test13.scilla",
+        "line": 15,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused library value: opt_a1",
       "start_location": {
         "file": "contracts/dead_code_test13.scilla",
-        "line": 18,
+        "line": 26,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: opt_b",
+      "start_location": {
+        "file": "contracts/dead_code_test13.scilla",
+        "line": 27,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: opt_c",
+      "start_location": {
+        "file": "contracts/dead_code_test13.scilla",
+        "line": 28,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -84,6 +134,6 @@
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7999"
+  "gas_remaining": "7997"
 }
 
