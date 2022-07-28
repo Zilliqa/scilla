@@ -59,6 +59,7 @@ let explist =
     "hash3.scilexp";
     "hash4.scilexp";
     "hash5.scilexp";
+    "hash_collisions.scilexp";
     "hash_map_stable1.scilexp";
     "hash_map_stable2.scilexp";
     "hash_map_stable3.scilexp";
