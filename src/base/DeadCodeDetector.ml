@@ -59,6 +59,10 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     include Comparable.Make (SCIdentifier.Name)
   end
 
+  module SCIdentifierSet = Set.Make (SCIdentifierComp)
+
+  let emp = SCIdentifierSet.empty
+
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
   open SCIdentifier
@@ -78,54 +82,58 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       warning_level_dead_code
       (get_loc (get_rep name))
 
-  (* Return a list of names of ADTs as Name from a type *)
-  (* Used to finding dead user defined ADTs *)
-  let rec user_types_in_adt tys =
+  (** Returns a set of names of ADTs as Name from a type *)
+  let rec user_types_in_adt (tys : SType.t list) =
     let rec iden_iter ty acc =
       match ty with
       | SCType.ADT (iden, targs) ->
-          [ SCIdentifier.get_id iden ] @ user_types_in_adt targs @ acc
+          user_types_in_adt targs |> SCIdentifierSet.union acc |> fun s ->
+          SCIdentifierSet.add s (SCIdentifier.get_id iden)
       | SCType.MapType (ty1, ty2) | SCType.FunType (ty1, ty2) ->
-          iden_iter ty1 [] @ iden_iter ty2 []
-      | _ -> []
+          SCIdentifierSet.union (iden_iter ty1 emp) (iden_iter ty2 emp)
+      | _ -> emp
     in
-    List.dedup_and_sort ~compare:SCIdentifier.Name.compare
-      (List.fold_left tys ~init:[] ~f:(fun iden_l ty ->
-           iden_iter ty [] @ iden_l))
+    List.fold_left tys ~init:emp ~f:(fun acc ty ->
+        iden_iter ty emp |> Set.union acc)
 
-  (** Returns used names of ADTs and their constructors. *)
-  let rec user_types_in_literal lits =
-    let dedup = List.dedup_and_sort ~compare:SCIdentifier.Name.compare in
-    List.fold_left lits ~init:([], []) ~f:(fun (acc_adts, acc_ctrs) lit ->
-        match lit with
-        | SLiteral.Map ((ty1, ty2), _) ->
-            ( user_types_in_adt [ ty1 ] @ user_types_in_adt [ ty2 ] @ acc_adts,
-              acc_ctrs )
-        | SLiteral.ADTValue (ctr, tys, ts) ->
-            let ts_adts, ts_ctrs = user_types_in_literal ts in
-            (user_types_in_adt tys @ ts_adts @ acc_adts, ts_ctrs @ [ ctr ])
-        | _ -> ([], []))
-    |> fun (adts, ctrs) -> (dedup adts, dedup ctrs)
+  (** Returns used names of ADT types and ADT constructors *)
+  let user_types_in_literal lits =
+    let rec aux lits =
+      List.fold_left lits ~init:(emp, emp) ~f:(fun (acc_adts, acc_ctrs) lit ->
+          match lit with
+          | SLiteral.Map ((ty1, ty2), _) ->
+              user_types_in_adt [ ty1 ]
+              |> SCIdentifierSet.union @@ user_types_in_adt [ ty2 ]
+              |> SCIdentifierSet.union acc_adts
+              |> fun adts -> (adts, acc_ctrs)
+          | SLiteral.ADTValue (ctr, tys, ts) ->
+              let ts_adts, ts_ctrs = aux ts in
+              user_types_in_adt tys
+              |> SCIdentifierSet.union ts_adts
+              |> SCIdentifierSet.union acc_adts
+              |> fun adts ->
+              ( adts,
+                SCIdentifierSet.add acc_ctrs ctr
+                |> SCIdentifierSet.union ts_ctrs )
+          | _ -> (emp, emp))
+    in
+    aux lits
 
   (** Returns user names of ADT and constructors occurred in the constructor
       definition. *)
   let user_types_in_ctr ctr_def =
-    List.fold_left ctr_def.c_arg_types ~init:[] ~f:(fun acc ty ->
-        acc @ user_types_in_adt [ ty ])
+    List.fold_left ctr_def.c_arg_types ~init:SCIdentifierSet.empty
+      ~f:(fun acc ty -> user_types_in_adt [ ty ] |> SCIdentifierSet.union acc)
 
   let user_types_in_ctrs ctr_defs =
-    List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
-        user_types_in_ctr ctr_def |> List.append acc)
+    List.fold_left ctr_defs ~init:SCIdentifierSet.empty ~f:(fun acc ctr_def ->
+        user_types_in_ctr ctr_def |> Set.union acc)
 
   let ctr_names (ctr_defs : ctr_def list) =
     List.fold_left ctr_defs ~init:[] ~f:(fun acc ctr_def ->
         [ SCIdentifier.get_id ctr_def.cname ] |> List.append acc)
 
   let dedup_id_list = SCIdentifier.dedup_id_list
-
-  let dedup_name_list l =
-    List.dedup_and_sort ~compare:SCIdentifier.Name.compare l
-
   let proc_dict = ref []
 
   (* Distinguishing read-only, write-only, and unused fields *)
@@ -142,33 +150,32 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             Map.set m ~key:(SCIdentifier.get_id id) ~data:ctr_defs
         | LibVar _ -> m)
 
-  (** Returns a list of ADT and constructor names used in constructors other of
+  (** Returns a set of ADT and constructor names used in constructors other of
       user-defined ADTs. *)
   let collect_adts_in_adts adts_to_ctrs =
     Map.data adts_to_ctrs
-    |> List.fold_left ~init:[] ~f:(fun acc ctr_defs ->
-           user_types_in_ctrs ctr_defs |> List.append acc)
-    |> dedup_name_list
+    |> List.fold_left ~init:SCIdentifierSet.empty ~f:(fun acc ctr_defs ->
+           user_types_in_ctrs ctr_defs |> SCIdentifierSet.union acc)
 
-  (** Returns a list of ADT and constructor names transitively used in
+  (** Returns a set of ADT and constructor names transitively used in
       transition parameters. *)
   let collect_adts_in_params adts_to_ctrs param_adts =
     let rec aux adt =
       Map.find adts_to_ctrs adt
-      |> Option.fold ~init:[] ~f:(fun acc ctr_defs ->
+      |> Option.fold ~init:emp ~f:(fun acc ctr_defs ->
              user_types_in_ctrs ctr_defs
              |> (fun adts ->
-                  List.fold_left adts ~init:adts ~f:(fun acc adt ->
+                  Set.fold adts ~init:adts ~f:(fun acc adt ->
                       Map.find adts_to_ctrs adt
                       |> Option.fold ~init:[] ~f:(fun acc ctr_defs ->
                              ctr_names ctr_defs |> List.append acc)
-                      |> List.append acc))
-             |> List.fold_left ~init:acc ~f:(fun acc adt ->
-                    [ adt ] @ aux adt @ acc))
-      |> dedup_name_list
+                      |> SCIdentifierSet.of_list |> SCIdentifierSet.union acc))
+             |> Set.fold ~init:acc ~f:(fun acc adt ->
+                    SCIdentifierSet.add acc adt
+                    |> SCIdentifierSet.union @@ aux adt))
     in
-    List.fold_left param_adts ~init:[] ~f:(fun acc adt ->
-        aux adt |> List.append acc)
+    Set.fold param_adts ~init:emp ~f:(fun acc adt ->
+        aux adt |> SCIdentifierSet.union acc)
 
   (** Shows warnings for pattern-matching arms that check for unused
       user-defined ADT constructors. *)
@@ -225,30 +232,33 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     (******** Checking for dead expressions ********)
     (* Returns free variables, used ADTs and their constructors *)
-    let rec expr_iter (expr, _) =
+    let rec expr_iter (expr, _) :
+        ER.rep t list * SCIdentifierSet.t * SCIdentifierSet.t =
       match expr with
       | Literal l ->
           let lit_adts, lit_ctrs = user_types_in_literal [ l ] in
-          ([], dedup_name_list lit_adts, dedup_name_list lit_ctrs)
-      | Var v -> ([ v ], [], [])
-      | TApp (v, tys) -> ([ v ], user_types_in_adt tys, [])
+          ([], lit_adts, lit_ctrs)
+      | Var v -> ([ v ], emp, emp)
+      | TApp (v, tys) -> ([ v ], user_types_in_adt tys, emp)
       | Message mlist ->
           let fvars =
             List.filter_map mlist ~f:(fun (_, pl) ->
                 match pl with MVar v -> Some v | MLit _ -> None)
           in
-          (fvars, [], [])
-      | App (f, actuals) -> (f :: actuals, [], [])
+          (fvars, emp, emp)
+      | App (f, actuals) -> (f :: actuals, emp, emp)
       | Constr (ctr, tys, actuals) ->
-          (actuals, user_types_in_adt tys, [ SCIdentifier.get_id ctr ])
-      | Builtin (_, tys, actuals) -> (actuals, user_types_in_adt tys, [])
+          ( actuals,
+            user_types_in_adt tys,
+            SCIdentifierSet.singleton @@ SCIdentifier.get_id ctr )
+      | Builtin (_, tys, actuals) -> (actuals, user_types_in_adt tys, emp)
       | Fixpoint (a, ty, e) | Fun (a, ty, e) ->
           let e_fv, e_adts, e_ctrs = expr_iter e in
           let e_fv_no_a =
             List.filter ~f:(fun i -> not @@ SCIdentifier.equal i a) e_fv
           in
           ( e_fv_no_a,
-            dedup_name_list @@ user_types_in_adt [ ty ] @ e_adts,
+            SCIdentifierSet.union (user_types_in_adt [ ty ]) e_adts,
             e_ctrs )
       | Let (i, _, lhs, rhs) ->
           let fv_rhs, adts_rhs, ctrs_rhs = expr_iter rhs in
@@ -259,8 +269,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             (* LHS is not dead *)
             let fvlhs, tylhs, ctrlhs = expr_iter lhs in
             let fv = dedup_id_list (fvlhs @ fvrhs_no_i) in
-            let adts = dedup_name_list (adts_rhs @ tylhs) in
-            let ctrs = dedup_name_list (ctrs_rhs @ ctrlhs) in
+            let adts = SCIdentifierSet.union adts_rhs tylhs in
+            let ctrs = SCIdentifierSet.union ctrs_rhs ctrlhs in
             (fv, adts, ctrs)
           else (
             (* Give a warning *)
@@ -268,7 +278,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             (fvrhs_no_i, adts_rhs, ctrs_rhs))
       | MatchExpr (x, plist) ->
           (* Iterate through each pattern like Let *)
-          List.fold_left plist ~init:([], [], [])
+          List.fold_left plist ~init:([], emp, emp)
             ~f:(fun (res_fv, res_adts, res_ctrs) (pat, exp') ->
               let fvl, adts, ctrs = expr_iter exp' in
               let bounds = get_pattern_bounds pat in
@@ -286,7 +296,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 List.filter fvl ~f:(fun a ->
                     not @@ SCIdentifier.is_mem_id a bounds)
               in
-              ((x :: fvl') @ res_fv, res_adts @ adts, res_ctrs @ ctrs))
+              ( (x :: fvl') @ res_fv,
+                SCIdentifierSet.union res_adts adts,
+                SCIdentifierSet.union res_ctrs ctrs ))
       | TFun (a, e) ->
           let e_fv, e_adts, e_ctrs = expr_iter e in
           let e_fv' =
@@ -298,8 +310,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
     (******** Checking for dead statements ********)
     (* Returns free variables, used ADTs and their constructors *)
-    let rec stmt_iter (stmts : stmt_annot list) :
-        ER.rep t list * Name.t list * Name.t list =
+    let rec stmt_iter stmts =
       match stmts with
       | (s, _) :: rest_stmts -> (
           let live_vars, adts, ctrs = stmt_iter rest_stmts in
@@ -396,18 +407,18 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               if SCIdentifier.is_mem_id i live_vars then
                 let e_live_vars, adts', ctrs' = expr_iter e in
                 ( dedup_id_list @@ e_live_vars @ live_vars_no_i,
-                  dedup_name_list @@ adts' @ adts,
-                  dedup_name_list @@ ctrs' @ ctrs )
+                  SCIdentifierSet.union adts' adts,
+                  SCIdentifierSet.union ctrs' ctrs )
               else (
                 warn "Unused bind statement to: " i ER.get_loc;
                 let e_live_vars, adts', ctrs' = expr_iter e in
                 ( dedup_id_list @@ e_live_vars @ live_vars,
-                  dedup_name_list @@ adts' @ adts,
-                  dedup_name_list @@ ctrs' @ ctrs ))
+                  SCIdentifierSet.union adts' adts,
+                  SCIdentifierSet.union ctrs' ctrs ))
           | MatchStmt (i, pslist) ->
               let live_vars', adts', ctrs' =
                 (* No live variables when analysing MatchStmt, as seen when checking tests/contracts/dead_code_test4.scilla *)
-                List.fold_left pslist ~init:([], [], [])
+                List.fold_left pslist ~init:([], emp, emp)
                   ~f:(fun (res_fv, res_adts, res_ctrs) (pat, stmts) ->
                     let fvl, adts, ctrs = stmt_iter stmts in
                     let bounds = get_pattern_bounds pat in
@@ -425,9 +436,13 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                       List.filter fvl ~f:(fun a ->
                           not (SCIdentifier.is_mem_id a bounds))
                     in
-                    (fvl' @ res_fv, adts @ res_adts, ctrs @ res_ctrs))
+                    ( fvl' @ res_fv,
+                      SCIdentifierSet.union adts res_adts,
+                      SCIdentifierSet.union ctrs res_ctrs ))
               in
-              ((i :: live_vars) @ live_vars', adts @ adts', ctrs @ ctrs')
+              ( (i :: live_vars) @ live_vars',
+                SCIdentifierSet.union adts adts',
+                SCIdentifierSet.union ctrs ctrs' )
           | TypeCast (x, r, t) ->
               if SCIdentifier.is_mem_id x live_vars then
                 let live_vars_no_x =
@@ -435,14 +450,16 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     ~f:(fun i -> not @@ SCIdentifier.equal x i)
                     live_vars
                 in
-                (r :: live_vars_no_x, adts @ user_types_in_adt [ t ], ctrs)
+                ( r :: live_vars_no_x,
+                  user_types_in_adt [ t ] |> SCIdentifierSet.union adts,
+                  ctrs )
               else (
                 warn "Unused type cast statement to: " x ER.get_loc;
                 (r :: live_vars, adts, ctrs))
           | SendMsgs v | CreateEvnt v ->
               (dedup_id_list @@ (v :: live_vars), adts, ctrs)
           | AcceptPayment | GasStmt _ -> (live_vars, adts, ctrs))
-      | _ -> ([], [], [])
+      | _ -> ([], emp, emp)
     in
 
     let adts_to_ctrs =
@@ -472,23 +489,24 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               let res_fv = dedup_id_list @@ fv @ freevars'_no_i in
               let res_adts =
                 match topt with
-                | None -> dedup_name_list (tyl @ adts')
+                | None -> SCIdentifierSet.union tyl adts'
                 | Some ty ->
-                    dedup_name_list (user_types_in_adt [ ty ] @ tyl @ adts')
+                    user_types_in_adt [ ty ] |> SCIdentifierSet.union tyl
+                    |> SCIdentifierSet.union adts'
               in
-              let res_ctrs = dedup_name_list @@ ctrs' @ ctrl in
+              let res_ctrs = SCIdentifierSet.union ctrs' ctrl in
               (res_fv, res_adts, res_ctrs, reported_ctrs)
           | LibTyp (i, ctrs) ->
               let ids_eq rep_id id =
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
               in
-              let in_list ?(i = i) l = List.exists l ~f:(fun a -> ids_eq i a) in
+              let in_set ?(i = i) l = Set.exists l ~f:(fun a -> ids_eq i a) in
               let used_ctrs, unused_ctrs =
                 List.partition_tf ctrs ~f:(fun ctr ->
-                    in_list ~i:ctr.cname ctrs' || in_list ~i:ctr.cname used_adts)
+                    in_set ~i:ctr.cname ctrs' || in_set ~i:ctr.cname used_adts)
               in
               let adts'_no_i =
-                List.filter
+                Set.filter
                   ~f:(fun i' ->
                     not
                     @@ (ids_eq i i'
@@ -497,11 +515,11 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                   adts'
               in
               let reported_ctrs' =
-                if not @@ in_list param_adts then
+                if not @@ in_set param_adts then
                   if
                     List.is_empty used_ctrs
-                    && (not @@ in_list adts')
-                    && (not @@ in_list used_adts)
+                    && (not @@ in_set adts')
+                    && (not @@ in_set used_adts)
                   then (
                     warn "Unused library ADT: " i ER.get_loc;
                     [])
@@ -519,15 +537,14 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     (* Detect Dead Code in a library. *)
     let dcd_lib lib freevars adts ctrs param_adts =
       collect_adts_in_adts adts_to_ctrs
-      |> List.append @@ collect_adts_in_params adts_to_ctrs param_adts
-      |> dedup_name_list
+      |> SCIdentifierSet.union @@ collect_adts_in_params adts_to_ctrs param_adts
       |> dcd_lib_entries lib.lentries freevars adts ctrs param_adts
     in
 
     (* START *)
     (* Iterate through contract components. *)
     let comps_lv, comps_adts, comps_ctrs, comp_param_adts =
-      List.fold_left cmod.contr.ccomps ~init:([], [], [], [])
+      List.fold_left cmod.contr.ccomps ~init:([], emp, emp, emp)
         ~f:(fun (res_fv, res_adts, res_ctrs, res_param_adts) comp ->
           let lv, adts, ctrs = stmt_iter comp.comp_body in
           (* Remove bound parameters *)
@@ -550,19 +567,17 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             user_types_in_adt @@ List.map comp.comp_params ~f:snd
           in
           ( lv' @ res_fv,
-            param_adts @ adts @ res_adts,
-            res_ctrs @ ctrs,
+            SCIdentifierSet.union param_adts adts
+            |> SCIdentifierSet.union res_adts,
+            SCIdentifierSet.union res_ctrs ctrs,
             (* We need only parameters from transitions, because they could
                receive any constructor from the outside, so all of these
                constructors are not dead. *)
             match comp.comp_type with
-            | CompTrans -> param_adts @ res_param_adts
+            | CompTrans -> SCIdentifierSet.union param_adts res_param_adts
             | CompProc -> res_param_adts ))
     in
     let comps_lv' = dedup_id_list comps_lv in
-    let comps_adts' = dedup_name_list comps_adts in
-    let comps_ctrs' = dedup_name_list comps_ctrs in
-    let comp_param_adts' = dedup_name_list comp_param_adts in
 
     (* Iterate through constraints *)
     let cons_lv, cons_adt, cons_ctrs = expr_iter cmod.contr.cconstraint in
@@ -571,18 +586,20 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     let fields_lv, fields_adts, fields_ctrs =
       List.fold_left cmod.contr.cfields
         ~init:
-          (comps_lv' @ cons_lv, comps_adts' @ cons_adt, comps_ctrs' @ cons_ctrs)
+          ( comps_lv' @ cons_lv,
+            SCIdentifierSet.union comps_adts cons_adt,
+            SCIdentifierSet.union comps_ctrs cons_ctrs )
         ~f:(fun (res_fv, res_adts, res_ctrs) (_, ty, fexp) ->
           let f_lv, f_adt, f_ctr = expr_iter fexp in
           ( f_lv @ res_fv,
-            user_types_in_adt [ ty ] @ f_adt @ res_adts,
-            f_ctr @ res_ctrs ))
+            user_types_in_adt [ ty ]
+            |> SCIdentifierSet.union f_adt
+            |> SCIdentifierSet.union res_adts,
+            SCIdentifierSet.union f_ctr res_ctrs ))
     in
 
     (* Note: fields_lv' and fields_adts' also contains data from constraints and components *)
     let fields_lv' = dedup_id_list fields_lv in
-    let fields_adts' = dedup_name_list fields_adts in
-    let fields_ctrs' = dedup_name_list fields_ctrs in
 
     (******** Checking for dead contract parameters ********)
     let param_iden, param_ty = List.unzip cmod.contr.cparams in
@@ -597,7 +614,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
     (* Adding used ADTs in parameters *)
     let lv_adts =
-      dedup_name_list @@ fields_adts' @ user_types_in_adt param_ty
+      user_types_in_adt param_ty |> SCIdentifierSet.union fields_adts
     in
 
     (******** Checking for dead procedures ********)
@@ -611,8 +628,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     (* Iterate through contract library *)
     let lv_clibs, lv_adts, _, reported_ctrs =
       match cmod.libs with
-      | Some l -> dcd_lib l lv_contract lv_adts fields_ctrs' comp_param_adts'
-      | None -> (lv_contract, lv_adts, fields_ctrs', [])
+      | Some l -> dcd_lib l lv_contract lv_adts fields_ctrs comp_param_adts
+      | None -> (lv_contract, lv_adts, fields_ctrs, [])
     in
 
     report_unreachable_pm_arms cmod reported_ctrs;
@@ -624,7 +641,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               match lentry with
               | LibVar (iden, _, _) -> SCIdentifier.is_mem_id iden lv_clibs
               | LibTyp (iden, _) ->
-                  List.exists lv_adts ~f:(fun i ->
+                  Set.exists lv_adts ~f:(fun i ->
                       SCIdentifier.Name.equal (SCIdentifier.get_id iden) i))
         in
         (******** Checking for dead imported library ********)
