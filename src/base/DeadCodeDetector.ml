@@ -336,8 +336,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         (e_fv', e_adts, e_ctrs)
     | GasExpr (_, e) -> expr_iter e
 
-  (******** Checking for dead statements ********)
-  (* Returns free variables, used ADTs and their constructors *)
+  (** Provides checking for dead statement.
+     @return Used: variables, ADTs and their constructors *)
   let rec stmt_iter (fs : FieldsState.fs) stmts =
     match stmts with
     | (s, _) :: rest_stmts -> (
@@ -347,7 +347,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             FieldsState.mark_field_read fs m;
             if SCIdentifier.is_mem_id x live_vars then
               (* m is a field, thus we don't track its liveness *)
-              (* Remove liveness of x - as seen when checking tests/contracts/dead_code_test4.scilla  *)
+              (* Remove liveness of x - as seen when checking:
+                 tests/contracts/dead_code_test4.scilla  *)
               let live_vars_no_x =
                 List.filter
                   ~f:(fun i -> not @@ SCIdentifier.equal i x)
@@ -443,7 +444,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 SCIdentifierSet.union ctrs' ctrs ))
         | MatchStmt (i, pslist) ->
             let live_vars', adts', ctrs' =
-              (* No live variables when analysing MatchStmt, as seen when checking tests/contracts/dead_code_test4.scilla *)
+              (* No live variables when analysing MatchStmt, as seen when
+                 checking: tests/contracts/dead_code_test4.scilla *)
               List.fold_left pslist ~init:([], emp, emp)
                 ~f:(fun (res_fv, res_adts, res_ctrs) (pat, stmts) ->
                   let fvl, adts, ctrs = stmt_iter fs stmts in
@@ -453,7 +455,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     List.filter bounds ~f:(fun bound ->
                         not @@ SCIdentifier.is_mem_id bound fvl)
                   in
-                  (******** Checking for dead bounds ********)
+                  (* Checking for dead bounds *)
                   if not @@ List.is_empty bounds_unused then
                     List.iter bounds_unused ~f:(fun bound ->
                         warn "Unused match bound: " bound ER.get_loc);
@@ -486,6 +488,44 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             (dedup_id_list @@ (v :: live_vars), adts, ctrs)
         | AcceptPayment | GasStmt _ -> (live_vars, adts, ctrs))
     | _ -> ([], emp, emp)
+
+  (** Checks for unused module's components.
+      @return Used: variables, ADTs, constructors, ADTs used in params. *)
+  let check_comps cmod fields_state =
+    List.fold_left cmod.contr.ccomps ~init:([], emp, emp, emp)
+      ~f:(fun (res_fv, res_adts, res_ctrs, res_param_adts) comp ->
+        let lv, adts, ctrs = stmt_iter fields_state comp.comp_body in
+        (* Remove bound parameters *)
+        let lv' =
+          List.filter lv ~f:(fun a ->
+              not
+                (List.exists comp.comp_params ~f:(fun (b, _) ->
+                     SCIdentifier.equal a b)))
+        in
+        (* Checking for dead component parameters *)
+        List.iter comp.comp_params ~f:(fun (cparam, _) ->
+            if not @@ SCIdentifier.is_mem_id cparam lv then
+              match comp.comp_type with
+              | CompTrans ->
+                  warn "Unused transition parameter: " cparam ER.get_loc
+              | CompProc ->
+                  warn "Unused procedure parameter: " cparam ER.get_loc);
+        (* Take out the type of bound parameters *)
+        let param_adts =
+          user_types_in_adt @@ List.map comp.comp_params ~f:snd
+        in
+        ( lv' @ res_fv,
+          SCIdentifierSet.union param_adts adts
+          |> SCIdentifierSet.union res_adts,
+          SCIdentifierSet.union res_ctrs ctrs,
+          (* We need only parameters from transitions, because they could
+             receive any constructor from the outside, so all of these
+             constructors are not dead. *)
+          match comp.comp_type with
+          | CompTrans -> SCIdentifierSet.union param_adts res_param_adts
+          | CompProc -> res_param_adts ))
+    |> fun (comps_lv, comps_adts, comps_ctrs, comp_param_adts) ->
+    (dedup_id_list comps_lv, comps_adts, comps_ctrs, comp_param_adts)
 
   (** Checks for unused library definitions: functions, variables, types.
       @return Used library variables, used ADTs, reported ADT constructors. *)
@@ -573,42 +613,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         ~f:(fun l -> collect_adts_to_ctrs l.lentries)
     in
 
-    (* Iterate through contract components. *)
     let comps_lv, comps_adts, comps_ctrs, comp_param_adts =
-      List.fold_left cmod.contr.ccomps ~init:([], emp, emp, emp)
-        ~f:(fun (res_fv, res_adts, res_ctrs, res_param_adts) comp ->
-          let lv, adts, ctrs = stmt_iter fields_state comp.comp_body in
-          (* Remove bound parameters *)
-          let lv' =
-            List.filter lv ~f:(fun a ->
-                not
-                  (List.exists comp.comp_params ~f:(fun (b, _) ->
-                       SCIdentifier.equal a b)))
-          in
-          (******** Checking for dead component parameters ********)
-          List.iter comp.comp_params ~f:(fun (cparam, _) ->
-              if not @@ SCIdentifier.is_mem_id cparam lv then
-                match comp.comp_type with
-                | CompTrans ->
-                    warn "Unused transition parameter: " cparam ER.get_loc
-                | CompProc ->
-                    warn "Unused procedure parameter: " cparam ER.get_loc);
-          (* Take out the type of bound parameters *)
-          let param_adts =
-            user_types_in_adt @@ List.map comp.comp_params ~f:snd
-          in
-          ( lv' @ res_fv,
-            SCIdentifierSet.union param_adts adts
-            |> SCIdentifierSet.union res_adts,
-            SCIdentifierSet.union res_ctrs ctrs,
-            (* We need only parameters from transitions, because they could
-               receive any constructor from the outside, so all of these
-               constructors are not dead. *)
-            match comp.comp_type with
-            | CompTrans -> SCIdentifierSet.union param_adts res_param_adts
-            | CompProc -> res_param_adts ))
+      check_comps cmod fields_state
     in
-    let comps_lv' = dedup_id_list comps_lv in
 
     (* Iterate through constraints *)
     let cons_lv, cons_adt, cons_ctrs = expr_iter cmod.contr.cconstraint in
@@ -617,7 +624,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     let fields_lv, fields_adts, fields_ctrs =
       List.fold_left cmod.contr.cfields
         ~init:
-          ( comps_lv' @ cons_lv,
+          ( comps_lv @ cons_lv,
             SCIdentifierSet.union comps_adts cons_adt,
             SCIdentifierSet.union comps_ctrs cons_ctrs )
         ~f:(fun (res_fv, res_adts, res_ctrs) (_, ty, fexp) ->
@@ -629,7 +636,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             SCIdentifierSet.union f_ctr res_ctrs ))
     in
 
-    (* Note: fields_lv' and fields_adts' also contains data from constraints and components *)
+    (* Note: fields_lv' also contains data from constraints and components *)
     let fields_lv' = dedup_id_list fields_lv in
 
     (******** Checking for dead contract parameters ********)
