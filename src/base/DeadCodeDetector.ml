@@ -487,23 +487,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         | AcceptPayment | GasStmt _ -> (live_vars, adts, ctrs))
     | _ -> ([], emp, emp)
 
-  (* Detect Dead Code in a cmod *)
-  let dc_cmod (cmod : cmodule) (elibs : libtree list) =
-    let fields_state = FieldsState.mk cmod in
-
-    let adts_to_ctrs =
-      Option.value_map cmod.libs
-        ~default:(Map.empty (module SCIdentifierComp))
-        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
-    in
-
-    (******** Checking for dead library function/variable/type definitions ********)
+  (** Checks for unused library definitions: functions, variables, types.
+      @return Used library variables, used ADTs, reported ADT constructors. *)
+  let check_lib (cmod : cmodule) freevars adts ctrs param_adts adts_to_ctrs =
     (* DCD library entries. *)
-    let rec dcd_lib_entries lentries freevars adts ctrs param_adts used_adts =
+    let rec check_lentries lentries freevars adts ctrs param_adts used_adts =
       match lentries with
       | lentry :: rentries -> (
           let freevars', adts', ctrs', reported_ctrs =
-            dcd_lib_entries rentries freevars adts ctrs param_adts used_adts
+            check_lentries rentries freevars adts ctrs param_adts used_adts
           in
           match lentry with
           | LibVar (i, topt, lexp) ->
@@ -562,15 +554,25 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               (freevars', adts'_no_i, ctrs', reported_ctrs'))
       | [] -> (freevars, adts, ctrs, [])
     in
+    Option.find_map cmod.libs ~f:(fun lib ->
+        collect_adts_in_adts adts_to_ctrs
+        |> SCIdentifierSet.union
+           @@ collect_adts_in_params adts_to_ctrs param_adts
+        |> check_lentries lib.lentries freevars adts ctrs param_adts
+        |> (fun (used_vars, adts, _ctrs, reported_ctrs) ->
+             (used_vars, adts, reported_ctrs))
+        |> Option.some)
+    |> Option.value ~default:(freevars, adts, [])
 
-    (* Detect Dead Code in a library. *)
-    let dcd_lib lib freevars adts ctrs param_adts =
-      collect_adts_in_adts adts_to_ctrs
-      |> SCIdentifierSet.union @@ collect_adts_in_params adts_to_ctrs param_adts
-      |> dcd_lib_entries lib.lentries freevars adts ctrs param_adts
+  (* Detect Dead Code in a cmod *)
+  let dc_cmod (cmod : cmodule) (elibs : libtree list) =
+    let fields_state = FieldsState.mk cmod in
+    let adts_to_ctrs =
+      Option.value_map cmod.libs
+        ~default:(Map.empty (module SCIdentifierComp))
+        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
     in
 
-    (* START *)
     (* Iterate through contract components. *)
     let comps_lv, comps_adts, comps_ctrs, comp_param_adts =
       List.fold_left cmod.contr.ccomps ~init:([], emp, emp, emp)
@@ -655,10 +657,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         | CompTrans -> ());
 
     (* Iterate through contract library *)
-    let lv_clibs, lv_adts, _, reported_ctrs =
-      match cmod.libs with
-      | Some l -> dcd_lib l lv_contract lv_adts fields_ctrs comp_param_adts
-      | None -> (lv_contract, lv_adts, fields_ctrs, [])
+    let lv_clibs, lv_adts, reported_ctrs =
+      check_lib cmod lv_contract lv_adts fields_ctrs comp_param_adts
+        adts_to_ctrs
     in
 
     report_unreachable_pm_arms cmod reported_ctrs;
