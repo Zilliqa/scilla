@@ -68,17 +68,18 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   open SCIdentifier
   open SCSyntax
 
-  (* Warning level for dead code detection *)
+  (** Warning level for dead code detection *)
   let warning_level_dead_code = 3
 
-  (* Raise a warning *)
+  (** Raises a warning *)
   let warn warn_msg name get_loc =
     warn1
       (warn_msg ^ as_error_string name)
       warning_level_dead_code
       (get_loc (get_rep name))
 
-  (** Keeps a mutable state to track read, write and unused fields. *)
+  (** Keeps a mutable state to track read, write and unused fields of a
+      cmodule. *)
   module FieldsState = struct
     type fs = {
       cfields : ER.rep t list;
@@ -121,10 +122,6 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           && (not @@ SCIdentifier.is_mem_id f fs.write_fields))
       |> List.iter ~f:(fun f -> warn "Unused field: " f ER.get_loc)
   end
-
-  (* All checking procedures are marked with the comment
-     (******** Checking for dead ______ ********)
-  *)
 
   (** Returns a set of names of ADTs as Name from a type *)
   let rec user_types_in_adt (tys : SType.t list) =
@@ -259,8 +256,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     List.iter cmod.contr.ccomps ~f:(fun comp ->
         List.iter comp.comp_body ~f:(fun stmt -> report_stmt stmt))
 
-  (******** Checking for dead expressions ********)
-  (* Returns free variables, used ADTs and their constructors *)
+  (** Checks for dead code in the given expressions list
+      @return Used variables, ADTs and their constructors *)
   let rec expr_iter (expr, _) :
       ER.rep t list * SCIdentifierSet.t * SCIdentifierSet.t =
     match expr with
@@ -337,101 +334,94 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     | GasExpr (_, e) -> expr_iter e
 
   (** Provides checking for dead statement.
-     @return Used: variables, ADTs and their constructors *)
+      @return Used variables, ADTs and their constructors found after
+              traversing statements. *)
   let rec stmt_iter (fs : FieldsState.fs) stmts =
     match stmts with
     | (s, _) :: rest_stmts -> (
-        let live_vars, adts, ctrs = stmt_iter fs rest_stmts in
+        let lv, adts, ctrs = stmt_iter fs rest_stmts in
         match s with
         | Load (x, m) ->
             FieldsState.mark_field_read fs m;
-            if SCIdentifier.is_mem_id x live_vars then
+            if SCIdentifier.is_mem_id x lv then
               (* m is a field, thus we don't track its liveness *)
               (* Remove liveness of x - as seen when checking:
-                 tests/contracts/dead_code_test4.scilla  *)
+                 tests/contracts/dead_code_test4.scilla *)
               let live_vars_no_x =
-                List.filter
-                  ~f:(fun i -> not @@ SCIdentifier.equal i x)
-                  live_vars
+                List.filter lv ~f:(fun i -> not @@ SCIdentifier.equal i x)
               in
               (live_vars_no_x, adts, ctrs) (* (live_vars, adts, ctrs) *)
             else (
               warn "Unused load statement to: " x ER.get_loc;
-              (live_vars, adts, ctrs))
+              (lv, adts, ctrs))
         | RemoteLoad (x, addr, m) ->
             FieldsState.mark_field_read fs m;
             (* m is a field, thus we don't track its liveness *)
-            if SCIdentifier.is_mem_id x live_vars then
+            if SCIdentifier.is_mem_id x lv then
               let live_vars_no_x =
-                List.filter
-                  ~f:(fun i -> not @@ SCIdentifier.equal i x)
-                  live_vars
+                List.filter ~f:(fun i -> not @@ SCIdentifier.equal i x) lv
               in
               (dedup_id_list (addr :: live_vars_no_x), adts, ctrs)
             else (
               warn "Unused remote load statement to: " x ER.get_loc;
-              (live_vars, adts, ctrs))
+              (lv, adts, ctrs))
         | Store (i, m) ->
             FieldsState.mark_field_write fs i;
-            (dedup_id_list (m :: live_vars), adts, ctrs)
+            (dedup_id_list (m :: lv), adts, ctrs)
         | MapUpdate (i, il, io) ->
             FieldsState.mark_field_write fs i;
             let live_vars' =
               match io with Some ii -> i :: ii :: il | None -> i :: il
             in
-            (dedup_id_list @@ live_vars' @ live_vars, adts, ctrs)
+            (dedup_id_list @@ live_vars' @ lv, adts, ctrs)
         | MapGet (x, i, il, _) ->
             (* i is a field, thus we don't track its liveness *)
             FieldsState.mark_field_read fs i;
-            if SCIdentifier.is_mem_id x live_vars then
+            if SCIdentifier.is_mem_id x lv then
               let live_vars_no_x =
-                List.filter
-                  ~f:(fun i -> not @@ SCIdentifier.equal i x)
-                  live_vars
+                List.filter ~f:(fun i -> not @@ SCIdentifier.equal i x) lv
               in
               (dedup_id_list (il @ live_vars_no_x), adts, ctrs)
             else (
               warn "Unused map get statement to: " x ER.get_loc;
-              (live_vars, adts, ctrs))
+              (lv, adts, ctrs))
         | RemoteMapGet (x, addr, i, il, _) ->
             (* i is a field, thus we don't track its liveness *)
             FieldsState.mark_field_read fs i;
-            if SCIdentifier.is_mem_id x live_vars then
+            if SCIdentifier.is_mem_id x lv then
               let live_vars_no_x =
-                List.filter
-                  ~f:(fun i -> not @@ SCIdentifier.equal i x)
-                  live_vars
+                List.filter ~f:(fun i -> not @@ SCIdentifier.equal i x) lv
               in
               (dedup_id_list (addr :: (il @ live_vars_no_x)), adts, ctrs)
             else (
               warn "Unused remote map get statement to: " x ER.get_loc;
-              (live_vars, adts, ctrs))
+              (lv, adts, ctrs))
         | ReadFromBC (x, bf) ->
-            if not @@ SCIdentifier.is_mem_id x live_vars then
+            if not @@ SCIdentifier.is_mem_id x lv then
               warn "Unused Read From BC statement to: " x ER.get_loc;
             ( dedup_id_list
                 (match bf with
                 | CurBlockNum | ChainID -> []
                 | Timestamp bn -> [ bn ]
                 | ReplicateContr (addr, iparams) -> [ addr; iparams ])
-              @ live_vars,
+              @ lv,
               adts,
               ctrs )
         | Throw topt -> (
             match topt with
-            | Some x -> (dedup_id_list (x :: live_vars), adts, ctrs)
-            | None -> (live_vars, adts, ctrs))
+            | Some x -> (dedup_id_list (x :: lv), adts, ctrs)
+            | None -> (lv, adts, ctrs))
         | CallProc (p, al) ->
             proc_dict := p :: !proc_dict;
-            (dedup_id_list (al @ live_vars), adts, ctrs)
+            (dedup_id_list (al @ lv), adts, ctrs)
         | Iterate (l, p) ->
             proc_dict := p :: !proc_dict;
-            (dedup_id_list (l :: live_vars), adts, ctrs)
+            (dedup_id_list (l :: lv), adts, ctrs)
         | Bind (i, e) ->
             let live_vars_no_i =
-              List.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) live_vars
+              List.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
             in
-            if SCIdentifier.is_mem_id i live_vars then
+            if SCIdentifier.is_mem_id i lv then
               let e_live_vars, adts', ctrs' = expr_iter e in
               ( dedup_id_list @@ e_live_vars @ live_vars_no_i,
                 SCIdentifierSet.union adts' adts,
@@ -439,7 +429,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused bind statement to: " i ER.get_loc;
               let e_live_vars, adts', ctrs' = expr_iter e in
-              ( dedup_id_list @@ e_live_vars @ live_vars,
+              ( dedup_id_list @@ e_live_vars @ lv,
                 SCIdentifierSet.union adts' adts,
                 SCIdentifierSet.union ctrs' ctrs ))
         | MatchStmt (i, pslist) ->
@@ -468,32 +458,29 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     SCIdentifierSet.union adts res_adts,
                     SCIdentifierSet.union ctrs res_ctrs ))
             in
-            ( (i :: live_vars) @ live_vars',
+            ( (i :: lv) @ live_vars',
               SCIdentifierSet.union adts adts',
               SCIdentifierSet.union ctrs ctrs' )
         | TypeCast (x, r, t) ->
-            if SCIdentifier.is_mem_id x live_vars then
+            if SCIdentifier.is_mem_id x lv then
               let live_vars_no_x =
-                List.filter
-                  ~f:(fun i -> not @@ SCIdentifier.equal x i)
-                  live_vars
+                List.filter ~f:(fun i -> not @@ SCIdentifier.equal x i) lv
               in
               ( r :: live_vars_no_x,
                 user_types_in_adt [ t ] |> SCIdentifierSet.union adts,
                 ctrs )
             else (
               warn "Unused type cast statement to: " x ER.get_loc;
-              (r :: live_vars, adts, ctrs))
-        | SendMsgs v | CreateEvnt v ->
-            (dedup_id_list @@ (v :: live_vars), adts, ctrs)
-        | AcceptPayment | GasStmt _ -> (live_vars, adts, ctrs))
+              (r :: lv, adts, ctrs))
+        | SendMsgs v | CreateEvnt v -> (dedup_id_list @@ (v :: lv), adts, ctrs)
+        | AcceptPayment | GasStmt _ -> (lv, adts, ctrs))
     | _ -> ([], emp, emp)
 
   (** Checks for unused module's components.
       @return Used: variables, ADTs, constructors, ADTs used in params. *)
   let check_comps cmod fields_state =
     List.fold_left cmod.contr.ccomps ~init:([], emp, emp, emp)
-      ~f:(fun (res_fv, res_adts, res_ctrs, res_param_adts) comp ->
+      ~f:(fun (res_lv, res_adts, res_ctrs, res_param_adts) comp ->
         let lv, adts, ctrs = stmt_iter fields_state comp.comp_body in
         (* Remove bound parameters *)
         let lv' =
@@ -514,7 +501,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         let param_adts =
           user_types_in_adt @@ List.map comp.comp_params ~f:snd
         in
-        ( lv' @ res_fv,
+        ( lv' @ res_lv,
           SCIdentifierSet.union param_adts adts
           |> SCIdentifierSet.union res_adts,
           SCIdentifierSet.union res_ctrs ctrs,
@@ -527,27 +514,70 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     |> fun (comps_lv, comps_adts, comps_ctrs, comp_param_adts) ->
     (dedup_id_list comps_lv, comps_adts, comps_ctrs, comp_param_adts)
 
+  (** Checks for dead code in the fields and constraints of a contract
+      @return Live variables, ADTs and constructors, including ones found in
+              fields and constraints. *)
+  let check_fields_and_constraints cmod lv adts ctrs =
+    let cons_lv, cons_adt, cons_ctrs = expr_iter cmod.contr.cconstraint in
+    List.fold_left cmod.contr.cfields
+      ~init:
+        ( lv @ cons_lv,
+          SCIdentifierSet.union adts cons_adt,
+          SCIdentifierSet.union ctrs cons_ctrs )
+      ~f:(fun (res_fv, res_adts, res_ctrs) (_, ty, fexp) ->
+        let f_lv, f_adt, f_ctr = expr_iter fexp in
+        ( f_lv @ res_fv,
+          user_types_in_adt [ ty ]
+          |> SCIdentifierSet.union f_adt
+          |> SCIdentifierSet.union res_adts,
+          SCIdentifierSet.union f_ctr res_ctrs ))
+    |> fun (lv_fields, fields_adts, fields_ctrs) ->
+    (dedup_id_list lv_fields, fields_adts, fields_ctrs)
+
+  (** Checks for unused parameters of a contract
+      @return Live variables without contract parameters and ADTs including
+              used in parameters. *)
+  let check_parameters cmod lv adts =
+    let param_iden, param_ty = List.unzip cmod.contr.cparams in
+    List.iter param_iden ~f:(fun iden ->
+        if not @@ SCIdentifier.is_mem_id iden lv then
+          warn "Unused contract parameter: " iden ER.get_loc);
+    (* Remove contract params from live variable list *)
+    let live_vars' =
+      List.filter lv ~f:(fun a -> not (SCIdentifier.is_mem_id a param_iden))
+    in
+    (* Adding used ADTs in parameters *)
+    let adts' = user_types_in_adt param_ty |> SCIdentifierSet.union adts in
+    (live_vars', adts')
+
+  (** Checks for unused procedures *)
+  let check_dead_procedures cmod =
+    List.iter cmod.contr.ccomps ~f:(fun comp ->
+        match comp.comp_type with
+        | CompProc ->
+            if not @@ SCIdentifier.is_mem_id comp.comp_name !proc_dict then
+              warn "Unused procedure: " comp.comp_name SR.get_loc
+        | CompTrans -> ())
+
   (** Checks for unused library definitions: functions, variables, types.
-      @return Used library variables, used ADTs, reported ADT constructors. *)
-  let check_lib (cmod : cmodule) freevars adts ctrs param_adts adts_to_ctrs =
-    (* DCD library entries. *)
-    let rec check_lentries lentries freevars adts ctrs param_adts used_adts =
+      @return Used library variables and ADTs after traversing library
+              components and unused ADT constructors. *)
+  let check_lib (cmod : cmodule) lv adts ctrs param_adts adts_to_ctrs =
+    let rec check_lentries lentries lv adts ctrs param_adts used_adts =
       match lentries with
       | lentry :: rentries -> (
-          let freevars', adts', ctrs', reported_ctrs =
-            check_lentries rentries freevars adts ctrs param_adts used_adts
+          let lv', adts', ctrs', reported_ctrs =
+            check_lentries rentries lv adts ctrs param_adts used_adts
           in
           match lentry with
           | LibVar (i, topt, lexp) ->
               let freevars'_no_i =
-                List.filter
-                  ~f:(fun i' -> not @@ SCIdentifier.equal i' i)
-                  freevars'
+                List.filter ~f:(fun i' -> not @@ SCIdentifier.equal i' i) lv'
               in
-              if not @@ SCIdentifier.is_mem_id i freevars' then
+              if not @@ SCIdentifier.is_mem_id i lv' then
                 warn "Unused library value: " i ER.get_loc;
-              let fv, tyl, ctrl = expr_iter lexp in
-              let res_fv = dedup_id_list @@ fv @ freevars'_no_i in
+              let lv'', tyl, ctrl = expr_iter lexp in
+              let res_lv = dedup_id_list @@ lv'' @ freevars'_no_i in
               let res_adts =
                 match topt with
                 | None -> SCIdentifierSet.union tyl adts'
@@ -556,7 +586,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     |> SCIdentifierSet.union adts'
               in
               let res_ctrs = SCIdentifierSet.union ctrs' ctrl in
-              (res_fv, res_adts, res_ctrs, reported_ctrs)
+              (res_lv, res_adts, res_ctrs, reported_ctrs)
           | LibTyp (i, ctrs) ->
               let ids_eq rep_id id =
                 SCIdentifier.Name.equal (SCIdentifier.get_id rep_id) id
@@ -591,97 +621,31 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                         acc @ [ SCIdentifier.get_id ctr.cname ])
                 else []
               in
-              (freevars', adts'_no_i, ctrs', reported_ctrs'))
-      | [] -> (freevars, adts, ctrs, [])
+              (lv', adts'_no_i, ctrs', reported_ctrs'))
+      | [] -> (lv, adts, ctrs, [])
     in
     Option.find_map cmod.libs ~f:(fun lib ->
         collect_adts_in_adts adts_to_ctrs
         |> SCIdentifierSet.union
            @@ collect_adts_in_params adts_to_ctrs param_adts
-        |> check_lentries lib.lentries freevars adts ctrs param_adts
+        |> check_lentries lib.lentries lv adts ctrs param_adts
         |> (fun (used_vars, adts, _ctrs, reported_ctrs) ->
              (used_vars, adts, reported_ctrs))
         |> Option.some)
-    |> Option.value ~default:(freevars, adts, [])
+    |> Option.value ~default:(lv, adts, [])
 
-  (* Detect Dead Code in a cmod *)
-  let dc_cmod (cmod : cmodule) (elibs : libtree list) =
-    let fields_state = FieldsState.mk cmod in
-    let adts_to_ctrs =
-      Option.value_map cmod.libs
-        ~default:(Map.empty (module SCIdentifierComp))
-        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
-    in
-
-    let comps_lv, comps_adts, comps_ctrs, comp_param_adts =
-      check_comps cmod fields_state
-    in
-
-    (* Iterate through constraints *)
-    let cons_lv, cons_adt, cons_ctrs = expr_iter cmod.contr.cconstraint in
-
-    (* Iterate through field initialisations *)
-    let fields_lv, fields_adts, fields_ctrs =
-      List.fold_left cmod.contr.cfields
-        ~init:
-          ( comps_lv @ cons_lv,
-            SCIdentifierSet.union comps_adts cons_adt,
-            SCIdentifierSet.union comps_ctrs cons_ctrs )
-        ~f:(fun (res_fv, res_adts, res_ctrs) (_, ty, fexp) ->
-          let f_lv, f_adt, f_ctr = expr_iter fexp in
-          ( f_lv @ res_fv,
-            user_types_in_adt [ ty ]
-            |> SCIdentifierSet.union f_adt
-            |> SCIdentifierSet.union res_adts,
-            SCIdentifierSet.union f_ctr res_ctrs ))
-    in
-
-    (* Note: fields_lv' also contains data from constraints and components *)
-    let fields_lv' = dedup_id_list fields_lv in
-
-    (******** Checking for dead contract parameters ********)
-    let param_iden, param_ty = List.unzip cmod.contr.cparams in
-    List.iter param_iden ~f:(fun iden ->
-        if not @@ SCIdentifier.is_mem_id iden fields_lv' then
-          warn "Unused contract parameter: " iden ER.get_loc);
-
-    (* Remove contract params from live variable list *)
-    let lv_contract =
-      List.filter fields_lv' ~f:(fun a ->
-          not (SCIdentifier.is_mem_id a param_iden))
-    in
-    (* Adding used ADTs in parameters *)
-    let lv_adts =
-      user_types_in_adt param_ty |> SCIdentifierSet.union fields_adts
-    in
-
-    (******** Checking for dead procedures ********)
-    List.iter cmod.contr.ccomps ~f:(fun comp ->
-        match comp.comp_type with
-        | CompProc ->
-            if not @@ SCIdentifier.is_mem_id comp.comp_name !proc_dict then
-              warn "Unused procedure: " comp.comp_name SR.get_loc
-        | CompTrans -> ());
-
-    (* Iterate through contract library *)
-    let lv_clibs, lv_adts, reported_ctrs =
-      check_lib cmod lv_contract lv_adts fields_ctrs comp_param_adts
-        adts_to_ctrs
-    in
-
-    report_unreachable_pm_arms cmod reported_ctrs;
-
-    (* Iterate through elibs to check if imported library is used *)
+  (** Checks for dead code in imported libraries *)
+  let check_imported_libraries (cmod : cmodule) elibs lv adts =
     List.iter elibs ~f:(fun elib ->
         let lib_used =
           List.exists elib.libn.lentries ~f:(fun lentry ->
               match lentry with
-              | LibVar (iden, _, _) -> SCIdentifier.is_mem_id iden lv_clibs
+              | LibVar (iden, _, _) -> SCIdentifier.is_mem_id iden lv
               | LibTyp (iden, _) ->
-                  Set.exists lv_adts ~f:(fun i ->
+                  Set.exists adts ~f:(fun i ->
                       SCIdentifier.Name.equal (SCIdentifier.get_id iden) i))
         in
-        (******** Checking for dead imported library ********)
+        (* Check for dead imported library *)
         if not lib_used then
           (* Okay to use find_exn cause elib must exist in cmod.elibs *)
           let import_rep, _ =
@@ -691,9 +655,46 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           warn1
             ("Unused imported library: " ^ as_error_string elib.libn.lname)
             warning_level_dead_code
-            (SR.get_loc @@ get_rep import_rep));
+            (SR.get_loc @@ get_rep import_rep))
 
-    (* Printing what fields are read-only, write-only, or unused *)
+  (** Detects dead code in a cmodule *)
+  let dc_cmod (cmod : cmodule) (elibs : libtree list) =
+    let fields_state = FieldsState.mk cmod in
+    let adts_to_ctrs =
+      Option.value_map cmod.libs
+        ~default:(Map.empty (module SCIdentifierComp))
+        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
+    in
+
+    (* Check components *)
+    let lv_comps, comps_adts, comps_ctrs, comp_param_adts =
+      check_comps cmod fields_state
+    in
+
+    (* Check fields and constraints *)
+    let lv_fields, adts_fields, ctrs_fields =
+      check_fields_and_constraints cmod lv_comps comps_adts comps_ctrs
+    in
+
+    (* Check for dead contract parameters *)
+    let lv_params, adts_params = check_parameters cmod lv_fields adts_fields in
+
+    (* Check for dead procedures *)
+    check_dead_procedures cmod;
+
+    (* Check for dead code in library elements *)
+    let lv_lib, adts_lib, reported_ctrs =
+      check_lib cmod lv_params adts_params ctrs_fields comp_param_adts
+        adts_to_ctrs
+    in
+
+    (* Report unused ADT constructors in pattern matching arms *)
+    report_unreachable_pm_arms cmod reported_ctrs;
+
+    (* Check for unused library items *)
+    check_imported_libraries cmod elibs lv_lib adts_lib;
+
+    (* Report fields that are read-only, write-only, or unused *)
     FieldsState.report_read_only fields_state;
     FieldsState.report_write_only fields_state;
     FieldsState.report_unused fields_state
