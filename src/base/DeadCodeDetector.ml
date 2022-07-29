@@ -1,3 +1,21 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
 (**
   DeadCodeDetector module checks for unused:
   * Procedures and their parameters
@@ -19,7 +37,8 @@
   A constructor of any used ADT is considered as used if it one of:
   * Instantiated in the source code of the contract or of its library
   * Is a part of an ADT that is used as a parameter of a transition
-  Otherwise, it will be reported as unused and reported. *)
+  Otherwise, it will be reported as unused and reported.
+*)
 
 open Core
 open ErrorUtils
@@ -29,6 +48,7 @@ open Literal
 (* ************************************** *)
 (* ******** Dead Code Detector ********** *)
 (* ************************************** *)
+
 module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCLiteral = GlobalLiteral
   module SCType = SCLiteral.LType
@@ -73,7 +93,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       (List.fold_left tys ~init:[] ~f:(fun iden_l ty ->
            iden_iter ty [] @ iden_l))
 
-  (** Returns used names of ADT types and their constructors. *)
+  (** Returns used names of ADTs and their constructors. *)
   let rec user_types_in_literal lits =
     let dedup = List.dedup_and_sort ~compare:SCIdentifier.Name.compare in
     List.fold_left lits ~init:([], []) ~f:(fun (acc_adts, acc_ctrs) lit ->
@@ -87,8 +107,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         | _ -> ([], []))
     |> fun (adts, ctrs) -> (dedup adts, dedup ctrs)
 
-  (** [user_types_in_ctr ctr_def] returns user names of ADT and constructors
-      occurred in the constructor definition. *)
+  (** Returns user names of ADT and constructors occurred in the constructor
+      definition. *)
   let user_types_in_ctr ctr_def =
     List.fold_left ctr_def.c_arg_types ~init:[] ~f:(fun acc ty ->
         acc @ user_types_in_adt [ ty ])
@@ -112,8 +132,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   let read_field = ref []
   let write_field = ref []
 
-  (** [collect_adts_to_ctrs lentries] collects a mapping from ADTs to their
-      constructor definitions. *)
+  (** Collects a mapping from ADTs to their constructor definitions. *)
   let collect_adts_to_ctrs lentries =
     List.fold_left lentries
       ~init:(Map.empty (module SCIdentifierComp))
@@ -123,16 +142,16 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             Map.set m ~key:(SCIdentifier.get_id id) ~data:ctr_defs
         | LibVar _ -> m)
 
-  (** [collect_adts_in_adts adts_to_ctrs] returns a list of ADT and constructor
-      names used in constructors other of user-defined ADTs. *)
+  (** Returns a list of ADT and constructor names used in constructors other of
+      user-defined ADTs. *)
   let collect_adts_in_adts adts_to_ctrs =
     Map.data adts_to_ctrs
     |> List.fold_left ~init:[] ~f:(fun acc ctr_defs ->
            user_types_in_ctrs ctr_defs |> List.append acc)
     |> dedup_name_list
 
-  (** [collect_adts_in_params adts_to_ctrs param_adts] returns a list of ADT
-      and constructor names transitively used in transition parameters. *)
+  (** Returns a list of ADT and constructor names transitively used in
+      transition parameters. *)
   let collect_adts_in_params adts_to_ctrs param_adts =
     let rec aux adt =
       Map.find adts_to_ctrs adt
@@ -151,9 +170,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     List.fold_left param_adts ~init:[] ~f:(fun acc adt ->
         aux adt |> List.append acc)
 
-  (** [report_unreachable_pm_arms cmod reported_ctrs] shows warnings for
-      pattern-matching arms that check for unused user-defined ADT
-      constructors. *)
+  (** Shows warnings for pattern-matching arms that check for unused
+      user-defined ADT constructors. *)
   let report_unreachable_pm_arms (cmod : cmodule) reported_ctrs =
     let report id = warn "Unreachable pattern " id SR.get_loc in
     let rec report_unreachable = function
@@ -206,7 +224,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (******** Checking for dead expressions ********)
-    (* Returns free variables, used ADT types and their constructors *)
+    (* Returns free variables, used ADTs and their constructors *)
     let rec expr_iter (expr, _) =
       match expr with
       | Literal l ->
@@ -402,7 +420,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     if not @@ List.is_empty bounds_unused then
                       List.iter bounds_unused ~f:(fun bound ->
                           warn "Unused match bound: " bound ER.get_loc);
-                    (* Remove bound varaibles from the free variables list *)
+                    (* Remove bound variables from the free variables list *)
                     let fvl' =
                       List.filter fvl ~f:(fun a ->
                           not (SCIdentifier.is_mem_id a bounds))
@@ -561,7 +579,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             f_ctr @ res_ctrs ))
     in
 
-    (* Note: fields_lv' and fields_adts' also contains data from contraints and components *)
+    (* Note: fields_lv' and fields_adts' also contains data from constraints and components *)
     let fields_lv' = dedup_id_list fields_lv in
     let fields_adts' = dedup_name_list fields_adts in
     let fields_ctrs' = dedup_name_list fields_ctrs in
