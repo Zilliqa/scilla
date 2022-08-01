@@ -204,6 +204,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "list-lit2.scilexp";
       "pm-error1.scilexp";
       "pm-error2.scilexp";
+      "pm-error3.scilexp";
       "map-error.scilexp";
       "map-lit.scilexp";
       "nth-error.scilexp";
