@@ -46,8 +46,7 @@
         "params": [
           {
             "vname": "remote",
-            "type":
-              "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Uint128 end end end"
+            "type": "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Uint128 end end end"
           }
         ]
       },
@@ -56,8 +55,7 @@
         "params": [
           {
             "vname": "remote",
-            "type":
-              "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Map (Uint128) (Uint128) end end end"
+            "type": "ByStr20 with contract field admin : ByStr20 with contract field f : ByStr20 with contract field g : Map (Uint128) (Uint128) end end end"
           }
         ]
       },
@@ -149,9 +147,12 @@
       "warning_id": 1
     },
     {
-      "warning_message":
-        "No transition in contract RRContract contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract RRContract contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/remote_state_reads_2.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

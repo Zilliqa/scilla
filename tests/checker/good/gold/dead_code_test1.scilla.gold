@@ -371,12 +371,16 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract BookstoreDead1 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract BookstoreDead1 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/dead_code_test1.scilla",
+        "line": 47,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
   "gas_remaining": "7999"
 }
+

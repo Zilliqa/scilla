@@ -66,10 +66,15 @@
     },
     {
       "warning_message": "No transition in contract Dead7 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "contracts/dead_code_test7.scilla",
+        "line": 8,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
   "gas_remaining": "7999"
 }
+

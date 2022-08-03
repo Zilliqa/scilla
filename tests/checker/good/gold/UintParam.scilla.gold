@@ -79,9 +79,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract UintParam contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract UintParam contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/UintParam.scilla",
+        "line": 5,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

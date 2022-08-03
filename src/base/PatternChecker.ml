@@ -392,7 +392,7 @@ struct
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let kind = "Type error(s) in contract"
     and inst = PCIdentifier.as_error_string ctr_cname ^ "\n" in
-    wrap_with_info ~kind ~inst dummy_loc
+    wrap_with_info ~kind ~inst (SR.get_loc (PCIdentifier.get_rep ctr_cname))
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in
        let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in
 

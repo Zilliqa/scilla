@@ -107,8 +107,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: plist",
+      "warning_message": "Read only field, consider making it a contract parameter: plist",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 102,
@@ -118,8 +117,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: llist",
+      "warning_message": "Read only field, consider making it a contract parameter: llist",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 92,
@@ -139,8 +137,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "x is a new variable. It does not reassign the previously defined variable.",
+      "warning_message": "x is a new variable. It does not reassign the previously defined variable.",
       "start_location": {
         "file": "contracts/mappair.scilla",
         "line": 113,
@@ -150,9 +147,12 @@
       "warning_id": 2
     },
     {
-      "warning_message":
-        "No transition in contract Test contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Test contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 30,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
