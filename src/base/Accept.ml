@@ -123,10 +123,11 @@ struct
     in
 
     if List.for_all all_accept_groups ~f:List.is_empty then
-      warn0
+      warn1
         (sprintf "No transition in contract %s contains an accept statement\n"
            (ACIdentifier.as_error_string contr.cname))
         warning_level_missing_accept
+        (SR.get_loc (ACIdentifier.get_rep contr.cname))
 
   (* ************************************** *)
   (* ******** Interface to Accept ********* *)

@@ -29,8 +29,7 @@
       }
     ],
     "transitions": [
-      { "vname": "Test1", "params": [] },
-      { "vname": "Test2", "params": [] }
+      { "vname": "Test1", "params": [] }, { "vname": "Test2", "params": [] }
     ],
     "procedures": [],
     "events": [],
@@ -86,8 +85,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: transaction_pairs",
+      "warning_message": "Read only field, consider making it a contract parameter: transaction_pairs",
       "start_location": {
         "file": "checker/good/cashflow_test.scilla",
         "line": 21,
@@ -127,9 +125,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract CashflowTest contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract CashflowTest contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/cashflow_test.scilla",
+        "line": 13,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

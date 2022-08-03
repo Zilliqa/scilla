@@ -65,9 +65,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract Test contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Test contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/map-inplace-update-with-_sender.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

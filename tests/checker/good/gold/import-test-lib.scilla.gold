@@ -5,8 +5,7 @@
       {
         "0x986556789012345678901234567890123456abcd.TestType1": [
           {
-            "constructor":
-              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "constructor": "0x986556789012345678901234567890123456abcd.TestConstructor1",
             "tags": [ "NoInfo" ]
           }
         ]
@@ -44,13 +43,11 @@
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x986556789012345678901234567890123456abcd.TestConstructor1",
+            "cname": "0x986556789012345678901234567890123456abcd.TestConstructor1",
             "argtypes": [ "Uint128" ]
           },
           {
-            "cname":
-              "0x986556789012345678901234567890123456abcd.TestConstructor2",
+            "cname": "0x986556789012345678901234567890123456abcd.TestConstructor2",
             "argtypes": [ "Bool" ]
           }
         ]
@@ -97,8 +94,7 @@
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x111256789012345678901234567890123456abef.WrapperConstructor",
+            "cname": "0x111256789012345678901234567890123456abef.WrapperConstructor",
             "argtypes": [
               "0x986556789012345678901234567890123456abcd.TestType1"
             ]
@@ -119,9 +115,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract Hello contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Hello contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/import-test-lib.scilla",
+        "line": 23,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

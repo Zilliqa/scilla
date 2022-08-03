@@ -31,15 +31,13 @@
       { "vname": "concat_res", "type": "ByStr40", "depth": 0 },
       {
         "vname": "test_map",
-        "type":
-          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
         "depth": 1
       },
       { "vname": "map_res_1", "type": "Bool", "depth": 0 },
       {
         "vname": "map_res_2",
-        "type":
-          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
         "depth": 1
       },
       {
@@ -49,14 +47,12 @@
       },
       {
         "vname": "map_res_4",
-        "type":
-          "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
+        "type": "Map (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end)",
         "depth": 1
       },
       {
         "vname": "map_res_5",
-        "type":
-          "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
+        "type": "List (Pair (ByStr20 with contract field f : Uint32 end) (ByStr20 with contract end))",
         "depth": 0
       },
       { "vname": "map_res_6", "type": "Uint32", "depth": 0 },
@@ -80,13 +76,11 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint128, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint128, field g : Int32 end"
           },
           {
             "vname": "param2",
-            "type":
-              "ByStr20 with contract field f : Uint128, field h : Bool end"
+            "type": "ByStr20 with contract field f : Uint128, field h : Bool end"
           }
         ]
       },
@@ -95,13 +89,11 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           {
             "vname": "param2",
-            "type":
-              "ByStr20 with contract field f : Uint128, field h : Bool end"
+            "type": "ByStr20 with contract field f : Uint128, field h : Bool end"
           }
         ]
       },
@@ -110,8 +102,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           { "vname": "param2", "type": "ByStr20" }
         ]
@@ -121,8 +112,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           { "vname": "param2", "type": "ByStr20 with end" }
         ]
@@ -132,8 +122,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           { "vname": "param2", "type": "ByStr20 with contract end" }
         ]
@@ -143,8 +132,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           }
         ]
       },
@@ -153,8 +141,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           }
         ]
       },
@@ -163,8 +150,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           { "vname": "param2", "type": "ByStr20 with contract end" }
         ]
@@ -174,8 +160,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           },
           { "vname": "param2", "type": "ByStr20 with contract end" }
         ]
@@ -185,8 +170,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           }
         ]
       },
@@ -195,8 +179,7 @@
         "params": [
           {
             "vname": "param1",
-            "type":
-              "ByStr20 with contract field f : Uint32, field g : Int32 end"
+            "type": "ByStr20 with contract field f : Uint32, field g : Int32 end"
           }
         ]
       }
@@ -375,8 +358,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: test_map",
+      "warning_message": "Read only field, consider making it a contract parameter: test_map",
       "start_location": {
         "file": "contracts/address_eq_test.scilla",
         "line": 73,
@@ -416,9 +398,12 @@
       "warning_id": 1
     },
     {
-      "warning_message":
-        "No transition in contract AddressEqTest contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract AddressEqTest contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/address_eq_test.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
