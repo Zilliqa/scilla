@@ -129,7 +129,11 @@
     },
     {
       "warning_message": "No transition in contract Dead13 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "contracts/dead_code_test13.scilla",
+        "line": 30,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

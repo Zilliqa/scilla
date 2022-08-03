@@ -5,8 +5,7 @@
       {
         "0x555256789012345678901234567890123456abef.BaseType": [
           {
-            "constructor":
-              "0x555256789012345678901234567890123456abef.BaseConstructor",
+            "constructor": "0x555256789012345678901234567890123456abef.BaseConstructor",
             "tags": [ "NoInfo" ]
           }
         ]
@@ -27,8 +26,7 @@
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x555256789012345678901234567890123456abef.BaseConstructor",
+            "cname": "0x555256789012345678901234567890123456abef.BaseConstructor",
             "argtypes": [ "Uint128" ]
           }
         ]
@@ -74,9 +72,12 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "No transition in contract ImportTestLib3 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract ImportTestLib3 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/import-test-lib3.scilla",
+        "line": 26,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

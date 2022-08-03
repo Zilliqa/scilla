@@ -63,8 +63,7 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: pub_key",
+      "warning_message": "Read only field, consider making it a contract parameter: pub_key",
       "start_location": {
         "file": "contracts/schnorr.scilla",
         "line": 21,
@@ -104,9 +103,12 @@
       "warning_id": 2
     },
     {
-      "warning_message":
-        "No transition in contract Schnorr contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Schnorr contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/schnorr.scilla",
+        "line": 15,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

@@ -40,9 +40,12 @@
   ],
   "warnings": [
     {
-      "warning_message":
-        "No transition in contract TransitionAndProcedureNameClashes contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract TransitionAndProcedureNameClashes contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/name_clashes.scilla",
+        "line": 5,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
