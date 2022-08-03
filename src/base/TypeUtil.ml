@@ -642,7 +642,7 @@ module TypeUtilities = struct
                   %s is given"
                  (as_string name)
                  (TUName.as_string adt.tname))
-            (get_rep name)
+            lc
     | _ -> fail1 ~kind:"Not an algebraic data type" ~inst:(pp_typ_error atyp) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =

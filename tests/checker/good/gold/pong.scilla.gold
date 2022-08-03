@@ -69,9 +69,12 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "No transition in contract Pong contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Pong contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/pong.scilla",
+        "line": 13,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

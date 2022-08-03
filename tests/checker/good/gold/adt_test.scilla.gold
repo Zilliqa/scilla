@@ -116,7 +116,11 @@
     },
     {
       "warning_message": "No transition in contract BadLib contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/good/adt_test.scilla",
+        "line": 18,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

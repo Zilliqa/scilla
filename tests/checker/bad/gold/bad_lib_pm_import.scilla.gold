@@ -3,12 +3,15 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract: BadLibPM\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/bad_lib_pm_import.scilla",
+        "line": 7,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Error during pattern-match checking of library: badpm",
+      "error_message": "Error during pattern-match checking of library: badpm",
       "start_location": {
         "file": "checker/bad/lib/BadPMLib.scillib",
         "line": 5,
@@ -17,8 +20,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type error in pattern matching on `b` of type Bool (or one of its branches):\nNon-exhaustive pattern match.",
+      "error_message": "Type error in pattern matching on `b` of type Bool (or one of its branches):\nNon-exhaustive pattern match.",
       "start_location": {
         "file": "checker/bad/lib/BadPMLib.scillib",
         "line": 7,

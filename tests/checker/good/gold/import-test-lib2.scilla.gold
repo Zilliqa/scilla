@@ -5,8 +5,7 @@
       {
         "0x222256789012345678901234567890123456abef.BaseType": [
           {
-            "constructor":
-              "0x222256789012345678901234567890123456abef.BaseConstructor",
+            "constructor": "0x222256789012345678901234567890123456abef.BaseConstructor",
             "tags": [ "NoInfo" ]
           }
         ]
@@ -23,13 +22,11 @@
     "events": [],
     "ADTs": [
       {
-        "tname":
-          "0x333256789012345678901234567890123456abef.Level1WrapperType",
+        "tname": "0x333256789012345678901234567890123456abef.Level1WrapperType",
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x333256789012345678901234567890123456abef.Level1WrapperConstructor",
+            "cname": "0x333256789012345678901234567890123456abef.Level1WrapperConstructor",
             "argtypes": [
               "0x222256789012345678901234567890123456abef.BaseType"
             ]
@@ -45,13 +42,11 @@
         ]
       },
       {
-        "tname":
-          "0x444256789012345678901234567890123456abef.Level2WrapperType",
+        "tname": "0x444256789012345678901234567890123456abef.Level2WrapperType",
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x444256789012345678901234567890123456abef.Level2WrapperConstructor",
+            "cname": "0x444256789012345678901234567890123456abef.Level2WrapperConstructor",
             "argtypes": [
               "0x333256789012345678901234567890123456abef.Level1WrapperType"
             ]
@@ -63,8 +58,7 @@
         "tparams": [],
         "tmap": [
           {
-            "cname":
-              "0x222256789012345678901234567890123456abef.BaseConstructor",
+            "cname": "0x222256789012345678901234567890123456abef.BaseConstructor",
             "argtypes": [ "Uint128" ]
           }
         ]
@@ -112,9 +106,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract ImportTestLib2 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract ImportTestLib2 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/import-test-lib2.scilla",
+        "line": 26,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
