@@ -1,50 +1,16 @@
-########## Global owners ##########
+# The scilla-team will be the default owners for everything in the repo.
+# This way the devops can maintain it without the need to patch this file.
+* @Zilliqa/scilla-team
 
-*                  @jjcnn @anton-trunov @jubnzv
-
-
-########## Source code ##########
-
-## default OCaml reviewers
-*.ml                @jjcnn @anton-trunov
-*.mli               @jjcnn @anton-trunov
-
-## default C and C++ reviewers
-*.cpp              
-*.c                
-*.h                
-
-
-########## Build system, CI, opam ##########
-
-*dune*             @anton-trunov
-/.dockerignore     
-/.travis.yml       
-/Dockerfile*       
-/Makefile          @anton-trunov
+## Devops-related things
+/.dockerignore
+/.travis.yml
+/Dockerfile*         
+/scripts/build_deps.sh
 /scripts/build_openssl.sh
-*.opam             @anton-trunov
-
-
-########## Test suite ##########
-
-## Scilla contracts in the testsuite
-/tests/*.scilla    @anton-trunov @jjcnn
-
-
-########## Documentation ##########
-
-/README.md        @jjcnn @anton-trunov
-/INSTALL.md       @anton-trunov
-/docs/            @jjcnn @anton-trunov
-
-
-########## Tools ##########
-
-#/misc/emacs-mode  @vaivaswatha
-#/misc/vim-plugin  @edisonljh
-
-
-########## GitHub metadata, including this file ##########
-
-/.github/         @anton-trunov
+/scripts/cryptoutils.sh
+/scripts/install_cmake_ubuntu.sh
+/scripts/install_opam2_ubuntu.sh
+/scripts/install_secp256k1.sh
+/scripts/install_shellcheck_ubuntu.sh
+/scripts/schnorr.sh                      @Zilliqa/devops-team
