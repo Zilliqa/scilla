@@ -115,7 +115,7 @@ let output_updater goldoutput_file test_name data ~json_errors =
     Out_channel.write_all goldoutput_file ~data;
     Printf.printf "Updated gold output for test %s\n" test_name
   in
-  if json_errors then (
+  if json_errors && Sys_unix.file_exists_exn goldoutput_file then (
     let normalized_gold =
       normalize_json @@ In_channel.read_all goldoutput_file
     in
@@ -181,12 +181,6 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
           if provide_init_arg then args' @ [ "-init"; init_file ] else args'
         in
         let msg = cli_usage_on_err runner args in
-        (* load all data from file *)
-        let non_normalized_gold_output = In_channel.read_all goldoutput_file in
-        let gold_output =
-          if json_errors then normalize_json non_normalized_gold_output
-          else non_normalized_gold_output
-        in
         print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
@@ -194,10 +188,21 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
             if env.update_gold test_ctxt then
               output_updater goldoutput_file input_file actual_output
                 ~json_errors
-            else
+            else if Sys_unix.file_exists_exn goldoutput_file then
+              let gold_output =
+                (* load all data from file *)
+                let non_normalized_gold_output =
+                  In_channel.read_all goldoutput_file
+                in
+                if json_errors then normalize_json non_normalized_gold_output
+                else non_normalized_gold_output
+              in
               output_verifier (diff_filter gold_output) msg
                 (env.print_diff test_ctxt)
-                (diff_filter actual_output))
+                (diff_filter actual_output)
+            else
+              assert_failure
+                ("The gold file " ^ goldoutput_file ^ " does not exist"))
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let tests env = "exptests" >::: build_exp_tests env tests
