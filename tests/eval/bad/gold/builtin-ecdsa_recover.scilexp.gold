@@ -1,0 +1,11 @@
+{
+  "gas_remaining": "4001696",
+  "errors": [
+    {
+      "error_message": "Sign.read_recoverable_exn: recid must be 0, 1, 2 or 3",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

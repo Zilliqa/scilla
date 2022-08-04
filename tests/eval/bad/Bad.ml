@@ -56,6 +56,7 @@ let explist =
     "string_error1.scilexp";
     "string_error2.scilexp";
     "substr_err1.scilexp";
+    "builtin-ecdsa_recover.scilexp";
   ]
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
