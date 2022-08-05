@@ -55,6 +55,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Suspicious event parameter with an optional type: ts",
+      "start_location": {
+        "file": "contracts/timestamp.scilla",
+        "line": 12,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    },
+    {
       "warning_message": "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": {
         "file": "contracts/timestamp.scilla",

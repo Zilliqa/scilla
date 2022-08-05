@@ -339,8 +339,7 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: fee_address",
+      "warning_message": "Read only field, consider making it a contract parameter: fee_address",
       "start_location": {
         "file": "contracts/ark.scilla",
         "line": 378,
@@ -510,8 +509,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "A hashing builtin is applied to argument \"price\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "warning_message": "A hashing builtin is applied to argument \"price\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
       "start_location": {
         "file": "contracts/ark.scilla",
         "line": 123,
@@ -521,8 +519,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "A hashing builtin is applied to argument \"token\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "warning_message": "A hashing builtin is applied to argument \"token\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
       "start_location": {
         "file": "contracts/ark.scilla",
         "line": 122,
@@ -532,8 +529,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "A hashing builtin is applied to argument \"direction\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "warning_message": "A hashing builtin is applied to argument \"direction\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
       "start_location": {
         "file": "contracts/ark.scilla",
         "line": 121,
@@ -541,6 +537,16 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious event parameter with an optional type: previous_current_owner",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 475,
+        "column": 75
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
     }
   ],
   "gas_remaining": "7860"

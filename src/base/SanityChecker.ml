@@ -49,6 +49,9 @@ struct
   (* Warning level to use when contract loads/stores entire Maps. *)
   let warning_level_map_load_store = 1
 
+  (* Warning level to use when contract sends optional types in events. *)
+  let warning_level_send_option = 1
+
   (* Warning level to use when warning about shadowing of contract parameters and fields. *)
   let warning_level_name_shadowing = 2
 
@@ -61,6 +64,7 @@ struct
 
   (* Basic sanity tests on the contract. *)
   let basic_sanity (cmod : cmodule) =
+    let option_name = SCIdentifier.Name.parse_simple_name "Option" in
     let contr = cmod.contr in
 
     (* Check if there are duplicate entries in "ilist". *)
@@ -141,6 +145,25 @@ struct
                 || s = replicate_contr_label))
         then e
         else e @ mk_error1 ~kind:"Invalid message construct" ?inst:None eloc
+      in
+      (* Sending option parameters is suspicious, because in the most cases
+         the user forgot to unbox the value from `Some`. *)
+      let _ =
+        List.iter msg ~f:(fun (_name, payload) ->
+            match payload with
+            | MVar id -> (
+                match (ER.get_type (get_rep id)).tp with
+                | ADT (name, _tys) ->
+                    if SCIdentifier.Name.equal (get_id name) option_name then
+                      warn1
+                        (Printf.sprintf
+                           "Suspicious event parameter with an optional type: \
+                            %s"
+                           (SCIdentifier.Name.as_string (SCIdentifier.get_id id)))
+                        warning_level_send_option
+                        (ER.get_loc (get_rep id))
+                | _ -> ())
+            | MLit _ -> ())
       in
       pure e
       (* as required by "fold_over_messages" *)
