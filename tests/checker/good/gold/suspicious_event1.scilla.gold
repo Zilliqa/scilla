@@ -1,0 +1,584 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "contract_owner", "tag": "NoInfo" },
+      { "field": "initial_fee_address", "tag": "NoInfo" },
+      { "field": "chain_id", "tag": "NotMoney" },
+      { "field": "current_owner", "tag": "(Option NotMoney)" },
+      { "field": "pending_owner", "tag": "(Option NoInfo)" },
+      { "field": "token_proxy", "tag": "(Option NotMoney)" },
+      { "field": "fee_address", "tag": "NoInfo" },
+      { "field": "voided_cheques", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": [
+      {
+        "suspicious_event1.Denom": [
+          { "constructor": "suspicious_event1.Token", "tags": [ "NoInfo" ] }
+        ]
+      },
+      {
+        "suspicious_event1.Coins": [
+          {
+            "constructor": "suspicious_event1.Coins",
+            "tags": [ "_", "Money" ]
+          }
+        ]
+      },
+      {
+        "suspicious_event1.Cheque": [
+          {
+            "constructor": "suspicious_event1.Cheque",
+            "tags": [ "_", "NoInfo", "NoInfo", "NotMoney", "NoInfo" ]
+          }
+        ]
+      },
+      {
+        "suspicious_event1.NFT": [
+          {
+            "constructor": "suspicious_event1.NFT",
+            "tags": [ "_", "NoInfo" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ARK",
+    "params": [
+      { "vname": "contract_owner", "type": "ByStr20" },
+      { "vname": "initial_fee_address", "type": "ByStr20" },
+      { "vname": "chain_id", "type": "Uint32" }
+    ],
+    "fields": [
+      { "vname": "current_owner", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "pending_owner", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "token_proxy", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "fee_address", "type": "ByStr20", "depth": 0 },
+      {
+        "vname": "voided_cheques",
+        "type": "Map (ByStr33) (Map (ByStr32) (Bool))",
+        "depth": 2
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "ExecuteTrade",
+        "params": [
+          { "vname": "token", "type": "suspicious_event1.NFT" },
+          { "vname": "price", "type": "suspicious_event1.Coins" },
+          { "vname": "fee_amount", "type": "Uint128" },
+          { "vname": "sell_cheque", "type": "suspicious_event1.Cheque" },
+          { "vname": "buy_cheque", "type": "suspicious_event1.Cheque" }
+        ]
+      },
+      {
+        "vname": "VoidCheque",
+        "params": [
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" },
+          { "vname": "signature", "type": "ByStr64" }
+        ]
+      },
+      {
+        "vname": "SetTokenProxy",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "TransferOwnership",
+        "params": [ { "vname": "new_owner", "type": "ByStr20" } ]
+      },
+      { "vname": "AcceptOwnership", "params": [] },
+      { "vname": "RevokeOwnership", "params": [] },
+      {
+        "vname": "TransferFromSuccessCallBack",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token_id", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "ZRC6_TransferFromCallback",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "token_id", "type": "Uint256" }
+        ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "ThrowError",
+        "params": [ { "vname": "err", "type": "suspicious_event1.Error" } ]
+      },
+      {
+        "vname": "IsOwner",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "IsPendingOwner",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      { "vname": "NoPendingOwner", "params": [] },
+      {
+        "vname": "IsNotExpired",
+        "params": [ { "vname": "expiry", "type": "BNum" } ]
+      },
+      {
+        "vname": "IsValidPrice",
+        "params": [ { "vname": "price", "type": "suspicious_event1.Coins" } ]
+      },
+      {
+        "vname": "IsValidFee",
+        "params": [
+          { "vname": "price", "type": "suspicious_event1.Coins" },
+          { "vname": "fee", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "IsValidSide",
+        "params": [
+          { "vname": "s1", "type": "suspicious_event1.Side" },
+          { "vname": "s2", "type": "suspicious_event1.Side" }
+        ]
+      },
+      {
+        "vname": "IsNotVoided",
+        "params": [
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" }
+        ]
+      },
+      {
+        "vname": "IsValidSignature",
+        "params": [
+          { "vname": "action", "type": "suspicious_event1.Action" },
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" },
+          { "vname": "signature", "type": "ByStr64" }
+        ]
+      },
+      {
+        "vname": "ValidateAndConsumeCheque",
+        "params": [
+          { "vname": "token", "type": "suspicious_event1.NFT" },
+          { "vname": "price", "type": "suspicious_event1.Coins" },
+          { "vname": "fee_amount", "type": "Uint128" },
+          { "vname": "valid_direction", "type": "suspicious_event1.Side" },
+          { "vname": "cheque", "type": "suspicious_event1.Cheque" }
+        ]
+      },
+      {
+        "vname": "TransferCoins",
+        "params": [
+          { "vname": "coins", "type": "suspicious_event1.Coins" },
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "TransferNFT",
+        "params": [
+          { "vname": "token", "type": "suspicious_event1.NFT" },
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "OwnershipRevoked",
+        "params": [ { "vname": "current_owner", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "OwnershipTransferAccepted",
+        "params": [
+          { "vname": "previous_current_owner", "type": "Option (ByStr20)" },
+          { "vname": "current_owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "OwnershipTransferInitiated",
+        "params": [
+          { "vname": "current_owner", "type": "ByStr20" },
+          { "vname": "pending_owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SetTokenProxySuccess",
+        "params": [ { "vname": "token_proxy", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "VoidChequeSuccess",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "cheque_hash", "type": "ByStr32" }
+        ]
+      },
+      {
+        "vname": "ExecuteTradeSuccess",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "token", "type": "suspicious_event1.NFT" },
+          { "vname": "seller", "type": "ByStr20" },
+          { "vname": "buyer", "type": "ByStr20" },
+          { "vname": "proceeds", "type": "suspicious_event1.Coins" },
+          { "vname": "fees", "type": "suspicious_event1.Coins" },
+          { "vname": "sell_cheque", "type": "suspicious_event1.Cheque" },
+          { "vname": "buy_cheque", "type": "suspicious_event1.Cheque" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "suspicious_event1.Action",
+        "tparams": [],
+        "tmap": [
+          { "cname": "suspicious_event1.Execute", "argtypes": [] },
+          { "cname": "suspicious_event1.Void", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "suspicious_event1.Denom",
+        "tparams": [],
+        "tmap": [
+          { "cname": "suspicious_event1.Zil", "argtypes": [] },
+          { "cname": "suspicious_event1.Token", "argtypes": [ "ByStr20" ] }
+        ]
+      },
+      {
+        "tname": "suspicious_event1.Side",
+        "tparams": [],
+        "tmap": [
+          { "cname": "suspicious_event1.Buy", "argtypes": [] },
+          { "cname": "suspicious_event1.Sell", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "suspicious_event1.Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "suspicious_event1.CodeNotOwner", "argtypes": [] },
+          {
+            "cname": "suspicious_event1.CodeNotPendingOwner",
+            "argtypes": []
+          },
+          {
+            "cname": "suspicious_event1.CodePendingOwnerNotEmpty",
+            "argtypes": []
+          },
+          {
+            "cname": "suspicious_event1.CodeTokenProxyNotSet",
+            "argtypes": []
+          },
+          {
+            "cname": "suspicious_event1.CodeTokenProxyAlreadySet",
+            "argtypes": []
+          },
+          {
+            "cname": "suspicious_event1.CodeSignatureInvalid",
+            "argtypes": []
+          },
+          {
+            "cname": "suspicious_event1.CodeChequeAlreadyVoided",
+            "argtypes": []
+          },
+          { "cname": "suspicious_event1.CodeChequeExpired", "argtypes": [] },
+          { "cname": "suspicious_event1.CodeInvalidPrice", "argtypes": [] },
+          { "cname": "suspicious_event1.CodeInvalidFee", "argtypes": [] },
+          { "cname": "suspicious_event1.CodeInvalidSide", "argtypes": [] },
+          { "cname": "suspicious_event1.CodeInvalidOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "suspicious_event1.Coins",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "suspicious_event1.Coins",
+            "argtypes": [ "suspicious_event1.Denom", "Uint128" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "suspicious_event1.Cheque",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "suspicious_event1.Cheque",
+            "argtypes": [
+              "suspicious_event1.Side", "BNum", "Uint128", "ByStr33",
+              "ByStr64"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "suspicious_event1.NFT",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "suspicious_event1.NFT",
+            "argtypes": [
+              "ByStr20 with contract field token_owners : Map (Uint256) (ByStr20) end",
+              "Uint256"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: fee_address",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 378,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: ListUtils",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 6,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: IntUtils",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 6,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: zil",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 43,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: CodeChequeExpired",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 66,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: direction",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 102,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: expiry",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 102,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: nonce",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 102,
+        "column": 31
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: signature",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 102,
+        "column": 44
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: denom",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 109,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: token_id",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 499,
+        "column": 66
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: to",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 499,
+        "column": 53
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: from",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 499,
+        "column": 38
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: token_id",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 493,
+        "column": 75
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: recipient",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 493,
+        "column": 55
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: from",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 493,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: p",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 202,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "A hashing builtin is applied to argument \"price\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 123,
+        "column": 41
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "A hashing builtin is applied to argument \"token\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 122,
+        "column": 41
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "A hashing builtin is applied to argument \"direction\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 121,
+        "column": 39
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious event parameter with an optional type: previous_current_owner",
+      "start_location": {
+        "file": "contracts/suspicious_event1.scilla",
+        "line": 475,
+        "column": 75
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7860"
+}
+
