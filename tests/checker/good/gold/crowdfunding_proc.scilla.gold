@@ -133,7 +133,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 153,
@@ -143,7 +143,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/crowdfunding_proc.scilla",
         "line": 122,

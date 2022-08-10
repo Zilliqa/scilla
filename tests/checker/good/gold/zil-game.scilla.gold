@@ -110,7 +110,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 250,
@@ -120,7 +120,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 244,
@@ -130,7 +130,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 226,
@@ -140,7 +140,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 219,
@@ -150,7 +150,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 209,
@@ -160,7 +160,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 193,
@@ -170,7 +170,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 188,
@@ -180,7 +180,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 176,
@@ -190,7 +190,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/zil-game.scilla",
         "line": 161,

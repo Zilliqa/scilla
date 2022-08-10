@@ -33,7 +33,7 @@
       "warning_id": 1
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 162,
@@ -43,7 +43,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 155,
@@ -53,7 +53,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 145,
@@ -63,7 +63,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 129,
@@ -73,7 +73,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 115,
@@ -83,7 +83,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 108,
@@ -93,7 +93,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 94,
@@ -103,7 +103,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 83,
@@ -113,7 +113,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 75,
@@ -123,7 +123,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "checker/bad/event_bad1.scilla",
         "line": 68,

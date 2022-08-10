@@ -569,7 +569,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/remote_state_reads.scilla",
         "line": 125,

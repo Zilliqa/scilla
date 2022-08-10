@@ -2699,7 +2699,7 @@
       "warning_id": 1
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 165,
@@ -2709,7 +2709,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 156,
@@ -2719,7 +2719,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 139,
@@ -2729,7 +2729,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 132,
@@ -2739,7 +2739,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 85,
@@ -2749,7 +2749,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 75,
@@ -2759,7 +2759,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Suspicious empty _tag",
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
       "start_location": {
         "file": "contracts/auction.scilla",
         "line": 69,

@@ -151,7 +151,10 @@ struct
       let _ =
         match List.Assoc.find msg tag_label ~equal:String.equal with
         | Some (MLit (StringLit "")) ->
-            warn1 "Suspicious empty _tag" warning_level_empty_tag eloc
+            warn1
+              "Consider using \"AddFunds\" tag instead of empty tag as \
+               suggested by ZRC-5"
+              warning_level_empty_tag eloc
         | _ -> ()
       in
 
