@@ -83,6 +83,26 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "contracts/cfinvoke.scilla",
+        "line": 55,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "contracts/cfinvoke.scilla",
+        "line": 22,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
     }
   ],
   "gas_remaining": "7999"

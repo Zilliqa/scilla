@@ -140,6 +140,16 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "contracts/earmarked-coin.scilla",
+        "line": 39,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
     }
   ],
   "gas_remaining": "7999"
