@@ -147,6 +147,46 @@
       "warning_id": 2
     },
     {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 104,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 96,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 86,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/mappair.scilla",
+        "line": 76,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "No transition in contract Test contains an accept statement\n",
       "start_location": {
         "file": "contracts/mappair.scilla",

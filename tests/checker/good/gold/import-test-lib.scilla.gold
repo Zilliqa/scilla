@@ -115,6 +115,26 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/import-test-lib.scilla",
+        "line": 65,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/import-test-lib.scilla",
+        "line": 48,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "No transition in contract Hello contains an accept statement\n",
       "start_location": {
         "file": "contracts/import-test-lib.scilla",

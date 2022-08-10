@@ -51,7 +51,18 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/chain-call-balance-3.scilla",
+        "line": 15,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 

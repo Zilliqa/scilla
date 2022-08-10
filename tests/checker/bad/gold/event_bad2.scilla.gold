@@ -31,6 +31,106 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 162,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 155,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 145,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 129,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 115,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 108,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 94,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 83,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 75,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/bad/event_bad2.scilla",
+        "line": 68,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
     }
   ]
 }

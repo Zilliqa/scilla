@@ -137,6 +137,26 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/crowdfunding.scilla",
+        "line": 143,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/crowdfunding.scilla",
+        "line": 103,
+        "column": 6
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
     }
   ],
   "gas_remaining": "7999"

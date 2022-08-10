@@ -131,7 +131,28 @@
       }
     ]
   },
-  "warnings": [],
+  "warnings": [
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 153,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "contracts/crowdfunding_proc.scilla",
+        "line": 122,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
   "gas_remaining": "7999"
 }
 

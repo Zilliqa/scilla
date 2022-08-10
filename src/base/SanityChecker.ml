@@ -55,6 +55,9 @@ struct
   (* Warning level to use when contract hashes maps / messages / ADTs *)
   let warning_level_hash_compound_types = 3
 
+  (* Warning level to use when contract uses empty "_tag" in message *)
+  let warning_level_empty_tag = 3
+
   (* ************************************** *)
   (* ******** Basic Sanity Checker ******** *)
   (* ************************************** *)
@@ -142,6 +145,16 @@ struct
         then e
         else e @ mk_error1 ~kind:"Invalid message construct" ?inst:None eloc
       in
+
+      (* Empty "_tag" is suspicious, because when using it, refunds in exchange
+         and wallet contracts are not possible. See ZRC-5 for the reference. *)
+      let _ =
+        match List.Assoc.find msg tag_label ~equal:String.equal with
+        | Some (MLit (StringLit "")) ->
+            warn1 "Suspicious empty _tag" warning_level_empty_tag eloc
+        | _ -> ()
+      in
+
       pure e
       (* as required by "fold_over_messages" *)
     in

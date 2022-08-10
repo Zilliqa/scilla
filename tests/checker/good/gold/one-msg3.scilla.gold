@@ -75,6 +75,16 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Suspicious empty _tag",
+      "start_location": {
+        "file": "checker/good/one-msg3.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "No transition in contract HelloWorld contains an accept statement\n",
       "start_location": {
         "file": "checker/good/one-msg3.scilla",
