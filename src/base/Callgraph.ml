@@ -194,7 +194,9 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
                          collect_funcalls ea collected_nodes
                          |> List.fold_left ~init:edges
                               ~f:(fun acc_edges (called_node : Node.t) ->
-                                let out_edge = Edge.mk n called_node in
+                                let out_edge =
+                                  Edge.mk n called_node
+                                in
                                 n.out_edges <- n.out_edges @ [ out_edge ];
                                 acc_edges @ [ out_edge ])
                          |> fun edges -> (nodes, edges))
@@ -245,6 +247,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
     let get_subgraph _ = None
     let default_edge_attributes _ = []
+
     let edge_attributes (_e : E.t) = []
   end)
 

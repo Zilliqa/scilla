@@ -1,0 +1,21 @@
+digraph G {
+  pr2 [fillcolor="#83A598", shape=box, style="filled", ];
+  pr1 [fillcolor="#83A598", shape=box, style="filled", ];
+  tr1 [fillcolor="#D3869B", shape=box, style="filled", ];
+  id [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias2 [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias_unused1 [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias_unused2 [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias_unused_redef [fillcolor="#8EC07C", shape=box, style="filled", ];
+  lib_fn [fillcolor="#8EC07C", shape=box, style="filled", ];
+  
+  
+  pr1 -> lib_fn;
+  pr1 -> pr2;
+  tr1 -> id_alias;
+  tr1 -> pr1;
+  lib_fn -> id_alias;
+  lib_fn -> id_alias2;
+  
+  }

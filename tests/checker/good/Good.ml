@@ -225,3 +225,18 @@ module TypeInfoTests = Scilla_test.Util.DiffBasedTests (struct
   let tests = [ "map_corners_test.scilla"; "auction.scilla" ]
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
+
+module CallgraphTests = Scilla_test.Util.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "contracts"; f ]
+  let runner = "scilla-checker"
+  let ignore_predef_args = false
+  let json_errors = false
+  let gas_limit = Stdint.Uint64.of_int 8000
+  let custom_args = [ "-dump-callgraph-stdout" ]
+  let additional_libdirs = []
+  let provide_init_arg = false
+  let diff_filter s = s
+  let tests = [ "callgraph1.scilla" ]
+  let exit_code : UnixLabels.process_status = WEXITED 0
+end)

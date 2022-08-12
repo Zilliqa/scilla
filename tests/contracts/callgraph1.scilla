@@ -1,6 +1,6 @@
 scilla_version 0
 
-library UnboxResult
+library Callgraph1
 
 let lib_var = Uint32 42
 
@@ -23,7 +23,7 @@ let lib_fn =
     let res2 = id_alias2 a in
     res2
 
-contract UnboxResult()
+contract Callgraph1()
 
 procedure pr2()
   accept
