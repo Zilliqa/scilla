@@ -3,19 +3,25 @@ digraph G {
   pr1 [fillcolor="#83A598", shape=box, style="filled", ];
   tr1 [fillcolor="#D3869B", shape=box, style="filled", ];
   id [fillcolor="#8EC07C", shape=box, style="filled", ];
-  id_alias [fillcolor="#8EC07C", shape=box, style="filled", ];
-  id_alias2 [fillcolor="#8EC07C", shape=box, style="filled", ];
-  id_alias_unused1 [fillcolor="#8EC07C", shape=box, style="filled", ];
-  id_alias_unused2 [fillcolor="#8EC07C", shape=box, style="filled", ];
-  id_alias_unused_redef [fillcolor="#8EC07C", shape=box, style="filled", ];
+  id_alias [fillcolor="#689D6A", shape=box, style="filled", ];
+  id_alias2 [fillcolor="#689D6A", shape=box, style="filled", ];
+  id_alias_unused1 [fillcolor="#689D6A", shape=box, style="filled", ];
+  id_alias_unused2 [fillcolor="#689D6A", shape=box, style="filled", ];
+  id_alias_unused_redef [fillcolor="#689D6A", shape=box, style="filled", ];
   lib_fn [fillcolor="#8EC07C", shape=box, style="filled", ];
   
   
-  pr1 -> lib_fn;
-  pr1 -> pr2;
-  tr1 -> id_alias;
-  tr1 -> pr1;
-  lib_fn -> id_alias;
-  lib_fn -> id_alias2;
+  pr1 -> lib_fn [style="solid", ];
+  pr1 -> pr2 [style="solid", ];
+  tr1 -> id_alias [style="solid", ];
+  tr1 -> pr1 [style="solid", ];
+  id_alias -> id [style="dotted", ];
+  id_alias2 -> id_alias [style="solid", ];
+  id_alias_unused1 -> id [style="dotted", ];
+  id_alias_unused2 -> id_alias [style="solid", ];
+  id_alias_unused_redef -> id [style="dotted", ];
+  id_alias_unused_redef -> id_alias [style="solid", ];
+  lib_fn -> id_alias [style="dotted", ];
+  lib_fn -> id_alias2 [style="dotted", ];
   
   }

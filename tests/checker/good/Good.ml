@@ -237,6 +237,6 @@ module CallgraphTests = Scilla_test.Util.DiffBasedTests (struct
   let additional_libdirs = []
   let provide_init_arg = false
   let diff_filter s = s
-  let tests = [ "callgraph1.scilla" ]
+  let tests = [ "callgraph1.scilla"; "callgraph2.scilla" ]
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
