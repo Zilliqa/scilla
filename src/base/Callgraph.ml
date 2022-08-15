@@ -20,9 +20,15 @@ open Core
 open Literal
 open Syntax
 
-(** Represents a callgraph that consists of procedures/transitions and pure
-    library functions. The callgraph doesn't include imported library
-    functions. *)
+(** Represents a callgraph (CG) that consists of procedures/transitions and
+    pure library functions. The callgraph doesn't include imported library
+    functions.
+
+    The generated CG is not complete in the sense that it cannot handle partial
+    applications of the both functions and type functions. This is an
+    intentional design decision, because the CG is used only for analyses, and
+    we want to make it work fast. But the algorithms for building CG for
+    functional programs have at least n^3 complexity. *)
 module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   module CGLiteral = GlobalLiteral
   module CGType = CGLiteral.LType
@@ -69,6 +75,9 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       List.fold_left node.in_edges ~init:[] ~f:(fun acc e ->
           acc @ [ Edge.src e ])
 
+    let has_id (n : t) id =
+      SIdentifier.Name.equal (SIdentifier.get_id n.id) (SIdentifier.get_id id)
+
     let to_string node =
       CGIdentifier.Name.as_string (CGIdentifier.get_id node.id)
 
@@ -102,11 +111,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
             in
             let collect_function_aliases (acc : Node.t list) name = function
               | Var id -> (
-                  let f (n : Node.t) =
-                    SIdentifier.Name.equal (SIdentifier.get_id n.id)
-                      (SIdentifier.get_id id)
-                  in
-                  match List.find acc ~f with
+                  match List.find acc ~f:(fun n -> Node.has_id n id) with
                   | Some n ->
                       let new_ty =
                         match n.ty with
@@ -171,10 +176,10 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
         match s with
         | Bind (_id, ea) ->
             collect_funcalls ea collected_nodes |> List.append acc
-        | CallProc (id, _args) ->
-            find_node collected_nodes id
-            |> Option.value_map ~default:[] ~f:(fun n -> [ n ])
-            |> List.append acc
+        | CallProc (id, _args) -> (
+            find_node collected_nodes id |> function
+            | Some n -> acc @ [ n ]
+            | None -> acc)
         | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
         | RemoteMapGet _ | MatchStmt _ | ReadFromBC _ | TypeCast _
         | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | Throw _
