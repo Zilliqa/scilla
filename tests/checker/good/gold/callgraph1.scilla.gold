@@ -1,7 +1,9 @@
 digraph G {
-  pr2 [fillcolor="#83A598", shape=box, style="filled", ];
   pr1 [fillcolor="#83A598", shape=box, style="filled", ];
+  pr2 [fillcolor="#83A598", shape=box, style="filled", ];
+  pr3 [fillcolor="#83A598", shape=box, style="filled", ];
   tr1 [fillcolor="#D3869B", shape=box, style="filled", ];
+  tr2 [fillcolor="#D3869B", shape=box, style="filled", ];
   id [fillcolor="#8EC07C", shape=box, style="filled", ];
   id_alias [fillcolor="#689D6A", shape=box, style="filled", ];
   id_alias2 [fillcolor="#689D6A", shape=box, style="filled", ];
@@ -11,10 +13,13 @@ digraph G {
   lib_fn [fillcolor="#8EC07C", shape=box, style="filled", ];
   
   
-  pr1 -> lib_fn [style="solid", ];
-  pr1 -> pr2 [style="solid", ];
+  pr2 -> lib_fn [style="solid", ];
+  pr2 -> pr1 [style="solid", ];
+  pr3 -> pr2 [style="solid", ];
+  pr3 -> pr1 [style="solid", ];
   tr1 -> id_alias [style="solid", ];
-  tr1 -> pr1 [style="solid", ];
+  tr1 -> pr2 [style="solid", ];
+  tr2 -> pr3 [style="solid", ];
   id_alias -> id [style="dotted", ];
   id_alias2 -> id_alias [style="solid", ];
   id_alias_unused1 -> id [style="dotted", ];

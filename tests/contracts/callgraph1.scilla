@@ -25,16 +25,30 @@ let lib_fn =
 
 contract Callgraph1()
 
-procedure pr2()
+procedure pr1()
   accept
 end
 
-procedure pr1(a: Uint32)
+procedure pr2(a: Uint32)
   res = lib_fn a;
-  pr2
+  pr1
+end
+
+procedure pr3(a_opt: Option Uint32)
+  match a_opt with
+  | Some a => pr2 a
+  | None => pr1
+  end
 end
 
 transition tr1(a: Uint32)
   res = id_alias a;
-  pr1 res
+  pr2 res
+end
+
+transition tr2(a: Option Uint32)
+  match a with
+  | Some _ =>
+  | None => pr3 a
+  end
 end

@@ -172,19 +172,24 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
   (** Returns a list of nodes that were called inside body of the component. *)
   let get_called_nodes comp (collected_nodes : Node.t list) =
-    List.fold_left comp.comp_body ~init:[] ~f:(fun acc (s, _annot) ->
-        match s with
-        | Bind (_id, ea) ->
-            collect_funcalls ea collected_nodes |> List.append acc
-        | CallProc (id, _args) -> (
-            find_node collected_nodes id |> function
-            | Some n -> acc @ [ n ]
-            | None -> acc)
-        | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-        | RemoteMapGet _ | MatchStmt _ | ReadFromBC _ | TypeCast _
-        | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | Throw _
-        | GasStmt _ ->
-            acc)
+    let rec visit_stmt (s, _annot) =
+      match s with
+      | Bind (_id, ea) -> collect_funcalls ea collected_nodes
+      | CallProc (id, _args) -> (
+          find_node collected_nodes id |> function
+          | Some n -> [ n ]
+          | None -> [])
+      | MatchStmt (_id, arms) ->
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
+              List.fold_left stmts ~init:[] ~f:(fun acc sa ->
+                  acc @ visit_stmt sa)
+              |> List.append acc)
+      | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Iterate _
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+          []
+    in
+    List.fold_left comp.comp_body ~init:[] ~f:(fun acc s -> acc @ visit_stmt s)
 
   (** Creates edges between nodes defined in the contract.
       @return List of updated nodes and list of created edges. *)
