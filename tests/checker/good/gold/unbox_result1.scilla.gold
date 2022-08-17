@@ -1,0 +1,352 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "dummy_field", "tag": "NoInfo" },
+      { "field": "dummy_field_opt", "tag": "(Option NoInfo)" },
+      { "field": "m", "tag": "(Map NoInfo)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "UnboxResult1",
+    "params": [],
+    "fields": [
+      { "vname": "dummy_field", "type": "Uint32", "depth": 0 },
+      { "vname": "dummy_field_opt", "type": "Option (Uint32)", "depth": 0 },
+      { "vname": "m", "type": "Map (Uint32) (Uint32)", "depth": 1 }
+    ],
+    "transitions": [
+      {
+        "vname": "test_match_in_transition",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_direct_match_in_procedure1",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_direct_match_in_procedure2",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_undirect_match_in_procedure1",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_undirect_match_in_procedure2",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_direct_match_in_function1",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_direct_match_in_function2",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_undirect_match_in_function",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_no_match1",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_no_match2",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_no_match3",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      },
+      {
+        "vname": "test_no_match4",
+        "params": [ { "vname": "k", "type": "Uint32" } ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "matches_first",
+        "params": [
+          { "vname": "p1", "type": "Option (Uint32)" },
+          { "vname": "p2", "type": "Uint32" }
+        ]
+      },
+      {
+        "vname": "matches_second",
+        "params": [
+          { "vname": "p1", "type": "Option (Uint32)" },
+          { "vname": "p2", "type": "Option (Uint32)" }
+        ]
+      },
+      {
+        "vname": "matches_undirect",
+        "params": [ { "vname": "p1", "type": "Option (Uint32)" } ]
+      },
+      {
+        "vname": "matches_undirect_in_fun",
+        "params": [ { "vname": "p1", "type": "Option (Uint32)" } ]
+      },
+      {
+        "vname": "no_match1",
+        "params": [ { "vname": "p1", "type": "Option (Uint32)" } ]
+      },
+      {
+        "vname": "no_match2",
+        "params": [ { "vname": "p1", "type": "Option (Uint32)" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "EventOpt",
+        "params": [ { "vname": "v", "type": "Option (Uint32)" } ]
+      },
+      { "vname": "Event", "params": [ { "vname": "v", "type": "Uint32" } ] }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: m",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 76,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: dummy_field_opt",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 68,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: dummy_field",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 86,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: lib_matches_first_alias",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 35,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: lib_no_match1_alias",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 36,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 147,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r2",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 148,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 126,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 120,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 113,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused procedure parameter: p1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 67,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused procedure parameter: p1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 64,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: p2_mock",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 61,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 62,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused procedure parameter: p1",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 50,
+        "column": 26
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused procedure parameter: p2",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 44,
+        "column": 44
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 132,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 137,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 144,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result1.scilla",
+        "line": 153,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

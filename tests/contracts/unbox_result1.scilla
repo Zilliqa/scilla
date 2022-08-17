@@ -1,0 +1,163 @@
+scilla_version 0
+
+library UnboxResult1
+
+let lib_dummy = Uint32 42
+let lib_dummy_opt = None {Uint32}
+
+let lib_matches_first =
+  fun (p1 : Option Uint32) =>
+  fun (p2 : Uint32) =>
+    match p1 with
+    | Some v => v
+    | None => p2
+    end
+let lib_matches_second =
+  fun (p1 : Option Uint32) =>
+  fun (p2 : Option Uint32) =>
+    match p2 with
+    | Some v => v
+    | None => lib_dummy
+    end
+let lib_matches_undirect =
+  fun (p1 : Option Uint32) =>
+    lib_matches_first p1 lib_dummy
+let lib_no_match1 =
+  fun (p1 : Option Uint32) =>
+    lib_dummy
+let lib_no_match2 =
+  fun (p1 : Option Uint32) =>
+    match lib_dummy_opt with
+    | Some v => v
+    | None => lib_dummy
+    end
+
+let lib_matches_first_alias = lib_matches_first
+let lib_no_match1_alias = lib_no_match1
+
+contract UnboxResult1()
+
+field dummy_field: Uint32 = Uint32 0
+field dummy_field_opt: Option Uint32 = None {Uint32}
+field m: Map Uint32 Uint32 = Emp Uint32 Uint32
+
+procedure matches_first(p1: Option Uint32, p2: Uint32)
+  match p1 with
+    | Some _ =>
+    | None =>
+  end
+end
+procedure matches_second(p1: Option Uint32, p2: Option Uint32)
+  match p2 with
+    | Some _ =>
+    | None =>
+  end
+end
+procedure matches_undirect(p1: Option Uint32)
+  p2_mock = Uint32 42;
+  matches_first p1 p2_mock
+end
+procedure matches_undirect_in_fun(p1: Option Uint32)
+  p2_mock = Uint32 42;
+  r1 = lib_matches_undirect p1
+end
+procedure no_match1(p1: Option Uint32)
+  accept
+end
+procedure no_match2(p1: Option Uint32)
+  dummy <- dummy_field_opt;
+  match dummy with
+  | Some _ => accept
+  | _ => accept
+  end
+end
+
+transition test_match_in_transition(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  match v_opt with
+  | Some value =>
+    e = { _eventname : "Event"; v: value };
+    event e
+  | None =>
+  end
+end
+transition test_direct_match_in_procedure1(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  dummy <- dummy_field;
+  matches_first v_opt dummy;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_direct_match_in_procedure2(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  dummy <- dummy_field_opt;
+  matches_second dummy v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_undirect_match_in_procedure1(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  matches_undirect v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_undirect_match_in_procedure2(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  matches_undirect_in_fun v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_direct_match_in_function1(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  dummy <- dummy_field;
+  r1 = lib_matches_first v_opt dummy;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_direct_match_in_function2(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  dummy <- dummy_field_opt;
+  r1 = lib_matches_second dummy v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_undirect_match_in_function(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  r = lib_matches_undirect v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+
+transition test_no_match1(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_no_match2(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  dummy <- dummy_field_opt;
+  matches_second v_opt dummy;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_no_match3(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  no_match1 v_opt;
+  no_match2 v_opt;
+  r1 = lib_no_match1 v_opt;
+  r2 = lib_no_match2 v_opt;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
+transition test_no_match4(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  dummy <- dummy_field_opt;
+  match dummy with
+  | Some _ =>
+    e = { _eventname : "EventOpt"; v: v_opt };
+    event e
+  | None =>
+    e = { _eventname : "EventOpt"; v: v_opt };
+    event e
+  end
+end
