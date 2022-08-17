@@ -36,6 +36,13 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   module CGSyntax = ScillaSyntax (SR) (ER) (CGLiteral)
   open CGSyntax
 
+  module CGIdentifierComp = struct
+    include CGIdentifier.Name
+    include Comparable.Make (CGIdentifier.Name)
+  end
+
+  let emp_ids_set = Set.empty (module CGIdentifierComp)
+
   module Edge = struct
     type edge_ty =
       | Call  (** [dst] is called in [src] body *)
@@ -244,10 +251,36 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
     collect_nodes cmod |> fill_edges cmod |> fun (nodes, edges) ->
     { nodes; edges }
 
+  let find_function (cg : cg) name =
+    List.find cg.nodes ~f:(fun (n : Node.t) ->
+        CGIdentifier.Name.equal (CGIdentifier.get_id n.id) name)
+
+  (** Returns true iff [name] is the function name on the CG *)
+  let is_function (cg : cg) name = find_function cg name |> Option.is_some
+
   (** Returns names of functions called insisde the body of the caller. *)
   let get_callees (cg : cg) callee =
-    List.find cg.nodes ~f:(fun (n : Node.t) -> CGIdentifier.equal n.id callee)
+    find_function cg callee
     |> Option.value_map ~default:[] ~f:(fun n -> Node.succs n)
+
+  (** Left fold over nodes in the DFS order. [f] takes an accumulator and a
+      node and updates the accumulator. *)
+  let fold_over_nodes_dfs (cg : cg) ~init ~f =
+    let rec aux (n : Node.t) visited acc =
+      if not @@ Set.mem visited (CGIdentifier.get_id n.id) then
+        let visited, acc =
+          List.fold_left (Node.succs n)
+            ~init:(Set.add visited (CGIdentifier.get_id n.id), acc)
+            ~f:(fun (visited, acc) n -> aux n visited acc)
+        in
+        (visited, f acc n)
+      else (visited, acc)
+    in
+    let _visited, acc =
+      List.fold_left cg.nodes ~init:(emp_ids_set, init)
+        ~f:(fun (visited, acc) n -> aux n visited acc)
+    in
+    acc
 
   module GDot = Graph.Graphviz.Dot (struct
     type t = cg
