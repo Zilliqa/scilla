@@ -133,9 +133,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
                   []
             in
             match lentry with
-            (* NOTE: LibVar's type will be set only if there is a user-defined
-                     annotation. `_ty` won't be inferred here. *)
-            | LibVar (name, _ty, (e, _annot)) ->
+            | LibVar (name, _user_ty_annot, (e, _annot)) ->
                 collect_function_aliases acc name e
                 @ collect_functions_in_expr name e
                 @ acc
