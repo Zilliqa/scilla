@@ -41,6 +41,10 @@ procedure pr3(a_opt: Option Uint32)
   end
 end
 
+procedure pr4(l: List Uint32)
+  forall l pr2
+end
+
 transition tr1(a: Uint32)
   res = id_alias a;
   pr2 res
@@ -51,4 +55,9 @@ transition tr2(a: Option Uint32)
   | Some _ =>
   | None => pr3 a
   end
+end
+
+transition tr3(l: List Uint32)
+  forall l pr2;
+  pr4 l
 end
