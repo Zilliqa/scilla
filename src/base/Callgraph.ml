@@ -36,20 +36,15 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   module CGSyntax = ScillaSyntax (SR) (ER) (CGLiteral)
   open CGSyntax
 
-  module CGIdentifierComp = struct
-    include CGIdentifier.Name
-    include Comparable.Make (CGIdentifier.Name)
-  end
-
-  let emp_ids_set = Set.empty (module CGIdentifierComp)
-
   module Edge = struct
     type edge_ty =
       | Call  (** [dst] is called in [src] body *)
       | Alias  (** [dst] is a different name for [src] *)
       | TFunApp  (** [dst] is a an application of type function [src] *)
+    [@@deriving sexp]
 
     type 'node t = { ty : edge_ty; src_node : 'node; dst_node : 'node }
+    [@@deriving sexp]
 
     let mk ty src_node dst_node = { ty; src_node; dst_node }
     let src edge = edge.src_node
@@ -57,6 +52,9 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   end
 
   module Node = struct
+    include CGIdentifier.Name
+    include Comparable.Make (CGIdentifier.Name)
+
     type node_ty =
       | Trans
       | Proc
@@ -64,6 +62,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       | FunAlias  (** A different name for a function *)
       | TFun  (** Type function *)
       | TFunAlias  (** A different name for a type function *)
+    [@@deriving sexp]
 
     type t = {
       id : SR.rep CGIdentifier.t;
@@ -71,6 +70,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       mutable out_edges : t Edge.t list;  (** Outcoming edges *)
       mutable in_edges : t Edge.t list;  (** Incoming edges *)
     }
+    [@@deriving sexp]
 
     let mk id ty = { id; ty; out_edges = []; in_edges = [] }
 
@@ -90,6 +90,10 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
     let compare n1 n2 = CGIdentifier.compare n1.id n2.id
   end
+
+  module NodeSet = Set.Make (Node)
+
+  let emp_nodes_set = NodeSet.empty
 
   type cg = { nodes : Node.t list; edges : Node.t Edge.t list }
 
@@ -158,43 +162,46 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
         collect_lib_functions lib)
     |> List.append @@ collect_comps cmod
 
-  (** Collects identifiers of functions/procedures called in the given
-      expression. *)
+  (** Collects set of nodes with identifiers of functions/procedures called in
+      the given expression. *)
   let rec collect_funcalls (e, _annot) collected_nodes =
     match e with
     | Let (_id, _ty, body, in_) ->
         collect_funcalls body collected_nodes
-        @ collect_funcalls in_ collected_nodes
+        |> NodeSet.union @@ collect_funcalls in_ collected_nodes
     | App (f, _) | TApp (f, _) | Var f ->
         find_node collected_nodes f
-        |> Option.value_map ~default:[] ~f:(fun n -> [ n ])
+        |> Option.value_map ~default:emp_nodes_set ~f:(fun n ->
+               NodeSet.singleton n)
     | MatchExpr (_id, arms) ->
-        List.fold_left arms ~init:[] ~f:(fun acc (_p, ea) ->
-            acc @ collect_funcalls ea collected_nodes)
+        List.fold_left arms ~init:emp_nodes_set ~f:(fun acc (_p, ea) ->
+            acc |> NodeSet.union @@ collect_funcalls ea collected_nodes)
     | Fun (_, _, ea) | TFun (_, ea) | Fixpoint (_, _, ea) | GasExpr (_, ea) ->
         collect_funcalls ea collected_nodes
-    | Literal _ | Message _ | Constr _ | Builtin _ -> []
+    | Literal _ | Message _ | Constr _ | Builtin _ -> emp_nodes_set
 
-  (** Returns a list of nodes that were called inside body of the component. *)
+  (** Returns a set of nodes that were called inside body of the component. *)
   let get_called_nodes comp (collected_nodes : Node.t list) =
     let rec visit_stmt (s, _annot) =
       match s with
       | Bind (_id, ea) -> collect_funcalls ea collected_nodes
       | CallProc (id, _) | Iterate (_, id) -> (
           find_node collected_nodes id |> function
-          | Some n -> [ n ]
-          | None -> [])
+          | Some n -> NodeSet.singleton n
+          | None -> emp_nodes_set)
       | MatchStmt (_id, arms) ->
-          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
-              List.fold_left stmts ~init:[] ~f:(fun acc sa ->
-                  acc @ visit_stmt sa)
-              |> List.append acc)
+          List.fold_left arms ~init:emp_nodes_set
+            ~f:(fun acc (_pattern, stmts) ->
+              List.fold_left stmts ~init:emp_nodes_set ~f:(fun acc sa ->
+                  NodeSet.union acc @@ visit_stmt sa)
+              |> NodeSet.union acc)
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
       | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
       | CreateEvnt _ | Throw _ | GasStmt _ ->
-          []
+          emp_nodes_set
     in
-    List.fold_left comp.comp_body ~init:[] ~f:(fun acc s -> acc @ visit_stmt s)
+    List.fold_left comp.comp_body ~init:emp_nodes_set ~f:(fun acc s ->
+        visit_stmt s |> NodeSet.union acc)
 
   (** Creates edges between nodes defined in the contract.
       @return List of updated nodes and list of created edges. *)
@@ -216,7 +223,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
           find_node nodes comp.comp_name
           |> Option.value_map ~default:(collected_nodes, []) ~f:(fun n ->
                  get_called_nodes comp collected_nodes
-                 |> List.fold_left ~init:edges
+                 |> NodeSet.fold ~init:edges
                       ~f:(fun acc_edges (called_node : Node.t) ->
                         let out_edge = mk_edge n called_node in
                         n.out_edges <- n.out_edges @ [ out_edge ];
@@ -233,7 +240,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
                   |> Option.value_map ~default:(nodes, edges)
                        ~f:(fun (n : Node.t) ->
                          collect_funcalls ea collected_nodes
-                         |> List.fold_left ~init:edges
+                         |> NodeSet.fold ~init:edges
                               ~f:(fun acc_edges (called_node : Node.t) ->
                                 let out_edge = mk_edge n called_node in
                                 n.out_edges <- n.out_edges @ [ out_edge ];
@@ -265,17 +272,17 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       node and updates the accumulator. *)
   let fold_over_nodes_dfs (cg : cg) ~init ~f =
     let rec aux (n : Node.t) visited acc =
-      if not @@ Set.mem visited (CGIdentifier.get_id n.id) then
+      if not @@ NodeSet.mem visited n then
         let visited, acc =
           List.fold_left (Node.succs n)
-            ~init:(Set.add visited (CGIdentifier.get_id n.id), acc)
+            ~init:(NodeSet.add visited n, acc)
             ~f:(fun (visited, acc) n -> aux n visited acc)
         in
         (visited, f acc n)
       else (visited, acc)
     in
     let _visited, acc =
-      List.fold_left cg.nodes ~init:(emp_ids_set, init)
+      List.fold_left cg.nodes ~init:(emp_nodes_set, init)
         ~f:(fun (visited, acc) n -> aux n visited acc)
     in
     acc

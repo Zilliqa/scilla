@@ -61,3 +61,13 @@ transition tr3(l: List Uint32)
   forall l pr2;
   pr4 l
 end
+
+transition tr4(a: Uint32)
+  res1 = id_alias a;
+  pr2 res1;
+  res2 = id_alias a;
+  pr2 res2;
+  pr2 res2;
+  res3 = id_alias a;
+  pr2 res3
+end
