@@ -35,6 +35,7 @@ open Cashflow
 open Accept
 open Stdint
 open Literal
+open Callgraph
 
 (* Modules use local names, which are then disambiguated *)
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
@@ -58,6 +59,7 @@ module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
+module CG = ScillaCallgraph (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
@@ -335,6 +337,13 @@ let check_cmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
+    let cg = CG.mk typed_cmod in
+    (if cli.dump_callgraph_stdout then (
+     CG.dump_callgraph stdout cg;
+     exit 0)
+    else if cli.dump_callgraph then
+      let out = Out_channel.create (cli.input_file ^ ".dot") ~binary:true in
+      CG.dump_callgraph out cg);
     let%bind () =
       if cli.disable_analy_warn then pure ()
       else

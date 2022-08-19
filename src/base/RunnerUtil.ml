@@ -202,6 +202,8 @@ type runner_cli = {
   p_contract_info : bool;
   p_type_info : bool;
   disable_analy_warn : bool;
+  dump_callgraph : bool;
+  dump_callgraph_stdout : bool;
 }
 
 let parse_cli args ~exe_name =
@@ -217,6 +219,8 @@ let parse_cli args ~exe_name =
   let r_cf_token_fields = ref [] in
   let r_validate_json = ref true in
   let r_disable_analy_warn = ref false in
+  let r_dump_callgraph = ref false in
+  let r_dump_callgraph_stdout = ref false in
 
   let speclist =
     [
@@ -278,6 +282,12 @@ let parse_cli args ~exe_name =
       ( "-disable-developer-warnings",
         Arg.Unit (fun () -> r_disable_analy_warn := true),
         "Disable analyses' warnings" );
+      ( "-dump-callgraph",
+        Arg.Unit (fun () -> r_dump_callgraph := true),
+        "Save callgraph in .dot format" );
+      ( "-dump-callgraph-stdout",
+        Arg.Unit (fun () -> r_dump_callgraph_stdout := true),
+        "Print callgraph to stdout and exit" );
     ]
   in
 
@@ -321,4 +331,6 @@ let parse_cli args ~exe_name =
     init_file = !r_init_file;
     p_type_info = !r_type_info;
     disable_analy_warn = !r_disable_analy_warn;
+    dump_callgraph = !r_dump_callgraph;
+    dump_callgraph_stdout = !r_dump_callgraph_stdout;
   }

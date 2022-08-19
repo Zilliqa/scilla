@@ -1,0 +1,17 @@
+digraph G {
+  tr1 [fillcolor="#D3869B", shape=box, style="filled", ];
+  option_uint32 [fillcolor="#8EC07C", shape=box, style="filled", ];
+  option_uint64 [fillcolor="#8EC07C", shape=box, style="filled", ];
+  option_uint64_alias [fillcolor="#689D6A", shape=box, style="filled", ];
+  option_value [fillcolor="#98971A", shape=box, style="filled", ];
+  
+  
+  tr1 -> option_uint32 [style="solid", ];
+  tr1 -> option_uint64_alias [style="solid", ];
+  option_uint32 -> option_value [color="#7C6F64", arrowhead=dot,
+                                 style="dotted", ];
+  option_uint64 -> option_value [color="#7C6F64", arrowhead=dot,
+                                 style="dotted", ];
+  option_uint64_alias -> option_uint64 [style="dotted", ];
+  
+  }
