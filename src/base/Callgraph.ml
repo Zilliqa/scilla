@@ -109,7 +109,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
         List.fold_left lib.lentries ~init ~f:(fun acc lentry ->
             let mk_node name ty =
               let id : SR.rep CGIdentifier.t =
-                CGIdentifier.mk_id (CGIdentifier.get_id name) SR.dummy_rep
+                CGIdentifier.mk_id (CGIdentifier.get_id name)
+                @@ SR.parse_rep (ER.get_rep_str (CGIdentifier.get_rep name))
               in
               Node.mk id ty
             in
