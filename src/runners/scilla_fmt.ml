@@ -1,0 +1,56 @@
+(*
+  This file is part of scilla.
+
+  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+
+  scilla is free software: you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  scilla is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  scilla.  If not, see <http://www.gnu.org/licenses/>.
+*)
+
+open Core
+open Scilla_base
+open Literal
+open GlobalConfig
+open ErrorUtils
+open PrettyPrinters
+module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
+
+let raise_if_error = function Ok _ -> () | Error e -> fatal_error e
+
+let run () =
+  let r_input_file = ref "" in
+  let usage =
+    "Usage:\n" ^ Sys.(get_argv ()).(0) ^ " input.scilexp\n"
+  in
+  let anon_handler s = r_input_file := s in
+  let () = Arg.parse [] anon_handler usage in
+  let input_file = !r_input_file in
+  if String.is_empty input_file then fatal_error_noformat usage;
+  let open FilePath in
+  let open StdlibTracker in
+  if check_extension input_file file_extn_library then
+    (* library modules *)
+    raise_if_error @@ FEParser.parse_lmodule input_file
+  else if check_extension input_file file_extn_contract then
+    (* contract modules *)
+    match FEParser.parse_cmodule input_file with
+    | Ok e -> print_endline @@ Formatter.LocalLiteralSyntax.contract_to_string e
+    | Error err -> fatal_error err
+  else if check_extension input_file file_extn_expression then
+    (* expressions *)
+    match FEParser.parse_expr_from_file input_file with
+    | Ok e -> print_endline @@ Formatter.LocalLiteralSyntax.expr_to_string e
+    | Error err -> fatal_error err
+  else
+    fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)
+
+let () = try run () with FatalError msg -> exit_with_error msg
