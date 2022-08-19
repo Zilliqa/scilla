@@ -62,7 +62,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       | FunAlias  (** A different name for a function *)
       | TFun  (** Type function *)
       | TFunAlias  (** A different name for a type function *)
-    [@@deriving sexp]
+    [@@deriving sexp, compare]
 
     type t = {
       id : SR.rep CGIdentifier.t;
@@ -301,7 +301,12 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
       let dst e = Edge.dst e
     end
 
-    let iter_vertex f g = List.iter g.nodes ~f
+    let iter_vertex f g =
+      (* We iterate first transitions, then procedures, then functions.
+         This will give us a better representation of the callgraph. *)
+      List.sort g.nodes ~compare:(fun lv rv -> Node.compare_node_ty lv.ty rv.ty)
+      |> List.iter ~f
+
     let iter_edges_e f g = List.iter g.edges ~f
     let graph_attributes _ = []
     let default_vertex_attributes _ = []
