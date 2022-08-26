@@ -132,6 +132,24 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         let new_name = qualify_name capitalize prefix name in
         (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
 
+  (** Applies renaming from [renames_map]. *)
+  let rename_id renames_map id =
+    match find_id renames_map id with Some id' -> add_rep id id' | None -> id
+
+  (** Renames user-defined ADTs from [renames_map]. *)
+  let rec rename_ty renames_map (ty : SType.t) : SType.t =
+    match ty with
+    | MapType (key_ty, val_ty) ->
+        MapType (rename_ty renames_map key_ty, rename_ty renames_map val_ty)
+    | FunType (arg_ty, ret_ty) ->
+        FunType (rename_ty renames_map arg_ty, rename_ty renames_map ret_ty)
+    | ADT (id, tys) ->
+        ADT
+          ( rename_id renames_map id,
+            List.map tys ~f:(fun ty -> rename_ty renames_map ty) )
+    | PolyFun (tyvar, bt) -> SType.PolyFun (tyvar, rename_ty renames_map bt)
+    | TypeVar _ | Unit | PrimType _ | Address _ -> ty
+
   (** Sets unique names for the user-defined ADTs in [ty]. *)
   let rec qualify_ty renames_map contract_name (ty : SType.t) =
     let open SType in
@@ -155,23 +173,18 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     | ADT (id, tys) -> (
         match Map.find renames_map (PIdentifier.get_id id) with
         | Some (name : PIdentifierComp.t) ->
-            let tys', renames_map' =
-              List.fold_left tys ~init:([], renames_map)
-                ~f:(fun (acc_tys, m) ty ->
-                  let ty', m = qualify_ty m contract_name ty in
-                  (acc_tys @ [ ty' ], m))
-            in
-            (ADT (add_loc name, tys'), renames_map')
+            let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
+            (ADT (add_loc name, tys'), renames_map)
         | None ->
             let name', renames_map' =
-              qualify_id ~capitalize:true renames_map contract_name id
+              (* Don't qualify built-in ADTs. *)
+              Datatypes.DataTypeDictionary.lookup_name (PIdentifier.get_id id)
+              |> function
+              | Ok _ -> (id, renames_map)
+              | Error _ ->
+                  qualify_id ~capitalize:true renames_map contract_name id
             in
-            let tys', renames_map' =
-              List.fold_left tys ~init:([], renames_map')
-                ~f:(fun (acc_tys, m) ty ->
-                  let ty', m = qualify_ty m contract_name ty in
-                  (acc_tys @ [ ty' ], m))
-            in
+            let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map' ty) in
             (ADT (name', tys'), renames_map'))
     | PolyFun (tyvar, bt) ->
         let bt', renames_map' = qualify_ty renames_map contract_name bt in
@@ -183,24 +196,6 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     match Map.find renames_map name with
     | Some new_name -> new_name
     | None -> name
-
-  (** Applies renaming from [renames_map]. *)
-  let rename_id renames_map id =
-    match find_id renames_map id with Some id' -> add_rep id id' | None -> id
-
-  (** Renames user-defined ADTs from [renames_map]. *)
-  let rec rename_ty renames_map (ty : SType.t) : SType.t =
-    match ty with
-    | MapType (key_ty, val_ty) ->
-        MapType (rename_ty renames_map key_ty, rename_ty renames_map val_ty)
-    | FunType (arg_ty, ret_ty) ->
-        FunType (rename_ty renames_map arg_ty, rename_ty renames_map ret_ty)
-    | ADT (id, tys) ->
-        ADT
-          ( rename_id renames_map id,
-            List.map tys ~f:(fun ty -> rename_ty renames_map ty) )
-    | PolyFun (tyvar, bt) -> SType.PolyFun (tyvar, rename_ty renames_map bt)
-    | TypeVar _ | Unit | PrimType _ | Address _ -> ty
 
   let rec rename_pattern renames_map = function
     | Wildcard -> Wildcard
