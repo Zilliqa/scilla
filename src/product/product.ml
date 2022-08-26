@@ -108,13 +108,13 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
      product (extend_* functions). *)
 
   (** Adds a unique address to the [name]. *)
-  let qualify_name captitalize contract_name
+  let qualify_name captitalize prefix
       (((name : Identifier.GlobalName.t_name), i) : 'a) : PIdentifier.Name.t =
     let open Identifier in
     let gen_name =
       Printf.sprintf "%s_%s"
-        (if captitalize then String.capitalize contract_name
-        else String.lowercase contract_name)
+        (if captitalize then String.capitalize prefix
+        else String.uncapitalize prefix)
     in
     ( (match name with
       | GlobalName.SimpleGlobal n -> GlobalName.SimpleGlobal (gen_name n)
@@ -123,13 +123,13 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id ?(capitalize = false) renames_map contract_name
+  let qualify_id ?(capitalize = false) renames_map prefix
       (rep_id : 'a SIdentifier.t) =
     match find_id renames_map rep_id with
     | Some id -> (add_rep rep_id id, renames_map)
     | None ->
         let name = PIdentifier.get_id rep_id in
-        let new_name = qualify_name capitalize contract_name name in
+        let new_name = qualify_name capitalize prefix name in
         (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
 
   (** Sets unique names for the user-defined ADTs in [ty]. *)
