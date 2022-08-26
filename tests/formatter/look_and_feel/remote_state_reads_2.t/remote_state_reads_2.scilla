@@ -1,0 +1,55 @@
+scilla_version 0
+
+contract RRContract (cparam : ByStr20 with contract field admin : ByStr20 end)
+
+field remote_read_remote_read_res_1 : Uint128 = Uint128 0
+field remote_read_remote_read_res_2 : Option Uint128 = None {Uint128}
+field remote_read_remote_read_res_3 : ByStr20 = _this_address
+
+field address_type_erasure_test_res_1 : Map Uint128 (ByStr20 with end) = Emp Uint128 (ByStr20 with end)
+
+transition RemoteReadsOfRemoteRead(
+  remote: ByStr20 with contract
+                       field admin : ByStr20 with contract
+                                                  field f : ByStr20 with contract
+                                                                         field g : Uint128
+                                                                         end
+                                                  end
+                       end)
+  ad <-& remote.admin;
+  this_f <-& ad.f;
+  this_g <-& this_f.g;
+  remote_read_remote_read_res_1 := this_g
+end
+
+transition RemoteReadsOfRemoteMap(
+  remote: ByStr20 with contract
+                       field admin : ByStr20 with contract
+                                                  field f : ByStr20 with contract
+                                                                         field g : Map Uint128 Uint128
+                                                                         end
+                                                  end
+                       end)
+  ad <-& remote.admin;
+  this_f <-& ad.f;
+  remote_key = Uint128 0;
+  this_g <-& this_f.g[remote_key];
+  remote_read_remote_read_res_2 := this_g
+end
+
+transition RemoteReadsContractParam()
+  ad <-& cparam.admin;
+  remote_read_remote_read_res_3 := ad
+end
+
+transition AddressTypeErasureTest1()
+  zero = Uint128 0;
+  address_type_erasure_test_res_1[zero] := cparam
+end
+
+transition AddressTypeErasureTest2()
+  zero = Uint128 0;
+  emp_map <- address_type_erasure_test_res_1;
+  new_map = builtin put emp_map zero cparam;
+  address_type_erasure_test_res_1 := new_map
+end

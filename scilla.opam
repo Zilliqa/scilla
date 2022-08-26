@@ -24,7 +24,7 @@ depends: [
   "conf-zlib"
   "core" {>= "v0.15.0" & < "v0.16~"}
   "core_unix" {>= "v0.15.0" & < "v0.16~"}
-  "dune" {>= "2.0"}
+  "dune" {>= "2.7"}
   "cryptokit" {>= "1.13" & < "1.18~"}
   "ctypes" {>= "0.14.0" & < "0.21~"}
   "ctypes-foreign"
