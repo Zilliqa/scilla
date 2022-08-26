@@ -506,11 +506,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   let extend_contract c ext_c =
     {
-      c with
       cname = product_contr_name;
       cparams = c.cparams @ ext_c.cparams;
       cconstraint = extend_contract_constraint c.cconstraint ext_c.cconstraint;
       ccomps = c.ccomps @ ext_c.ccomps;
+      cfields = c.cfields @ ext_c.cfields;
     }
 
   (** Extends [cmod] with definitions from module [ext_cmod]. *)
