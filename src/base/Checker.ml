@@ -280,7 +280,7 @@ let check_lmodule cli =
   in
   match r with
   | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
-  | Ok (_, type_info, g) ->
+  | Ok (typed_result, type_info, g) ->
       let json_output =
         if cli.p_type_info then
           [ ("type_info", JSON.TypeInfo.type_info_to_json type_info) ]
@@ -295,10 +295,11 @@ let check_lmodule cli =
           @ json_output
         in
         let j = `Assoc warnings_and_gas_output in
-        sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+        (sprintf "%s\n" (Yojson.Basic.pretty_to_string j), typed_result)
       else
-        scilla_warning_to_sstring (get_warnings ())
-        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
+        ( scilla_warning_to_sstring (get_warnings ())
+          ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n",
+          typed_result )
 
 (* Check a contract module. *)
 let check_cmodule cli =
@@ -368,11 +369,18 @@ let check_cmodule cli =
     let remaining_gas' =
       Gas.finalize_remaining_gas cli.gas_limit remaining_gas
     in
-    pure @@ (dis_cmod, tenv, event_info, type_info, cf_info_opt, remaining_gas')
+    pure
+    @@ ( (typed_cmod, typed_rlibs, typed_elibs),
+         dis_cmod,
+         tenv,
+         event_info,
+         type_info,
+         cf_info_opt,
+         remaining_gas' )
   in
   match r with
   | Error (s, g) -> fatal_error_gas_scale Gas.scale_factor s g
-  | Ok (cmod, _, event_info, type_info, cf_info_opt, g) ->
+  | Ok (typed_result, cmod, _, event_info, type_info, cf_info_opt, g) ->
       check_version cmod.smver;
       let output =
         if cli.p_contract_info then
@@ -407,12 +415,13 @@ let check_cmodule cli =
       (* We print as a JSON if `-jsonerrors` OR if there is some JSON data to display. *)
       if GlobalConfig.use_json_errors () || not (List.is_empty output) then
         let j = `Assoc output in
-        sprintf "%s\n" (Yojson.Basic.pretty_to_string j)
+        (sprintf "%s\n" (Yojson.Basic.pretty_to_string j), typed_result)
       else
-        scilla_warning_to_sstring (get_warnings ())
-        ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n"
+        ( scilla_warning_to_sstring (get_warnings ())
+          ^ "\ngas_remaining: " ^ Stdint.Uint64.to_string g ^ "\n",
+          typed_result )
 
-let run args ~exe_name =
+let init_checker args ~exe_name =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
@@ -422,13 +431,19 @@ let run args ~exe_name =
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
   if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name ();
+  cli
 
+let check_lmod args ~exe_name = init_checker args ~exe_name |> check_lmodule
+let check_cmod args ~exe_name = init_checker args ~exe_name |> check_cmodule
+
+let run args ~exe_name =
+  let cli = init_checker args ~exe_name in
   let open FilePath in
-  let open StdlibTracker in
+  let open GlobalConfig.StdlibTracker in
   if check_extension cli.input_file file_extn_library then
     (* Check library modules. *)
-    check_lmodule cli
+    check_lmodule cli |> fun (out, _) -> out
   else if check_extension cli.input_file file_extn_contract then
     (* Check contract modules. *)
-    check_cmodule cli
+    check_cmodule cli |> fun (out, _) -> out
   else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)
