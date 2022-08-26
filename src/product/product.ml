@@ -113,12 +113,12 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let qualify_name contract_name
       (((name : Identifier.GlobalName.t_name), i) : 'a) : PIdentifier.Name.t =
     let open Identifier in
-    let gen_name n = Printf.sprintf "%s_%s" contract_name n in
+    let gen_name = Printf.sprintf "%s_%s" contract_name in
     ( (match name with
       | GlobalName.SimpleGlobal n -> GlobalName.SimpleGlobal (gen_name n)
       | GlobalName.QualifiedGlobal (a, n) ->
           GlobalName.QualifiedGlobal (a, gen_name n)),
-      i )
+      gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
   let qualify_id renames_map contract_name (rep_id : 'a SIdentifier.t) =
@@ -490,10 +490,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     List.fold_left extenstion_rlibs ~init:rlibs_map ~f:(fun m rlib ->
         Map.set m ~key:(get_lib_entry_id rlib) ~data:rlib)
 
-  let run_local_pass (contract_infos : (cmodule * lib_entry list) list) =
-    (* TODO: Use monadic interface for errors. *)
+  let run_local_pass (contract_infos : (cmodule * lib_entry list * libtree list) list) =
     List.fold_left contract_infos ~init:(None, emp_ids_map)
-      ~f:(fun (acc, renames_map) (cmod, rlibs) ->
+      ~f:(fun (acc, renames_map) (cmod, rlibs, _elibs) ->
         match acc with
         | Some (prod_cmod, rlibs_map) ->
             let cmod', renames_map = rename_cmod renames_map cmod in
@@ -552,7 +551,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (* ENTRY POINT                                  *)
   (************************************************)
 
-  let run (contract_infos : (cmodule * lib_entry list) list) =
+  let run (contract_infos : (cmodule * lib_entry list * libtree list) list) =
     run_local_pass contract_infos
     |> Option.value_map ~default:None
          ~f:(fun (product_cmod, product_rlib, renames_map) ->
