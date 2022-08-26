@@ -123,11 +123,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id ?(capitalize = false) renames_map prefix
+  let qualify_id ?(capitalize = false) ?(force = false) renames_map prefix
       (rep_id : 'a SIdentifier.t) =
     match find_id renames_map rep_id with
-    | Some id -> (add_rep rep_id id, renames_map)
-    | None ->
+    | Some id when not force -> (add_rep rep_id id, renames_map)
+    | _ ->
         let name = PIdentifier.get_id rep_id in
         let new_name = qualify_name capitalize prefix name in
         (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
@@ -399,12 +399,31 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         let ty' = rename_ty renames_map ty in
         (name', ty'))
 
-  let rename_fields renames_map fields =
-    List.map fields ~f:(fun (name, ty, init_expr) ->
-        let name' = rename_id renames_map name in
+  let qualify_params renames_map contract_name
+      (params : ('a SIdentifier.t * SType.t) list) =
+    (* Contract parameters must be qualified, because they could have
+       different types. TODO: To optimize this, we should not rename params
+       with the same type and name. *)
+    List.fold_left params ~init:([], renames_map)
+      ~f:(fun (acc, renames_map) (name, ty) ->
+        let name', renames_map =
+          qualify_id ~force:true renames_map contract_name name
+        in
+        let ty' = rename_ty renames_map ty in
+        (acc @ [ (name', ty') ], renames_map))
+
+  let qualify_fields renames_map contract_name fields =
+    (* Contract fields must be qualified, because they could have different
+        types. TODO: To optimize this, we should not rename fields with the
+        same type and name. *)
+    List.fold_left fields ~init:([], renames_map)
+      ~f:(fun (acc, renames_map) (name, ty, init_expr) ->
+        let name', renames_map =
+          qualify_id ~force:true renames_map contract_name name
+        in
         let ty' = rename_ty renames_map ty in
         let init_expr' = rename_expr renames_map init_expr in
-        (name', ty', init_expr'))
+        (acc @ [ (name', ty', init_expr') ], renames_map))
 
   let rename_component renames_map contract_name component =
     let comp_name, renames_map =
@@ -427,9 +446,13 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     (components', renames_map')
 
   let rename_contr renames_map (contract_name : string) contr =
-    let cparams = rename_params renames_map contr.cparams in
+    let cparams, renames_map =
+      qualify_params renames_map contract_name contr.cparams
+    in
     let cconstraint = rename_expr renames_map contr.cconstraint in
-    let cfields = rename_fields renames_map contr.cfields in
+    let cfields, renames_map =
+      qualify_fields renames_map contract_name contr.cfields
+    in
     let ccomps, renames_map =
       rename_components renames_map contract_name contr.ccomps
     in
