@@ -353,10 +353,16 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         let id', renames_map =
           qualify_id ~capitalize:true renames_map contract_name id
         in
+        let adt_prefix =
+          PIdentifier.as_string id
+          |> String.map ~f:(fun c -> if phys_equal c '.' then '_' else c)
+        in
         let ctrs', renames_map =
           List.fold_left ctrs ~init:([], renames_map)
             ~f:(fun (acc_ctrs, m) ctr_def ->
-              let cname = rename_id m ctr_def.cname in
+              let cname, m =
+                qualify_id ~capitalize:true m adt_prefix ctr_def.cname
+              in
               let c_arg_types, m =
                 List.fold_left ~init:([], m) ctr_def.c_arg_types
                   ~f:(fun (acc, m) ty ->
