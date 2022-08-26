@@ -104,16 +104,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let find_id renames_map id = Map.find renames_map (SIdentifier.get_id id)
 
   (************************************************)
-  (* LOCAL PASS             TODO: Create a module *)
+  (* LOCAL PASS                                   *)
   (************************************************)
   (* Present with two steps: renaming (rename_* functions) and merging to a
      product (extend_* functions). *)
 
   (** Adds a unique address to the [name]. *)
-  let qualify_name contract_name
+  let qualify_name captitalize contract_name
       (((name : Identifier.GlobalName.t_name), i) : 'a) : PIdentifier.Name.t =
     let open Identifier in
-    let gen_name = Printf.sprintf "%s_%s" contract_name in
+    let gen_name =
+      Printf.sprintf "%s_%s"
+        (if captitalize then String.capitalize contract_name
+        else String.lowercase contract_name)
+    in
     ( (match name with
       | GlobalName.SimpleGlobal n -> GlobalName.SimpleGlobal (gen_name n)
       | GlobalName.QualifiedGlobal (a, n) ->
@@ -121,12 +125,13 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id renames_map contract_name (rep_id : 'a SIdentifier.t) =
+  let qualify_id ?(capitalize = false) renames_map contract_name
+      (rep_id : 'a SIdentifier.t) =
     match find_id renames_map rep_id with
     | Some id -> (add_rep rep_id id, renames_map)
     | None ->
         let name = PIdentifier.get_id rep_id in
-        let new_name = qualify_name contract_name name in
+        let new_name = qualify_name capitalize contract_name name in
         (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
 
   (** Sets unique names for the user-defined ADTs in [ty]. *)
@@ -160,7 +165,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
             in
             (ADT (add_loc name, tys'), renames_map')
         | None ->
-            let name', renames_map' = qualify_id renames_map contract_name id in
+            let name', renames_map' = qualify_id ~capitalize:true renames_map contract_name id in
             let tys', renames_map' =
               List.fold_left tys ~init:([], renames_map')
                 ~f:(fun (acc_tys, m) ty ->
@@ -345,7 +350,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (LibVar (name', ty_annot', body'), renames_map)
     | LibTyp (id, ctrs) ->
-        let id', renames_map = qualify_id renames_map contract_name id in
+        let id', renames_map = qualify_id ~capitalize:true renames_map contract_name id in
         let ctrs', renames_map =
           List.fold_left ctrs ~init:([], renames_map)
             ~f:(fun (acc_ctrs, m) ctr_def ->
@@ -490,7 +495,8 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     List.fold_left extenstion_rlibs ~init:rlibs_map ~f:(fun m rlib ->
         Map.set m ~key:(get_lib_entry_id rlib) ~data:rlib)
 
-  let run_local_pass (contract_infos : (cmodule * lib_entry list * libtree list) list) =
+  let run_local_pass
+      (contract_infos : (cmodule * lib_entry list * libtree list) list) =
     List.fold_left contract_infos ~init:(None, emp_ids_map)
       ~f:(fun (acc, renames_map) (cmod, rlibs, _elibs) ->
         match acc with
@@ -507,7 +513,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         Some (cmod, Map.data rlibs_map, renames_map))
 
   (************************************************)
-  (* REMOTE PASS            TODO: Create a module *)
+  (* REMOTE PASS                                  *)
   (************************************************)
   (* localize_* functions replace remote operations with the local ones *)
 
