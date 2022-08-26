@@ -59,8 +59,6 @@ open Literal
     possible identifiers.
   * As an optimization we should not add equivalent definitions to the product
     contract.
-  * Remove dupliates from unqualified imports.
-  * Add logging for renaming to simplify debugging.
 
   TODO: Tests:
   * Renaming types from libraries with `import as` *)
@@ -165,7 +163,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
             in
             (ADT (add_loc name, tys'), renames_map')
         | None ->
-            let name', renames_map' = qualify_id ~capitalize:true renames_map contract_name id in
+            let name', renames_map' =
+              qualify_id ~capitalize:true renames_map contract_name id
+            in
             let tys', renames_map' =
               List.fold_left tys ~init:([], renames_map')
                 ~f:(fun (acc_tys, m) ty ->
@@ -350,7 +350,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (LibVar (name', ty_annot', body'), renames_map)
     | LibTyp (id, ctrs) ->
-        let id', renames_map = qualify_id ~capitalize:true renames_map contract_name id in
+        let id', renames_map =
+          qualify_id ~capitalize:true renames_map contract_name id
+        in
         let ctrs', renames_map =
           List.fold_left ctrs ~init:([], renames_map)
             ~f:(fun (acc_ctrs, m) ctr_def ->
@@ -486,7 +488,18 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let extend_cmod (cmod : cmodule) (ext_cmod : cmodule) =
     (* TODO: Check for incompatible smver *)
     let libs = extend_lib cmod.libs ext_cmod.libs in
-    let elibs = cmod.elibs @ ext_cmod.elibs in
+    let elibs =
+      cmod.elibs @ ext_cmod.elibs
+      |> List.dedup_and_sort
+           ~compare:(fun (lhs_import, lhs_import_as) (rhs_import, rhs_import_as)
+                    ->
+             let v = SIdentifier.compare lhs_import rhs_import in
+             match (lhs_import_as, rhs_import_as) with
+             | Some lhs_as, Some rhs_as -> SIdentifier.compare lhs_as rhs_as + v
+             | None, None -> v
+             | None, Some _ -> v + 1
+             | Some _, None -> 1 - v)
+    in
     let contr = extend_contract cmod.contr ext_cmod.contr in
     { cmod with libs; elibs; contr }
 
