@@ -200,7 +200,7 @@ let parse_builtin s loc =
 (*               Types of components                   *)
 (*******************************************************)
 
-type component_type = CompTrans | CompProc
+type component_type = CompTrans | CompProc [@@deriving sexp]
 
 let component_type_to_string ctp =
   match ctp with CompTrans -> "transition" | CompProc -> "procedure"
@@ -350,14 +350,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
   }
+  [@@deriving sexp]
 
   type ctr_def = { cname : ER.rep SIdentifier.t; c_arg_types : SType.t list }
+  [@@deriving sexp]
 
   type lib_entry =
     | LibVar of ER.rep SIdentifier.t * SType.t option * expr_annot
     | LibTyp of ER.rep SIdentifier.t * ctr_def list
+  [@@deriving sexp]
 
   type library = { lname : SR.rep SIdentifier.t; lentries : lib_entry list }
+  [@@deriving sexp]
 
   type contract = {
     cname : SR.rep SIdentifier.t;
@@ -366,6 +370,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     cfields : (ER.rep SIdentifier.t * SType.t * expr_annot) list;
     ccomps : component list;
   }
+  [@@deriving sexp]
 
   (* Contract module: libary + contract definiton *)
   type cmodule = {
@@ -377,6 +382,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     contr : contract;
   }
+  [@@deriving sexp]
 
   (* Library module *)
   type lmodule = {
@@ -386,6 +392,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
+  [@@deriving sexp]
 
   (* A tree of libraries linked to their dependents *)
   type libtree = {

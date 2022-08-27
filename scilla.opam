@@ -10,6 +10,7 @@ depends: [
   "bisect_ppx" {>= "2.0.0" & < "2.9~"}
   "bitstring" {>= "3.1.0" & < "4.2~"}
   "camlp-streams" {>= "5.0.1" & < "5.1~"}
+  "cmdliner" {>= "1.1.1" & < "1.2~"}
   "conf-boost"
   "conf-cmake" {build}
   "conf-gcc" {build}
