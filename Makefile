@@ -99,7 +99,7 @@ test: dev
 	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
-	dune runtest
+	dune runtest --force
 
 gold: dev
 	ulimit -n 4096; dune exec -- tests/base/testsuite_base.exe -update-gold true
