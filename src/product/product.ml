@@ -475,7 +475,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
           let component', m = rename_component m contract_name component in
           (acc_components @ [ component' ], m))
     in
-    (components', renames_map')
+    (components' |> List.rev, renames_map')
 
   let rename_contr renames_map (contract_name : string) contr =
     let cparams, renames_map =
