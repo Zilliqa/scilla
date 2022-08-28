@@ -283,7 +283,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           [@ I Ty1 ... Tyn]*)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
         (** [Fixpoint(I, Ty, E)] represents fixpoint combinator used to implement
-          recursion principles. These nodes are added in AST transformations. *)
+          recursion principles. These nodes are preserved in AST transformations and not exposed to the user at the level of source code. *)
     | GasExpr of SGasCharge.gas_charge * expr_annot
         (** [GasExpr(G, E)] represents gas charge for the expression [E].
           These nodes are added in AST transformations. *)
