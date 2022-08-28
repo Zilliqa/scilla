@@ -179,7 +179,7 @@ coverage :
 	BISECT_ENABLE=YES make
 	dune build @install
 	ulimit -n 1024; dune exec -- tests/testsuite.exe
-	bisect-ppx-report html
+	bisect-ppx-report html -o ./coverage
 	make clean
 	-find . -type f -name 'bisect*.coverage' | xargs rm
 
