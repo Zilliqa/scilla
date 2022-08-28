@@ -25,7 +25,7 @@ open Literal
     single "product" contract.
 
     This logic is implemented in two passes:
-    1. Local pass: rename local idenfitifers and merge all to the product
+    1. Local pass: rename local identifiers and merge all to the product
        contract.
        We iterate through all components of a contract and rename all local
        identifiers that may be ambiguated. All rename information will be
@@ -310,16 +310,19 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   let rec rename_stmt renames_map (stmt, annot) =
     match stmt with
-    | Bind (id, expr) -> (Bind (id, rename_expr renames_map expr), annot)
-    | CallProc (id, args) -> (
-        match find_id renames_map id with
-        | Some id' -> (CallProc (add_rep id id', args), annot)
-        | None -> (stmt, annot))
-    | Iterate (list, id) -> (
-        match find_id renames_map id with
-        | Some id' -> (Iterate (list, add_rep id id'), annot)
-        | None -> (stmt, annot))
+    | Bind (id, expr) ->
+        let id' = rename_id renames_map id in
+        (Bind (id', rename_expr renames_map expr), annot)
+    | CallProc (id, args) ->
+        let id' = rename_id renames_map id in
+        let args' = List.map args ~f:(fun a -> rename_id renames_map a) in
+        (CallProc (id', args'), annot)
+    | Iterate (list, id) ->
+        let id' = rename_id renames_map id in
+        let list' = rename_id renames_map list in
+        (Iterate (list', id'), annot)
     | MatchStmt (id, arms) ->
+        let id' = rename_id renames_map id in
         let arms' =
           List.map arms ~f:(fun (pattern, stmts) ->
               let pattern' = rename_pattern renames_map pattern in
@@ -329,10 +332,47 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
               in
               (pattern', stmts'))
         in
-        (MatchStmt (id, arms'), annot)
-    | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _ | RemoteMapGet _
-    | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _ | CreateEvnt _
-    | Throw _ | GasStmt _ ->
+        (MatchStmt (id', arms'), annot)
+    | MapUpdate (m, keys, v_opt) ->
+        let m' = rename_id renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        let v_opt' =
+          Option.value_map v_opt ~default:None ~f:(fun v ->
+              Some (rename_id renames_map v))
+        in
+        (MapUpdate (m', keys', v_opt'), annot)
+    | MapGet (v, m, keys, exists) ->
+        let v' = rename_id renames_map v in
+        let m' = rename_id renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        (MapGet (v', m', keys', exists), annot)
+    | RemoteMapGet (v, adr, m, keys, exists) ->
+        (* Map will be replaced to the local one in the Remote pass. *)
+        let v' = rename_id renames_map v in
+        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        (RemoteMapGet (v', adr, m, keys', exists), annot)
+    | Load (lhs, rhs) ->
+        let lhs' = rename_id renames_map lhs in
+        let rhs' = rename_id renames_map rhs in
+        (Load (lhs', rhs'), annot)
+    | RemoteLoad (lhs, adr, rhs) ->
+        (* Address will be replaced in the Remote pass. *)
+        let lhs' = rename_id renames_map lhs in
+        let rhs' = rename_id renames_map rhs in
+        (RemoteLoad (lhs', adr, rhs'), annot)
+    | Store (lhs, rhs) ->
+        let lhs' = rename_id renames_map lhs in
+        let rhs' = rename_id renames_map rhs in
+        (Store (lhs', rhs'), annot)
+    | TypeCast (lhs, rhs, ty) ->
+        let lhs' = rename_id renames_map lhs in
+        let rhs' = rename_id renames_map rhs in
+        let ty' = rename_ty renames_map ty in
+        (TypeCast (lhs', rhs', ty'), annot)
+    | ReadFromBC (id, q) ->
+        let id' = rename_id renames_map id in
+        (ReadFromBC (id', q), annot)
+    | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
   let rename_lentry renames_map contract_name = function
