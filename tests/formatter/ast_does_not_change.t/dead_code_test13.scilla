@@ -1,0 +1,33 @@
+scilla_version 0
+
+library Dead13
+
+type A =
+| A1
+| A2 (* unused *)
+
+(* unused constructor but used ADT *)
+type B =
+| B1
+
+(* unused constructor but used ADT *)
+type C =
+| C
+
+let a1 = A1
+
+let opt =
+  tfun 'A => fun( default: 'A ) =>
+  fun( input: Option 'A) =>
+  match input with
+  | Some v => v
+  | None => default end
+
+let opt_a1 = let f = @opt A in f a1
+let opt_b = @opt B
+let opt_c = @opt C
+
+contract Dead13()
+
+transition foo()
+end

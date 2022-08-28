@@ -1,0 +1,22 @@
+(* next_var_bytes  0xFD < length < 0xFFFF correctly *)
+let bytes = 0xfdfd00136f80cd6ff844e6944bd8a6637b1bb9aa6788f35560128e29e283b7edeef41f3206a14150bd01acaf81849f73c8f38b56690604505bf5b9562fa2b179c63e9808a01e2efc252d6ad56b9f0d2f6a15894a62ea253373c043d39914a274da8fc85d8464460b6eb4feaccebf3fc24963db11d0a3cb550f395d3781421e858e62efe41a5bf25b6ed94350313032bdf9b1985535e04671f887dac3f6c094caa761a110a614145153ca2c91b8b9e03c82846159fa184dd868cc0e06c13a35936c04e0d9dd573469fa8441c11f833a42aa769eba588b19fcf5bb65925531689e1ee0abd646c35e19abe9aa3c4001a960652139bf126f16297f7bef2b8c823f54fd450178d637ba68eb987928008958980e99d956fbf0566880836ca608ff2156a8a2aca3f7d09f4323a1a7a7532e9ba61875dc644abc448462d63cd95a25a7a4688ecd4a388f75ccc82b2e01960a95e00d5d17958c6d629c5dfd908d2b7283f70a819bfcfa2d174c6583a729eba6f8c0db08238c3b7c395f7a1f12bfbe1e594bb1a737d7574f1c962493781454ac34205f9bd4891c8c1700544ca7af2cc8707dbcaf8f29e7d659108564c8d8e14a75c4cde41194b2ca0378c7745ca15527866d663a65fbff71079926f526387513cf211cce00780c66a535a7592d2dbf6eb1824d863087f3a340e46aaebd07910b3598c45d23da1a23033c926a5ac4d8de345a2a407962408e53cec475caf303d3b2e49a8fada6aabaeda8510d85e8801083a7a675ac82549d8070d2eec018edbafb59d39c21b732f177c66b22d3dabc5f2fb3178e5c2e4d887fee in
+
+let value = builtin to_bystr bytes in
+let pos = Uint32 256 in
+
+let bs_opt = extract_bystr value pos in
+
+match bs_opt with
+| Some (Pair bs _) =>
+  let emptyx = 0x in
+  let empty = builtin to_bystr emptyx in
+  let value_reserialized = append_varbytes empty bs in
+  let full_len = builtin strlen value in
+  let len = builtin sub full_len pos in
+  let value_sub = builtin substr value pos len in
+  builtin eq value_sub value_reserialized
+| None =>
+  (* division by zero to create an error *)
+  let dummy = builtin div zero_uint32 zero_uint32 in
+  False
+end

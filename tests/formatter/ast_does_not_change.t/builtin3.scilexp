@@ -1,0 +1,10 @@
+(* Expected result: False *)
+let a = Int128 42 in
+let b = Int128 44 in
+let two = Int128 2 in
+let c = builtin sub b two in
+let d = builtin eq a c in
+match d with 
+| False => True
+| True  => builtin eq a b
+end

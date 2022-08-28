@@ -1,0 +1,31 @@
+  
+let list_int_eq_t = @list_eq Uint64 in
+
+let list_int_eq = list_int_eq_t uint64_eq in
+
+let int_sort_t = @list_sort Uint64 in
+
+let int_sort = int_sort_t uint64_lt in
+
+let zero = Uint64 0 in
+let one = Uint64 1 in
+let two = Uint64 2 in
+let three = Uint64 3 in
+let four = Uint64 4 in
+
+let nil = Nil {Uint64} in
+let l0 = Cons {Uint64} two nil in
+let l1 = Cons {Uint64} one l0 in
+let l2 = Cons {Uint64} three l1 in
+(* l3 = [4; 3; 1; 2] *)
+let l3 = Cons {Uint64} four l2 in
+
+let m0 = Cons {Uint64} four nil in
+let m1 = Cons {Uint64} three m0 in
+let m2 = Cons {Uint64} two m1 in
+(* l3 = [1; 2; 3; 4] *)
+let m3 = Cons {Uint64} one m2 in
+
+let res1 = int_sort l3 in
+
+list_int_eq res1 m3

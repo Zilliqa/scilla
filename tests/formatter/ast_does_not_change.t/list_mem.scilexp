@@ -1,0 +1,26 @@
+
+let int_mem = @list_mem Int32 in
+let f =
+  fun (a : Int32) =>
+  fun (b : Int32) =>
+    builtin eq a b
+in
+
+let zero = Int32 0 in
+let one = Int32 1 in
+let two = Int32 2 in
+let three = Int32 3 in
+let four = Int32 4 in
+let five = Int32 5 in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} four nil in
+let l2 = Cons {Int32} three l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} one l3 in
+
+let res1 = int_mem f zero l4 in
+let res2 = int_mem f one l4 in
+let res3 = int_mem f five l4 in
+
+int_mem f three l4

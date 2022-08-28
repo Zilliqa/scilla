@@ -1,0 +1,5 @@
+let f =
+  let x = Uint32 1 in
+  x
+in
+f

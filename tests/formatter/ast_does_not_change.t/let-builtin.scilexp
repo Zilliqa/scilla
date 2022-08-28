@@ -1,0 +1,5 @@
+let x = Int32 42 in
+let f = fun (z : Int32) => builtin add x z in
+let y = f x in
+let a = y in
+a

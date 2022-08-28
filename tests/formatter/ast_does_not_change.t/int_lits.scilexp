@@ -1,0 +1,106 @@
+(* Leading + *)
+let a1 = "+123" in
+let res_a1 = builtin to_int32 a1 in
+
+let a2 = "+00000123" in
+let res_a2 = builtin to_int32 a2 in
+
+let a3 = "+00000" in
+let res_a3 = builtin to_int32 a3 in
+
+let a4 = "+Hello" in
+let res_a4 = builtin to_int32 a4 in
+
+let a5 = "+0Hello" in
+let res_a5 = builtin to_int32 a5 in
+
+let a6 = "+000000Hello" in
+let res_a6 = builtin to_int32 a6 in
+
+let a7 = "+00001Hello" in
+let res_a7 = builtin to_int32 a7 in
+
+let a8 = "+" in
+let res_a8 = builtin to_int32 a8 in
+
+let a9 = "++0" in
+let res_a9 = builtin to_int32 a9 in
+
+let a10 = "+-0" in
+let res_a10 = builtin to_int32 a10 in
+
+(* let an1 = Int32 +12 in *)
+(* let an2 = Int32 +0012 in *)
+(* let an3 = Int32 +0 in *)
+(* let an4 = Int32 +0000 in *)
+
+(* Leading - *)
+let b1 = "-123" in
+let res_b1 = builtin to_int32 b1 in
+
+let b2 = "-00000123" in
+let res_b2 = builtin to_int32 b2 in
+
+let b3 = "-00000" in
+let res_b3 = builtin to_int32 b3 in
+
+let b4 = "-Hello" in
+let res_b4 = builtin to_int32 b4 in
+
+let b5 = "-0Hello" in
+let res_b5 = builtin to_int32 b5 in
+
+let b6 = "-000000Hello" in
+let res_b6 = builtin to_int32 b6 in
+
+let b7 = "-00001Hello" in
+let res_b7 = builtin to_int32 b7 in
+
+let b8 = "-" in
+let res_b8 = builtin to_int32 b8 in
+
+let b9 = "--0" in
+let res_b9 = builtin to_int32 b9 in
+
+let b10 = "-+0" in
+let res_b10 = builtin to_int32 b10 in
+
+let bn1 = Int32 -12 in
+let bn2 = Int32 -0012 in
+let bn3 = Int32 -0 in
+let bn3 = Int32 -0000 in
+
+(* Neither leading + nor leading - *)
+let c1 = "123" in
+let res_c1 = builtin to_int32 c1 in
+
+let c2 = "00000123" in
+let res_c2 = builtin to_int32 c2 in
+
+let c3 = "00000" in
+let res_c3 = builtin to_int32 c3 in
+
+let c4 = "Hello" in
+let res_c4 = builtin to_int32 c4 in
+
+let c5 = "0Hello" in
+let res_c5 = builtin to_int32 c5 in
+
+let c6 = "000000Hello" in
+let res_c6 = builtin to_int32 c6 in
+
+let c7 = "00001Hello" in
+let res_c7 = builtin to_int32 c7 in
+
+let c8 = "" in
+let res_c8 = builtin to_int32 c8 in
+
+let c9 = "0" in
+let res_c9 = builtin to_int32 c9 in
+
+let cn1 = Int32 12 in
+let cn2 = Int32 0012 in
+let cn3 = Int32 0 in
+let cn3 = Int32 0000 in
+
+True

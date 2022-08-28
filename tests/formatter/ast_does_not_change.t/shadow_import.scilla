@@ -1,0 +1,25 @@
+scilla_version 0
+
+import ListUtils
+
+library ResolverLib
+
+let imported_list_length = list_length
+
+let list_length = fun (x : List Uint128) => x
+
+contract Resolver()
+
+field len : Uint32 = Uint32 0
+field other_len : List Uint128 = Nil {Uint128}
+
+transition T()
+  n = Nil {Uint128};
+  zero = Uint128 0;
+  l = Cons {Uint128} zero n;
+  imported_lengther = @imported_list_length Uint128;
+  len_tmp = imported_lengther l;
+  len := len_tmp;
+  other_len_tmp = list_length l;
+  other_len := other_len_tmp
+end
