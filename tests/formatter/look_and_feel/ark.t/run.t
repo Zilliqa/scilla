@@ -16,7 +16,7 @@
   
   type NFT =
   | NFT of
-      ByStr20 with contract field token_owners : Map Uint256 ByStr20 end Uint256
+      (ByStr20 with contract field token_owners : Map Uint256 ByStr20 end) Uint256
   
   type Side =
   | Buy

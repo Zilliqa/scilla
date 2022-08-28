@@ -4,8 +4,8 @@
   library RRLib
   
   type AddressADT =
-  | Address1 of ByStr20 with end
-  | Address2 of ByStr20 with contract field admin : ByStr20 with end end
+  | Address1 of (ByStr20 with end)
+  | Address2 of (ByStr20 with contract field admin : ByStr20 with end end)
   
   
   contract RRContract

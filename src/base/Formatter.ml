@@ -97,27 +97,27 @@ struct
     let of_ids ids =
       separate_map space of_id ids
 
-    let rec of_type typ =
+    let rec of_type_with_prec p typ =
       let open Ast.SType in
-      let rec walk p = function
-        | PrimType t -> !^(Type.PrimType.pp_prim_typ t) (* TODO: temporary solution *)
-        | Unit -> !^"()" (* This cannot happen in source code *)
-        | TypeVar tv -> !^tv
-        | FunType (at, vt) ->
-            parens_if (p > 0) @@ group ((walk 1 at) ^^^ arrow) ^/^ (walk 0 vt)
-          (* TODO: test MapType and PolyFun pretty-printing *)
-        | MapType (kt, vt) ->
-            parens_if (p > 0) @@ map_kwd ^//^ (walk 1 kt) ^/^ (walk 1 vt)
-        | PolyFun (tv, bt) ->
-            parens_if (p > 0) @@ forall_kwd ^^^ !^tv ^^ dot ^//^ (walk 0 bt)
-        | ADT (tid, tys) ->
-            let ty_cons = of_id tid in
-            let ty_args = separate_map space (walk 1) tys in
-            if List.is_empty tys then ty_cons
-            else parens_if (p > 0) @@ ty_cons ^//^ ty_args
-        | Address addr_kind -> of_addr_kind p addr_kind
-      in
-      walk 0 typ
+      match typ with
+      | PrimType t -> !^(Type.PrimType.pp_prim_typ t) (* TODO: temporary solution *)
+      | Unit -> !^"()" (* This cannot happen in source code *)
+      | TypeVar tv -> !^tv
+      | FunType (at, vt) ->
+          parens_if (p > 0) @@ group ((of_type_with_prec 1 at) ^^^ arrow) ^/^ (of_type_with_prec 0 vt)
+        (* TODO: test MapType and PolyFun pretty-printing *)
+      | MapType (kt, vt) ->
+          parens_if (p > 0) @@ map_kwd ^//^ (of_type_with_prec 1 kt) ^/^ (of_type_with_prec 1 vt)
+      | PolyFun (tv, bt) ->
+          parens_if (p > 0) @@ forall_kwd ^^^ !^tv ^^ dot ^//^ (of_type_with_prec 0 bt)
+      | ADT (tid, tys) ->
+          let ty_cons = of_id tid in
+          let ty_args = separate_map space (of_type_with_prec 1) tys in
+          if List.is_empty tys then ty_cons
+          else parens_if (p > 0) @@ ty_cons ^//^ ty_args
+      | Address addr_kind -> of_addr_kind p addr_kind
+
+    and of_type typ = of_type_with_prec 0 typ
 
     and of_addr_kind p kind =
       parens_if (p > 0) @@
@@ -143,6 +143,10 @@ struct
             !^"ByStr20 with contract"
             contract_fields
             end_kwd
+
+    (* whitespace-separated non-primitive types need to be parenthesized *)
+    let of_types typs ~sep =
+      group @@ separate_map sep (fun ty -> of_type_with_prec 1 ty) typs
 
     let of_typed_id id typ = of_id id ^^^ colon ^//^ group (of_type typ)
 
@@ -402,7 +406,7 @@ struct
         let constructor_name = of_id cname
         and constructor_args_types =
           (* TODO: break sequences of long types (e.g. ByStr20 with contract ................... end Uint256 is unreadable) *)
-          group @@ separate_map (break 1) (fun ty -> of_type ty) c_arg_types
+          of_types ~sep:(break 1) c_arg_types
         in
         if List.is_empty c_arg_types then
           constructor_name

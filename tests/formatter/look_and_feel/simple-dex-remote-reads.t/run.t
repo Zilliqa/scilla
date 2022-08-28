@@ -8,13 +8,13 @@
   type Order =
   | Order of
       ByStr20
-      ByStr20 with contract
+      (ByStr20 with contract
         field allowances : Map ByStr20 (Map ByStr20 Uint128)
-      end
+      end)
       Uint128
-      ByStr20 with contract
+      (ByStr20 with contract
         field allowances : Map ByStr20 (Map ByStr20 Uint128)
-      end
+      end)
       Uint128
   
   let true = True
