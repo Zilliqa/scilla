@@ -242,23 +242,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     | Literal lit -> (Literal (rename_lit renames_map lit), annot)
     | Var id -> (Var (rename_id renames_map id), annot)
     | Let (id, ty_opt, lhs, rhs) ->
-        ( Let
-            ( id,
-              Option.value_map ty_opt ~default:None ~f:(fun ty ->
-                  rename_ty renames_map ty |> Option.some),
-              rename_expr renames_map lhs,
-              rename_expr renames_map rhs ),
-          annot )
+        let id' = rename_id renames_map id in
+        let ty_opt' =
+          Option.value_map ty_opt ~default:None ~f:(fun ty ->
+              rename_ty renames_map ty |> Option.some)
+        in
+        let lhs' = rename_expr renames_map lhs in
+        let rhs' = rename_expr renames_map rhs in
+        (Let (id', ty_opt', lhs', rhs'), annot)
     | Message msg ->
         List.map msg ~f:(fun (tag_name, payload) ->
             let payload' =
               match payload with
               | MLit lit -> MLit lit
-              | MVar id ->
-                  MVar
-                    (match find_id renames_map id with
-                    | Some id' -> add_rep id id'
-                    | None -> id)
+              | MVar id -> MVar (rename_id renames_map id)
             in
             (tag_name, payload'))
         |> fun msg' -> (Message msg', annot)
