@@ -361,7 +361,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         (** [TypeCast(I, A, TY)] represents: [I <- & A as TY] *)
     | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
-        (** [Iterate(L, F)] represents calling function for each element of
+        (** [Iterate(L, F)] represents calling a procedure for each element of
             the list: [forall L F] *)
     | SendMsgs of ER.rep SIdentifier.t
         (** [SendMsgs(MS)] represents sending messages: [send MS] *)
