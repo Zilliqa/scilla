@@ -286,7 +286,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           recursion principles. These nodes are preserved in AST transformations and not exposed to the user at the level of source code. *)
     | GasExpr of SGasCharge.gas_charge * expr_annot
         (** [GasExpr(G, E)] represents gas charge for the expression [E].
-          These nodes are added in AST transformations. *)
+          These nodes are added in AST transformations and not exposed to the user at the level of source code. *)
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
