@@ -22,6 +22,7 @@ open Base
 open PPrint
 
 [@@@ocamlformat "disable"]
+
 module Format (SR : Syntax.Rep) (ER : Syntax.Rep) (Lit : Literal.ScillaLiteral) =
 struct
 
