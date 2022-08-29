@@ -1,0 +1,15 @@
+let i = Uint32 12345 in
+let empty_x = 0x in
+
+let empty = builtin to_bystr empty_x in
+
+let ile = append_uint32_le empty i in
+
+let big_endian = BigEndian in
+let extract_uint32_be = extract_uint32 big_endian in
+let append_uint32_be = append_uint32 big_endian in
+
+let ibe = append_uint32_be empty i in
+
+Pair {ByStr ByStr} ile ibe
+

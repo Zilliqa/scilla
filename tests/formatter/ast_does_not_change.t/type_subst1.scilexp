@@ -1,0 +1,6 @@
+let tf = 
+  tfun 'A => tfun 'B => 
+  fun (f: 'A -> 'B) =>
+  fun (x: 'A) => f x in 
+let tf_applied = @tf Int64 Int128 in
+tf_applied 

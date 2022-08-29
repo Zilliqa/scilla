@@ -1,0 +1,3 @@
+let a = BNum 23224455 in
+let b = BNum 22222222 in
+builtin bsub a b

@@ -1,0 +1,14 @@
+let txp = 0x20000000000000000000000000000000000000000000000000000000000000000b202c57606ecbfd2c46fb657ccb8a502a5e1b0a79836b9cbae4a9e0451ddac545b8146d84363526a2d764835f8cf52dfeefe80a360fac50000000000000001405f4a42e251f2d52b8ed15e9fedaacfcef1fad2806756e6c6f636b4a1405f4a42e251f2d52b8ed15e9fedaacfcef1fad2814d3573e0daa110b5498c54e93b66681fc0e0ff9110000000000000000000000000000000000000000000000000000000000002710 in
+
+let txps = builtin to_bystr txp in
+let offset = Uint32 0 in
+
+let tx = deserialize_TxParam txps offset in
+match tx with
+| Some (Pair txd _) =>
+  let empty = 0x in
+  let emptyb = builtin to_bystr empty in
+  let txps_ = append_TxParam emptyb txd in
+  builtin eq txps txps_
+| None => False
+end

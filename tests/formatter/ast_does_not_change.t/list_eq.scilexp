@@ -1,0 +1,29 @@
+  
+let int_list_eq = @list_eq Int64 in
+
+let one = Int64 1 in
+let two = Int64 2 in
+let ten = Int64 10 in
+let eleven = Int64 11 in
+
+let nil = Nil {Int64} in
+let l1 = Cons {Int64} eleven nil in
+let l2 = Cons {Int64} ten l1 in
+let l3 = Cons {Int64} two l2 in
+let l4 = Cons {Int64} one l3 in
+let l5 = Cons {Int64} eleven l1 in
+
+let f = int64_eq in
+
+let r1 = int_list_eq f nil l4 in
+let r2 = int_list_eq f l4 nil in
+let r3 = int_list_eq f l1 nil in
+let r4 = int_list_eq f nil l1 in
+let r5 = int_list_eq f nil nil in
+let r6 = int_list_eq f l1 l1 in
+let r7 = int_list_eq f l1 l2 in
+let r8 = int_list_eq f l2 l1 in
+let r9 = int_list_eq f l5 l1 in
+let r10 = int_list_eq f l1 l5 in
+
+int_list_eq f l4 l4

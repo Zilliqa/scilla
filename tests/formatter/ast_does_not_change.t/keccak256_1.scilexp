@@ -1,0 +1,10 @@
+let k1 = Int32 1 in
+let k2 = Int32 2 in
+let v1 = Int32 42 in
+let v2 = Int32 239 in
+
+let m0 = Emp Int32 Int32 in
+let m1 = builtin put m0 k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+
+builtin keccak256hash m1

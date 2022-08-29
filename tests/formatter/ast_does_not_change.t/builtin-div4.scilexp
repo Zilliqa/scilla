@@ -1,0 +1,10 @@
+(* Expected result: 10000000000010 *)
+let f = fun (z : Uint256) =>
+    let b = Uint256 40 in
+    fun (c : Uint256) =>
+    	let t = builtin div b c in
+	builtin add z t
+in
+let a = Uint256 9999999999990 in
+let b = Uint256 2 in
+f a b

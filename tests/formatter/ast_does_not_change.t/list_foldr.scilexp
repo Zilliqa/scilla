@@ -1,0 +1,21 @@
+(* Expected result 3 = 1-(2-(3-(4-(5-0)))) *)
+
+let zero = Int32 0 in
+let one = Int32 1 in
+let two = Int32 2 in
+let three = Int32 3 in
+let four = Int32 4 in
+let five = Int32 5 in
+
+let ls =
+  let l0 = Nil {Int32} in
+  let l1 = Cons {Int32} one l0 in
+  let l2 = Cons {Int32} two l1 in
+  let l3 = Cons {Int32} three l2 in
+  let l4 = Cons {Int32} four l3 in
+  Cons {Int32} five l4 in
+
+let subtract = fun(a : Int32) => fun(b: Int32) =>
+  builtin sub a b in
+let foldr = @list_foldr Int32 Int32 in
+foldr subtract zero ls

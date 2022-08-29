@@ -1,0 +1,61 @@
+scilla_version 0
+
+library CrowdFundingInvoke
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+  
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract CrowdFundingInvoke
+
+(*  Parameters *)
+(cfaddr     : ByStr20, (* address of the crowdfunding contract *)
+ owner      : ByStr20) (* address of the owner of this contract *)
+
+transition Main ()
+  accept;
+  msg = {_tag : ""; _recipient : owner; _amount : _amount};
+  msgs = one_msg msg;
+  send msgs
+end
+
+transition Invoke (trans : String)
+  bal <- _balance;
+  s = _sender;
+  donate_s = "Donate";
+  is_donate = builtin eq trans donate_s;
+  match is_donate with
+  | True =>
+    accept;
+    msg = {_tag : "Donate"; _recipient : cfaddr; _amount : _amount};
+    msgs = one_msg msg;
+    send msgs
+  | False =>
+    claimback_s = "ClaimBack";
+    is_claimback = builtin eq trans claimback_s;
+    match is_claimback with
+    | True =>
+      msg = {_tag : "ClaimBack"; _recipient : cfaddr; _amount : Uint128 0};
+      msgs = one_msg msg;
+      send msgs
+    | False =>
+      getfunds_s = "GetFunds"; 
+      is_getfunds = builtin eq trans getfunds_s;
+      match is_getfunds with
+      | True =>
+        msg = {_tag : "GetFunds"; _recipient : cfaddr; _amount : Uint128 0};
+        msgs = one_msg msg;
+        send msgs
+      | False =>
+        msg = {_tag : ""; _recipient : _sender ; _amount : Uint128 0};
+        msgs = one_msg msg;
+        send msgs
+      end
+    end
+  end
+end

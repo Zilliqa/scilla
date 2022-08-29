@@ -10,6 +10,7 @@ depends: [
   "bisect_ppx" {>= "2.0.0" & < "2.9~"}
   "bitstring" {>= "3.1.0" & < "4.2~"}
   "camlp-streams" {>= "5.0.1" & < "5.1~"}
+  "cmdliner" {>= "1.1.1" & < "1.2~"}
   "conf-boost"
   "conf-cmake" {build}
   "conf-gcc" {build}
@@ -24,7 +25,7 @@ depends: [
   "conf-zlib"
   "core" {>= "v0.15.0" & < "v0.16~"}
   "core_unix" {>= "v0.15.0" & < "v0.16~"}
-  "dune" {>= "2.0"}
+  "dune" {>= "2.7"}
   "cryptokit" {>= "1.13" & < "1.18~"}
   "ctypes" {>= "0.14.0" & < "0.21~"}
   "ctypes-foreign"
@@ -40,6 +41,9 @@ depends: [
   "ppx_sexp_conv" {>= "v0.15.0" & < "v0.16~"}
   "ppx_compare" {>= "v0.15.0" & < "v0.16~"}
   "ppx_deriving_rpc" {>= "6.0.0" & < "10.0~"}
+  "ppx_string_interpolation" {>= "1.0.1" & < "1.1~"}
+  "pprint" {= "20220103"}
+  "qcheck" {>= "0.19.1" & < "0.20~"}
   "secp256k1" {>= "0.4.4" & < "0.5~"}
   "stdint" {>= "0.5.1" & < "0.8~"}
   "yojson" {>= "1.7.0" & < "2.1~"}

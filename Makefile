@@ -99,10 +99,12 @@ test: dev
 	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune runtest --force
 
 gold: dev
 	ulimit -n 4096; dune exec -- tests/base/testsuite_base.exe -update-gold true
 	ulimit -n 4096; dune exec -- tests/testsuite.exe -update-gold true
+	dune promote
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
@@ -177,7 +179,7 @@ coverage :
 	BISECT_ENABLE=YES make
 	dune build @install
 	ulimit -n 1024; dune exec -- tests/testsuite.exe
-	bisect-ppx-report html
+	bisect-ppx-report html -o ./coverage
 	make clean
 	-find . -type f -name 'bisect*.coverage' | xargs rm
 

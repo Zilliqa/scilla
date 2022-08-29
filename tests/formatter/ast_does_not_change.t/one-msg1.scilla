@@ -1,0 +1,36 @@
+scilla_version 0
+
+(* HelloWorld contract *)
+
+import ListUtils
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+library HelloWorld
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+  Cons {Message} msg nil_msg
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract HelloWorld
+()
+
+(* While this transition indeed sends only one message, the "one_msg" *)
+(* static analysis does not track message lists wrapped in ADTs *)
+transition onemsg()
+  msg1 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msg2 = {_tag : ""; _recipient : _sender; _amount : Uint128 0};
+  msgs1 = one_msg msg1;
+  msgs2 = one_msg msg2;
+  msgs2 = Pair {(List Message) (List Message)} msgs1 msgs2;
+  match msgs2 with
+  | Pair m1 m2 =>
+    send m1
+  end
+end
