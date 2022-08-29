@@ -18,15 +18,15 @@
 
 (** Scilla code formatter *)
 
-[@@@ocamlformat "disable"]
-
 open Base
 open PPrint
 
-module Format (Lit : Literal.ScillaLiteral) =
+[@@@ocamlformat "disable"]
+module Format (SR : Syntax.Rep) (ER : Syntax.Rep) (Lit : Literal.ScillaLiteral) =
 struct
+
   (* instantiated syntax *)
-  module Ast = Syntax.ScillaSyntax (ParserUtil.ParserRep) (ParserUtil.ParserRep) (Lit)
+  module Ast = Syntax.ScillaSyntax (SR) (ER) (Lit)
 
   module type DOC = sig
     val of_type : Ast.SType.t -> PPrint.document
@@ -506,9 +506,9 @@ struct
   let type_to_string t = doc2str @@ Doc.of_type t
   let expr_to_string e = doc2str @@ Doc.of_expr e
   let contract_to_string c = doc2str @@ Doc.of_contract_module c
-
 end
 
-module LocalLiteralSyntax = Format (Literal.LocalLiteral)
-
 [@@@ocamlformat "enable"]
+
+module LocalLiteralSyntax =
+  Format (ParserUtil.ParserRep) (ParserUtil.ParserRep) (Literal.LocalLiteral)
