@@ -1,0 +1,43 @@
+let a = 0x0f0f in
+let b = 0xbfbf in
+let c = 0x0f0f in
+let aa = builtin to_bystr a in
+let bb = builtin to_bystr b in
+let cc = builtin to_bystr c in
+let r1 = builtin eq aa bb in
+let r11 = negb r1 in
+let r2 = builtin eq aa cc in
+let res1 = andb r11 r2 in
+
+let ab = builtin concat a b in
+let ab2 = 0x0f0fbfbf in
+
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let two = Uint32 2 in
+
+let a = builtin to_bystr a in
+let a1 = builtin substr a zero one in
+let a2 = builtin substr a one one in
+let aa1 = builtin substr a zero two in
+let aa2 = builtin concat a1 a2 in
+let res2 = builtin eq aa1 aa2 in
+let res3 = builtin eq aa1 a in
+let res4 = andb res2 res3 in
+
+let res5 = builtin eq ab ab2 in
+let res6 = andb res4 res5 in
+
+let len1 = builtin strlen aa in
+let len2 = builtin strlen bb in
+let res7 = builtin eq len1 len2 in
+
+let res8 = andb res6 res7 in
+
+let empty_bystrx = 0x in
+let empty_bystr = builtin to_bystr empty_bystrx in
+let empty_bystr2 = builtin substr aa zero zero in
+let res9 = builtin eq empty_bystr empty_bystr2 in
+
+andb res8 res9
+

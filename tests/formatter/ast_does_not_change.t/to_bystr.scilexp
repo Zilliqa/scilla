@@ -1,0 +1,19 @@
+let x = 0xfb19 in
+let y = builtin to_bystr x in
+let xx_opt = builtin to_bystr2 y in
+let res1 =
+  match xx_opt with
+  | Some xx => builtin eq x xx
+  | None => False
+  end
+in
+
+let xx_opt = builtin to_bystr3 y in
+let res2 =
+  match xx_opt with
+  | Some xx => False
+  | None => True
+  end
+in
+
+andb res1 res2

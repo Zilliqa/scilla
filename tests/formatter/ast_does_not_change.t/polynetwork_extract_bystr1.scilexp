@@ -1,0 +1,22 @@
+(* next_var_bytes length < 0xFD correctly *)
+let bytes = 0x0b2d230f552225a8cfa47efe in
+
+let value = builtin to_bystr bytes in
+let pos = Uint32 0 in
+
+let bs_opt = extract_bystr value pos in
+
+match bs_opt with
+| Some (Pair bs _) =>
+  let emptyx = 0x in
+  let empty = builtin to_bystr emptyx in
+  let value_reserialized = append_varbytes empty bs in
+  let full_len = builtin strlen value in
+  let len = builtin sub full_len pos in
+  let value_sub = builtin substr value pos len in
+  builtin eq value_sub value_reserialized
+| None =>
+  (* division by zero to create an error *)
+  let dummy = builtin div zero_uint32 zero_uint32 in
+  False
+end

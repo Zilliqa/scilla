@@ -1,0 +1,9 @@
+let f = fun (x : Int32) => builtin add x x in
+let g = fun (x : String) => builtin concat x x in
+let p = Pair {(Int32 -> Int32) (String -> String)} f g in
+let s = "abc" in
+let g = match p with
+        | Pair a b => b
+        end
+in
+g s

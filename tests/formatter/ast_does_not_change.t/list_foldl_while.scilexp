@@ -1,0 +1,26 @@
+(* Expected result : -4 *)
+
+let zero = Int32 0 in
+let one = Int32 1 in 
+let two = Int32 2 in
+let three = Int32 3 in
+
+(* [3,1,2,3] *)
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} three nil in
+let l2 = Cons {Int32} two l1 in
+let l3 = Cons {Int32} one l2 in
+let l4 = Cons {Int32} three l3 in
+
+let subtract = fun (a : Int32) => fun (b : Int32) => builtin sub a b in
+
+let sub_neq2 = fun (z : Int32) => fun (x: Int32) =>
+ let xEq2 = builtin eq x two in
+ match xEq2 with
+ | True => None
+ | False => let res = subtract z x in Some res
+ end in
+
+let foldWhile = @list_foldl_while Int32 Int32 in
+
+foldWhile sub_neq2 zero l4

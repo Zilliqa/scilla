@@ -1,0 +1,21 @@
+scilla_version 0
+
+library Dead7
+
+type Ty =
+  | Ty
+
+contract Dead7 ()
+
+transition Dead7()
+  address = 0x0000000000000000000000000000000000000000;
+  maybe_contract_address <-& address as ByStr20 with contract end;
+  match maybe_contract_address with
+  | None =>
+  | Some _ =>
+    ty = Ty;
+    code = Int32 -1;
+    e = { _exception : "Error"; code : code };
+    throw e
+  end
+end

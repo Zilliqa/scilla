@@ -1,0 +1,2 @@
+let g = tfun 'T => fun (f : ('T -> Nat -> 'T) -> 'T -> Nat -> 'T) => Int32 42 in
+g

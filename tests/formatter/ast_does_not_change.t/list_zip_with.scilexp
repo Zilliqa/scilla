@@ -1,0 +1,62 @@
+let list_head =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {'A} h
+    | Nil =>
+      None {'A}
+    end
+in
+
+let list_tail =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    match l with
+    | Cons h t =>
+      Some {(List 'A)} t
+    | Nil =>
+      None {(List 'A)}
+    end
+in
+
+let list_reverse =
+  tfun 'A =>
+  fun (l : List 'A) =>
+    let folder = @list_foldl 'A (List 'A) in
+    let init = Nil {'A} in
+    let iter =
+      fun (z : List 'A) =>
+      fun (h : 'A) =>
+        Cons {'A} h z
+    in
+      folder iter init l
+in
+  
+
+let int_zip = @list_zip_with Uint128 Uint128 Uint128 in
+
+let f =
+  fun (a : Uint128) => fun (b : Uint128) =>
+    builtin add a b
+in
+    
+let one = Uint128 1 in
+let two = Uint128 2 in
+let three = Uint128 3 in
+let four = Uint128 4 in
+
+let nil = Nil {Uint128} in
+let l0 = Cons {Uint128} four nil in
+let l1 = Cons {Uint128} three l0 in
+let l2 = Cons {Uint128} two l1 in
+let l3 = Cons {Uint128} one l2 in
+
+(* (1+1);(2+2);(3+3);(4+4) *)
+let res1 = int_zip f l3 l3 in
+
+(* (1+2);(2+3);(3+4) *)
+let res2 = int_zip f l3 l2 in
+
+(* (2+1);(3+2);(4+3) *)
+int_zip f l2 l3

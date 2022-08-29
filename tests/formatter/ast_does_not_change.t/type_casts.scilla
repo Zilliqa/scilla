@@ -1,0 +1,185 @@
+scilla_version 0
+
+library CastLib
+
+let zero_address : ByStr20 = 0x0000000000000000000000000000000000000000
+
+(* Tests various aspects of address type casts *)
+
+contract CastContract ()
+
+field test_1_res : Option (ByStr20 with end) = None {ByStr20 with end}
+field test_2_res : Option (ByStr20 with contract end) = None {ByStr20 with contract end}
+field test_3_res : Option (ByStr20 with contract end) = None {ByStr20 with contract end}
+field test_4_res : Option Uint128 = None {Uint128}
+field test_5_1_res : Option Uint128 = None {Uint128}
+field test_5_2_res : Option Uint128 = None {Uint128}
+field test_6_1_bal_res : Option Uint128 = None {Uint128}
+field test_6_1_f_res : Option Uint128 = None {Uint128}
+field test_6_1_g_res : Option Bool = None {Bool}
+field test_6_2_bal_res : Option Uint128 = None {Uint128}
+field test_6_2_f_res : Option Uint128 = None {Uint128}
+field test_6_2_g_res : Option Bool = None {Bool}
+field test_6_3_bal_res : Option Uint128 = None {Uint128}
+field test_6_3_f_res : Option Uint128 = None {Uint128}
+field test_6_3_g_res : Option Bool = None {Bool}
+field test_6_4_bal_res : Option Uint128 = None {Uint128}
+field test_6_4_f_res : Option Uint128 = None {Uint128}
+field test_6_4_g_res : Option Bool = None {Bool}
+field test_6_4_failed_cast : Bool = False
+field test_7_g_res : Option Bool = None {Bool}
+field test_7_h_res : Option Int256 = None {Int256}
+
+transition CastTest1(x : ByStr20 with contract end)
+  (* Cast to less restrictive type *)
+  res <-& x as ByStr20 with end;
+  test_1_res := res
+end
+
+transition CastTest2(x : ByStr20 with contract end)
+  (* Cast to same type *)
+  res <-& x as ByStr20 with contract end;
+  test_2_res := res
+end
+
+transition CastTest3(x : ByStr20 with contract end)
+  (* Cast to same type *)
+  res <-& x as ByStr20 with contract end;
+  test_3_res := res
+end
+
+transition CastTest4(x : ByStr20)
+  (* Cast to address in use - remote read _balance *)
+  x_cast <-& x as ByStr20 with end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    res = Some {Uint128} bal;
+    test_4_res := res
+  | None =>
+  end
+end
+
+transition CastTest5_1(x : ByStr20)
+  (* Cast to contract address - remote read _balance *)
+  x_cast <-& x as ByStr20 with contract end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    res = Some {Uint128} bal;
+    test_5_1_res := res
+  | None =>
+  end
+end
+
+transition CastTest5_2(x : ByStr20 with end)
+  (* Cast to contract address - remote read _balance *)
+  x_cast <-& x as ByStr20 with contract end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    res = Some {Uint128} bal;
+    test_5_2_res := res
+  | None =>
+  end
+end
+
+transition CastTest6_1(x : ByStr20)
+  (* Cast to complex contract address - remote read _balance and fields *)
+  x_cast <-& x as ByStr20 with contract field f : Uint128, field g : Bool end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    bal_res = Some {Uint128} bal;
+    test_6_1_bal_res := bal_res;
+    f <-& x_as_address.f;
+    f_res = Some {Uint128} f;
+    test_6_1_f_res := f_res;
+    g <-& x_as_address.g;
+    g_res = Some {Bool} g;
+    test_6_1_g_res := g_res
+  | None =>
+  end
+end
+
+transition CastTest6_2(x : ByStr20 with end)
+  (* Cast to complex contract address - remote read _balance and fields *)
+  x_cast <-& x as ByStr20 with contract field f : Uint128, field g : Bool end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    bal_res = Some {Uint128} bal;
+    test_6_2_bal_res := bal_res;
+    f <-& x_as_address.f;
+    f_res = Some {Uint128} f;
+    test_6_2_f_res := f_res;
+    g <-& x_as_address.g;
+    g_res = Some {Bool} g;
+    test_6_2_g_res := g_res
+  | None =>
+  end
+end
+
+transition CastTest6_3(x : ByStr20 with contract field g : Bool end)
+  (* Cast to complex contract address - remote read _balance and fields *)
+  x_cast <-& x as ByStr20 with contract field f : Uint128, field g : Bool end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    bal_res = Some {Uint128} bal;
+    test_6_3_bal_res := bal_res;
+    f <-& x_as_address.f;
+    f_res = Some {Uint128} f;
+    test_6_3_f_res := f_res;
+    g <-& x_as_address.g;
+    g_res = Some {Bool} g;
+    test_6_3_g_res := g_res
+  | None =>
+  end
+end
+
+transition CastTest6_4(x : ByStr20 with contract field f : Uint256, field g : Bool end)
+  (* The cast will fail here because of a type mismatch on the field f *)
+  x_cast <-& x as ByStr20 with contract field f : Uint128, field g : Bool end;
+  match x_cast with
+  | Some x_as_address =>
+    bal <-& x_as_address._balance;
+    bal_res = Some {Uint128} bal;
+    test_6_4_bal_res := bal_res;
+    f <-& x_as_address.f;
+    f_res = Some {Uint128} f;
+    test_6_4_f_res := f_res;
+    g <-& x_as_address.g;
+    g_res = Some {Bool} g;
+    test_6_4_g_res := g_res
+  | None =>
+    res = True;
+    test_6_4_failed_cast := res
+  end
+end
+
+transition CastTest7(x : ByStr20)
+  (* Cast to complex contract address - remote read a field, then cast that field and remote read from it. *)
+  x_cast <-& x as ByStr20 with contract field f : ByStr20 end;
+  match x_cast with
+  | Some x_as_address =>
+    f <-& x_as_address.f;
+    f_cast <-& f as ByStr20 with contract field g : Bool, field h : Int256 end;
+    match f_cast with
+    | Some f_as_address =>
+      g <-& f_as_address.g;
+      g_res = Some {Bool} g;
+      test_7_g_res := g_res;
+      h <-& f_as_address.h;
+      h_res = Some {Int256} h;
+      test_7_h_res := h_res
+    | None => 
+    end
+  | None =>
+  end
+end
+
+transition CastTest8()
+  (* cast an address defined in the contract library *)
+  maybe_contract_address <-& zero_address as ByStr20 with contract end
+end

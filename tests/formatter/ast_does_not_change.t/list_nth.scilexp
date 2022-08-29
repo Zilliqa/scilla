@@ -1,0 +1,27 @@
+(* Returns (Some 'A) if n'th element exists in list. None otherwise *)
+
+let int_nth = @list_nth Uint32 in
+
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let two = Uint32 2 in
+let three = Uint32 3 in
+let ten = Uint32 10 in
+let eleven = Uint32 11 in
+
+let nil = Nil {Uint32} in
+let l1 = Cons {Uint32} eleven nil in
+let l2 = Cons {Uint32} ten l1 in
+let l3 = Cons {Uint32} two l2 in
+let l4 = Cons {Uint32} one l3 in
+
+(* list[0] = Some 1 *)
+let res1 = int_nth zero l4 in
+(* list[1] = Some 2 *)
+let res2 = int_nth one l4 in
+(* list[2] = Some 10 *)
+let res3 = int_nth two l4 in
+(* list[3] = Some 11 *)
+let res4 = int_nth three l4 in
+(* list[10] = None *)
+int_nth ten l4
