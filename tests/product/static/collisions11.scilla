@@ -1,0 +1,15 @@
+scilla_version 0
+
+library Collisions11
+
+contract Collisions11()
+
+field f : Uint32 = Uint32 0
+
+procedure proc(a: Uint32)
+  f = a
+end
+
+transition tr(a: Uint32)
+  proc a
+end

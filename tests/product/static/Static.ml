@@ -28,6 +28,13 @@ module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
   let additional_libdirs = []
   let provide_init_arg = false
   let diff_filter s = s
-  let tests = [ [ "simple11.scilla"; "simple12.scilla" ] ]
+
+  let tests =
+    [
+      [ "simple11.scilla"; "simple12.scilla" ];
+      [ "collisions11.scilla"; "collisions12.scilla" ];
+      [ "type_casts1.scilla" ];
+    ]
+
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)

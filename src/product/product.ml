@@ -123,14 +123,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id ?(capitalize = false) ?(force = false) renames_map prefix
+  let qualify_id ?(capitalize = false) renames_map prefix
       (rep_id : 'a SIdentifier.t) =
-    match find_id renames_map rep_id with
-    | Some id when not force -> (add_rep rep_id id, renames_map)
-    | _ ->
-        let name = PIdentifier.get_id rep_id in
-        let new_name = qualify_name capitalize prefix name in
-        (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
+    let name = PIdentifier.get_id rep_id in
+    let new_name = qualify_name capitalize prefix name in
+    (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
 
   (** Applies renaming from [renames_map]. *)
   let rename_id renames_map id =
@@ -438,9 +435,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
        with the same type and name. *)
     List.fold_left params ~init:([], renames_map)
       ~f:(fun (acc, renames_map) (name, ty) ->
-        let name', renames_map =
-          qualify_id ~force:true renames_map contract_name name
-        in
+        let name', renames_map = qualify_id renames_map contract_name name in
         let ty' = rename_ty renames_map ty in
         (acc @ [ (name', ty') ], renames_map))
 
@@ -450,9 +445,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         same type and name. *)
     List.fold_left fields ~init:([], renames_map)
       ~f:(fun (acc, renames_map) (name, ty, init_expr) ->
-        let name', renames_map =
-          qualify_id ~force:true renames_map contract_name name
-        in
+        let name', renames_map = qualify_id renames_map contract_name name in
         let ty' = rename_ty renames_map ty in
         let init_expr' = rename_expr renames_map init_expr in
         (acc @ [ (name', ty', init_expr') ], renames_map))
