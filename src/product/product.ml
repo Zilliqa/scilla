@@ -605,9 +605,25 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
               (pat, stmts'))
         in
         (MatchStmt (id, arms'), annot)
+    | TypeCast (id, _addr, _typ) ->
+        let body =
+          let some =
+            PIdentifier.mk_id
+              (PType.TIdentifier.Name.parse_simple_name "Some")
+              SR.dummy_rep
+          in
+          let bystr20 = PType.PrimType (Type.PrimType.Bystrx_typ 20) in
+          let this_address =
+            PIdentifier.mk_id
+              (PType.TIdentifier.Name.parse_simple_name "_this_address")
+              ER.dummy_rep
+          in
+          (Constr (some, [ bystr20 ], [ this_address ]), ER.dummy_rep)
+        in
+        (Bind (id, body), annot)
     | Load _ | Store _ | Bind _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-    | CallProc _ | Throw _ | GasStmt _ ->
+    | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _
+    | Throw _ | GasStmt _ ->
         (stmt, annot)
 
   let localize_comp renames_map comp =

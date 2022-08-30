@@ -1,0 +1,13 @@
+scilla_version 0
+
+library TypeCasts1
+
+contract TypeCasts1()
+
+transition test(addr: ByStr20)
+  contract_address <- & addr as ByStr20 with contract field f: Bool end;
+  match contract_address with
+  | Some _ =>
+  | None =>
+  end
+end
