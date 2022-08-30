@@ -1,0 +1,7 @@
+(include_subdirs unqualified)
+
+(library
+ (modes byte native)
+ (name testproduct)
+ (wrapped true)
+ (libraries core oUnit scilla_test))

@@ -16,22 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_test.Util
+open OUnit2
 
-let () =
-  run_tests
-    [
-      (* contract_tests should always be the first to be run. This is required
-         * for us to be able to run _only_ contract_tests from the blockchain for
-         * external IPC server tests. If the order changes, then the test_id of
-         * these tests will change, resulting in the tests not being run.
-         * See the Makefile target "test_extipcserver". *)
-      Testcontracts.contract_tests;
-      Testexps.All.tests;
-      Testtypes.All.tests;
-      Testpm.All.tests;
-      Testchecker.All.tests;
-      Testproduct.All.tests
-      (* TestGasExpr.All.tests;
-         TestGasContracts.All.tests; *);
-    ]
+let tests env = "product" >::: [ "static" >::: [ Static.Tests.tests env ] ]

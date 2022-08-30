@@ -1,0 +1,28 @@
+scilla_version 0
+
+library ProductLib
+
+
+contract ProductContr ()
+
+
+field simple11_f1_a : Uint32 = Uint32 0
+
+field simple12_f2_a : Uint32 = Uint32 0
+
+transition simple11_set1_a_tr (a : Uint32)
+  simple11_set1_a_proc a
+end
+
+procedure simple11_set1_a_proc (a : Uint32)
+  simple11_f1_a = a
+end
+
+transition simple12_set2_a_tr (a : Uint32)
+  simple12_set2_a_proc a
+end
+
+procedure simple12_set2_a_proc (a : Uint32)
+  simple12_f2_a = a
+end
+

@@ -16,22 +16,18 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_test.Util
+open Core
 
-let () =
-  run_tests
-    [
-      (* contract_tests should always be the first to be run. This is required
-         * for us to be able to run _only_ contract_tests from the blockchain for
-         * external IPC server tests. If the order changes, then the test_id of
-         * these tests will change, resulting in the tests not being run.
-         * See the Makefile target "test_extipcserver". *)
-      Testcontracts.contract_tests;
-      Testexps.All.tests;
-      Testtypes.All.tests;
-      Testpm.All.tests;
-      Testchecker.All.tests;
-      Testproduct.All.tests
-      (* TestGasExpr.All.tests;
-         TestGasContracts.All.tests; *);
-    ]
+module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
+  let gold_path dir f = [ dir; "product"; "static"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "product"; "static"; f ]
+  let runner = "scilla-merger"
+  let ignore_predef_args = false
+  let gas_limit = Stdint.Uint64.of_int 8000
+  let custom_args = []
+  let additional_libdirs = []
+  let provide_init_arg = false
+  let diff_filter s = s
+  let tests = [ [ "simple11.scilla"; "simple12.scilla" ] ]
+  let exit_code : UnixLabels.process_status = WEXITED 0
+end)
