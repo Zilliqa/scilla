@@ -1,0 +1,28 @@
+scilla_version 0
+
+library SimpleProxy
+
+let one_msg =
+  fun (m: Message) =>
+    let e = Nil {Message} in
+    Cons {Message} m e
+    
+contract SimpleProxy(
+  init_implementation: ByStr20
+)
+
+field implementation: ByStr20 = init_implementation
+
+transition AddFunds()
+    current_impl <- implementation;
+    accept;
+    msg = {_tag: "AddFunds"; _recipient: current_impl; _amount: _amount; initiator: _sender};
+    msgs = one_msg msg;
+    send msgs
+end
+
+transition SelfAddFunds()
+  accept;
+  e = { _eventname : "Self Add Funds deposit "; funder : _sender; amount: _amount };
+  event e
+end

@@ -1,0 +1,10 @@
+  $ scilla-fmt address_list_as_cparam.scilla
+  scilla_version 0
+  
+  contract T (x : List (ByStr20 with contract field f : Uint128 end))
+  
+  
+  field f : List (ByStr20 with contract field f : Uint128 end) = x
+  
+  
+  

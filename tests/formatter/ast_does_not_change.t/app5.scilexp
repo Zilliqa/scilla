@@ -1,0 +1,28 @@
+(* Expected answer *)
+(* IntLit 32 55) *)
+
+let check_update = 
+  fun (bs : Map ByStr20 Int32) =>
+    fun (sender : ByStr20) =>
+      fun (amount : Int32) =>
+  let c = builtin contains bs sender in
+  match c with 
+  | False => 
+    let bs1 = builtin put bs sender amount in
+    Some {Map ByStr20 Int32} bs1 
+  | True  => None {Map ByStr20 Int32}
+  end
+in
+let bs = Emp ByStr20 Int32 in
+let a  = 0x1234567890123456789012345678901234abcdef in
+let amt = Int32 55 in
+let res = check_update bs a amt in
+match res with
+| None => None {Int32}
+| Some m =>
+    let v = builtin get m a in
+    match v with
+    | None => None {Int32}
+    | Some w => v
+    end
+end    

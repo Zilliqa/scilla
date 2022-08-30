@@ -1,0 +1,11 @@
+scilla_version 0
+
+library Dead
+
+type A = | A
+type B = | B of A
+
+contract Dead ()
+
+transition Foo(x: B)
+end

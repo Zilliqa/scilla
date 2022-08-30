@@ -1,0 +1,35 @@
+(* Expected answer *)
+(* (ValLit(ADTValue True()())) *)
+
+let hash_dist =
+  fun (h0 : ByStr32) =>
+  fun (h1 : ByStr32) =>
+    let h00 = builtin to_uint256 h0 in
+    let h11 = builtin to_uint256 h1 in
+    let lt = builtin lt h00 h11 in
+    match lt with
+    | False =>
+      builtin sub h00 h11
+    | True =>
+      builtin sub h11 h00
+    end
+in
+
+let k1 = Int32 1 in
+let k2 = Int32 2 in
+let v1 = Int32 42 in
+let v2 = Int32 239 in
+
+let m0 = Emp Int32 Int32 in
+let m1 = builtin put m0 k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+
+let h0 = builtin keccak256hash m0 in
+let h1 = builtin keccak256hash m1 in
+let h2 = builtin keccak256hash m2 in
+
+let d1 = hash_dist h0 h1 in
+let d2 = hash_dist h1 h2 in
+let d3 = hash_dist h2 h1 in
+let c = builtin eq d3 d2 in
+c

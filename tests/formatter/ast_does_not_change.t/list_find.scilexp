@@ -1,0 +1,25 @@
+
+let int_find = @list_find Int64 in
+(* Is given value equal to 5? *)
+let f = fun (i : Int64) =>
+  let five = Int64 5 in
+  builtin eq five i in
+
+let one = Int64 1 in
+let two = Int64 2 in
+let five = Int64 5 in
+let ten = Int64 10 in
+let eleven = Int64 11 in
+
+let nil = Nil {Int64} in
+let l1 = Cons {Int64} one nil in
+let l2 = Cons {Int64} ten l1 in
+let l3 = Cons {Int64} two l2 in
+let l4 = Cons {Int64} eleven l3 in
+let l5 = Cons {Int64} five l4 in
+
+(* Some 5 *)
+let res1 = int_find f l5 in
+
+(* None *)
+int_find f l4

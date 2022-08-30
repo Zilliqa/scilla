@@ -1,0 +1,19 @@
+let k1 = Int64 1 in
+let v1 = Int64 48 in
+let k2 = Int64 2 in
+let v2 = Int64 57 in
+
+let emp = Emp Int64 Int64 in
+
+let m1 = builtin put emp k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+
+let n1 = builtin put emp k2 v2 in
+let n2 = builtin put n1 k1 v1 in
+
+let hm = builtin sha256hash m2 in
+let hn = builtin sha256hash n2 in
+
+(* expected True, the order of adding elements to a map shouldn't the map's hash *)
+builtin eq hm hn
+

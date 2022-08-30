@@ -1,0 +1,54 @@
+
+let feq =
+  fun (a : String) =>
+  fun (b : String) =>
+    builtin eq a b in
+
+let fconcat =
+  fun (a : String) =>
+  fun (b : String) =>
+    builtin concat a b in
+
+let fsubstr =
+  fun (a : String) =>
+  fun (s : Uint32) =>
+  fun (e : Uint32) =>
+    builtin substr a s e in
+
+let a = "hello" in
+let b = "world" in
+let sep = " ; " in
+let res1 = feq a b in
+let c = "test1" in
+let d = "test1" in
+let res2 = feq c d in
+let s1 = "scilla is awesome" in
+let s2 = fconcat s1 sep in
+let s3 = fconcat s2 b in
+let startp = Uint32 0 in
+let endp = Uint32 17 in
+let res = fsubstr s3 startp endp in
+
+let bs = 0x1212ab in
+let bsx = builtin to_bystr bs in
+let bsxh = builtin sha256hash bsx in
+let bss = builtin to_string bs in
+let bsxs = builtin to_string bsx in
+
+let i = Int32 1223 in
+let j = Uint128 98985656562323 in
+let k = Int64 -1232365654879 in
+let is = builtin to_string i in
+let js = builtin to_string j in
+let ks = builtin to_string k in
+let len1 = builtin strlen s1 in
+let len2 = builtin strlen ks in
+
+let bs_rev = builtin strrev bs in
+let bsx_rev = builtin strrev bsx in
+let s1_rev = builtin strrev s1 in
+
+let ascii_bs = 0x756e6c6f636b in
+let ascii = builtin to_ascii ascii_bs in
+
+res

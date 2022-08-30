@@ -1,0 +1,15 @@
+(* Expected answer *)
+(* ByStr32 0x5de797a7250adee90dea7eb69fa04b49e8cad470030d04df4766d8adcb0ba828 *)
+
+let k1 = Int32 1 in
+let k2 = Int32 2 in
+let v1 = Int32 42 in
+let v2 = Int32 239 in
+
+let m0 = Emp Int32 Int32 in
+let m1 = builtin put m0 k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+
+let b1 = builtin sha256hash m1 in
+let b2 = builtin sha256hash m1 in
+builtin concat b1 b2

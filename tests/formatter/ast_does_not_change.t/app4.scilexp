@@ -1,0 +1,10 @@
+(* Expected result: 2 *)
+let x = Int32 42 in
+let f = fun (z : Int32) =>
+    let b = x in
+    fun (c : Int32) => z
+in
+let a = Int32 1 in
+let d = Int32 2 in
+let g = f d in
+g a
