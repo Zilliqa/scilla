@@ -710,6 +710,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (************************************************)
 
   let run (contract_infos : (cmodule * lib_entry list * libtree list) list) =
+    ErrorUtils.reset_warnings ();
     run_local_pass contract_infos
     |> Option.value_map ~default:None
          ~f:(fun (product_cmod, product_rlib, renames_map) ->
@@ -717,4 +718,6 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
              run_remote_pass product_cmod product_rlib renames_map
            in
            Some (product_cmod', product_rlib'))
+    |> fun v ->
+    (v, ErrorUtils.get_warnings () |> PrettyPrinters.scilla_warning_to_sstring)
 end

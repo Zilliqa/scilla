@@ -29,3 +29,5 @@ transition remoteCollisions11_tr (a : ByStr20)
   end
 end
 
+product/static/remote_collisions11.scilla:19:15: warning: [2] Name collision: Please disambiguate `m_f` in the configuration file
+product/static/remote_collisions11.scilla:17:15: warning: [2] Name collision: Please disambiguate `a_f` in the configuration file

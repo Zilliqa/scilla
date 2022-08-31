@@ -49,10 +49,12 @@ let run args =
         in
         acc @ [ (cmod, rlibs, elibs) ])
     |> MProduct.run
-    |> Option.value_map ~default:""
-         ~f:(fun ((cmod : MProduct.PSyntax.cmodule), _rlibs) ->
-           Fmt.contract_to_string cmod)
-    |> Printf.printf "%s\n"
+    |> fun (output, warnings) ->
+    DebugMessage.perr warnings;
+    Option.value_map output ~default:""
+      ~f:(fun ((cmod : MProduct.PSyntax.cmodule), _rlibs) ->
+        Fmt.contract_to_string cmod)
+    |> DebugMessage.pout
   with FatalError msg -> exit_with_error msg
 
 let () =
