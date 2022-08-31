@@ -58,7 +58,7 @@ open Literal
     to change the representation of the [renames_map] to make it store sets of
     possible identifiers.
   * As an optimization we should not add equivalent definitions to the product
-    contract.
+    contract (see: https://github.com/Zilliqa/scilla/issues/1158).
 
   TODO: Tests:
   * Renaming types from libraries with `import as` *)
