@@ -83,7 +83,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let disambiguate_warning_level = 2
 
   (************************************************)
-  (** UTILITIES                                   *)
+  (** Utilities                                   *)
   (************************************************)
 
   let mk_simple_id name =
@@ -104,7 +104,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let find_id renames_map id = Map.find renames_map (SIdentifier.get_id id)
 
   (************************************************)
-  (* LOCAL PASS                                   *)
+  (* Local pass                                   *)
   (************************************************)
   (* Present with two steps: renaming (rename_* functions) and merging to a
      product (extend_* functions). *)
@@ -641,7 +641,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         Some (cmod, Map.data rlibs_map, renames_map))
 
   (************************************************)
-  (* REMOTE PASS                                  *)
+  (* Remote pass                                  *)
   (************************************************)
   (* localize_* functions replace remote operations with the local ones *)
 
@@ -728,7 +728,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     (product_cmod', product_rlib)
 
   (************************************************)
-  (* ENTRY POINT                                  *)
+  (* Entry point                                  *)
   (************************************************)
 
   let run (contract_infos : (cmodule * lib_entry list * libtree list) list) =
