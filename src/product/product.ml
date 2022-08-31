@@ -82,6 +82,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let emp_ids_map = Map.empty (module PIdentifierComp)
   let disambiguate_warning_level = 2
 
+  (** Name of the currently merged contract. *)
+  let contract_name = ref ""
+
   (************************************************)
   (** Utilities                                   *)
   (************************************************)
@@ -103,6 +106,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let add_loc id = PIdentifier.mk_loc_id id
   let find_id renames_map id = Map.find renames_map (SIdentifier.get_id id)
 
+  (** Generates a conflict name and emits a warning. *)
+  let set_conflict_name candidates name loc =
+    ErrorUtils.warn1
+      (Printf.sprintf
+         "Name collision: Please disambiguate `%s` in the configuration file"
+         name)
+      disambiguate_warning_level (Lazy.force loc);
+    Set.to_list candidates
+    |> List.sort ~compare:PIdentifierComp.compare
+    |> List.fold_left ~init:[] ~f:(fun acc l ->
+           acc @ [ PIdentifier.Name.as_string l ])
+    |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
+    |> SIdentifier.Name.parse_simple_name
+
   (************************************************)
   (* Local pass                                   *)
   (************************************************)
@@ -110,8 +127,8 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
      product (extend_* functions). *)
 
   (** Adds a unique address to the [name]. *)
-  let qualify_name captitalize prefix
-      (((name : Identifier.GlobalName.t_name), i) : 'a) : PIdentifier.Name.t =
+  let qualify_name captitalize (((name : Identifier.GlobalName.t_name), i) : 'a)
+      prefix : PIdentifier.Name.t =
     let open Identifier in
     let gen_name =
       Printf.sprintf "%s_%s"
@@ -125,17 +142,17 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id ?(capitalize = false) renames_map prefix
+  let qualify_id ?(capitalize = false) ?(prefix = !contract_name) renames_map
       (rep_id : 'a SIdentifier.t) =
     let name = PIdentifier.get_id rep_id in
     match find_id renames_map rep_id with
     | Some candidates ->
-        let new_name = qualify_name capitalize prefix name in
+        let new_name = qualify_name capitalize name prefix in
         ( add_rep rep_id new_name,
           Map.set renames_map ~key:name
             ~data:(PIdentifierSet.add candidates new_name) )
     | None ->
-        let new_name = qualify_name capitalize prefix name in
+        let new_name = qualify_name capitalize name prefix in
         ( add_rep rep_id new_name,
           Map.set renames_map ~key:name
             ~data:(PIdentifierSet.singleton new_name) )
@@ -144,45 +161,40 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       candidates for this name, emits a warning. *)
   let choose_name candidates name loc =
     if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
-    else (
-      ErrorUtils.warn1
-        (Printf.sprintf
-           "Name collision: Please disambiguate `%s` in the configuration file"
-           (Lazy.force name))
-        disambiguate_warning_level (Lazy.force loc);
-      Set.to_list candidates
-      |> List.sort ~compare:PIdentifierComp.compare
-      |> List.fold_left ~init:[] ~f:(fun acc l ->
-             acc @ [ PIdentifier.Name.as_string l ])
-      |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
-      |> SIdentifier.Name.parse_simple_name)
+    else set_conflict_name candidates name loc
 
-  let rename_id_er renames_map id =
+  (** Generates a name to rename the identifier. If there are a few possible
+      candidates for this name, emits a warning. *)
+  let rec rename_local renames_map id loc =
     match find_id renames_map id with
+    | Some candidates when phys_equal 1 @@ Set.length candidates ->
+        Set.min_elt_exn candidates
     | Some candidates ->
-        choose_name candidates
-          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
-          (lazy (ER.get_loc (PIdentifier.get_rep id)))
-        |> add_rep id
-    | None -> id
+        let qualified_id, _ = qualify_id renames_map id in
+        let qualified_name =
+          qualified_id |> SIdentifier.get_id |> SIdentifier.Name.as_string
+        in
+        let name = id |> SIdentifier.get_id |> SIdentifier.Name.as_string in
+        if
+          String.equal name (String.capitalize qualified_name)
+          || String.equal name (String.uncapitalize qualified_name)
+        then set_conflict_name candidates name loc
+        else rename_local renames_map qualified_id loc
+    | None -> id |> SIdentifier.get_id
 
-  let rename_id_sr renames_map id =
-    match find_id renames_map id with
-    | Some candidates ->
-        choose_name candidates
-          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
-          (lazy (SR.get_loc (PIdentifier.get_rep id)))
-        |> add_rep id
-    | None -> id
+  let rename_local_er renames_map id =
+    rename_local renames_map id
+      (PIdentifier.get_rep id |> ER.get_loc |> Lazy.from_val)
+    |> add_rep id
 
-  let rename_id_loc renames_map id =
-    match find_id renames_map id with
-    | Some candidates ->
-        choose_name candidates
-          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
-          (lazy (PIdentifier.get_rep id))
-        |> add_loc
-    | None -> id
+  let rename_local_sr renames_map id =
+    rename_local renames_map id
+      (PIdentifier.get_rep id |> SR.get_loc |> Lazy.from_val)
+    |> add_rep id
+
+  let rename_local_loc renames_map id =
+    rename_local renames_map id (PIdentifier.get_rep id |> Lazy.from_val)
+    |> add_loc
 
   (** Renames user-defined ADTs from [renames_map]. *)
   let rec rename_ty renames_map (ty : SType.t) : SType.t =
@@ -192,37 +204,29 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     | FunType (arg_ty, ret_ty) ->
         FunType (rename_ty renames_map arg_ty, rename_ty renames_map ret_ty)
     | ADT (id, tys) ->
-        ADT
-          ( rename_id_loc renames_map id,
-            List.map tys ~f:(fun ty -> rename_ty renames_map ty) )
+        let id' = rename_local_loc renames_map id in
+        let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
+        ADT (id', tys')
     | PolyFun (tyvar, bt) -> SType.PolyFun (tyvar, rename_ty renames_map bt)
     | TypeVar _ | Unit | PrimType _ | Address _ -> ty
 
   (** Sets unique names for the user-defined ADTs in [ty]. *)
-  let rec qualify_ty renames_map contract_name (ty : SType.t) =
+  let rec qualify_ty renames_map (ty : SType.t) =
     let open SType in
     match ty with
     | MapType (key_ty, val_ty) ->
-        let key_ty', renames_map' =
-          qualify_ty renames_map contract_name key_ty
-        in
-        let val_ty', renames_map' =
-          qualify_ty renames_map' contract_name val_ty
-        in
+        let key_ty', renames_map' = qualify_ty renames_map key_ty in
+        let val_ty', renames_map' = qualify_ty renames_map' val_ty in
         (MapType (key_ty', val_ty'), renames_map')
     | FunType (arg_ty, ret_ty) ->
-        let arg_ty', renames_map' =
-          qualify_ty renames_map contract_name arg_ty
-        in
-        let ret_ty', renames_map' =
-          qualify_ty renames_map' contract_name ret_ty
-        in
+        let arg_ty', renames_map' = qualify_ty renames_map arg_ty in
+        let ret_ty', renames_map' = qualify_ty renames_map' ret_ty in
         (FunType (arg_ty', ret_ty'), renames_map')
     | ADT (id, tys) -> (
         let name = PIdentifier.get_id id in
         match Map.find renames_map name with
         | Some _ ->
-            let id' = rename_id_loc renames_map id in
+            let id' = rename_local_loc renames_map id in
             let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
             (ADT (id', tys'), renames_map)
         | None ->
@@ -230,21 +234,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
               (* Don't qualify built-in ADTs. *)
               Datatypes.DataTypeDictionary.lookup_name name |> function
               | Ok _ -> (id, renames_map)
-              | Error _ ->
-                  qualify_id ~capitalize:true renames_map contract_name id
+              | Error _ -> qualify_id ~capitalize:true renames_map id
             in
             let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map' ty) in
             (ADT (name', tys'), renames_map'))
     | PolyFun (tyvar, bt) ->
-        let bt', renames_map' = qualify_ty renames_map contract_name bt in
+        let bt', renames_map' = qualify_ty renames_map bt in
         (SType.PolyFun (tyvar, bt'), renames_map')
     | TypeVar _ | Unit | PrimType _ | Address _ -> (ty, renames_map)
 
   let rec rename_pattern renames_map = function
     | Wildcard -> Wildcard
-    | Binder id -> Binder (rename_id_er renames_map id)
+    | Binder id -> Binder (rename_local_er renames_map id)
     | Constructor (id, patterns) ->
-        let id' = rename_id_sr renames_map id in
+        let id' = rename_local_sr renames_map id in
         let patterns' =
           List.map patterns ~f:(fun p -> rename_pattern renames_map p)
         in
@@ -275,7 +278,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
           match Map.find renames_map name with
           | Some candidates ->
               choose_name candidates
-                (PIdentifier.Name.as_string name |> Lazy.from_val)
+                (PIdentifier.Name.as_string name)
                 (lazy (ER.get_loc annot))
           | None -> name
         in
@@ -292,9 +295,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let rec rename_expr renames_map (e, annot) =
     match e with
     | Literal lit -> (Literal (rename_lit renames_map lit annot), annot)
-    | Var id -> (Var (rename_id_er renames_map id), annot)
+    | Var id -> (Var (rename_local_er renames_map id), annot)
     | Let (id, ty_opt, lhs, rhs) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let ty_opt' =
           Option.value_map ty_opt ~default:None ~f:(fun ty ->
               rename_ty renames_map ty |> Option.some)
@@ -307,32 +310,32 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
             let payload' =
               match payload with
               | MLit lit -> MLit lit
-              | MVar id -> MVar (rename_id_er renames_map id)
+              | MVar id -> MVar (rename_local_er renames_map id)
             in
             (tag_name, payload'))
         |> fun msg' -> (Message msg', annot)
     | Fun (id, ty, body) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let ty' = rename_ty renames_map ty in
         let body' = rename_expr renames_map body in
         (Fun (id', ty', body'), annot)
     | App (fun_id, args) ->
-        let fun_id' = rename_id_er renames_map fun_id in
+        let fun_id' = rename_local_er renames_map fun_id in
         let args' =
-          List.map args ~f:(fun arg -> rename_id_er renames_map arg)
+          List.map args ~f:(fun arg -> rename_local_er renames_map arg)
         in
         (App (fun_id', args'), annot)
     | Constr (id, type_params, params) ->
-        let id' = rename_id_sr renames_map id in
+        let id' = rename_local_sr renames_map id in
         let type_params' =
           List.map type_params ~f:(fun tp -> rename_ty renames_map tp)
         in
         let params' =
-          List.map params ~f:(fun p -> rename_id_er renames_map p)
+          List.map params ~f:(fun p -> rename_local_er renames_map p)
         in
         (Constr (id', type_params', params'), annot)
     | MatchExpr (id, patterns) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let patterns' =
           List.map patterns ~f:(fun (pat, ea) ->
               let pat' = rename_pattern renames_map pat in
@@ -343,19 +346,19 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     | Builtin (builtin, tys, params) ->
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
         let params' =
-          List.map params ~f:(fun p -> rename_id_er renames_map p)
+          List.map params ~f:(fun p -> rename_local_er renames_map p)
         in
         (Builtin (builtin, tys', params'), annot)
     | TFun (id, body) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let body' = rename_expr renames_map body in
         (TFun (id', body'), annot)
     | TApp (id, tys) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
         (TApp (id', tys'), annot)
     | Fixpoint (id, ty, body) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let ty' = rename_ty renames_map ty in
         let body' = rename_expr renames_map body in
         (Fixpoint (id', ty', body'), annot)
@@ -366,18 +369,18 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let rec rename_stmt renames_map (stmt, annot) =
     match stmt with
     | Bind (id, expr) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         (Bind (id', rename_expr renames_map expr), annot)
     | CallProc (id, args) ->
-        let id' = rename_id_sr renames_map id in
-        let args' = List.map args ~f:(fun a -> rename_id_er renames_map a) in
+        let id' = rename_local_sr renames_map id in
+        let args' = List.map args ~f:(fun a -> rename_local_er renames_map a) in
         (CallProc (id', args'), annot)
     | Iterate (list, id) ->
-        let id' = rename_id_sr renames_map id in
-        let list' = rename_id_er renames_map list in
+        let id' = rename_local_sr renames_map id in
+        let list' = rename_local_er renames_map list in
         (Iterate (list', id'), annot)
     | MatchStmt (id, arms) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         let arms' =
           List.map arms ~f:(fun (pattern, stmts) ->
               let pattern' = rename_pattern renames_map pattern in
@@ -389,50 +392,50 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (MatchStmt (id', arms'), annot)
     | MapUpdate (m, keys, v_opt) ->
-        let m' = rename_id_er renames_map m in
-        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
+        let m' = rename_local_er renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
         let v_opt' =
           Option.value_map v_opt ~default:None ~f:(fun v ->
-              Some (rename_id_er renames_map v))
+              Some (rename_local_er renames_map v))
         in
         (MapUpdate (m', keys', v_opt'), annot)
     | MapGet (v, m, keys, exists) ->
-        let v' = rename_id_er renames_map v in
-        let m' = rename_id_er renames_map m in
-        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
+        let v' = rename_local_er renames_map v in
+        let m' = rename_local_er renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
         (MapGet (v', m', keys', exists), annot)
     | RemoteMapGet (v, adr, m, keys, exists) ->
         (* Map will be replaced to the local one in the Remote pass. *)
-        let v' = rename_id_er renames_map v in
-        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
+        let v' = rename_local_er renames_map v in
+        let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
         (RemoteMapGet (v', adr, m, keys', exists), annot)
     | Load (lhs, rhs) ->
-        let lhs' = rename_id_er renames_map lhs in
-        let rhs' = rename_id_er renames_map rhs in
+        let lhs' = rename_local_er renames_map lhs in
+        let rhs' = rename_local_er renames_map rhs in
         (Load (lhs', rhs'), annot)
     | RemoteLoad (lhs, adr, rhs) ->
         (* Address will be replaced in the Remote pass. *)
-        let lhs' = rename_id_er renames_map lhs in
-        let rhs' = rename_id_er renames_map rhs in
+        let lhs' = rename_local_er renames_map lhs in
+        let rhs' = rename_local_er renames_map rhs in
         (RemoteLoad (lhs', adr, rhs'), annot)
     | Store (lhs, rhs) ->
-        let lhs' = rename_id_er renames_map lhs in
-        let rhs' = rename_id_er renames_map rhs in
+        let lhs' = rename_local_er renames_map lhs in
+        let rhs' = rename_local_er renames_map rhs in
         (Store (lhs', rhs'), annot)
     | TypeCast (lhs, rhs, ty) ->
-        let lhs' = rename_id_er renames_map lhs in
-        let rhs' = rename_id_er renames_map rhs in
+        let lhs' = rename_local_er renames_map lhs in
+        let rhs' = rename_local_er renames_map rhs in
         let ty' = rename_ty renames_map ty in
         (TypeCast (lhs', rhs', ty'), annot)
     | ReadFromBC (id, q) ->
-        let id' = rename_id_er renames_map id in
+        let id' = rename_local_er renames_map id in
         (ReadFromBC (id', q), annot)
     | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
-  let rename_lentry renames_map contract_name = function
+  let rename_lentry renames_map = function
     | LibVar (name, ty_annot, body) ->
-        let name', renames_map = qualify_id renames_map contract_name name in
+        let name', renames_map = qualify_id renames_map name in
         let body' = rename_expr renames_map body in
         let ty_annot' =
           Option.value_map ty_annot ~default:None ~f:(fun ty ->
@@ -440,9 +443,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (LibVar (name', ty_annot', body'), renames_map)
     | LibTyp (id, ctrs) ->
-        let id', renames_map =
-          qualify_id ~capitalize:true renames_map contract_name id
-        in
+        let id', renames_map = qualify_id ~capitalize:true renames_map id in
         let adt_prefix =
           PIdentifier.as_string id
           |> String.map ~f:(fun c -> if phys_equal c '.' then '_' else c)
@@ -451,23 +452,23 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
           List.fold_left ctrs ~init:([], renames_map)
             ~f:(fun (acc_ctrs, m) ctr_def ->
               let cname, m =
-                qualify_id ~capitalize:true m adt_prefix ctr_def.cname
+                qualify_id ~capitalize:true ~prefix:adt_prefix m ctr_def.cname
               in
               let c_arg_types, m =
                 List.fold_left ~init:([], m) ctr_def.c_arg_types
                   ~f:(fun (acc, m) ty ->
-                    let ty', m = qualify_ty m contract_name ty in
+                    let ty', m = qualify_ty m ty in
                     (acc @ [ ty' ], m))
               in
               (acc_ctrs @ [ { cname; c_arg_types } ], m))
         in
         (LibTyp (id', ctrs'), renames_map)
 
-  let rename_lib renames_map contract_name (lib : library) =
+  let rename_lib renames_map (lib : library) =
     let lentries, renames_map' =
       List.fold_left lib.lentries ~init:([], renames_map)
         ~f:(fun (acc_lentries, m) lentry ->
-          let lentry', m = rename_lentry m contract_name lentry in
+          let lentry', m = rename_lentry m lentry in
           (acc_lentries @ [ lentry' ], m))
     in
     ({ lib with lentries }, renames_map')
@@ -479,42 +480,39 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     List.map elibs ~f:(fun (name, import_as_opt) ->
         match import_as_opt with
         | Some import_as ->
-            let import_as' = rename_id_sr renames_map import_as in
+            let import_as' = rename_local_sr renames_map import_as in
             (name, Some import_as')
         | None -> (name, import_as_opt))
 
   let rename_params renames_map (params : ('a SIdentifier.t * SType.t) list) =
     List.map params ~f:(fun (name, ty) ->
-        let name' = rename_id_er renames_map name in
+        let name' = rename_local_er renames_map name in
         let ty' = rename_ty renames_map ty in
         (name', ty'))
 
-  let qualify_params renames_map contract_name
-      (params : ('a SIdentifier.t * SType.t) list) =
+  let qualify_params renames_map (params : ('a SIdentifier.t * SType.t) list) =
     (* Contract parameters must be qualified, because they could have
        different types. TODO: To optimize this, we should not rename params
        with the same type and name. *)
     List.fold_left params ~init:([], renames_map)
       ~f:(fun (acc, renames_map) (name, ty) ->
-        let name', renames_map = qualify_id renames_map contract_name name in
+        let name', renames_map = qualify_id renames_map name in
         let ty' = rename_ty renames_map ty in
         (acc @ [ (name', ty') ], renames_map))
 
-  let qualify_fields renames_map contract_name fields =
+  let qualify_fields renames_map fields =
     (* Contract fields must be qualified, because they could have different
         types. TODO: To optimize this, we should not rename fields with the
         same type and name. *)
     List.fold_left fields ~init:([], renames_map)
       ~f:(fun (acc, renames_map) (name, ty, init_expr) ->
-        let name', renames_map = qualify_id renames_map contract_name name in
+        let name', renames_map = qualify_id renames_map name in
         let ty' = rename_ty renames_map ty in
         let init_expr' = rename_expr renames_map init_expr in
         (acc @ [ (name', ty', init_expr') ], renames_map))
 
-  let rename_component renames_map contract_name component =
-    let comp_name, renames_map =
-      qualify_id renames_map contract_name component.comp_name
-    in
+  let rename_component renames_map component =
+    let comp_name, renames_map = qualify_id renames_map component.comp_name in
     let comp_params = rename_params renames_map component.comp_params in
     let comp_body =
       List.map component.comp_body ~f:(fun stmt_annot ->
@@ -522,43 +520,34 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     in
     ({ component with comp_name; comp_params; comp_body }, renames_map)
 
-  let rename_components renames_map contract_name components =
+  let rename_components renames_map components =
     let components', renames_map' =
       List.fold_left components ~init:([], renames_map)
         ~f:(fun (acc_components, m) component ->
-          let component', m = rename_component m contract_name component in
+          let component', m = rename_component m component in
           (acc_components @ [ component' ], m))
     in
     (components' |> List.rev, renames_map')
 
-  let rename_contr renames_map (contract_name : string) contr =
-    let cparams, renames_map =
-      qualify_params renames_map contract_name contr.cparams
-    in
+  let rename_contr renames_map contr =
+    let cparams, renames_map = qualify_params renames_map contr.cparams in
     let cconstraint = rename_expr renames_map contr.cconstraint in
-    let cfields, renames_map =
-      qualify_fields renames_map contract_name contr.cfields
-    in
-    let ccomps, renames_map =
-      rename_components renames_map contract_name contr.ccomps
-    in
+    let cfields, renames_map = qualify_fields renames_map contr.cfields in
+    let ccomps, renames_map = rename_components renames_map contr.ccomps in
     ({ contr with cparams; cconstraint; cfields; ccomps }, renames_map)
 
   (** Renames local identifiers in [cmod] and saves rename information to
       [renames_map]. *)
   let rename_cmod renames_map (cmod : cmodule) =
-    let contract_name =
-      SIdentifier.Name.as_string (SIdentifier.get_id cmod.contr.cname)
-    in
+    contract_name :=
+      SIdentifier.Name.as_string (SIdentifier.get_id cmod.contr.cname);
     let libs, renames_map =
       Option.value_map cmod.libs ~default:(None, renames_map) ~f:(fun lib ->
-          let lib, renames_map = rename_lib renames_map contract_name lib in
+          let lib, renames_map = rename_lib renames_map lib in
           (Some lib, renames_map))
     in
     let elibs = rename_elibs renames_map cmod.elibs in
-    let contr, renames_map =
-      rename_contr renames_map contract_name cmod.contr
-    in
+    let contr, renames_map = rename_contr renames_map cmod.contr in
     ({ cmod with libs; elibs; contr }, renames_map)
 
   (** Extends the functional contract library [lib] with definitions from the
@@ -649,23 +638,12 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       candidates for this name, emits a warning. *)
   let remote_rename candidates name loc =
     if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
-    else (
-      ErrorUtils.warn1
-        (Printf.sprintf
-           "Name collision: Please disambiguate `%s` in the configuration file \
-            or set the name in the generated product contract."
-           (Lazy.force name))
-        disambiguate_warning_level (Lazy.force loc);
-      Set.to_list candidates
-      |> List.sort ~compare:PIdentifierComp.compare
-      |> List.fold_left ~init:"" ~f:(fun acc l ->
-             acc ^ "|" ^ PIdentifier.Name.as_string l)
-      |> Printf.sprintf "(%s)" |> SIdentifier.Name.parse_simple_name)
+    else set_conflict_name candidates (Lazy.force_val name) loc
 
   let remote_rename_er renames_map id =
     match find_id renames_map id with
     | Some candidates ->
-        choose_name candidates
+        remote_rename candidates
           (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
           (lazy (ER.get_loc (PIdentifier.get_rep id)))
         |> add_rep id
