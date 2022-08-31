@@ -19,10 +19,10 @@ procedure collisions11_proc (a : Uint32)
 end
 
 transition collisions12_tr (a : Uint32)
-  collisions12_proc a
+  (collisions11_proc|collisions12_proc) a
 end
 
 procedure collisions12_proc (a : Uint32)
-  collisions12_f = a
+  (collisions11_f|collisions12_f) = a
 end
 

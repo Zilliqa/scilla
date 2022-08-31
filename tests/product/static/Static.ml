@@ -33,6 +33,11 @@ module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
     [
       [ "simple11.scilla"; "simple12.scilla" ];
       [ "collisions11.scilla"; "collisions12.scilla" ];
+      [
+        "remote_collisions11.scilla";
+        "remote_collisions12.scilla";
+        "remote_collisions13.scilla";
+      ];
       [ "type_casts1.scilla" ];
     ]
 

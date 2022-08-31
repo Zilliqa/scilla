@@ -13,3 +13,4 @@ transition typeCasts1_test (addr : ByStr20)
   | None =>
   end
 end
+

@@ -76,9 +76,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     include Comparable.Make (PIdentifier.Name)
   end
 
+  module PIdentifierSet = Set.Make (PIdentifierComp)
   open PSyntax
 
   let emp_ids_map = Map.empty (module PIdentifierComp)
+  let disambiguate_warning_level = 2
 
   (************************************************)
   (** UTILITIES                                   *)
@@ -126,12 +128,61 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let qualify_id ?(capitalize = false) renames_map prefix
       (rep_id : 'a SIdentifier.t) =
     let name = PIdentifier.get_id rep_id in
-    let new_name = qualify_name capitalize prefix name in
-    (add_rep rep_id new_name, Map.set renames_map ~key:name ~data:new_name)
+    match find_id renames_map rep_id with
+    | Some candidates ->
+        let new_name = qualify_name capitalize prefix name in
+        ( add_rep rep_id new_name,
+          Map.set renames_map ~key:name
+            ~data:(PIdentifierSet.add candidates new_name) )
+    | None ->
+        let new_name = qualify_name capitalize prefix name in
+        ( add_rep rep_id new_name,
+          Map.set renames_map ~key:name
+            ~data:(PIdentifierSet.singleton new_name) )
 
-  (** Applies renaming from [renames_map]. *)
-  let rename_id renames_map id =
-    match find_id renames_map id with Some id' -> add_rep id id' | None -> id
+  (** Generates a name to qualify an identifier. If there are a few possible
+      candidates for this name, emits a warning. *)
+  let choose_name candidates name loc =
+    if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
+    else (
+      ErrorUtils.warn1
+        (Printf.sprintf
+           "Name collision: Please disambiguate `%s` in the configuration file"
+           (Lazy.force name))
+        disambiguate_warning_level (Lazy.force loc);
+      Set.to_list candidates
+      |> List.sort ~compare:PIdentifierComp.compare
+      |> List.fold_left ~init:[] ~f:(fun acc l ->
+             acc @ [ PIdentifier.Name.as_string l ])
+      |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
+      |> SIdentifier.Name.parse_simple_name)
+
+  let rename_id_er renames_map id =
+    match find_id renames_map id with
+    | Some candidates ->
+        choose_name candidates
+          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
+          (lazy (ER.get_loc (PIdentifier.get_rep id)))
+        |> add_rep id
+    | None -> id
+
+  let rename_id_sr renames_map id =
+    match find_id renames_map id with
+    | Some candidates ->
+        choose_name candidates
+          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
+          (lazy (SR.get_loc (PIdentifier.get_rep id)))
+        |> add_rep id
+    | None -> id
+
+  let rename_id_loc renames_map id =
+    match find_id renames_map id with
+    | Some candidates ->
+        choose_name candidates
+          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
+          (lazy (PIdentifier.get_rep id))
+        |> add_loc
+    | None -> id
 
   (** Renames user-defined ADTs from [renames_map]. *)
   let rec rename_ty renames_map (ty : SType.t) : SType.t =
@@ -142,7 +193,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         FunType (rename_ty renames_map arg_ty, rename_ty renames_map ret_ty)
     | ADT (id, tys) ->
         ADT
-          ( rename_id renames_map id,
+          ( rename_id_loc renames_map id,
             List.map tys ~f:(fun ty -> rename_ty renames_map ty) )
     | PolyFun (tyvar, bt) -> SType.PolyFun (tyvar, rename_ty renames_map bt)
     | TypeVar _ | Unit | PrimType _ | Address _ -> ty
@@ -168,15 +219,16 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (FunType (arg_ty', ret_ty'), renames_map')
     | ADT (id, tys) -> (
-        match Map.find renames_map (PIdentifier.get_id id) with
-        | Some (name : PIdentifierComp.t) ->
+        let name = PIdentifier.get_id id in
+        match Map.find renames_map name with
+        | Some _ ->
+            let id' = rename_id_loc renames_map id in
             let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
-            (ADT (add_loc name, tys'), renames_map)
+            (ADT (id', tys'), renames_map)
         | None ->
             let name', renames_map' =
               (* Don't qualify built-in ADTs. *)
-              Datatypes.DataTypeDictionary.lookup_name (PIdentifier.get_id id)
-              |> function
+              Datatypes.DataTypeDictionary.lookup_name name |> function
               | Ok _ -> (id, renames_map)
               | Error _ ->
                   qualify_id ~capitalize:true renames_map contract_name id
@@ -188,29 +240,23 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         (SType.PolyFun (tyvar, bt'), renames_map')
     | TypeVar _ | Unit | PrimType _ | Address _ -> (ty, renames_map)
 
-  (** Applies renaming from [renames_map]. *)
-  let rename_name renames_map name =
-    match Map.find renames_map name with
-    | Some new_name -> new_name
-    | None -> name
-
   let rec rename_pattern renames_map = function
     | Wildcard -> Wildcard
-    | Binder id -> Binder (rename_id renames_map id)
+    | Binder id -> Binder (rename_id_er renames_map id)
     | Constructor (id, patterns) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_sr renames_map id in
         let patterns' =
           List.map patterns ~f:(fun p -> rename_pattern renames_map p)
         in
         Constructor (id', patterns')
 
-  let rec rename_lit renames_map lit =
+  let rec rename_lit renames_map lit (annot : ER.rep) =
     let open PLiteral in
     match lit with
     | Msg vals ->
         Msg
           (List.map vals ~f:(fun (tag, ty, lit) ->
-               (tag, rename_ty renames_map ty, rename_lit renames_map lit)))
+               (tag, rename_ty renames_map ty, rename_lit renames_map lit annot)))
     | Map ((key_ty, val_ty), ls) ->
         let key_ty' = rename_ty renames_map key_ty in
         let val_ty' = rename_ty renames_map val_ty in
@@ -218,16 +264,25 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         let _ =
           Caml.Hashtbl.iter
             (fun k v ->
-              let k' = rename_lit renames_map k in
-              let v' = rename_lit renames_map v in
+              let k' = rename_lit renames_map k annot in
+              let v' = rename_lit renames_map v annot in
               Caml.Hashtbl.add ls' k' v')
             ls
         in
         Map ((key_ty', val_ty'), ls')
     | ADTValue (name, tys, lits) ->
-        let id' = rename_name renames_map name in
+        let id' =
+          match Map.find renames_map name with
+          | Some candidates ->
+              choose_name candidates
+                (PIdentifier.Name.as_string name |> Lazy.from_val)
+                (lazy (ER.get_loc annot))
+          | None -> name
+        in
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
-        let lits' = List.map lits ~f:(fun lit -> rename_lit renames_map lit) in
+        let lits' =
+          List.map lits ~f:(fun lit -> rename_lit renames_map lit annot)
+        in
         ADTValue (id', tys', lits')
     (* TODO: Check closures and type abstractions. *)
     | StringLit _ | IntLit _ | UintLit _ | BNum _ | ByStrX _ | ByStr _ | Clo _
@@ -236,10 +291,10 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   let rec rename_expr renames_map (e, annot) =
     match e with
-    | Literal lit -> (Literal (rename_lit renames_map lit), annot)
-    | Var id -> (Var (rename_id renames_map id), annot)
+    | Literal lit -> (Literal (rename_lit renames_map lit annot), annot)
+    | Var id -> (Var (rename_id_er renames_map id), annot)
     | Let (id, ty_opt, lhs, rhs) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let ty_opt' =
           Option.value_map ty_opt ~default:None ~f:(fun ty ->
               rename_ty renames_map ty |> Option.some)
@@ -252,28 +307,32 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
             let payload' =
               match payload with
               | MLit lit -> MLit lit
-              | MVar id -> MVar (rename_id renames_map id)
+              | MVar id -> MVar (rename_id_er renames_map id)
             in
             (tag_name, payload'))
         |> fun msg' -> (Message msg', annot)
     | Fun (id, ty, body) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let ty' = rename_ty renames_map ty in
         let body' = rename_expr renames_map body in
         (Fun (id', ty', body'), annot)
     | App (fun_id, args) ->
-        let fun_id' = rename_id renames_map fun_id in
-        let args' = List.map args ~f:(fun arg -> rename_id renames_map arg) in
+        let fun_id' = rename_id_er renames_map fun_id in
+        let args' =
+          List.map args ~f:(fun arg -> rename_id_er renames_map arg)
+        in
         (App (fun_id', args'), annot)
     | Constr (id, type_params, params) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_sr renames_map id in
         let type_params' =
           List.map type_params ~f:(fun tp -> rename_ty renames_map tp)
         in
-        let params' = List.map params ~f:(fun p -> rename_id renames_map p) in
+        let params' =
+          List.map params ~f:(fun p -> rename_id_er renames_map p)
+        in
         (Constr (id', type_params', params'), annot)
     | MatchExpr (id, patterns) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let patterns' =
           List.map patterns ~f:(fun (pat, ea) ->
               let pat' = rename_pattern renames_map pat in
@@ -283,18 +342,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         (MatchExpr (id', patterns'), annot)
     | Builtin (builtin, tys, params) ->
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
-        let params' = List.map params ~f:(fun p -> rename_id renames_map p) in
+        let params' =
+          List.map params ~f:(fun p -> rename_id_er renames_map p)
+        in
         (Builtin (builtin, tys', params'), annot)
     | TFun (id, body) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let body' = rename_expr renames_map body in
         (TFun (id', body'), annot)
     | TApp (id, tys) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
         (TApp (id', tys'), annot)
     | Fixpoint (id, ty, body) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let ty' = rename_ty renames_map ty in
         let body' = rename_expr renames_map body in
         (Fixpoint (id', ty', body'), annot)
@@ -305,18 +366,18 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let rec rename_stmt renames_map (stmt, annot) =
     match stmt with
     | Bind (id, expr) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         (Bind (id', rename_expr renames_map expr), annot)
     | CallProc (id, args) ->
-        let id' = rename_id renames_map id in
-        let args' = List.map args ~f:(fun a -> rename_id renames_map a) in
+        let id' = rename_id_sr renames_map id in
+        let args' = List.map args ~f:(fun a -> rename_id_er renames_map a) in
         (CallProc (id', args'), annot)
     | Iterate (list, id) ->
-        let id' = rename_id renames_map id in
-        let list' = rename_id renames_map list in
+        let id' = rename_id_sr renames_map id in
+        let list' = rename_id_er renames_map list in
         (Iterate (list', id'), annot)
     | MatchStmt (id, arms) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         let arms' =
           List.map arms ~f:(fun (pattern, stmts) ->
               let pattern' = rename_pattern renames_map pattern in
@@ -328,43 +389,43 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (MatchStmt (id', arms'), annot)
     | MapUpdate (m, keys, v_opt) ->
-        let m' = rename_id renames_map m in
-        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        let m' = rename_id_er renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
         let v_opt' =
           Option.value_map v_opt ~default:None ~f:(fun v ->
-              Some (rename_id renames_map v))
+              Some (rename_id_er renames_map v))
         in
         (MapUpdate (m', keys', v_opt'), annot)
     | MapGet (v, m, keys, exists) ->
-        let v' = rename_id renames_map v in
-        let m' = rename_id renames_map m in
-        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        let v' = rename_id_er renames_map v in
+        let m' = rename_id_er renames_map m in
+        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
         (MapGet (v', m', keys', exists), annot)
     | RemoteMapGet (v, adr, m, keys, exists) ->
         (* Map will be replaced to the local one in the Remote pass. *)
-        let v' = rename_id renames_map v in
-        let keys' = List.map keys ~f:(fun k -> rename_id renames_map k) in
+        let v' = rename_id_er renames_map v in
+        let keys' = List.map keys ~f:(fun k -> rename_id_er renames_map k) in
         (RemoteMapGet (v', adr, m, keys', exists), annot)
     | Load (lhs, rhs) ->
-        let lhs' = rename_id renames_map lhs in
-        let rhs' = rename_id renames_map rhs in
+        let lhs' = rename_id_er renames_map lhs in
+        let rhs' = rename_id_er renames_map rhs in
         (Load (lhs', rhs'), annot)
     | RemoteLoad (lhs, adr, rhs) ->
         (* Address will be replaced in the Remote pass. *)
-        let lhs' = rename_id renames_map lhs in
-        let rhs' = rename_id renames_map rhs in
+        let lhs' = rename_id_er renames_map lhs in
+        let rhs' = rename_id_er renames_map rhs in
         (RemoteLoad (lhs', adr, rhs'), annot)
     | Store (lhs, rhs) ->
-        let lhs' = rename_id renames_map lhs in
-        let rhs' = rename_id renames_map rhs in
+        let lhs' = rename_id_er renames_map lhs in
+        let rhs' = rename_id_er renames_map rhs in
         (Store (lhs', rhs'), annot)
     | TypeCast (lhs, rhs, ty) ->
-        let lhs' = rename_id renames_map lhs in
-        let rhs' = rename_id renames_map rhs in
+        let lhs' = rename_id_er renames_map lhs in
+        let rhs' = rename_id_er renames_map rhs in
         let ty' = rename_ty renames_map ty in
         (TypeCast (lhs', rhs', ty'), annot)
     | ReadFromBC (id, q) ->
-        let id' = rename_id renames_map id in
+        let id' = rename_id_er renames_map id in
         (ReadFromBC (id', q), annot)
     | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
         (stmt, annot)
@@ -418,13 +479,13 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     List.map elibs ~f:(fun (name, import_as_opt) ->
         match import_as_opt with
         | Some import_as ->
-            let import_as' = rename_id renames_map import_as in
+            let import_as' = rename_id_sr renames_map import_as in
             (name, Some import_as')
         | None -> (name, import_as_opt))
 
   let rename_params renames_map (params : ('a SIdentifier.t * SType.t) list) =
     List.map params ~f:(fun (name, ty) ->
-        let name' = rename_id renames_map name in
+        let name' = rename_id_er renames_map name in
         let ty' = rename_ty renames_map ty in
         (name', ty'))
 
@@ -584,11 +645,40 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (************************************************)
   (* localize_* functions replace remote operations with the local ones *)
 
+  (** Generates a name to qualify an identifier. If there are a few possible
+      candidates for this name, emits a warning. *)
+  let remote_rename candidates name loc =
+    if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
+    else (
+      ErrorUtils.warn1
+        (Printf.sprintf
+           "Name collision: Please disambiguate `%s` in the configuration file \
+            or set the name in the generated product contract."
+           (Lazy.force name))
+        disambiguate_warning_level (Lazy.force loc);
+      Set.to_list candidates
+      |> List.sort ~compare:PIdentifierComp.compare
+      |> List.fold_left ~init:"" ~f:(fun acc l ->
+             acc ^ "|" ^ PIdentifier.Name.as_string l)
+      |> Printf.sprintf "(%s)" |> SIdentifier.Name.parse_simple_name)
+
+  let remote_rename_er renames_map id =
+    match find_id renames_map id with
+    | Some candidates ->
+        choose_name candidates
+          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
+          (lazy (ER.get_loc (PIdentifier.get_rep id)))
+        |> add_rep id
+    | None -> id
+
   let rec localize_stmt renames_map (stmt, annot) =
     match stmt with
-    | RemoteLoad (l, _, v) -> (Load (l, v), annot)
+    | RemoteLoad (l, _, v) ->
+        let v' = remote_rename_er renames_map v in
+        (Load (l, v'), annot)
     | RemoteMapGet (l, _, m, keys, exists) ->
-        (MapGet (l, m, keys, exists), annot)
+        let m' = remote_rename_er renames_map m in
+        (MapGet (l, m', keys, exists), annot)
     | MatchStmt (id, arms) ->
         let arms' =
           List.map arms ~f:(fun (pat, stmts) ->
@@ -599,6 +689,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
         in
         (MatchStmt (id, arms'), annot)
     | TypeCast (id, _addr, _typ) ->
+        let id' = remote_rename_er renames_map id in
         let body =
           let some =
             PIdentifier.mk_id
@@ -613,7 +704,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
           in
           (Constr (some, [ bystr20 ], [ this_address ]), ER.dummy_rep)
         in
-        (Bind (id, body), annot)
+        (Bind (id', body), annot)
     | Load _ | Store _ | Bind _ | MapUpdate _ | MapGet _ | ReadFromBC _
     | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _
     | Throw _ | GasStmt _ ->
