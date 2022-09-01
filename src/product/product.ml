@@ -37,26 +37,6 @@ open Literal
        defined in the product contract.
 
   TODO: Unimplemented features:
-  * We need a way to detect what exactly the remote contract is used to avoid
-    name collisions between smart contracts. For example, if have an address of
-    a remote contract:
-    ```
-    | CollectionItemParam of ByStr20 with contract
-    field spenders: Map Uint256 ByStr20,
-    field token_owners: Map Uint256 ByStr20
-    end Uint256 Uint32
-    ```
-    And later in the code we have this line:
-    ```
-    owner <- & token_address.token_owners[token_id];
-    ```
-    Suppose, that we merged multiple smart contracts that have a field
-    `token_owners`. So, to disambiguate this, we need sort of config or
-    user-defined annotations.
-    Another solution could be interactive merging, when a tool requests to a
-    user choose which contract is used in this place. In such case we'll need
-    to change the representation of the [renames_map] to make it store sets of
-    possible identifiers.
   * As an optimization we should not add equivalent definitions to the product
     contract (see: https://github.com/Zilliqa/scilla/issues/1158).
 
