@@ -24,7 +24,7 @@ module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
   let runner = "scilla-merger"
   let ignore_predef_args = false
   let gas_limit = Stdint.Uint64.of_int 8000
-  let custom_args = []
+  let custom_args = [ "--config"; "product/static/product_config.json" ]
   let additional_libdirs = []
   let provide_init_arg = false
   let diff_filter s = s
@@ -37,6 +37,11 @@ module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
         "remote_collisions11.scilla";
         "remote_collisions12.scilla";
         "remote_collisions13.scilla";
+      ];
+      [
+        "remote_collisions21.scilla";
+        "remote_collisions22.scilla";
+        "remote_collisions23.scilla";
       ];
       [ "type_casts1.scilla" ];
     ]

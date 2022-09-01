@@ -3,5 +3,6 @@
  (modes byte native)
  (public_name scilla.product)
  (wrapped true)
- (libraries core scilla_base)
- (synopsis "Library to merge multiple smart-contracts to a single product"))
+ (libraries core scilla_base yojson)
+ (synopsis "Library to merge multiple smart-contracts to a single product")
+ (preprocess (pps ppx_deriving_yojson)))

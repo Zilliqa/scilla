@@ -1,0 +1,17 @@
+{
+  "replacements": [
+    {
+      "filename": "product/static/remote_collisions21.scilla",
+      "line": 19,
+      "replacee": "m_f",
+      "replacement": "remoteCollisions22_m_f"
+    },
+    {
+      "filename": "product/static/remote_collisions21.scilla",
+      "line": 17,
+      "replacee": "a_f",
+      "replacement": "remoteCollisions23_a_f"
+    }
+  ]
+}
+

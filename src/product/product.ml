@@ -85,6 +85,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Name of the currently merged contract. *)
   let contract_name = ref ""
 
+  (** Product configuration file with replacements information.
+      It has the following format:
+        contract_name |-> (line_num |-> (replacee |-> replacement)) *)
+  let g_config = ref @@ Map.empty (module String)
+
   (************************************************)
   (** Utilities                                   *)
   (************************************************)
@@ -119,6 +124,36 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
            acc @ [ PIdentifier.Name.as_string l ])
     |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
     |> SIdentifier.Name.parse_simple_name
+
+  (** Set global contract name based on the given [cmod]. *)
+  let set_contract_name cmod =
+    contract_name :=
+      SIdentifier.Name.as_string (SIdentifier.get_id cmod.contr.cname)
+
+  (** Sets [Config.config] as a global configuration for the product. *)
+  let set_product_config (c : Config.config option) =
+    (match c with
+    | None -> Map.empty (module String)
+    | Some cfg ->
+        List.fold_left cfg.replacements
+          ~init:(Map.empty (module String))
+          ~f:(fun m r ->
+            let replacements =
+              match Map.find m r.filename with
+              | Some mm -> mm
+              | None -> Map.empty (module Int)
+            in
+            let replacements' =
+              Map.set replacements ~key:r.line
+                ~data:
+                  (match Map.find replacements r.line with
+                  | Some rr -> Map.set rr ~key:r.replacee ~data:r.replacement
+                  | None ->
+                      Map.empty (module String)
+                      |> Map.set ~key:r.replacee ~data:r.replacement)
+            in
+            Map.set m ~key:r.filename ~data:replacements'))
+    |> fun c -> g_config := c
 
   (************************************************)
   (* Local pass                                   *)
@@ -159,9 +194,20 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   (** Generates a name to qualify an identifier. If there are a few possible
       candidates for this name, emits a warning. *)
-  let choose_name candidates name loc =
-    if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
-    else set_conflict_name candidates name loc
+  let choose_name candidates name (loc : ErrorUtils.loc lazy_t) =
+    match Set.length candidates with
+    | 1 -> Set.min_elt_exn candidates
+    | _ -> (
+        let loc_v = loc |> Lazy.force in
+        match Map.find !g_config loc_v.fname with
+        | Some replacements -> (
+            match Map.find replacements loc_v.lnum with
+            | Some replacements' -> (
+                match Map.find replacements' name with
+                | Some r -> PIdentifier.Name.parse_simple_name r
+                | None -> set_conflict_name candidates name loc)
+            | None -> set_conflict_name candidates name loc)
+        | None -> set_conflict_name candidates name loc)
 
   (** Generates a name to rename the identifier. If there are a few possible
       candidates for this name, emits a warning. *)
@@ -539,8 +585,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Renames local identifiers in [cmod] and saves rename information to
       [renames_map]. *)
   let rename_cmod renames_map (cmod : cmodule) =
-    contract_name :=
-      SIdentifier.Name.as_string (SIdentifier.get_id cmod.contr.cname);
+    set_contract_name cmod;
     let libs, renames_map =
       Option.value_map cmod.libs ~default:(None, renames_map) ~f:(fun lib ->
           let lib, renames_map = rename_lib renames_map lib in
@@ -634,17 +679,11 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (************************************************)
   (* localize_* functions replace remote operations with the local ones *)
 
-  (** Generates a name to qualify an identifier. If there are a few possible
-      candidates for this name, emits a warning. *)
-  let remote_rename candidates name loc =
-    if phys_equal 1 @@ Set.length candidates then Set.min_elt_exn candidates
-    else set_conflict_name candidates (Lazy.force_val name) loc
-
   let remote_rename_er renames_map id =
     match find_id renames_map id with
     | Some candidates ->
-        remote_rename candidates
-          (lazy (PIdentifier.Name.as_string (PIdentifier.get_id id)))
+        choose_name candidates
+          (PIdentifier.Name.as_string (PIdentifier.get_id id))
           (lazy (ER.get_loc (PIdentifier.get_rep id)))
         |> add_rep id
     | None -> id
@@ -695,6 +734,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     { comp with comp_body }
 
   let localize_cmod renames_map cmod =
+    set_contract_name cmod;
     let ccomps =
       List.map cmod.contr.ccomps ~f:(fun comp -> localize_comp renames_map comp)
     in
@@ -709,8 +749,10 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (* Entry point                                  *)
   (************************************************)
 
-  let run (contract_infos : (cmodule * lib_entry list * libtree list) list) =
+  let run (config : Config.config option)
+      (contract_infos : (cmodule * lib_entry list * libtree list) list) =
     ErrorUtils.reset_warnings ();
+    set_product_config config;
     run_local_pass contract_infos
     |> Option.value_map ~default:None
          ~f:(fun (product_cmod, product_rlib, renames_map) ->

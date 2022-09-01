@@ -30,17 +30,27 @@ let parse_args args =
   let startswith s c =
     String.index s c |> Option.value_map ~default:false ~f:(phys_equal 0)
   in
-  let rec aux (acc_args, acc_files) = function
-    | [] -> (acc_args, acc_files)
+  let rec aux (acc_args, acc_files, config_path) = function
+    | [] -> (acc_args, acc_files, config_path)
+    | x :: y :: xs when String.equal x "--config" || String.equal x "-c" ->
+        aux (acc_args, acc_files, Some y) xs
     | x :: y :: xs when startswith x '-' ->
-        aux (acc_args @ [ x ] @ [ y ], acc_files) xs
-    | x :: xs -> aux (acc_args, acc_files @ [ x ]) xs
+        aux (acc_args @ [ x ] @ [ y ], acc_files, config_path) xs
+    | x :: xs -> aux (acc_args, acc_files @ [ x ], config_path) xs
   in
-  aux ([], []) args
+  aux ([], [], None) args
 
 let run args =
   try
-    let args, files = parse_args args in
+    let args, files, config_path = parse_args args in
+    let config =
+      Option.value_map config_path ~default:None ~f:(fun path ->
+          match Config.from_file path with
+          | Ok cfg -> Some cfg
+          | Error err ->
+              exit_with_error (err ^ "\n");
+              None)
+    in
     List.fold_left files ~init:[] ~f:(fun acc file ->
         let _, (cmod, rlibs, elibs) =
           Checker.check_cmod
@@ -48,7 +58,7 @@ let run args =
             ~exe_name:(Sys.get_argv ()).(0)
         in
         acc @ [ (cmod, rlibs, elibs) ])
-    |> MProduct.run
+    |> MProduct.run config
     |> fun (output, warnings) ->
     DebugMessage.perr warnings;
     Option.value_map output ~default:""
