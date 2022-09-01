@@ -83,7 +83,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let disambiguate_warning_level = 2
 
   (** Name of the currently merged contract. *)
-  let contract_name = ref ""
+  let g_contract_name = ref ""
 
   (** Product configuration file with replacements information.
       It has the following format:
@@ -126,9 +126,21 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     |> SIdentifier.Name.parse_simple_name
 
   (** Set global contract name based on the given [cmod]. *)
-  let set_contract_name cmod =
-    contract_name :=
-      SIdentifier.Name.as_string (SIdentifier.get_id cmod.contr.cname)
+  let set_contract_name =
+    let visited_contracts = ref @@ Map.empty (module String) in
+    fun cmod ->
+      let contract_name =
+        cmod.contr.cname |> PIdentifier.get_id |> PIdentifier.Name.as_string
+      in
+      match Map.find !visited_contracts contract_name with
+      | Some next_cnt ->
+          g_contract_name := Printf.sprintf "%s_%d" contract_name next_cnt;
+          visited_contracts :=
+            Map.set !visited_contracts ~key:contract_name ~data:(next_cnt + 1)
+      | None ->
+          g_contract_name := contract_name;
+          visited_contracts :=
+            Map.set !visited_contracts ~key:contract_name ~data:0
 
   (** Sets [Config.config] as a global configuration for the product. *)
   let set_product_config (c : Config.config option) =
@@ -177,7 +189,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       gen_name i )
 
   (** Sets the unique for the identifier [rep_id]. *)
-  let qualify_id ?(capitalize = false) ?(prefix = !contract_name) renames_map
+  let qualify_id ?(capitalize = false) ?(prefix = !g_contract_name) renames_map
       (rep_id : 'a SIdentifier.t) =
     let name = PIdentifier.get_id rep_id in
     match find_id renames_map rep_id with

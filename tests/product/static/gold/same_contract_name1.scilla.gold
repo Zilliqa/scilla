@@ -1,0 +1,15 @@
+scilla_version 0
+
+library ProductLib
+
+
+contract ProductContr ()
+
+
+procedure sameName1_foo ()
+  accept
+end
+
+procedure sameName1_0_foo ()
+  accept
+end

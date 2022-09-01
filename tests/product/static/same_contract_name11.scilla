@@ -1,0 +1,9 @@
+scilla_version 0
+
+library SameName1
+
+contract SameName1()
+
+procedure foo()
+  accept
+end

@@ -1,0 +1,30 @@
+scilla_version 0
+
+library ProductLib
+
+
+contract ProductContr ()
+
+
+field remoteCollisions21_f : Bool = False
+
+field remoteCollisions21_z : Uint32 = Uint32 0
+
+field remoteCollisions22_a_f : Bool = False
+
+field remoteCollisions22_m_f : Map Uint32 Bool = Emp (Uint32) (Bool)
+
+field remoteCollisions23_a_f : Bool = True
+
+field remoteCollisions23_m_f : Map Uint32 Bool = Emp (Uint32) (Bool)
+
+transition remoteCollisions21_tr (a : ByStr20)
+  a_opt = Some {(ByStr20)} _this_address;
+  match a_opt with
+  | Some aa =>
+    remoteCollisions21_f <- remoteCollisions23_a_f;
+    k <- remoteCollisions21_z;
+    remoteCollisions21_f <- remoteCollisions22_m_f[k]
+  | None =>
+  end
+end
