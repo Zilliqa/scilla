@@ -319,29 +319,3 @@ opam install ./scilla.opam --deps-only --with-test
 ```
 
 </details>
-
-## Using OCaml with Emacs
-
-Please, read the instructions below if you intend to hack on Scilla implementation.
-
-<details><summary>Instructions</summary>
-
-Scilla is written in [OCaml](https://ocaml.org/).
-You can read about how to setup your OCaml development environment [here](https://dev.realworldocaml.org/install.html).
-The following extensions would be useful for working on this codebase:
-
-* [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
-* [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
-* [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
-
-All those libraries can be installed via [opam-user-setup](https://github.com/OCamlPro/opam-user-setup):
-```shell
-opam install user-setup
-```
-
-Additionally, you might want to install a nice OCaml REPL called [utop](https://github.com/ocaml-community/utop).
-
-To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
-flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).
-
-</details>
