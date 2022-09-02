@@ -112,46 +112,15 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     |> SIdentifier.Name.parse_simple_name
 
   (** Set global contract name based on the given [cmod]. *)
-  let set_contract_name =
-    let visited_contracts = ref @@ Map.empty (module String) in
-    fun cmod ->
-      let contract_name =
-        cmod.contr.cname |> PIdentifier.get_id |> PIdentifier.Name.as_string
-      in
-      match Map.find !visited_contracts contract_name with
-      | Some next_cnt ->
-          g_contract_name := Printf.sprintf "%s_%d" contract_name next_cnt;
-          visited_contracts :=
-            Map.set !visited_contracts ~key:contract_name ~data:(next_cnt + 1)
-      | None ->
-          g_contract_name := contract_name;
-          visited_contracts :=
-            Map.set !visited_contracts ~key:contract_name ~data:0
+  let set_contract_name cmod =
+    let basename =
+      cmod.contr.cname |> PIdentifier.get_id |> PIdentifier.Name.as_string
+    in
+    g_contract_name := Util.get_contract_name basename
 
   (** Sets [Config.config] as a global configuration for the product. *)
   let set_product_config (c : Config.config option) =
-    (match c with
-    | None -> Map.empty (module String)
-    | Some cfg ->
-        List.fold_left cfg.replacements
-          ~init:(Map.empty (module String))
-          ~f:(fun m r ->
-            let replacements =
-              match Map.find m r.filename with
-              | Some mm -> mm
-              | None -> Map.empty (module Int)
-            in
-            let replacements' =
-              Map.set replacements ~key:r.line
-                ~data:
-                  (match Map.find replacements r.line with
-                  | Some rr -> Map.set rr ~key:r.replacee ~data:r.replacement
-                  | None ->
-                      Map.empty (module String)
-                      |> Map.set ~key:r.replacee ~data:r.replacement)
-            in
-            Map.set m ~key:r.filename ~data:replacements'))
-    |> fun c -> g_config := c
+    Util.parse_product_config c |> fun c -> g_config := c
 
   (************************************************)
   (* Local pass                                   *)

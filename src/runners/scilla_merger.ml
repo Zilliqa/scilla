@@ -20,6 +20,7 @@ open Core
 open Scilla_base
 open Scilla_product
 open Product
+open JSONProduct
 open ErrorUtils
 module MProduct = ScillaProduct (Checker.TCSRep) (Checker.TCERep)
 
@@ -30,19 +31,45 @@ let parse_args args =
   let startswith s c =
     String.index s c |> Option.value_map ~default:false ~f:(phys_equal 0)
   in
-  let rec aux (acc_args, acc_files, config_path) = function
-    | [] -> (acc_args, acc_files, config_path)
+  let rec aux (acc_args, acc_files, config_path, json_info) = function
+    | [] -> (acc_args, acc_files, config_path, json_info)
     | x :: y :: xs when String.equal x "--config" || String.equal x "-c" ->
-        aux (acc_args, acc_files, Some y) xs
+        aux (acc_args, acc_files, Some y, json_info) xs
+    | x :: y :: z :: xs when String.equal x "--json" ->
+        let j = { JSONProduct.file = y; JSONProduct.contract_name = z } in
+        aux (acc_args, acc_files, config_path, json_info @ [ j ]) xs
     | x :: y :: xs when startswith x '-' ->
-        aux (acc_args @ [ x ] @ [ y ], acc_files, config_path) xs
-    | x :: xs -> aux (acc_args, acc_files @ [ x ], config_path) xs
+        aux (acc_args @ [ x ] @ [ y ], acc_files, config_path, json_info) xs
+    | x :: xs -> aux (acc_args, acc_files @ [ x ], config_path, json_info) xs
   in
-  aux ([], [], None) args
+  aux ([], [], None, []) args
+
+(** Merges smart-contract files. *)
+let merge_contracts files args config =
+  List.fold_left files ~init:[] ~f:(fun acc file ->
+      let _, (cmod, rlibs, elibs) =
+        Checker.check_cmod
+          (Some (args @ [ file ]))
+          ~exe_name:(Sys.get_argv ()).(0)
+      in
+      acc @ [ (cmod, rlibs, elibs) ])
+  |> MProduct.run config
+  |> fun (output, warnings) ->
+  DebugMessage.perr warnings;
+  Option.value_map output ~default:""
+    ~f:(fun ((cmod : MProduct.PSyntax.cmodule), _rlibs) ->
+      Fmt.contract_to_string cmod)
+  |> DebugMessage.pout
+
+(** Merges [init.json] files. *)
+let merge_init_jsons files config =
+  ScillaJSONProduct.run config files |> fun (output, warnings) ->
+  DebugMessage.perr warnings;
+  DebugMessage.pout output
 
 let run args =
   try
-    let args, files, config_path = parse_args args in
+    let args, files, config_path, jsons = parse_args args in
     let config =
       Option.value_map config_path ~default:None ~f:(fun path ->
           match Config.from_file path with
@@ -51,20 +78,8 @@ let run args =
               exit_with_error (err ^ "\n");
               None)
     in
-    List.fold_left files ~init:[] ~f:(fun acc file ->
-        let _, (cmod, rlibs, elibs) =
-          Checker.check_cmod
-            (Some (args @ [ file ]))
-            ~exe_name:(Sys.get_argv ()).(0)
-        in
-        acc @ [ (cmod, rlibs, elibs) ])
-    |> MProduct.run config
-    |> fun (output, warnings) ->
-    DebugMessage.perr warnings;
-    Option.value_map output ~default:""
-      ~f:(fun ((cmod : MProduct.PSyntax.cmodule), _rlibs) ->
-        Fmt.contract_to_string cmod)
-    |> DebugMessage.pout
+    if List.is_empty jsons then merge_contracts files args config
+    else merge_init_jsons jsons config
   with FatalError msg -> exit_with_error msg
 
 let () =
