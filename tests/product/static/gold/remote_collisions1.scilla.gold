@@ -1,5 +1,7 @@
 scilla_version 0
 
+import BoolUtils
+
 library ProductLib
 
 

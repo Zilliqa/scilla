@@ -1,5 +1,7 @@
 scilla_version 0
 
+import BoolUtils
+
 library ProductLib
 
 
@@ -28,3 +30,4 @@ transition remoteCollisions21_tr (a : ByStr20)
   | None =>
   end
 end
+

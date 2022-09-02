@@ -47,6 +47,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   module SER = SR
   module EER = ER
   module PLiteral = GlobalLiteral
+  module PParser = FrontEndParser.ScillaFrontEndParser (PLiteral)
   module PType = PLiteral.LType
   module PIdentifier = PType.TIdentifier
   module PSyntax = ScillaSyntax (SR) (ER) (PLiteral)
@@ -74,14 +75,19 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Utilities                                   *)
   (************************************************)
 
-  let mk_simple_id name =
+  let mk_sr_id name =
     SIdentifier.mk_id (SIdentifier.Name.parse_simple_name name) SR.dummy_rep
 
-  let product_lib_name = mk_simple_id "ProductLib"
-  let product_contr_name = mk_simple_id "ProductContr"
+  let mk_er_id name =
+    SIdentifier.mk_id (SIdentifier.Name.parse_simple_name name) ER.dummy_rep
+
+  let product_lib_name = mk_sr_id "ProductLib"
+  let product_contr_name = mk_sr_id "ProductContr"
 
   let get_lib_entry_id = function
     | LibTyp (id, _) | LibVar (id, _, _) -> PIdentifier.get_id id
+
+  let libvar_of_expr name e = LibVar (mk_er_id name, None, e)
 
   let lib_entries_to_map lentries =
     List.fold_left ~init:emp_ids_map lentries ~f:(fun m rlib ->
@@ -602,19 +608,36 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     | None, None -> None
 
   (** Extends contract components [constraint] with [ext_constraint]. *)
-  let extend_contract_constraint (constr : expr_annot)
-      (_ext_constr : expr_annot) =
-    (* TODO: We should create a chain of let bindings. Something like:
-         let cond1 = <expr1> in
-         let cond2 = <expr2> in
-         let cond3 = <expr3> in
-       We use ANF form, so we will combine them by this way:
-         let cond1_2 = builtin_band cond1 cond2 in
-         let cond1_2_3 = builtin_band cond1_2 cond3 in
-         cond1_2_3
-       For now I'd like to keep just the first expression, because there is
-       only one such case on the marketplace contracts. *)
-    constr
+  let extend_contract_constraint (constr : expr_annot) (ext_constr : expr_annot)
+      =
+    (* If there are no constraints, the constraint expression is [True]. *)
+    let is_true_lit = function
+      | PLiteral.ADTValue (name, _, _) ->
+          PIdentifier.Name.as_string name |> String.equal "True"
+      | _ -> false
+    in
+    match (constr, ext_constr) with
+    | (Literal ll, _), (Literal rl, _) when is_true_lit ll && is_true_lit rl ->
+        constr
+    | (Literal ll, _), _ when is_true_lit ll -> ext_constr
+    | _, (Literal rl, _) when is_true_lit rl -> constr
+    | _ ->
+        (* We should create a chain of let bindings. Something like:
+             let cond1 = <expr1> in
+             let cond2 = <expr2> in
+             let cond3 = <expr3> in
+           We use ANF, so we will combine them by this way:
+             let cond1_2 = andb cond1 cond2 in
+             let cond1_2_3 = andb cond1_2 cond3 in
+             cond1_2_3 *)
+        let cond1_id = mk_er_id "cond_1" in
+        let cond2_id = mk_er_id "cond_2" in
+        let cond1_2 =
+          (App (mk_er_id "andb", [ cond1_id; cond2_id ]), ER.dummy_rep)
+        in
+        let cond2 = (Let (cond2_id, None, ext_constr, cond1_2), ER.dummy_rep) in
+        let cond1 = (Let (cond1_id, None, constr, cond2), ER.dummy_rep) in
+        cond1
 
   let extend_contract c ext_c =
     {
@@ -625,22 +648,23 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       cfields = c.cfields @ ext_c.cfields;
     }
 
+  let extend_elibs elibs ext_elibs =
+    elibs @ ext_elibs
+    |> List.dedup_and_sort
+         ~compare:(fun (lhs_import, lhs_import_as) (rhs_import, rhs_import_as)
+                  ->
+           let v = SIdentifier.compare lhs_import rhs_import in
+           match (lhs_import_as, rhs_import_as) with
+           | Some lhs_as, Some rhs_as -> SIdentifier.compare lhs_as rhs_as + v
+           | None, None -> v
+           | None, Some _ -> v + 1
+           | Some _, None -> 1 - v)
+
   (** Extends [cmod] with definitions from module [ext_cmod]. *)
   let extend_cmod (cmod : cmodule) (ext_cmod : cmodule) =
     (* TODO: Check for incompatible smver *)
     let libs = extend_lib cmod.libs ext_cmod.libs in
-    let elibs =
-      cmod.elibs @ ext_cmod.elibs
-      |> List.dedup_and_sort
-           ~compare:(fun (lhs_import, lhs_import_as) (rhs_import, rhs_import_as)
-                    ->
-             let v = SIdentifier.compare lhs_import rhs_import in
-             match (lhs_import_as, rhs_import_as) with
-             | Some lhs_as, Some rhs_as -> SIdentifier.compare lhs_as rhs_as + v
-             | None, None -> v
-             | None, Some _ -> v + 1
-             | Some _, None -> 1 - v)
-    in
+    let elibs = extend_elibs cmod.elibs ext_cmod.elibs in
     let contr = extend_contract cmod.contr ext_cmod.contr in
     { cmod with libs; elibs; contr }
 
@@ -661,6 +685,15 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
             (Some (prod_cmod, prod_rlibs), renames_map)
         | None ->
             let cmod', renames_map = rename_cmod renames_map cmod in
+            (* Add an import of "BoolUtils" that contains "andb" library
+               function "andb" used when merging constraints. *)
+            let cmod' =
+              {
+                cmod' with
+                elibs =
+                  extend_elibs cmod'.elibs [ (mk_sr_id "BoolUtils", None) ];
+              }
+            in
             (Some (cmod', lib_entries_to_map rlibs), renames_map))
     |> fun (result, renames_map) ->
     Option.value_map result ~default:None ~f:(fun (cmod, rlibs_map) ->

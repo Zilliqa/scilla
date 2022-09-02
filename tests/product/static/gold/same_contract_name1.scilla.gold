@@ -1,5 +1,7 @@
 scilla_version 0
 
+import BoolUtils
+
 library ProductLib
 
 
@@ -13,3 +15,4 @@ end
 procedure sameName1_0_foo ()
   accept
 end
+

@@ -34,6 +34,7 @@ module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
       [ "simple11.scilla"; "simple12.scilla" ];
       [ "collisions11.scilla"; "collisions12.scilla" ];
       [ "same_contract_name11.scilla"; "same_contract_name12.scilla" ];
+      [ "constraints11.scilla"; "constraints12.scilla"; "constraints13.scilla" ];
       [
         "remote_collisions11.scilla";
         "remote_collisions12.scilla";

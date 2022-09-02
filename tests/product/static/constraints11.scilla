@@ -1,0 +1,8 @@
+scilla_version 0
+
+library Constraints11
+
+contract Constraints11(a: Uint32)
+with
+  let zero = Uint32 0 in
+  builtin lt zero a =>
