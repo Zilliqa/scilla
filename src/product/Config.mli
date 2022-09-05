@@ -17,6 +17,9 @@
 *)
 open Core
 
+type json_replacement = { vname : string; value : string }
+[@@deriving yojson] [@@deriving yojson]
+
 type replacement = {
   filename : string;
   line : int;
@@ -25,6 +28,10 @@ type replacement = {
 }
 [@@deriving yojson]
 
-type config = { replacements : replacement list } [@@deriving yojson]
+type config = {
+  json_replacements : json_replacement list;
+  replacements : replacement list;
+}
+[@@deriving yojson]
 
 val from_file : string -> (config, string) result

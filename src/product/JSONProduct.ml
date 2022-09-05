@@ -39,9 +39,17 @@ module ScillaJSONProduct = struct
         contract_name |-> (line_num |-> (replacee |-> replacement)) *)
   let g_config = ref @@ Map.empty (module String)
 
+  (** Parses product config to the map in the following format: vname |-> value *)
+  let parse_json_product_config = function
+    | None -> Map.empty (module String)
+    | Some (config : Config.config) ->
+        List.fold_left config.json_replacements
+          ~init:(Map.empty (module String))
+          ~f:(fun m r -> Map.set m ~key:r.vname ~data:r.value)
+
   (** Sets [Config.config] as a global configuration for the product. *)
   let set_product_config (c : Config.config option) =
-    Util.parse_product_config c |> fun c -> g_config := c
+    parse_json_product_config c |> fun c -> g_config := c
 
   (** Set a global contract name based on the given [name]. *)
   let set_contract_name name = g_contract_name := Util.get_contract_name name
@@ -61,11 +69,14 @@ module ScillaJSONProduct = struct
   (** Renames [vname] started with [_]. Its values must be the same in all the
       contracts or explicitly specified in the configuration file. *)
   let rename_special_vname renames_map vname vvalue =
-    let has_only_vvalue s =
+    let has_single_vvalue s =
       (phys_equal 1 @@ Set.length s) && String.equal (Set.min_elt_exn s) vvalue
     in
+    let has_replacement_in_config () = Map.mem !g_config vname in
     match Map.find renames_map vname with
-    | Some vvalues when has_only_vvalue vvalues -> (renames_map, vvalue)
+    | Some vvalues when has_single_vvalue vvalues -> (renames_map, vvalue)
+    | Some _vvalues when has_replacement_in_config () ->
+        (renames_map, Map.find_exn !g_config vname)
     | Some vvalues ->
         let vvalues' = StringSet.add vvalues vvalue in
         let vvalue' = set_conflict_vvalue vvalues' vname in

@@ -1,4 +1,10 @@
 {
+  "json_replacements": [
+    {
+      "vname": "_creation_block",
+      "value": "\"1822539\""
+    }
+  ],
   "replacements": [
     {
       "filename": "product/static/remote_collisions21.scilla",
@@ -14,4 +20,3 @@
     }
   ]
 }
-

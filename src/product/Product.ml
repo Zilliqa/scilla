@@ -74,6 +74,30 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Utilities                                   *)
   (************************************************)
 
+  (** Parses product config to the map in the following format:
+      contract_name |-> (line_num |-> (replacee |-> replacement)) *)
+  let parse_product_config = function
+    | None -> Map.empty (module String)
+    | Some (config : Config.config) ->
+        List.fold_left config.replacements
+          ~init:(Map.empty (module String))
+          ~f:(fun m r ->
+            let replacements =
+              match Map.find m r.filename with
+              | Some mm -> mm
+              | None -> Map.empty (module Int)
+            in
+            let replacements' =
+              Map.set replacements ~key:r.line
+                ~data:
+                  (match Map.find replacements r.line with
+                  | Some rr -> Map.set rr ~key:r.replacee ~data:r.replacement
+                  | None ->
+                      Map.empty (module String)
+                      |> Map.set ~key:r.replacee ~data:r.replacement)
+            in
+            Map.set m ~key:r.filename ~data:replacements')
+
   let mk_sr_id name =
     SIdentifier.mk_id (SIdentifier.Name.parse_simple_name name) SR.dummy_rep
 
@@ -119,7 +143,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   (** Sets [Config.config] as a global configuration for the product. *)
   let set_product_config (c : Config.config option) =
-    Util.parse_product_config c |> fun c -> g_config := c
+    parse_product_config c |> fun c -> g_config := c
 
   (************************************************)
   (* Local pass                                   *)

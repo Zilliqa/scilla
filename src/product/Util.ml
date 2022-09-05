@@ -17,7 +17,6 @@
 *)
 
 open Core
-open Config
 
 (** Warning level used for rename conflicts. *)
 let disambiguate_warning_level = 2
@@ -35,27 +34,3 @@ let get_contract_name =
     | None ->
         visited_contracts := Map.set !visited_contracts ~key:basename ~data:0;
         basename
-
-(** Parses product config to the map in the following format:
-      contract_name |-> (line_num |-> (replacee |-> replacement)) *)
-let parse_product_config = function
-  | None -> Map.empty (module String)
-  | Some config ->
-      List.fold_left config.replacements
-        ~init:(Map.empty (module String))
-        ~f:(fun m r ->
-          let replacements =
-            match Map.find m r.filename with
-            | Some mm -> mm
-            | None -> Map.empty (module Int)
-          in
-          let replacements' =
-            Map.set replacements ~key:r.line
-              ~data:
-                (match Map.find replacements r.line with
-                | Some rr -> Map.set rr ~key:r.replacee ~data:r.replacement
-                | None ->
-                    Map.empty (module String)
-                    |> Map.set ~key:r.replacee ~data:r.replacement)
-          in
-          Map.set m ~key:r.filename ~data:replacements')
