@@ -18,7 +18,7 @@
 
 open Core
 
-module Tests = Scilla_test.Util.DiffBasedMultiTests (struct
+module ContractTests = Scilla_test.Util.DiffBasedMultiTests (struct
   let gold_path dir f = [ dir; "product"; "static"; "gold"; f ^ ".gold" ]
   let test_path f = [ "product"; "static"; f ]
   let runner = "scilla-merger"

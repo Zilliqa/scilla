@@ -18,4 +18,5 @@
 
 open OUnit2
 
-let tests env = "product" >::: [ "static" >::: [ Static.Tests.tests env ] ]
+let tests env =
+  "product" >::: [ "static" >::: [ Static.ContractTests.tests env ] ]

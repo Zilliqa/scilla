@@ -61,7 +61,6 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   open PSyntax
 
   let emp_ids_map = Map.empty (module PIdentifierComp)
-  let disambiguate_warning_level = 2
 
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
@@ -103,7 +102,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
       (Printf.sprintf
          "Name collision: Please disambiguate `%s` in the configuration file"
          name)
-      disambiguate_warning_level (Lazy.force loc);
+      Util.disambiguate_warning_level (Lazy.force loc);
     Set.to_list candidates
     |> List.sort ~compare:PIdentifierComp.compare
     |> List.fold_left ~init:[] ~f:(fun acc l ->

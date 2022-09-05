@@ -26,10 +26,11 @@ type json_info = {
   contract_name : string;  (** Name of the appropriate contract *)
 }
 
-(** The ScillaJSONProduct module allows the user to merge multiple
-    [init.json] files that contains initialization options for
-    contracts. *)
+(** The ScillaJSONProduct module allows the user to merge multiple [init.json]
+    files that contains initialization options for contracts. *)
 module ScillaJSONProduct = struct
+  module StringSet = Set.Make (String)
+
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
 
@@ -42,45 +43,83 @@ module ScillaJSONProduct = struct
   let set_product_config (c : Config.config option) =
     Util.parse_product_config c |> fun c -> g_config := c
 
-  (** Set global contract name based on the given [name]. *)
+  (** Set a global contract name based on the given [name]. *)
   let set_contract_name name = g_contract_name := Util.get_contract_name name
 
+  (** Generates a conflict name and emits a warning. *)
+  let set_conflict_vvalue vvalues vname =
+    ErrorUtils.warn0
+      (Printf.sprintf
+         "Name collision: Please specify the value of `%s` in the \
+          configuration file"
+         vname)
+      Util.disambiguate_warning_level;
+    Set.to_list vvalues
+    |> List.sort ~compare:String.compare
+    |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
+
+  (** Renames [vname] started with [_]. Its values must be the same in all the
+      contracts or explicitly specified in the configuration file. *)
+  let rename_special_vname renames_map vname vvalue =
+    let has_only_vvalue s =
+      (phys_equal 1 @@ Set.length s) && String.equal (Set.min_elt_exn s) vvalue
+    in
+    match Map.find renames_map vname with
+    | Some vvalues when has_only_vvalue vvalues -> (renames_map, vvalue)
+    | Some vvalues ->
+        let vvalues' = StringSet.add vvalues vvalue in
+        let vvalue' = set_conflict_vvalue vvalues' vname in
+        let renames_map' = Map.set renames_map ~key:vname ~data:vvalues' in
+        (renames_map', vvalue')
+    | None ->
+        let renames_map' =
+          Map.set renames_map ~key:vname ~data:(StringSet.singleton vvalue)
+        in
+        (renames_map', vvalue)
+
   (** Renames [vname] entry from the JSON file. *)
-  let rename_vname vname =
+  let rename_vname renames_map vname vvalue =
     match vname |> String.to_list with
-    | [] | '_' :: _ ->
-        (* Identifiers started with '_' are special and should not be
-           renamed. *)
-        vname
-    | _ -> Printf.sprintf "%s_%s" !g_contract_name vname
+    | [] -> (vname, renames_map, vvalue)
+    | '_' :: _ ->
+        (* Identifiers started with '_' are special and should have the same
+           value in all merged contracts. *)
+        let renames_map', vvalue' =
+          rename_special_vname renames_map vname vvalue
+        in
+        (vname, renames_map', vvalue')
+    | _ -> (Printf.sprintf "%s_%s" !g_contract_name vname, renames_map, vvalue)
 
   (** Renames [ty] entry from the JSON file. *)
   let rename_ty (ty : JSON.JSONType.t) = ty
 
-  (** Renames [value] entry from the JSON file. *)
-  let rename_value lit : GlobalLiteral.t = lit
-
   (** Merges JSON files to a single JSON. *)
   let merge_jsons (files : json_info list) =
-    List.fold_left files ~init:[] ~f:(fun acc ji ->
+    List.fold_left files
+      ~init:([], Map.empty (module String))
+      ~f:(fun (acc, renames_map) ji ->
         set_contract_name ji.contract_name;
         let contract_values, _external_values =
           JSON.ContractState.get_json_data ji.file
         in
-        let contract_values' =
-          List.fold_left contract_values ~init:[]
-            ~f:(fun acc (vname, ty, value) ->
-              let name = rename_vname vname in
+        let contract_values', renames_map' =
+          List.fold_left contract_values ~init:([], renames_map)
+            ~f:(fun (acc, renames_map) (vname, ty, value) ->
+              let vvalue = PrettyPrinters.pp_literal_json value in
+              let name, renames_map', vvalue' =
+                rename_vname renames_map vname vvalue
+              in
               let vname' = (GlobalName.SimpleGlobal name, name) in
+              let value' = GlobalLiteral.StringLit vvalue' in
               let ty' = rename_ty ty in
-              let value' = rename_value value in
-              acc @ [ (vname', ty', value') ])
+              (acc @ [ (vname', ty', value') ], renames_map'))
         in
-        acc @ contract_values')
-    |> JSON.ContractState.state_to_string
+        (acc @ contract_values', renames_map'))
+    |> fun (values, _) -> JSON.ContractState.state_to_string values
 
   let run (config : Config.config option) (files : json_info list) =
     set_product_config config;
-    ( merge_jsons files,
+    let json = merge_jsons files in
+    ( json,
       ErrorUtils.get_warnings () |> PrettyPrinters.scilla_warning_to_sstring )
 end

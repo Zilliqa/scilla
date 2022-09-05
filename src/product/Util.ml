@@ -19,6 +19,9 @@
 open Core
 open Config
 
+(** Warning level used for rename conflicts. *)
+let disambiguate_warning_level = 2
+
 (** Generates an unique contract name based on the given [basename].
     This is required to merge contracts with the same name. *)
 let get_contract_name =
