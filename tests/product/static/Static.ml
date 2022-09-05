@@ -50,3 +50,26 @@ module ContractTests = Scilla_test.Util.DiffBasedMultiTests (struct
 
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
+
+module JSONTests = Scilla_test.Util.DiffBasedProductJSONTests (struct
+  let gold_path dir f = [ dir; "product"; "static"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "product"; "static"; f ]
+  let runner = "scilla-merger"
+  let ignore_predef_args = false
+  let gas_limit = Stdint.Uint64.of_int 8000
+  let custom_args = [ "--config"; "product/static/product_config.json" ]
+  let additional_libdirs = []
+  let diff_filter s = s
+
+  let tests =
+    let open Scilla_test.Util in
+    [
+      {
+        json_test_name = "ark_zil_game.json";
+        json_tests =
+          [ ("ark_init.json", "ark"); ("zil_game_init.json", "zil_game") ];
+      };
+    ]
+
+  let exit_code : UnixLabels.process_status = WEXITED 0
+end)

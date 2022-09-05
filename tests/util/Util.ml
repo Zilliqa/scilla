@@ -292,3 +292,86 @@ module DiffBasedMultiTests (Input : TestSuiteMultiInput) = struct
 
   let tests env = "exptests" >::: build_exp_tests env tests
 end
+
+type json_test = {
+  json_test_name : string;
+  json_tests : (string * string) list;
+}
+
+module type TestSuiteJSONInput = sig
+  val tests : json_test list
+  val gold_path : string -> string -> string list
+  val test_path : string -> string list
+  val runner : string
+  val ignore_predef_args : bool
+  val exit_code : UnixLabels.process_status
+  val additional_libdirs : string list list
+  val gas_limit : Stdint.uint64
+  val custom_args : string list
+  val diff_filter : string -> string
+end
+
+module DiffBasedProductJSONTests (Input : TestSuiteJSONInput) = struct
+  open Input
+  open OUnit2
+
+  let rec longest_common_string lhs rhs =
+    let cmp xs ys = if List.length xs > List.length ys then xs else ys in
+    match (lhs, rhs) with
+    | [], _ | _, [] -> []
+    | l :: ls, r :: rs ->
+        if Char.equal l r then l :: longest_common_string ls rs
+        else cmp (longest_common_string lhs rs) (longest_common_string ls rhs)
+
+  let build_exp_tests env =
+    let f json_test =
+      let open FilePath in
+      json_test.json_test_name >:: fun test_ctxt ->
+      let dir = env.tests_dir test_ctxt in
+      let input_json =
+        List.fold_left json_test.json_tests ~init:[]
+          ~f:(fun acc (fname, test) ->
+            acc @ [ "--json"; make_filename (test_path fname); test ])
+      in
+      (* Verify standard output of execution with gold file *)
+      let goldoutput_file =
+        make_filename (gold_path dir json_test.json_test_name)
+      in
+      let additional_dirs = List.map ~f:make_filename additional_libdirs in
+      let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
+      let path = string_of_path @@ (stdlib :: additional_dirs) in
+      let args =
+        if ignore_predef_args then custom_args @ input_json
+        else
+          custom_args
+          @ [ "-libdir"; path; "-gaslimit"; Stdint.Uint64.to_string gas_limit ]
+          @ input_json
+      in
+      let msg = cli_usage_on_err runner args in
+      print_cli_usage (env.print_cli test_ctxt) runner args;
+      assert_command
+        ~foutput:(fun s ->
+          let actual_output = stream_to_string s in
+          if env.update_gold test_ctxt then
+            output_updater goldoutput_file json_test.json_test_name
+              actual_output ~json_errors:false
+          else if Sys_unix.file_exists_exn goldoutput_file then
+            let gold_output =
+              (* load all data from file *)
+              let non_normalized_gold_output =
+                In_channel.read_all goldoutput_file
+              in
+              non_normalized_gold_output
+            in
+            output_verifier (diff_filter gold_output) msg
+              (env.print_diff test_ctxt)
+              (diff_filter actual_output)
+          else
+            assert_failure
+              ("The gold file " ^ goldoutput_file ^ " does not exist"))
+        ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args
+    in
+    List.map ~f
+
+  let tests env = "exptests" >::: build_exp_tests env tests
+end
