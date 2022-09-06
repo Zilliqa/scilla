@@ -1,0 +1,23 @@
+
+let v1 = Int32 1 in
+let v2 = Int64 2 in
+let v3 = Int128 43 in
+let v4 = Int256 239 in
+let v5 = Uint32 10 in
+let v6 = Uint64 11 in
+let v7 = Uint128 1 in
+let v8 = Uint256 13 in
+let v9 = "HelloWorld" in
+let v10 = 0xabcd1234 in
+
+let h1 = builtin keccak256hash v1 in
+let h2 = builtin keccak256hash v2 in
+let h3 = builtin keccak256hash v3 in
+let h4 = builtin keccak256hash v4 in
+let h5 = builtin keccak256hash v5 in
+let h6 = builtin keccak256hash v6 in
+let h7 = builtin keccak256hash v7 in
+let h8 = builtin keccak256hash v8 in
+let h9 = builtin keccak256hash v9 in
+let h10 = builtin keccak256hash v10 in
+builtin keccak256hash h9

@@ -1,0 +1,12 @@
+let px = 0x025a6f4181d2b4ea8b724290ffb40156eb0adb514c688556eb79cdea0752c2bb in
+let py = 0x2eff3f31dea215f1eb86023a133a996eb6300b44da664d64251d05381bb8a02e in
+let pt = Pair {ByStr32 ByStr32} px py in
+let s = 0x183227397098d014dc2822db40c0ac2ecbc0b548b438e5469e10460b6c3e7ea3 in
+let p_opt = builtin alt_bn128_G1_mul pt s in
+let point =
+  match p_opt with
+  | Some p => p
+  | None => pt
+  end
+in
+builtin alt_bn128_G1_add point point

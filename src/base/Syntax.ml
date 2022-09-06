@@ -200,7 +200,7 @@ let parse_builtin s loc =
 (*               Types of components                   *)
 (*******************************************************)
 
-type component_type = CompTrans | CompProc
+type component_type = CompTrans | CompProc [@@deriving sexp]
 
 let component_type_to_string ctp =
   match ctp with CompTrans -> "transition" | CompProc -> "procedure"
@@ -254,20 +254,39 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
   type expr_annot = expr * ER.rep
 
   and expr =
-    | Literal of SLiteral.t
-    | Var of ER.rep SIdentifier.t
+    | Literal of SLiteral.t  (** Literals such as [False] or ["foo"] *)
+    | Var of ER.rep SIdentifier.t  (** Variables such as [x] *)
     | Let of ER.rep SIdentifier.t * SType.t option * expr_annot * expr_annot
+        (** [Let(I, Ty, E1, E2)] represents: [let I: Ty = E1 in E2] *)
     | Message of (string * payload) list
+        (** [Message([(I1, V1) ; ... ; (In, Vn)])] represents:
+          [{I1 : V1; ...; In : Vn}] *)
     | Fun of ER.rep SIdentifier.t * SType.t * expr_annot
+        (** [Fun(I, Ty, E)] represents: [fun (I: Ty) => E] *)
     | App of ER.rep SIdentifier.t * ER.rep SIdentifier.t list
+        (** [App(I1, [A1; ...; An])] represents: [I A1 ... An] *)
     | Constr of SR.rep SIdentifier.t * SType.t list * ER.rep SIdentifier.t list
+        (** [Constr(I, [Ty1; ...; Tyn], [A1; ...; An])] represents data
+          constructor application:
+          [I {Ty1 ... Tyn} A1 ... An] where [{Ty1 ... Tyn}] is optional. *)
     | MatchExpr of ER.rep SIdentifier.t * (pattern * expr_annot) list
+        (** [MatchExpr(I, [(P1,E1); ...; (Pn,En)])] represents:
+          [match I with | P1 => E1 ... | Pn => En end] *)
     | Builtin of ER.rep builtin_annot * SType.t list * ER.rep SIdentifier.t list
+        (** [Builtin(B, [Ty1; ...; Tyn], [I1; ...; In])] represents:
+          [builtin B {Ty1 ... Tyn} I1 ... In] or [builtin B {Ty1 ... Tyn} ()]
+          where [{Ty1 ... Tyn}] is optional. *)
     | TFun of ER.rep SIdentifier.t * expr_annot
+        (** [TFun(I, E)] represents type function: [tfun I => E] *)
     | TApp of ER.rep SIdentifier.t * SType.t list
-    (* Fixpoint combinator: used to implement recursion principles *)
+        (** [TApp(I, [Ty1; ...; Tyn])] represents type application:
+          [@ I Ty1 ... Tyn]*)
     | Fixpoint of ER.rep SIdentifier.t * SType.t * expr_annot
+        (** [Fixpoint(I, Ty, E)] represents fixpoint combinator used to implement
+          recursion principles. These nodes are preserved in AST transformations and not exposed to the user at the level of source code. *)
     | GasExpr of SGasCharge.gas_charge * expr_annot
+        (** [GasExpr(G, E)] represents gas charge for the expression [E].
+          These nodes are added in AST transformations and not exposed to the user at the level of source code. *)
   [@@deriving sexp]
 
   let expr_rep erep = snd erep
@@ -296,43 +315,64 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
 
   and stmt =
     | Load of ER.rep SIdentifier.t * ER.rep SIdentifier.t
+        (** [Load(I1, I2)] represents: [I1 <- I2] *)
     | RemoteLoad of
         ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t
+        (** [RemoteLoad(I1, I2, I3)] represents: [I1 <- & I2.I3] *)
     | Store of ER.rep SIdentifier.t * ER.rep SIdentifier.t
+        (** [Store(I1, I2)] represents: [I1 := I2] *)
     | Bind of ER.rep SIdentifier.t * expr_annot
-    (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
+        (** [Bind(I, E)] represents: [I = E] *)
     | MapUpdate of
         ER.rep SIdentifier.t
         * ER.rep SIdentifier.t list
         * ER.rep SIdentifier.t option
-    (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
-    (* If the bool is set, then we interpret this as value retrieve,
-       otherwise as an "exists" query. *)
+        (** [MapUpdate(M, [K1; ...; Kn], V)] represents:
+          * [M[K1]...[Kn] := V]
+          * [delete M[K1]...[Kn]] if [V] is [None] *)
     | MapGet of
         ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t list
         * bool
-    (* v <-- adr.m[k1][k2][...] OR b <- exists adr.m[k1][k2][...] *)
-    (* If the bool is set, then we interpret this as value retrieve,
-       otherwise as an "exists" query. *)
+        (** [MapGet(V, M, [K1; ...; Kn], Retrieve)] represents:
+          * [V <- M[K1]...[Kn]]        if [Retrieve] is [true]
+          * [V <- exists M[K1]...[Kn]] if [Retrieve] is [false] *)
     | RemoteMapGet of
         ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t list
         * bool
+        (** [RemoteMapGet(V, Adr, M, [K1; ...; Kn], Retrieve)] represents:
+          * [V <- & Adr.M[K1]...[Kn]]        if [Retrieve] is [true]
+          * [V <- & exists Adr.M[K1]...[Kn]] if [Retrieve] is [false] *)
     | MatchStmt of ER.rep SIdentifier.t * (pattern * stmt_annot list) list
+        (** [MatchStmt(I, [(P1; S1); ...; (Pn; Sn)])] represents:
+          [match I with
+           | P1 => S1
+           | ...
+           | Pn => Sn
+           end] *)
     | ReadFromBC of ER.rep SIdentifier.t * bcinfo_query
+        (** [ReadFromBC(I, Q)] fetches some blockchain information to the
+            variable: [I <- & Q] *)
     | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
-    | AcceptPayment
-    (* forall l p *)
+        (** [TypeCast(I, A, TY)] represents: [I <- & A as TY] *)
+    | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
+        (** [Iterate(L, F)] represents calling a procedure for each element of
+            the list: [forall L F] *)
     | SendMsgs of ER.rep SIdentifier.t
+        (** [SendMsgs(MS)] represents sending messages: [send MS] *)
     | CreateEvnt of ER.rep SIdentifier.t
+        (** [CreateEvnt(E)] represents emitting an event: [event E] *)
     | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
+        (** [CallProc(F, [A1, ... An])] is a procedure call: [F A1 ... An] *)
     | Throw of ER.rep SIdentifier.t option
+        (** [Throw(I)] represents: [throw I] *)
     | GasStmt of SGasCharge.gas_charge
+        (** [GasStmt(GC)] is added in AST transformations. *)
   [@@deriving sexp]
 
   let stmt_rep srep = snd srep
@@ -350,14 +390,18 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
   }
+  [@@deriving sexp]
 
   type ctr_def = { cname : ER.rep SIdentifier.t; c_arg_types : SType.t list }
+  [@@deriving sexp]
 
   type lib_entry =
     | LibVar of ER.rep SIdentifier.t * SType.t option * expr_annot
     | LibTyp of ER.rep SIdentifier.t * ctr_def list
+  [@@deriving sexp]
 
   type library = { lname : SR.rep SIdentifier.t; lentries : lib_entry list }
+  [@@deriving sexp]
 
   type contract = {
     cname : SR.rep SIdentifier.t;
@@ -366,6 +410,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     cfields : (ER.rep SIdentifier.t * SType.t * expr_annot) list;
     ccomps : component list;
   }
+  [@@deriving sexp]
 
   (* Contract module: libary + contract definiton *)
   type cmodule = {
@@ -377,6 +422,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     contr : contract;
   }
+  [@@deriving sexp]
 
   (* Library module *)
   type lmodule = {
@@ -386,6 +432,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
+  [@@deriving sexp]
 
   (* A tree of libraries linked to their dependents *)
   type libtree = {

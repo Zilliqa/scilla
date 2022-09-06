@@ -1,0 +1,6 @@
+let x = Int32 42 in
+let f = fun (z : Int) => x in
+let y = x in
+let a = y in
+let m = {tag : "Main"; amount : x; code: y} in
+m

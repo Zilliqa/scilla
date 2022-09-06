@@ -1,0 +1,24 @@
+let list_product = 
+  fun (ls : List Int32) => fun (acc : Int32) =>
+  let iter =
+    fun (h : Int32) => fun (res : Int32) =>
+      let zero = Int32 0 in
+      let b = builtin eq h zero in
+      match b with
+      | True => Int32 0
+      | False => builtin mul h res
+      end
+  in
+  let rec_nat = @list_foldr Int32 Int32 in
+  rec_nat iter acc ls    
+in
+let one = Int32 1 in 
+let two = Int32 2 in
+let three = Int32 3 in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} three nil in
+let l2 = Cons {Int32} two l1 in
+let l3 = Cons {Int32} one l2 in
+
+list_product l3 one

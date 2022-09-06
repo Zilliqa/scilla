@@ -1,0 +1,5 @@
+let a = Int32 12 in
+let x = a in
+let t = True in
+let y = Some {Int32} x in
+y

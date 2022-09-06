@@ -1,0 +1,15 @@
+
+let int_append = @list_append Int32 in
+
+let one = Int32 1 in
+let two = Int32 2 in
+let ten = Int32 10 in
+let eleven = Int32 11 in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} eleven nil in
+let l2 = Cons {Int32} ten l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} one l3 in
+
+int_append  l4 l2

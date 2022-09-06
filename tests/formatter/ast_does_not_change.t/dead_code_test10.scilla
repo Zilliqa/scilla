@@ -1,0 +1,19 @@
+scilla_version 0
+
+library Dead
+
+(* There is nothing to report, because all the types are used in C which
+   is used in the `Foo` transition. *)
+type A =
+| A1
+| A2
+type B = | B1 of A
+type C =
+| C
+| C1 of B
+
+contract Dead ()
+
+transition Foo(x: C)
+end
+

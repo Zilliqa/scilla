@@ -1,0 +1,48 @@
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let minus_one = Int32 -1 in
+(* big_num is representable in Uint64 but not Int64 *)
+let big_num = Uint64   9999999999999999999 in
+let nums1 = "3635247896369896321" in
+let nums2 = "-2321546764323" in
+
+let res1 = builtin to_int32 zero in (* Some 0 *)
+let res2 = builtin to_int32 one in  (* Some 1 *)
+let res3 = builtin to_int32 minus_one in (* Some -1 *)
+let res4 = builtin to_int32 big_num in   (* None *)
+let res5 = builtin to_int64 big_num in   (* None *)
+let res6 = builtin to_int128 big_num in   (* Some big_num *)
+let res7 = builtin to_int32 nums1 in
+let res8 = builtin to_int64 nums1 in
+let res9 = builtin to_uint64 nums2 in
+let res10 = builtin to_int64 nums2 in
+let res11 = builtin to_uint128 nums1 in
+let res12 = builtin to_uint256 nums1 in
+let res13 = builtin to_int256 nums2 in
+
+
+let hex1 = 0x01 in
+let res14 = builtin to_uint256 hex1 in
+let hex2 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff in
+(* expected output is Uint256.max *)
+let res15 = builtin to_uint256 hex2 in
+
+let zero_bystrx = builtin to_bystr4 zero in
+let one_bystrx = builtin to_bystr4 one in
+let big_bystrx = builtin to_bystr8 big_num in
+let big_bystrx_uint = builtin to_uint64 big_bystrx in
+let res16 = builtin eq big_bystrx_uint big_num in
+
+let uint32_max = Uint32 4294967295 in
+let bytes4 = builtin to_bystr4 uint32_max in
+
+let uint64_max = Uint64 18446744073709551615 in
+let bytes8 = builtin to_bystr8 uint64_max in
+
+let uint128_max = Uint128 340282366920938463463374607431768211455 in
+let bytes16 = builtin to_bystr16 uint128_max in
+
+let uint256_max = Uint256 115792089237316195423570985008687907853269984665640564039457584007913129639935 in
+let bytes32 = builtin to_bystr32 uint256_max in
+
+res15

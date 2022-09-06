@@ -1,0 +1,31 @@
+
+let zero_uint = Uint32 0 in
+let zero_nat1 = builtin to_nat zero_uint in
+let zero_nat2 = Zero in
+
+let three_uint = Uint32 3 in
+let three_nat1 = builtin to_nat three_uint in
+let stress_test_uint = Uint32 1000000 in
+let stress_test_nat = builtin to_nat stress_test_uint in
+let one_nat2 = Succ zero_nat2 in
+let two_nat2 = Succ one_nat2 in
+let three_nat2 = Succ two_nat2 in
+
+
+let res1 = nat_eq zero_nat1 zero_nat2 in (* True *)
+let res2 = nat_eq three_nat1 three_nat2 in (* True *)
+
+let minus_one_int = Int32 -1 in
+let one_int = Int64 1 in
+
+let res3 = int32_to_nat minus_one_int in (* None {Nat} *)
+let one_int_nat_opt = int64_to_nat one_int in
+let one_int_nat =
+  match one_int_nat_opt with
+  | Some a => a
+  | None => Zero
+  end
+in
+
+let res4 = nat_eq one_nat2 one_int_nat in (* True *)
+Zero

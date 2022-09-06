@@ -1,0 +1,10 @@
+(* Expected result: 2 *)
+let b = True in
+let c = False in
+match b with 
+    | False => Int32 1
+    | True  => match c with 
+               | False => Int32 2
+               | True  => Int32 3
+               end
+    end

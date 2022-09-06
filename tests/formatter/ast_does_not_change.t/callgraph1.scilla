@@ -1,0 +1,73 @@
+scilla_version 0
+
+library Callgraph1
+
+let lib_var = Uint32 42
+
+let id = fun (a: Uint32) => a
+let id_alias = id
+let id_alias2 = id_alias
+
+(* Unused binds must not be present on a CG. *)
+let id_alias_unused1 = id
+let id_alias_unused2 = id_alias
+
+(* Redefinition must not create extra nodes. *)
+let id_alias_unused_redef = id
+let id_alias_unused_redef = id_alias
+
+(* A function with undirect calls. *)
+let lib_fn =
+  fun (a: Uint32) =>
+    let res1 = id_alias a in
+    let res2 = id_alias2 a in
+    res2
+
+contract Callgraph1()
+
+procedure pr1()
+  accept
+end
+
+procedure pr2(a: Uint32)
+  res = lib_fn a;
+  pr1
+end
+
+procedure pr3(a_opt: Option Uint32)
+  match a_opt with
+  | Some a => pr2 a
+  | None => pr1
+  end
+end
+
+procedure pr4(l: List Uint32)
+  forall l pr2
+end
+
+transition tr1(a: Uint32)
+  res = id_alias a;
+  pr2 res
+end
+
+transition tr2(a: Option Uint32)
+  match a with
+  | Some _ =>
+  | None => pr3 a
+  end
+end
+
+transition tr3(l: List Uint32)
+  forall l pr2;
+  pr4 l
+end
+
+transition tr4(a: Uint32)
+  res1 = id_alias a;
+  pr2 res1;
+  res2 = id_alias a;
+  pr2 res2;
+  pr2 res2;
+  res3 = id_alias a;
+  pr2 res3
+end

@@ -1,0 +1,10 @@
+let zero = Zero in 
+let one  = Succ zero in
+let two  = Succ one in
+let three = Succ two in
+let four = Succ three in
+
+let test1 = nat_eq four three in
+let test2 = nat_eq three four in
+let test3 = nat_eq zero two in
+nat_eq two zero
