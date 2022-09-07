@@ -736,7 +736,7 @@ struct
                  | None -> m))
 
     (** Collects contract fields with the [Optional] type. *)
-    let collect_optional_field_names (cmod : cmodule) =
+    let collect_optional_fields (cmod : cmodule) =
       List.fold_left ~init:emp_ids_set cmod.contr.cfields
         ~f:(fun s (id, ty, _init) ->
           if has_option_ty ty then Set.add s (SCIdentifier.get_id id) else s)
@@ -753,14 +753,13 @@ struct
     (** Collects not matched local variables returned from map get operations
         that should be reported. *)
     let collect_not_unboxed cmod (comp : component) matched_args =
-      let optional_fields_names = collect_optional_field_names cmod in
+      let optional_fields = collect_optional_fields cmod in
       let rec aux unboxed_options stmts =
         match stmts with
         | [] -> unboxed_options
         | s :: _ when has_unknown_call matched_args unboxed_options s -> []
         | s :: _
-          when assigned_to_optional_field optional_fields_names unboxed_options
-                 s ->
+          when assigned_to_optional_field optional_fields unboxed_options s ->
             []
         | s :: ss ->
             let matches = collect_matches_in_stmt matched_args s in
