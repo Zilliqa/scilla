@@ -10,7 +10,7 @@
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "UnboxResult2",
+    "vname": "UnboxResult3",
     "params": [],
     "fields": [
       { "vname": "m", "type": "Map (Uint32) (Uint32)", "depth": 1 },
@@ -205,7 +205,7 @@
       "warning_id": 2
     },
     {
-      "warning_message": "No transition in contract UnboxResult2 contains an accept statement\n",
+      "warning_message": "No transition in contract UnboxResult3 contains an accept statement\n",
       "start_location": {
         "file": "contracts/unbox_result3.scilla",
         "line": 15,

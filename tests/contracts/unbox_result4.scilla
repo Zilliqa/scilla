@@ -1,0 +1,24 @@
+scilla_version 0
+
+(* This test checks that assignments of not unboxed results to contract
+   fields with the Optional type don't generate warnings. *)
+
+import BoolUtils NatUtils
+
+library UnboxResult4
+
+contract UnboxResult4()
+
+field m: Map Uint32 Uint32 = Emp Uint32 Uint32
+field f_m_opt: Map Uint32 (Option Uint32) = Emp Uint32 (Option Uint32)
+field f_opt: Option Uint32 = None {Uint32}
+
+transition tr1(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  f_opt := v_opt
+end
+
+transition tr2(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  f_m_opt[k] := v_opt
+end

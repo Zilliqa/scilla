@@ -5,14 +5,14 @@ scilla_version 0
 
 import BoolUtils NatUtils
 
-library UnboxResult2
+library UnboxResult3
 
 let andb_lib =
   fun (lhs : Bool) =>
   fun (rhs : Bool) =>
   andb lhs rhs
 
-contract UnboxResult2()
+contract UnboxResult3()
 
 field m: Map Uint32 Uint32 = Emp Uint32 Uint32
 field f_default: Uint32 = Uint32 42

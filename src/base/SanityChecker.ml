@@ -497,10 +497,17 @@ struct
       include Comparable.Make (SCIdentifier.Name)
     end
 
+    module SCIdentifierSet = Set.Make (SCIdentifierComp)
+
     let emp_ids_map = Map.empty (module SCIdentifierComp)
+    let emp_ids_set = SCIdentifierSet.empty
 
     let is_option_name id =
       String.equal "Option" @@ SCIdentifier.Name.as_string (get_id id)
+
+    let has_option_ty ty =
+      let re = Str.regexp ".*Option.*$" in
+      Str.string_match re (SType.pp_typ ty) 0
 
     let is_option_ty id =
       let re = Str.regexp "Option.*$" in
@@ -553,6 +560,27 @@ struct
       | Iterate _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
       | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
       | CreateEvnt _ | Throw _ | GasStmt _ ->
+          false
+
+    (** Returns [true] iff the statement [s] contains an assignment of on of
+        the contract fields [fields] with the [Optional] type to one of the
+        [unboxed_options]. *)
+    let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
+      match s with
+      | Store (lhs, rhs) ->
+          SCIdentifierSet.mem fields (SCIdentifier.get_id lhs)
+          && List.mem unboxed_options rhs ~equal:(fun l r ->
+                 SCIdentifier.Name.equal (SCIdentifier.get_id l)
+                   (SCIdentifier.get_id r))
+      | MatchStmt (_id, arms) ->
+          List.find arms ~f:(fun (_pattern, stmts) ->
+              List.find stmts ~f:(fun s ->
+                  assigned_to_optional_field fields unboxed_options s)
+              |> Option.is_some)
+          |> Option.is_some
+      | CallProc _ | Bind _ | Iterate _ | Load _ | RemoteLoad _ | MapUpdate _
+      | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           false
 
     (** Returns names of variables that are matched in the expression. *)
@@ -633,7 +661,6 @@ struct
               else option_args
             in
             aux (cnt + 1) option_args ea
-        (* TODO: Think about type function cases. I have no time at the moment. *)
         | TFun _ | MatchExpr _ | Let _ | GasExpr _ | Literal _ | Builtin _
         | Var _ | TApp _ | App _ | Message _ | Constr _ ->
             (cnt, option_args, ea)
@@ -708,6 +735,12 @@ struct
                  | Some arg_matches -> Map.set m ~key:fun_name ~data:arg_matches
                  | None -> m))
 
+    (** Collects contract fields with the [Optional] type. *)
+    let collect_optional_field_names (cmod : cmodule) =
+      List.fold_left ~init:emp_ids_set cmod.contr.cfields
+        ~f:(fun s (id, ty, _init) ->
+          if has_option_ty ty then Set.add s (SCIdentifier.get_id id) else s)
+
     let collect_variables_from_map_get (s, _annot) =
       match s with
       | MapGet (v, _, _, true) | RemoteMapGet (v, _, _, _, true) -> [ v ]
@@ -717,12 +750,18 @@ struct
         ->
           []
 
-    (** Collects not matched local variables returned from map get operations. *)
-    let collect_not_unboxed (comp : component) matched_args =
+    (** Collects not matched local variables returned from map get operations
+        that should be reported. *)
+    let collect_not_unboxed cmod (comp : component) matched_args =
+      let optional_fields_names = collect_optional_field_names cmod in
       let rec aux unboxed_options stmts =
         match stmts with
         | [] -> unboxed_options
         | s :: _ when has_unknown_call matched_args unboxed_options s -> []
+        | s :: _
+          when assigned_to_optional_field optional_fields_names unboxed_options
+                 s ->
+            []
         | s :: ss ->
             let matches = collect_matches_in_stmt matched_args s in
             let acc' =
@@ -749,7 +788,7 @@ struct
       let matched_args = collect_option_args_matches cmod cg in
       List.rev cmod.contr.ccomps
       |> List.iter ~f:(fun comp ->
-             collect_not_unboxed comp matched_args |> report_not_unboxed);
+             collect_not_unboxed cmod comp matched_args |> report_not_unboxed);
       pure ()
   end
 
