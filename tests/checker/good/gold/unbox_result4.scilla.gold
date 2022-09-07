@@ -71,7 +71,7 @@
       "warning_message": "Write only field: f_opt",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 18,
+        "line": 16,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -81,7 +81,7 @@
       "warning_message": "Write only field: f_m_opt",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 23,
+        "line": 21,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -91,53 +91,23 @@
       "warning_message": "Read only field, consider making it a contract parameter: m",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 17,
+        "line": 15,
         "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused imported library: NatUtils",
-      "start_location": {
-        "file": "contracts/unbox_result4.scilla",
-        "line": 6,
-        "column": 18
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused imported library: BoolUtils",
-      "start_location": {
-        "file": "contracts/unbox_result4.scilla",
-        "line": 6,
-        "column": 8
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
-      "start_location": {
-        "file": "contracts/unbox_result4.scilla",
-        "line": 22,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 2
-    },
-    {
       "warning_message": "No transition in contract UnboxResult4 contains an accept statement\n",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 10,
+        "line": 8,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }
   ],
-  "gas_remaining": "7994"
+  "gas_remaining": "7999"
 }
 

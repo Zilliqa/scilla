@@ -3,8 +3,6 @@ scilla_version 0
 (* This test checks that assignments of not unboxed results to contract
    fields with the Optional type don't generate warnings. *)
 
-import BoolUtils NatUtils
-
 library UnboxResult4
 
 contract UnboxResult4()

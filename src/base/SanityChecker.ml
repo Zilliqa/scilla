@@ -566,21 +566,34 @@ struct
         the contract fields [fields] with the [Optional] type to one of the
         [unboxed_options]. *)
     let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
+      let id_is_unboxed id =
+        List.mem unboxed_options id ~equal:(fun l r ->
+            SCIdentifier.Name.equal (SCIdentifier.get_id l)
+              (SCIdentifier.get_id r))
+      in
+
       match s with
       | Store (lhs, rhs) ->
           SCIdentifierSet.mem fields (SCIdentifier.get_id lhs)
-          && List.mem unboxed_options rhs ~equal:(fun l r ->
-                 SCIdentifier.Name.equal (SCIdentifier.get_id l)
-                   (SCIdentifier.get_id r))
+          && id_is_unboxed rhs
+      | MapUpdate (m, keys, v_opt) ->
+          let v_opt_is_unboxed () =
+            Option.value_map v_opt ~default:false ~f:id_is_unboxed
+          in
+          let unboxed_in_keys () =
+            List.find keys ~f:id_is_unboxed |> Option.is_some
+          in
+          SCIdentifierSet.mem fields (SCIdentifier.get_id m)
+          && (v_opt_is_unboxed () || unboxed_in_keys ())
       | MatchStmt (_id, arms) ->
           List.find arms ~f:(fun (_pattern, stmts) ->
               List.find stmts ~f:(fun s ->
                   assigned_to_optional_field fields unboxed_options s)
               |> Option.is_some)
           |> Option.is_some
-      | CallProc _ | Bind _ | Iterate _ | Load _ | RemoteLoad _ | MapUpdate _
-      | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
-      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | CallProc _ | Bind _ | Iterate _ | Load _ | RemoteLoad _ | MapGet _
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
+      | CreateEvnt _ | Throw _ | GasStmt _ ->
           false
 
     (** Returns names of variables that are matched in the expression. *)
@@ -752,8 +765,7 @@ struct
 
     (** Collects not matched local variables returned from map get operations
         that should be reported. *)
-    let collect_not_unboxed cmod (comp : component) matched_args =
-      let optional_fields = collect_optional_fields cmod in
+    let collect_not_unboxed optional_fields (comp : component) matched_args =
       let rec aux unboxed_options stmts =
         match stmts with
         | [] -> unboxed_options
@@ -785,9 +797,11 @@ struct
 
     let run (cmod : cmodule) (cg : CG.cg) (_rlibs : lib_entry list) =
       let matched_args = collect_option_args_matches cmod cg in
+      let optional_fields = collect_optional_fields cmod in
       List.rev cmod.contr.ccomps
       |> List.iter ~f:(fun comp ->
-             collect_not_unboxed cmod comp matched_args |> report_not_unboxed);
+             collect_not_unboxed optional_fields comp matched_args
+             |> report_not_unboxed);
       pure ()
   end
 
