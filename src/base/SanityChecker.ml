@@ -769,6 +769,26 @@ struct
         ->
           []
 
+    (** Collects different names for the not unboxed option values. *)
+    let collect_aliases (s, _annot) unboxed_options =
+      match s with
+      | Bind (bind_id, (e, _annot)) -> (
+          match e with
+          | Var id ->
+              if
+                List.find unboxed_options ~f:(fun o ->
+                    SCIdentifier.Name.equal (SCIdentifier.get_id id)
+                      (SCIdentifier.get_id o))
+                |> Option.is_some
+              then [ bind_id ]
+              else []
+          | _ -> [])
+      | MapGet _ | RemoteMapGet _ | Load _ | RemoteLoad _ | Store _
+      | MapUpdate _ | MatchStmt _ | ReadFromBC _ | TypeCast _ | AcceptPayment
+      | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _
+        ->
+          []
+
     (** Collects not matched local variables returned from map get operations
         that should be reported. *)
     let collect_not_unboxed optional_fields (comp : component) matched_args =
@@ -791,7 +811,8 @@ struct
                 && not_in_list used_in_unknown_call v
                 && not_in_list assigned_to_fields v)
             |> List.append @@ collect_variables_from_map_get s
-            |> aux ss
+            |> fun unboxed_options' ->
+            unboxed_options' @ collect_aliases s unboxed_options' |> aux ss
       in
       aux comp.comp_body []
 

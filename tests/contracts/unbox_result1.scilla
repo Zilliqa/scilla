@@ -95,6 +95,15 @@ transition test_direct_match_in_procedure2(k: Uint32)
   e = { _eventname : "EventOpt"; v: v_opt };
   event e
 end
+transition test_direct_match_in_procedure3(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  v_opt_alias = v_opt; (* no warning *)
+  dummy <- dummy_field_opt;
+  matches_second dummy v_opt;
+  matches_second dummy v_opt_alias;
+  e = { _eventname : "EventOpt"; v: v_opt };
+  event e
+end
 transition test_undirect_match_in_procedure1(k: Uint32)
   v_opt <- m[k]; (* no warning *)
   matches_undirect v_opt;

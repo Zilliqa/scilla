@@ -18,11 +18,13 @@ end
 
 transition tr2(k: Uint32)
   v_opt <- m[k]; (* no warning *)
+  v_opt_alias = v_opt; (* warning *)
   f_m_opt[k] := v_opt
 end
 
 transition tr3(k: Uint32)
   v_opt1 <- m[k]; (* no warning *)
   v_opt2 <- m[k]; (* warning *)
+  v_opt2_alias = v_opt2; (* warning *)
   f_m_opt[k] := v_opt1
 end

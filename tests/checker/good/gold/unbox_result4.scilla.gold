@@ -82,7 +82,7 @@
       "warning_message": "Write only field: f_m_opt",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 21,
+        "line": 22,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -99,20 +99,50 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused map get statement to: v_opt2",
+      "warning_message": "Unused bind statement to: v_opt2_alias",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 26,
+        "line": 28,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
+      "warning_message": "Unused bind statement to: v_opt_alias",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 21,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt_alias has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 21,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt2_alias has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
       "warning_message": "Variable v_opt2 has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
         "file": "contracts/unbox_result4.scilla",
-        "line": 26,
+        "line": 27,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
