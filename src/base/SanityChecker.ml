@@ -513,88 +513,94 @@ struct
       let re = Str.regexp "Option.*$" in
       Str.string_match re (SType.pp_typ (ER.get_type (get_rep id)).tp) 0
 
-    (** Returns [true] iff the expression [e] contains function call that
-        doesn't appear in the [m] and contains one of [unboxed_options] as an
-        argument. *)
-    let rec has_unknown_call_in_expr m unboxed_options (e, _annot) =
+    (** Returns a list of variables from [unboxed_options] that are used in the
+        expression [e] as arguments to the function that doesn't present in [m]. *)
+    let rec used_in_unknown_calls_in_expr m unboxed_options (e, _annot) =
       match e with
       | Let (_id, _ty, lhs, rhs) ->
-          has_unknown_call_in_expr m unboxed_options lhs
-          || has_unknown_call_in_expr m unboxed_options rhs
-      | Fun (_id, _ty, body) -> has_unknown_call_in_expr m unboxed_options body
+          used_in_unknown_calls_in_expr m unboxed_options lhs
+          @ used_in_unknown_calls_in_expr m unboxed_options rhs
+      | Fun (_id, _ty, body) ->
+          used_in_unknown_calls_in_expr m unboxed_options body
       | MatchExpr (_id, arms) ->
-          List.find arms ~f:(fun (_pattern, ea) ->
-              has_unknown_call_in_expr m unboxed_options ea)
-          |> Option.is_some
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, ea) ->
+              used_in_unknown_calls_in_expr m unboxed_options ea
+              |> List.append acc)
       | App (id, args) ->
-          let has_unboxed_arg () =
-            List.find args ~f:(fun arg ->
-                List.mem unboxed_options arg ~equal:SCIdentifier.equal)
-            |> Option.is_some
-          in
-          (not @@ Map.mem m (get_id id)) && has_unboxed_arg ()
-      | TFun (_id, body) -> has_unknown_call_in_expr m unboxed_options body
-      | Fixpoint (_id, _ty, ea) -> has_unknown_call_in_expr m unboxed_options ea
-      | GasExpr (_, ea) -> has_unknown_call_in_expr m unboxed_options ea
-      | Literal _ | Builtin _ | Var _ | TApp _ | Message _ | Constr _ -> false
+          if not @@ Map.mem m (get_id id) then
+            List.fold_left args ~init:[] ~f:(fun acc arg ->
+                List.fold_left unboxed_options ~init:[] ~f:(fun acc opt ->
+                    if SCIdentifier.equal opt arg then
+                      acc @ [ SCIdentifier.get_id opt ]
+                    else acc)
+                |> List.append acc)
+          else []
+      | TFun (_id, body) -> used_in_unknown_calls_in_expr m unboxed_options body
+      | Fixpoint (_id, _ty, ea) ->
+          used_in_unknown_calls_in_expr m unboxed_options ea
+      | GasExpr (_, ea) -> used_in_unknown_calls_in_expr m unboxed_options ea
+      | Literal _ | Builtin _ | Var _ | TApp _ | Message _ | Constr _ -> []
 
-    (** Returns [true] iff the statement [s] contains function or procedure
-        call that doesn't appear in the [m] and contains one of
-        [unboxed_options] as an argument. *)
-    let rec has_unknown_call m unboxed_options (s, _annot) =
+    (** Returns list a of variables from [unboxed_options] that are used in the
+        statement [s] as arguments to the function that doesn't present in [m]. *)
+    let rec used_in_unknown_calls m unboxed_options (s, _annot) =
       match s with
-      | Bind (_id, ea) -> has_unknown_call_in_expr m unboxed_options ea
+      | Bind (_id, ea) -> used_in_unknown_calls_in_expr m unboxed_options ea
       | MatchStmt (_id, arms) ->
-          List.find arms ~f:(fun (_pattern, stmts) ->
-              List.find stmts ~f:(fun s -> has_unknown_call m unboxed_options s)
-              |> Option.is_some)
-          |> Option.is_some
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
+              List.fold_left stmts ~init:acc ~f:(fun acc s ->
+                  used_in_unknown_calls m unboxed_options s |> List.append acc)
+              |> List.append acc)
       | CallProc (id, args) ->
-          let has_unboxed_arg () =
-            List.find args ~f:(fun arg ->
-                List.mem unboxed_options arg ~equal:SCIdentifier.equal)
-            |> Option.is_some
-          in
-          (not @@ Map.mem m (get_id id)) && has_unboxed_arg ()
+          if not @@ Map.mem m (get_id id) then
+            List.fold_left args ~init:[] ~f:(fun acc arg ->
+                List.fold_left unboxed_options ~init:[] ~f:(fun acc opt ->
+                    if SCIdentifier.equal arg opt then
+                      acc @ [ SCIdentifier.get_id opt ]
+                    else acc)
+                |> List.append acc)
+          else []
       (* We shouldn't handle `forall` here, because it operates only with iterables. *)
       | Iterate _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
       | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
       | CreateEvnt _ | Throw _ | GasStmt _ ->
-          false
+          []
 
-    (** Returns [true] iff the statement [s] contains an assignment of on of
-        the contract fields [fields] with the [Optional] type to one of the
-        [unboxed_options]. *)
+    (** Returns a list of variables from [unboxed_options] that are assigned to
+        the one of the [fields] *)
     let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
       let id_is_unboxed id =
         List.mem unboxed_options id ~equal:(fun l r ->
             SCIdentifier.Name.equal (SCIdentifier.get_id l)
               (SCIdentifier.get_id r))
       in
-
+      let has_field f = SCIdentifierSet.mem fields (SCIdentifier.get_id f) in
       match s with
       | Store (lhs, rhs) ->
-          SCIdentifierSet.mem fields (SCIdentifier.get_id lhs)
-          && id_is_unboxed rhs
+          if id_is_unboxed rhs && has_field lhs then [ SCIdentifier.get_id rhs ]
+          else []
       | MapUpdate (m, keys, v_opt) ->
-          let v_opt_is_unboxed () =
-            Option.value_map v_opt ~default:false ~f:id_is_unboxed
-          in
-          let unboxed_in_keys () =
-            List.find keys ~f:id_is_unboxed |> Option.is_some
-          in
-          SCIdentifierSet.mem fields (SCIdentifier.get_id m)
-          && (v_opt_is_unboxed () || unboxed_in_keys ())
+          if has_field m then
+            let unboxed_values =
+              Option.value_map v_opt ~default:[] ~f:(fun v ->
+                  if id_is_unboxed v then [ SCIdentifier.get_id v ] else [])
+            in
+            let unboxed_keys =
+              List.fold_left keys ~init:[] ~f:(fun acc k ->
+                  if id_is_unboxed k then acc @ [ SCIdentifier.get_id k ]
+                  else acc)
+            in
+            unboxed_values @ unboxed_keys
+          else []
       | MatchStmt (_id, arms) ->
-          List.find arms ~f:(fun (_pattern, stmts) ->
-              List.find stmts ~f:(fun s ->
-                  assigned_to_optional_field fields unboxed_options s)
-              |> Option.is_some)
-          |> Option.is_some
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
+              List.fold_left stmts ~init:[] ~f:(fun acc s ->
+                  acc @ assigned_to_optional_field fields unboxed_options s)
+              |> List.append acc)
       | CallProc _ | Bind _ | Iterate _ | Load _ | RemoteLoad _ | MapGet _
       | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
       | CreateEvnt _ | Throw _ | GasStmt _ ->
-          false
+          []
 
     (** Returns names of variables that are matched in the expression. *)
     let rec collect_matches_in_expr m (e, _annot) =
@@ -766,24 +772,28 @@ struct
     (** Collects not matched local variables returned from map get operations
         that should be reported. *)
     let collect_not_unboxed optional_fields (comp : component) matched_args =
-      let rec aux unboxed_options stmts =
+      let rec aux stmts unboxed_options =
         match stmts with
         | [] -> unboxed_options
-        | s :: _ when has_unknown_call matched_args unboxed_options s -> []
-        | s :: _
-          when assigned_to_optional_field optional_fields unboxed_options s ->
-            []
         | s :: ss ->
-            let matches = collect_matches_in_stmt matched_args s in
-            let acc' =
-              List.filter unboxed_options ~f:(fun v ->
-                  not
-                  @@ List.mem matches (get_id v) ~equal:SCIdentifierComp.equal)
-              |> List.append @@ collect_variables_from_map_get s
+            let matched_in_stmt = collect_matches_in_stmt matched_args s in
+            let used_in_unknown_call =
+              used_in_unknown_calls matched_args unboxed_options s
             in
-            aux acc' ss
+            let assigned_to_fields =
+              assigned_to_optional_field optional_fields unboxed_options s
+            in
+            let not_in_list l v =
+              not @@ List.mem l (get_id v) ~equal:SCIdentifierComp.equal
+            in
+            List.filter unboxed_options ~f:(fun v ->
+                not_in_list matched_in_stmt v
+                && not_in_list used_in_unknown_call v
+                && not_in_list assigned_to_fields v)
+            |> List.append @@ collect_variables_from_map_get s
+            |> aux ss
       in
-      aux [] comp.comp_body
+      aux comp.comp_body []
 
     let report_not_unboxed unboxed_variables =
       List.iter unboxed_variables ~f:(fun v ->

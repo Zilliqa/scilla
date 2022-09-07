@@ -22,7 +22,8 @@
     ],
     "transitions": [
       { "vname": "tr1", "params": [ { "vname": "k", "type": "Uint32" } ] },
-      { "vname": "tr2", "params": [ { "vname": "k", "type": "Uint32" } ] }
+      { "vname": "tr2", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr3", "params": [ { "vname": "k", "type": "Uint32" } ] }
     ],
     "procedures": [],
     "events": [],
@@ -96,6 +97,26 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message": "Unused map get statement to: v_opt2",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt2 has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 26,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
     },
     {
       "warning_message": "No transition in contract UnboxResult4 contains an accept statement\n",
