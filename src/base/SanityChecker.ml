@@ -503,9 +503,57 @@ struct
       String.equal "Option" @@ SCIdentifier.Name.as_string (get_id id)
 
     let is_option_ty id =
-      (* TODO: Well, there must be a better way. *)
       let re = Str.regexp "Option.*$" in
       Str.string_match re (SType.pp_typ (ER.get_type (get_rep id)).tp) 0
+
+    (** Returns [true] iff the expression [e] contains function call that
+        doesn't appear in the [m] and contains one of [unboxed_options] as an
+        argument. *)
+    let rec has_unknown_call_in_expr m unboxed_options (e, _annot) =
+      match e with
+      | Let (_id, _ty, lhs, rhs) ->
+          has_unknown_call_in_expr m unboxed_options lhs
+          || has_unknown_call_in_expr m unboxed_options rhs
+      | Fun (_id, _ty, body) -> has_unknown_call_in_expr m unboxed_options body
+      | MatchExpr (_id, arms) ->
+          List.find arms ~f:(fun (_pattern, ea) ->
+              has_unknown_call_in_expr m unboxed_options ea)
+          |> Option.is_some
+      | App (id, args) ->
+          let has_unboxed_arg () =
+            List.find args ~f:(fun arg ->
+                List.mem unboxed_options arg ~equal:SCIdentifier.equal)
+            |> Option.is_some
+          in
+          (not @@ Map.mem m (get_id id)) && has_unboxed_arg ()
+      | TFun (_id, body) -> has_unknown_call_in_expr m unboxed_options body
+      | Fixpoint (_id, _ty, ea) -> has_unknown_call_in_expr m unboxed_options ea
+      | GasExpr (_, ea) -> has_unknown_call_in_expr m unboxed_options ea
+      | Literal _ | Builtin _ | Var _ | TApp _ | Message _ | Constr _ -> false
+
+    (** Returns [true] iff the statement [s] contains function or procedure
+        call that doesn't appear in the [m] and contains one of
+        [unboxed_options] as an argument. *)
+    let rec has_unknown_call m unboxed_options (s, _annot) =
+      match s with
+      | Bind (_id, ea) -> has_unknown_call_in_expr m unboxed_options ea
+      | MatchStmt (_id, arms) ->
+          List.find arms ~f:(fun (_pattern, stmts) ->
+              List.find stmts ~f:(fun s -> has_unknown_call m unboxed_options s)
+              |> Option.is_some)
+          |> Option.is_some
+      | CallProc (id, args) ->
+          let has_unboxed_arg () =
+            List.find args ~f:(fun arg ->
+                List.mem unboxed_options arg ~equal:SCIdentifier.equal)
+            |> Option.is_some
+          in
+          (not @@ Map.mem m (get_id id)) && has_unboxed_arg ()
+      (* We shouldn't handle `forall` here, because it operates only with iterables. *)
+      | Iterate _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
+      | CreateEvnt _ | Throw _ | GasStmt _ ->
+          false
 
     (** Returns names of variables that are matched in the expression. *)
     let rec collect_matches_in_expr m (e, _annot) =
@@ -555,6 +603,23 @@ struct
       | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
+    (** Collects function calls that don't call type functions directly or
+        undirectly. We don't handle them because that slows down the analysis. *)
+    let collect_function_calls cg =
+      let rec has_tfun_calls (n : CG.Node.t) =
+        CG.Node.succs n
+        |> List.find ~f:(fun (n : CG.Node.t) ->
+               match n.ty with
+               | TFunAlias | TFun -> true
+               | _ -> has_tfun_calls n)
+        |> Option.is_some
+      in
+      CG.fold_over_nodes_dfs cg ~init:[] ~f:(fun acc n ->
+          match n.ty with
+          | TFun | TFunAlias -> acc
+          | Trans | Proc | Fun | FunAlias ->
+              acc @ if not @@ has_tfun_calls n then [ get_id n.id ] else [])
+
     (** Returns arity of the function, mapping name |-> index for arguments
           with the Optional type and body expression of the function. *)
     let inspect_lib_fun ea =
@@ -576,13 +641,9 @@ struct
       aux 0 emp_ids_map ea
 
     (** Collects a mapping with information which argument of a library
-        function or a procedure with Optional type matches inside its body.
-
-        TODO: Are there any Option matches in the stdlib? Probably, we should
-              just don't warn if an optional variable passed in any stdlib
-              function. *)
-    let collect_option_args_matches (cmod : cmodule) (cg : CG.cg)
-        (_rlibs : lib_entry list) =
+        function or a procedure with the [Optional] type matches inside its
+        body. *)
+    let collect_option_args_matches (cmod : cmodule) (cg : CG.cg) =
       (* Returns an array with information about matched Optional arguments
          [Some(args)] if the [fun_name] is a pure library function. *)
       let handle_lentries lentries option_args_matches fun_name =
@@ -636,8 +697,7 @@ struct
       let lentries =
         Option.value_map cmod.libs ~default:[] ~f:(fun lib -> lib.lentries)
       in
-      (* Traverse callgraph nodes in the DFS order *)
-      CG.fold_over_nodes_dfs cg ~init:[] ~f:(fun acc n -> acc @ [ get_id n.id ])
+      collect_function_calls cg
       |> List.fold_left
            ~init:(Map.empty (module SCIdentifierComp))
            ~f:(fun m (fun_name : SCIdentifierComp.t) ->
@@ -657,16 +717,25 @@ struct
         ->
           []
 
-    (** Iterates over the contract's component and accumulates unmatched
-        variables returned from the map get operations. *)
-    let collect_unboxed_results (comp : component) matched_args =
-      List.fold_left comp.comp_body ~init:[] ~f:(fun acc sa ->
-          let matches = collect_matches_in_stmt matched_args sa in
-          List.filter acc ~f:(fun v ->
-              not @@ List.mem matches (get_id v) ~equal:SCIdentifierComp.equal)
-          |> List.append @@ collect_variables_from_map_get sa)
+    (** Collects not matched local variables returned from map get operations. *)
+    let collect_not_unboxed (comp : component) matched_args =
+      let rec aux unboxed_options stmts =
+        match stmts with
+        | [] -> unboxed_options
+        | s :: _ when has_unknown_call matched_args unboxed_options s -> []
+        | s :: ss ->
+            let matches = collect_matches_in_stmt matched_args s in
+            let acc' =
+              List.filter unboxed_options ~f:(fun v ->
+                  not
+                  @@ List.mem matches (get_id v) ~equal:SCIdentifierComp.equal)
+              |> List.append @@ collect_variables_from_map_get s
+            in
+            aux acc' ss
+      in
+      aux [] comp.comp_body
 
-    let report_unboxed_results unboxed_variables =
+    let report_not_unboxed unboxed_variables =
       List.iter unboxed_variables ~f:(fun v ->
           warn1
             (Printf.sprintf
@@ -676,11 +745,11 @@ struct
             warning_level_not_unboxed
             (ER.get_loc (get_rep v)))
 
-    let run (cmod : cmodule) (cg : CG.cg) (rlibs : lib_entry list) =
-      let matched_args = collect_option_args_matches cmod cg rlibs in
+    let run (cmod : cmodule) (cg : CG.cg) (_rlibs : lib_entry list) =
+      let matched_args = collect_option_args_matches cmod cg in
       List.rev cmod.contr.ccomps
       |> List.iter ~f:(fun comp ->
-             collect_unboxed_results comp matched_args |> report_unboxed_results);
+             collect_not_unboxed comp matched_args |> report_not_unboxed);
       pure ()
   end
 
