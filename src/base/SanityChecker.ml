@@ -566,26 +566,31 @@ struct
       | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
+    let id_is_unboxed unboxed_options id =
+      List.mem unboxed_options id ~equal:(fun l r ->
+          SCIdentifier.Name.equal (SCIdentifier.get_id l)
+            (SCIdentifier.get_id r))
+
     (** Returns a list of variables from [unboxed_options] that are assigned to
         one of the [fields] *)
     let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
-      let id_is_unboxed id =
-        List.mem unboxed_options id ~equal:(fun l r ->
-            SCIdentifier.Name.equal (SCIdentifier.get_id l)
-              (SCIdentifier.get_id r))
-      in
       let has_field f = SCIdentifierSet.mem fields (SCIdentifier.get_id f) in
       match s with
-      | Store (lhs, rhs) when id_is_unboxed rhs && has_field lhs ->
+      | Store (lhs, rhs) when id_is_unboxed unboxed_options rhs && has_field lhs
+        ->
           [ SCIdentifier.get_id rhs ]
       | MapUpdate (m, keys, v_opt) when has_field m ->
           let unboxed_values =
             Option.value_map v_opt ~default:[] ~f:(fun v ->
-                if id_is_unboxed v then [ SCIdentifier.get_id v ] else [])
+                if id_is_unboxed unboxed_options v then
+                  [ SCIdentifier.get_id v ]
+                else [])
           in
           let unboxed_keys =
             List.fold_left keys ~init:[] ~f:(fun acc k ->
-                if id_is_unboxed k then acc @ [ SCIdentifier.get_id k ] else acc)
+                if id_is_unboxed unboxed_options k then
+                  acc @ [ SCIdentifier.get_id k ]
+                else acc)
           in
           unboxed_values @ unboxed_keys
       | MatchStmt (_id, arms) ->
@@ -596,6 +601,50 @@ struct
       | Store _ | MapUpdate _ | CallProc _ | Bind _ | Iterate _ | Load _
       | RemoteLoad _ | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _
       | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+          []
+
+    (** Returns a list of variables from [unboxed_options] that are used as
+        arguments to ADT constructors. We don't check the actual type in the
+        constructor, because it will be a typing error if the type is not
+        [Option]. *)
+    let rec assigned_to_ctor_in_expr unboxed_options (e, _annot) =
+      match e with
+      | Constr (_id, _ty_params, args) ->
+          List.fold_left args ~init:[] ~f:(fun acc arg ->
+              if id_is_unboxed unboxed_options arg then acc @ [ get_id arg ]
+              else acc)
+      | Literal _ -> []
+      | Var _id -> []
+      | Let (_id, _ty, lhs, rhs) ->
+          assigned_to_ctor_in_expr unboxed_options lhs
+          @ assigned_to_ctor_in_expr unboxed_options rhs
+      | Message _ -> []
+      | Fun (_id, _ty, body) -> assigned_to_ctor_in_expr unboxed_options body
+      | App (_id, _args) -> []
+      | MatchExpr (_id, arms) ->
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, ea) ->
+              assigned_to_ctor_in_expr unboxed_options ea |> List.append acc)
+      | Builtin _ -> []
+      | TFun (_id, body) -> assigned_to_ctor_in_expr unboxed_options body
+      | TApp _ -> []
+      | Fixpoint (_id, _ty, ea) -> assigned_to_ctor_in_expr unboxed_options ea
+      | GasExpr (_, ea) -> assigned_to_ctor_in_expr unboxed_options ea
+
+    (** Returns a list of variables from [unboxed_options] that are used as
+        arguments to ADT constructors. We don't check the actual type in the
+        constructor, because it will be a typing error if the type is not
+        [Option]. *)
+    let rec assigned_to_ctor unboxed_options (s, _annot) =
+      match s with
+      | Bind (_id, ea) -> assigned_to_ctor_in_expr unboxed_options ea
+      | MatchStmt (_id, arms) ->
+          List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
+              List.fold_left stmts ~init:[] ~f:(fun acc s ->
+                  acc @ assigned_to_ctor unboxed_options s)
+              |> List.append acc)
+      | Store _ | MapUpdate _ | CallProc _ | Iterate _ | Load _ | RemoteLoad _
+      | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
     (** Returns names of variables that are matched in the expression. *)
@@ -664,7 +713,7 @@ struct
               acc @ if not @@ has_tfun_calls n then [ get_id n.id ] else [])
 
     (** Returns arity of the function, mapping name |-> index for arguments
-          with the Optional type and body expression of the function. *)
+          with the [Option] type and body expression of the function. *)
     let inspect_lib_fun ea =
       let rec aux cnt option_args ea =
         let e, _annot = ea in
@@ -683,10 +732,10 @@ struct
       aux 0 emp_ids_map ea
 
     (** Collects a mapping with information which argument of a library
-        function or a procedure with the [Optional] type matches inside its
+        function or a procedure with the [Option] type matches inside its
         body. *)
     let collect_option_args_matches (cmod : cmodule) (cg : CG.cg) =
-      (* Returns an array with information about matched Optional arguments
+      (* Returns an array with information about matched [Option] arguments
          [Some(args)] if the [fun_name] is a pure library function. *)
       let handle_lentries lentries option_args_matches fun_name =
         List.find_map lentries ~f:(function
@@ -702,7 +751,7 @@ struct
               Some args_list
           | LibVar _ | LibTyp _ -> None)
       in
-      (* Returns an array with information about matched Optional arguments
+      (* Returns an array with information about matched [Option] arguments
          [Some(args)] if the [fun_name] is a procedure. *)
       let handle_comp (cmod : cmodule) option_args_matches fun_name =
         let get_comp_args comp =
@@ -750,7 +799,7 @@ struct
                  | Some arg_matches -> Map.set m ~key:fun_name ~data:arg_matches
                  | None -> m))
 
-    (** Collects contract fields with the [Optional] type. *)
+    (** Collects contract fields with the [Option] type. *)
     let collect_optional_fields (cmod : cmodule) =
       List.fold_left ~init:emp_ids_set cmod.contr.cfields
         ~f:(fun s (id, ty, _init) ->
@@ -798,6 +847,7 @@ struct
                  @@ used_in_unknown_calls matched_args unboxed_options s
               |> List.append
                  @@ assigned_to_optional_field optional_fields unboxed_options s
+              |> List.append @@ assigned_to_ctor unboxed_options s
               |> SCIdentifierSet.of_list
             in
             List.filter unboxed_options ~f:(fun v ->
