@@ -505,10 +505,6 @@ struct
     let is_option_name id =
       String.equal "Option" @@ SCIdentifier.Name.as_string (get_id id)
 
-    let has_option_ty ty =
-      let re = Str.regexp ".*Option.*$" in
-      Str.string_match re (SType.pp_typ ty) 0
-
     let is_option_ty id =
       let re = Str.regexp "Option.*$" in
       Str.string_match re (SType.pp_typ (ER.get_type (get_rep id)).tp) 0
@@ -572,8 +568,10 @@ struct
             (SCIdentifier.get_id r))
 
     (** Returns a list of variables from [unboxed_options] that are assigned to
-        one of the [fields] *)
-    let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
+        one of the [fields]. We don't check the actual type in the
+        constructor, because it will be a typing error if the type is not
+        [Option]. *)
+    let rec assigned_to_field fields unboxed_options (s, _annot) =
       let has_field f = SCIdentifierSet.mem fields (SCIdentifier.get_id f) in
       match s with
       | Store (lhs, rhs) when id_is_unboxed unboxed_options rhs && has_field lhs
@@ -596,7 +594,7 @@ struct
       | MatchStmt (_id, arms) ->
           List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
               List.fold_left stmts ~init:[] ~f:(fun acc s ->
-                  acc @ assigned_to_optional_field fields unboxed_options s)
+                  acc @ assigned_to_field fields unboxed_options s)
               |> List.append acc)
       | Store _ | MapUpdate _ | CallProc _ | Bind _ | Iterate _ | Load _
       | RemoteLoad _ | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _
@@ -799,12 +797,6 @@ struct
                  | Some arg_matches -> Map.set m ~key:fun_name ~data:arg_matches
                  | None -> m))
 
-    (** Collects contract fields with the [Option] type. *)
-    let collect_optional_fields (cmod : cmodule) =
-      List.fold_left ~init:emp_ids_set cmod.contr.cfields
-        ~f:(fun s (id, ty, _init) ->
-          if has_option_ty ty then Set.add s (SCIdentifier.get_id id) else s)
-
     let collect_variables_from_map_get (s, _annot) =
       match s with
       | MapGet (v, _, _, true) | RemoteMapGet (v, _, _, _, true) -> [ v ]
@@ -836,7 +828,7 @@ struct
 
     (** Collects not matched local variables returned from map get operations
         that should be reported. *)
-    let collect_not_unboxed optional_fields (comp : component) matched_args =
+    let collect_not_unboxed fields (comp : component) matched_args =
       let rec aux stmts unboxed_options =
         match stmts with
         | [] -> unboxed_options
@@ -845,8 +837,7 @@ struct
               collect_matches_in_stmt matched_args s
               |> List.append
                  @@ used_in_unknown_calls matched_args unboxed_options s
-              |> List.append
-                 @@ assigned_to_optional_field optional_fields unboxed_options s
+              |> List.append @@ assigned_to_field fields unboxed_options s
               |> List.append @@ assigned_to_ctor unboxed_options s
               |> SCIdentifierSet.of_list
             in
@@ -870,11 +861,13 @@ struct
 
     let run (cmod : cmodule) (cg : CG.cg) (_rlibs : lib_entry list) =
       let matched_args = collect_option_args_matches cmod cg in
-      let optional_fields = collect_optional_fields cmod in
+      let fields =
+        List.fold_left ~init:emp_ids_set cmod.contr.cfields
+          ~f:(fun s (id, _, _) -> SCIdentifier.get_id id |> Set.add s)
+      in
       List.rev cmod.contr.ccomps
       |> List.iter ~f:(fun comp ->
-             collect_not_unboxed optional_fields comp matched_args
-             |> report_not_unboxed);
+             collect_not_unboxed fields comp matched_args |> report_not_unboxed);
       pure ()
   end
 
