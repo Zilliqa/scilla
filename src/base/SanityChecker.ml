@@ -567,7 +567,7 @@ struct
           []
 
     (** Returns a list of variables from [unboxed_options] that are assigned to
-        the one of the [fields] *)
+        one of the [fields] *)
     let rec assigned_to_optional_field fields unboxed_options (s, _annot) =
       let id_is_unboxed id =
         List.mem unboxed_options id ~equal:(fun l r ->
@@ -576,30 +576,26 @@ struct
       in
       let has_field f = SCIdentifierSet.mem fields (SCIdentifier.get_id f) in
       match s with
-      | Store (lhs, rhs) ->
-          if id_is_unboxed rhs && has_field lhs then [ SCIdentifier.get_id rhs ]
-          else []
-      | MapUpdate (m, keys, v_opt) ->
-          if has_field m then
-            let unboxed_values =
-              Option.value_map v_opt ~default:[] ~f:(fun v ->
-                  if id_is_unboxed v then [ SCIdentifier.get_id v ] else [])
-            in
-            let unboxed_keys =
-              List.fold_left keys ~init:[] ~f:(fun acc k ->
-                  if id_is_unboxed k then acc @ [ SCIdentifier.get_id k ]
-                  else acc)
-            in
-            unboxed_values @ unboxed_keys
-          else []
+      | Store (lhs, rhs) when id_is_unboxed rhs && has_field lhs ->
+          [ SCIdentifier.get_id rhs ]
+      | MapUpdate (m, keys, v_opt) when has_field m ->
+          let unboxed_values =
+            Option.value_map v_opt ~default:[] ~f:(fun v ->
+                if id_is_unboxed v then [ SCIdentifier.get_id v ] else [])
+          in
+          let unboxed_keys =
+            List.fold_left keys ~init:[] ~f:(fun acc k ->
+                if id_is_unboxed k then acc @ [ SCIdentifier.get_id k ] else acc)
+          in
+          unboxed_values @ unboxed_keys
       | MatchStmt (_id, arms) ->
           List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
               List.fold_left stmts ~init:[] ~f:(fun acc s ->
                   acc @ assigned_to_optional_field fields unboxed_options s)
               |> List.append acc)
-      | CallProc _ | Bind _ | Iterate _ | Load _ | RemoteLoad _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
-      | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | Store _ | MapUpdate _ | CallProc _ | Bind _ | Iterate _ | Load _
+      | RemoteLoad _ | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _
+      | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
     (** Returns names of variables that are matched in the expression. *)
@@ -796,20 +792,16 @@ struct
         match stmts with
         | [] -> unboxed_options
         | s :: ss ->
-            let matched_in_stmt = collect_matches_in_stmt matched_args s in
-            let used_in_unknown_call =
-              used_in_unknown_calls matched_args unboxed_options s
-            in
-            let assigned_to_fields =
-              assigned_to_optional_field optional_fields unboxed_options s
-            in
-            let not_in_list l v =
-              not @@ List.mem l (get_id v) ~equal:SCIdentifierComp.equal
+            let filter_set =
+              collect_matches_in_stmt matched_args s
+              |> List.append
+                 @@ used_in_unknown_calls matched_args unboxed_options s
+              |> List.append
+                 @@ assigned_to_optional_field optional_fields unboxed_options s
+              |> SCIdentifierSet.of_list
             in
             List.filter unboxed_options ~f:(fun v ->
-                not_in_list matched_in_stmt v
-                && not_in_list used_in_unknown_call v
-                && not_in_list assigned_to_fields v)
+                not @@ Set.mem filter_set (get_id v))
             |> List.append @@ collect_variables_from_map_get s
             |> fun unboxed_options' ->
             unboxed_options' @ collect_aliases s unboxed_options' |> aux ss
