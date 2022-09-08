@@ -185,7 +185,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "warning_message": "Variable v_opt has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
         "file": "contracts/unbox_result3.scilla",
         "line": 27,
@@ -195,7 +195,7 @@
       "warning_id": 2
     },
     {
-      "warning_message": "Variable v_opt has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "warning_message": "Variable v_opt has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
         "file": "contracts/unbox_result3.scilla",
         "line": 34,

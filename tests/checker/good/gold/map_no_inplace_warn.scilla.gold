@@ -126,7 +126,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Variable a has the Optional type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "warning_message": "Variable a has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
         "file": "checker/good/map_no_inplace_warn.scilla",
         "line": 10,

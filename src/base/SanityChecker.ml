@@ -853,7 +853,7 @@ struct
       List.iter unboxed_variables ~f:(fun v ->
           warn1
             (Printf.sprintf
-               "Variable %s has the Optional type, but it wasn't unboxed. \
+               "Variable %s has the Option type, but it wasn't unboxed. \
                 Probably, you should match it before using it."
                (Name.as_string (get_id v)))
             warning_level_not_unboxed
