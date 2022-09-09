@@ -683,7 +683,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
             with
             | Some bech32 ->
                 pure @@ build_some_lit (StringLit bech32) string_typ
-            | None -> pure @@ build_none_lit (bystrx_typ Type.address_length))
+            | None -> pure @@ build_none_lit string_typ)
       | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
 
     let concat _ ls _ =
