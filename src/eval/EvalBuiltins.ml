@@ -676,7 +676,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       match ls with
       | [ StringLit prfx; ByStrX addr ] -> (
           if Core.String.(prfx <> "zil") then
-            pure @@ build_none_lit (bystrx_typ Type.address_length)
+            pure @@ build_none_lit string_typ
           else
             match
               Bech32.encode_bech32_addr ~prfx ~addr:(Bystrx.to_raw_bytes addr)
