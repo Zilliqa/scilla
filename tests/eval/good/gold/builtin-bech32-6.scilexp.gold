@@ -1,0 +1,5 @@
+(Map Int128 Option (String) [((Int128 -3) => (None))]),
+{ [val -> (None)],
+  [key -> (Int128 -3)],
+  [emp -> (Map Int128 Option (String) [])] }
+Gas remaining: 4001881
