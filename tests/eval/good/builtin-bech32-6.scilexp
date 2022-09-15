@@ -1,0 +1,9 @@
+let emp = Emp (Int128) (Option String) in
+let key = Int128 -3 in
+let val =
+  let str = "tzil" in
+  let addr = 0x0000000000000000000000000000000000000000
+  in builtin bystr20_to_bech32 str addr
+in
+builtin put emp key val
+
