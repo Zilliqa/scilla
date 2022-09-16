@@ -17,8 +17,7 @@
 *)
 open Core
 
-type json_replacement = { vname : string; value : string }
-[@@deriving yojson] [@@deriving yojson]
+type json_replacement = { vname : string; value : string } [@@deriving yojson]
 
 type replacement = {
   filename : string;
