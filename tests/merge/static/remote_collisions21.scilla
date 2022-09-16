@@ -14,7 +14,7 @@ transition tr(a: ByStr20)
   end;
   match a_opt with
   | Some aa =>
-    f <- & aa.a_f;
+    f <- & aa.a_f; f <- & aa.a_f;
     k <- z;
     f <- & aa.m_f[k]
   | None =>

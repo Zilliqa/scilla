@@ -25,6 +25,7 @@ transition remoteCollisions21_tr (a : ByStr20)
   match a_opt with
   | Some aa =>
     remoteCollisions21_f <- remoteCollisions23_a_f;
+    remoteCollisions21_f <- remoteCollisions22_a_f;
     k <- remoteCollisions21_z;
     remoteCollisions21_f <- remoteCollisions22_m_f[k]
   | None =>

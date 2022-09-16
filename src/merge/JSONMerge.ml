@@ -36,7 +36,7 @@ module ScillaJSONMerger = struct
 
   (** Merge configuration file with replacements information.
       It has the following format:
-        contract_name |-> (line_num |-> (replacee |-> replacement)) *)
+        contract_name |-> ((line,col) |-> (replacee |-> replacement)) *)
   let g_config = ref @@ Map.empty (module String)
 
   (** Parses merge config to the map in the following format: vname |-> value *)

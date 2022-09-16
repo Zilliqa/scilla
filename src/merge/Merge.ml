@@ -52,6 +52,15 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
   module PIdentifier = PType.TIdentifier
   module PSyntax = ScillaSyntax (SR) (ER) (PLiteral)
 
+  module IntPair = struct
+    module T = struct
+      type t = int * int [@@deriving compare, sexp]
+    end
+
+    include T
+    include Comparable.Make (T)
+  end
+
   module PIdentifierComp = struct
     include PIdentifier.Name
     include Comparable.Make (PIdentifier.Name)
@@ -67,7 +76,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
 
   (** Merge configuration file with replacements information.
       It has the following format:
-        contract_name |-> (line_num |-> (replacee |-> replacement)) *)
+        contract_name |-> ((line,col) |-> (replacee |-> replacement)) *)
   let g_config = ref @@ Map.empty (module String)
 
   (************************************************)
@@ -75,7 +84,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
   (************************************************)
 
   (** Parses merge config to the map in the following format:
-      contract_name |-> (line_num |-> (replacee |-> replacement)) *)
+      contract_name |-> ((line,col) |-> (replacee |-> replacement)) *)
   let parse_merge_config = function
     | None -> Map.empty (module String)
     | Some (config : Config.config) ->
@@ -85,12 +94,12 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
             let replacements =
               match Map.find m r.filename with
               | Some mm -> mm
-              | None -> Map.empty (module Int)
+              | None -> Map.empty (module IntPair)
             in
             let replacements' =
-              Map.set replacements ~key:r.line
+              Map.set replacements ~key:(r.line, r.col)
                 ~data:
-                  (match Map.find replacements r.line with
+                  (match Map.find replacements (r.line, r.col) with
                   | Some rr -> Map.set rr ~key:r.replacee ~data:r.replacement
                   | None ->
                       Map.empty (module String)
@@ -143,7 +152,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
 
   (** Sets [Config.config] as a global configuration for the merge. *)
   let set_merge_config (c : Config.config option) =
-    parse_merge_config c |> fun c -> g_config := c
+    g_config := parse_merge_config c
 
   (************************************************)
   (* Local pass                                   *)
@@ -191,7 +200,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let loc_v = loc |> Lazy.force in
         match Map.find !g_config loc_v.fname with
         | Some replacements -> (
-            match Map.find replacements loc_v.lnum with
+            match Map.find replacements (loc_v.lnum, loc_v.cnum) with
             | Some replacements' -> (
                 match Map.find replacements' name with
                 | Some r -> PIdentifier.Name.parse_simple_name r

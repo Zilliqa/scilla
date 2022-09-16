@@ -22,6 +22,7 @@ type json_replacement = { vname : string; value : string } [@@deriving yojson]
 type replacement = {
   filename : string;
   line : int;
+  col : int;
   replacee : string;  (** Identifier that should be replaced. *)
   replacement : string;
 }
