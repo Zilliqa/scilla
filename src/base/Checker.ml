@@ -160,8 +160,8 @@ let check_patterns_lmodule e rlibs elibs =
     @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
-let check_sanity m cg rlibs elibs =
-  let res = SC.contr_sanity cg m rlibs elibs in
+let check_sanity m call_graph rlibs elibs =
+  let res = SC.contr_sanity call_graph m rlibs elibs in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
