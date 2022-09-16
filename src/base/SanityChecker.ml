@@ -506,8 +506,12 @@ struct
       String.equal "Option" @@ SCIdentifier.Name.as_string (get_id id)
 
     let is_option_ty id =
-      let re = Str.regexp "Option.*$" in
-      Str.string_match re (SType.pp_typ (ER.get_type (get_rep id)).tp) 0
+      match (ER.get_type (get_rep id)).tp with
+      | ADT (id, _) ->
+          String.equal
+            (SIdentifier.Name.as_string (SIdentifier.get_id id))
+            "Option"
+      | _ -> false
 
     (** Returns a list of variables from [unboxed_options] that are used in the
         expression [e] as arguments to the function that doesn't present in [m]. *)
