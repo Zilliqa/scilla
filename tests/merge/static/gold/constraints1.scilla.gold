@@ -2,10 +2,10 @@ scilla_version 0
 
 import BoolUtils
 
-library ProductLib
+library MergedLib
 
 
-contract ProductContr
+contract MergedContr
   (
     constraints11_a : Uint32,
     constraints12_a : Uint32,
@@ -20,6 +20,7 @@ with
   let cond_2 = let two = Uint32 2 in builtin lt two constraints13_a in
   andb cond_1 cond_2
 =>
+
 
 
 

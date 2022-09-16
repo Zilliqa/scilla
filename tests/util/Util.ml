@@ -311,7 +311,7 @@ module type TestSuiteJSONInput = sig
   val diff_filter : string -> string
 end
 
-module DiffBasedProductJSONTests (Input : TestSuiteJSONInput) = struct
+module DiffBasedMergeJSONTests (Input : TestSuiteJSONInput) = struct
   open Input
   open OUnit2
 

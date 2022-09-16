@@ -1,0 +1,9 @@
+(library
+ (name scilla_merge)
+ (modes byte native)
+ (public_name scilla.merge)
+ (wrapped true)
+ (libraries core scilla_base yojson)
+ (synopsis "Library to merge multiple smart-contracts to a single contract")
+ (preprocess
+  (pps ppx_deriving_yojson)))

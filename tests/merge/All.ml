@@ -19,7 +19,7 @@
 open OUnit2
 
 let tests env =
-  "product"
+  "merge"
   >::: [
          "static"
          >::: [ Static.ContractTests.tests env; Static.JSONTests.tests env ];

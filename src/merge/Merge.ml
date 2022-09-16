@@ -21,29 +21,29 @@ open Scilla_base
 open Syntax
 open Literal
 
-(** The ScillaProduct module provides the API to merge multiple contracts to a
-    single "product" contract.
+(** The ScillaMerger module provides the API to merge multiple contracts to a
+    single "merge" contract.
 
     This logic is implemented in two passes:
-    1. Local pass: rename local identifiers and merge all to the product
+    1. Local pass: rename local identifiers and merge all to the merge
        contract.
        We iterate through all components of a contract and rename all local
        identifiers that may be ambiguated. All rename information will be
        saved for the future remote rename. Then we merge all the components to
-       the single product contract.
+       the single merge contract.
     2. Remote pass: rename remote identifiers and localize remote operations.
-       We iterate through components of the product contract performing
+       We iterate through components of the merge contract performing
        renaming and replacing all the remote operations to the local ones,
-       defined in the product contract.
+       defined in the merge contract.
 
   TODO: Unimplemented features:
-  * As an optimization we should not add equivalent definitions to the product
+  * As an optimization we should not add equivalent definitions to the merge
     contract (see: https://github.com/Zilliqa/scilla/issues/1158).
 
   TODO: Tests:
   * Renaming types from libraries with `import as` *)
 
-module ScillaProduct (SR : Rep) (ER : Rep) = struct
+module ScillaMerger (SR : Rep) (ER : Rep) = struct
   module SER = SR
   module EER = ER
   module PLiteral = GlobalLiteral
@@ -65,7 +65,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
 
-  (** Product configuration file with replacements information.
+  (** Merge configuration file with replacements information.
       It has the following format:
         contract_name |-> (line_num |-> (replacee |-> replacement)) *)
   let g_config = ref @@ Map.empty (module String)
@@ -74,9 +74,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   (** Utilities                                   *)
   (************************************************)
 
-  (** Parses product config to the map in the following format:
+  (** Parses merge config to the map in the following format:
       contract_name |-> (line_num |-> (replacee |-> replacement)) *)
-  let parse_product_config = function
+  let parse_merge_config = function
     | None -> Map.empty (module String)
     | Some (config : Config.config) ->
         List.fold_left config.replacements
@@ -104,8 +104,8 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let mk_er_id name =
     SIdentifier.mk_id (SIdentifier.Name.parse_simple_name name) ER.dummy_rep
 
-  let product_lib_name = mk_sr_id "ProductLib"
-  let product_contr_name = mk_sr_id "ProductContr"
+  let merged_lib_name = mk_sr_id "MergedLib"
+  let merged_contr_name = mk_sr_id "MergedContr"
 
   let get_lib_entry_id = function
     | LibTyp (id, _) | LibVar (id, _, _) -> PIdentifier.get_id id
@@ -141,15 +141,15 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     in
     g_contract_name := Util.get_contract_name basename
 
-  (** Sets [Config.config] as a global configuration for the product. *)
-  let set_product_config (c : Config.config option) =
-    parse_product_config c |> fun c -> g_config := c
+  (** Sets [Config.config] as a global configuration for the merge. *)
+  let set_merge_config (c : Config.config option) =
+    parse_merge_config c |> fun c -> g_config := c
 
   (************************************************)
   (* Local pass                                   *)
   (************************************************)
   (* Present with two steps: renaming (rename_* functions) and merging to a
-     product (extend_* functions). *)
+     merge (extend_* functions). *)
 
   (** Adds a unique address to the [name]. *)
   let qualify_name captitalize (((name : Identifier.GlobalName.t_name), i) : 'a)
@@ -596,7 +596,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
           List.fold_left ~init:lib.lentries ext_lib.lentries
             ~f:(fun acc lentry -> acc @ [ lentry ])
         in
-        Some { lname = product_lib_name; lentries }
+        Some { lname = merged_lib_name; lentries }
     | None, None -> None
 
   (** Extends contract components [constraint] with [ext_constraint]. *)
@@ -633,7 +633,7 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
 
   let extend_contract c ext_c =
     {
-      cname = product_contr_name;
+      cname = merged_contr_name;
       cparams = c.cparams @ ext_c.cparams;
       cconstraint = extend_contract_constraint c.cconstraint ext_c.cconstraint;
       ccomps = c.ccomps @ ext_c.ccomps;
@@ -758,9 +758,9 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
     let contr = { cmod.contr with ccomps } in
     { cmod with contr }
 
-  let run_remote_pass product_cmod product_rlib renames_map =
-    let product_cmod' = localize_cmod renames_map product_cmod in
-    (product_cmod', product_rlib)
+  let run_remote_pass merge_cmod merge_rlib renames_map =
+    let merge_cmod' = localize_cmod renames_map merge_cmod in
+    (merge_cmod', merge_rlib)
 
   (************************************************)
   (* Entry point                                  *)
@@ -769,14 +769,14 @@ module ScillaProduct (SR : Rep) (ER : Rep) = struct
   let run (config : Config.config option)
       (contract_infos : (cmodule * lib_entry list * libtree list) list) =
     ErrorUtils.reset_warnings ();
-    set_product_config config;
+    set_merge_config config;
     run_local_pass contract_infos
     |> Option.value_map ~default:None
-         ~f:(fun (product_cmod, product_rlib, renames_map) ->
-           let product_cmod', product_rlib' =
-             run_remote_pass product_cmod product_rlib renames_map
+         ~f:(fun (merge_cmod, merge_rlib, renames_map) ->
+           let merge_cmod', merge_rlib' =
+             run_remote_pass merge_cmod merge_rlib renames_map
            in
-           Some (product_cmod', product_rlib'))
+           Some (merge_cmod', merge_rlib'))
     |> fun v ->
     (v, ErrorUtils.get_warnings () |> PrettyPrinters.scilla_warning_to_sstring)
 end

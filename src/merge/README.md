@@ -1,6 +1,6 @@
-# Product library
+# Merge library
 
-Product library merges multiple contracts to a single product contract.
+Merge library merges multiple contracts to a single merge contract.
 
 ## Configuration
 
@@ -10,13 +10,13 @@ Sometimes we can get names collisions when merging multiple contracts. In that c
 {
   "replacements": [
     {
-      "filename": "tests/product/static/remote_collisions11.scilla",
+      "filename": "tests/merge/static/remote_collisions11.scilla",
       "line": 19,
       "replacee": "m_f",
       "replacement": "remoteCollisions12_m_f"
     },
     {
-      "filename": "tests/product/static/remote_collisions11.scilla",
+      "filename": "tests/merge/static/remote_collisions11.scilla",
       "line": 17,
       "replacee": "a_f",
       "replacement": "remoteCollisions13_a_f"

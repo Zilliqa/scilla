@@ -2,10 +2,10 @@ scilla_version 0
 
 import BoolUtils
 
-library ProductLib
+library MergedLib
 
 
-contract ProductContr ()
+contract MergedContr ()
 
 
 field collisions11_f : Uint32 = Uint32 0

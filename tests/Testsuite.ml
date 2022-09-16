@@ -31,7 +31,7 @@ let () =
       Testtypes.All.tests;
       Testpm.All.tests;
       Testchecker.All.tests;
-      Testproduct.All.tests
+      Testmerge.All.tests
       (* TestGasExpr.All.tests;
          TestGasContracts.All.tests; *);
     ]

@@ -18,14 +18,14 @@
 
 open Core
 open Scilla_base
-open Scilla_product
-open Product
-open JSONProduct
+open Scilla_merge
+open Merge
+open JSONMerge
 open ErrorUtils
-module MProduct = ScillaProduct (Checker.TCSRep) (Checker.TCERep)
+module MMerger = ScillaMerger (Checker.TCSRep) (Checker.TCERep)
 
 module Fmt =
-  Formatter.Format (Checker.TCSRep) (Checker.TCERep) (MProduct.PLiteral)
+  Formatter.Format (Checker.TCSRep) (Checker.TCERep) (MMerger.PLiteral)
 
 let parse_args args =
   let startswith s c =
@@ -36,7 +36,7 @@ let parse_args args =
     | x :: y :: xs when String.equal x "--config" || String.equal x "-c" ->
         aux (acc_args, acc_files, Some y, json_info) xs
     | x :: y :: z :: xs when String.equal x "--json" ->
-        let j = { JSONProduct.file = y; JSONProduct.contract_name = z } in
+        let j = { JSONMerge.file = y; JSONMerge.contract_name = z } in
         aux (acc_args, acc_files, config_path, json_info @ [ j ]) xs
     | x :: y :: xs when startswith x '-' ->
         aux (acc_args @ [ x ] @ [ y ], acc_files, config_path, json_info) xs
@@ -53,17 +53,17 @@ let merge_contracts files args config =
           ~exe_name:(Sys.get_argv ()).(0)
       in
       acc @ [ (cmod, rlibs, elibs) ])
-  |> MProduct.run config
+  |> MMerger.run config
   |> fun (output, warnings) ->
   DebugMessage.perr warnings;
   Option.value_map output ~default:""
-    ~f:(fun ((cmod : MProduct.PSyntax.cmodule), _rlibs) ->
+    ~f:(fun ((cmod : MMerger.PSyntax.cmodule), _rlibs) ->
       Fmt.contract_to_string cmod)
   |> DebugMessage.pout
 
 (** Merges [init.json] files. *)
 let merge_init_jsons files config =
-  ScillaJSONProduct.run config files |> fun (output, warnings) ->
+  ScillaJSONMerger.run config files |> fun (output, warnings) ->
   DebugMessage.perr warnings;
   DebugMessage.pout output
 

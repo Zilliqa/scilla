@@ -2,10 +2,10 @@ scilla_version 0
 
 import BoolUtils
 
-library ProductLib
+library MergedLib
 
 
-contract ProductContr ()
+contract MergedContr ()
 
 
 field remoteCollisions21_f : Bool = False

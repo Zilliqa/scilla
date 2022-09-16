@@ -26,30 +26,30 @@ type json_info = {
   contract_name : string;  (** Name of the appropriate contract *)
 }
 
-(** The ScillaJSONProduct module allows the user to merge multiple [init.json]
+(** The ScillaJSONMerger module allows the user to merge multiple [init.json]
     files that contains initialization options for contracts. *)
-module ScillaJSONProduct = struct
+module ScillaJSONMerger = struct
   module StringSet = Set.Make (String)
 
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
 
-  (** Product configuration file with replacements information.
+  (** Merge configuration file with replacements information.
       It has the following format:
         contract_name |-> (line_num |-> (replacee |-> replacement)) *)
   let g_config = ref @@ Map.empty (module String)
 
-  (** Parses product config to the map in the following format: vname |-> value *)
-  let parse_json_product_config = function
+  (** Parses merge config to the map in the following format: vname |-> value *)
+  let parse_json_merge_config = function
     | None -> Map.empty (module String)
     | Some (config : Config.config) ->
         List.fold_left config.json_replacements
           ~init:(Map.empty (module String))
           ~f:(fun m r -> Map.set m ~key:r.vname ~data:r.value)
 
-  (** Sets [Config.config] as a global configuration for the product. *)
-  let set_product_config (c : Config.config option) =
-    parse_json_product_config c |> fun c -> g_config := c
+  (** Sets [Config.config] as a global configuration for the merge. *)
+  let set_merge_config (c : Config.config option) =
+    parse_json_merge_config c |> fun c -> g_config := c
 
   (** Set a global contract name based on the given [name]. *)
   let set_contract_name name = g_contract_name := Util.get_contract_name name
@@ -129,7 +129,7 @@ module ScillaJSONProduct = struct
     |> fun (values, _) -> JSON.ContractState.state_to_string values
 
   let run (config : Config.config option) (files : json_info list) =
-    set_product_config config;
+    set_merge_config config;
     let json = merge_jsons files in
     ( json,
       ErrorUtils.get_warnings () |> PrettyPrinters.scilla_warning_to_sstring )

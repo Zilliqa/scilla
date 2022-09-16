@@ -19,12 +19,12 @@
 open Core
 
 module ContractTests = Scilla_test.Util.DiffBasedMultiTests (struct
-  let gold_path dir f = [ dir; "product"; "static"; "gold"; f ^ ".gold" ]
-  let test_path f = [ "product"; "static"; f ]
+  let gold_path dir f = [ dir; "merge"; "static"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "merge"; "static"; f ]
   let runner = "scilla-merger"
   let ignore_predef_args = false
   let gas_limit = Stdint.Uint64.of_int 8000
-  let custom_args = [ "--config"; "product/static/product_config.json" ]
+  let custom_args = [ "--config"; "merge/static/merge_config.json" ]
   let additional_libdirs = []
   let provide_init_arg = false
   let diff_filter s = s
@@ -51,13 +51,13 @@ module ContractTests = Scilla_test.Util.DiffBasedMultiTests (struct
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
-module JSONTests = Scilla_test.Util.DiffBasedProductJSONTests (struct
-  let gold_path dir f = [ dir; "product"; "static"; "gold"; f ^ ".gold" ]
-  let test_path f = [ "product"; "static"; f ]
+module JSONTests = Scilla_test.Util.DiffBasedMergeJSONTests (struct
+  let gold_path dir f = [ dir; "merge"; "static"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "merge"; "static"; f ]
   let runner = "scilla-merger"
   let ignore_predef_args = false
   let gas_limit = Stdint.Uint64.of_int 8000
-  let custom_args = [ "--config"; "product/static/product_config.json" ]
+  let custom_args = [ "--config"; "merge/static/merge_config.json" ]
   let additional_libdirs = []
   let diff_filter s = s
 
