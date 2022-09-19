@@ -276,8 +276,7 @@ let rec jobj_to_statevar json =
   else
     let tstring = member_exn "type" json |> to_string_exn in
     let t = parse_typ_exn tstring in
-    if GlobalConfig.validate_json () then ThisContr (n, t, json_to_lit_exn t v)
-    else ThisContr (n, t, JSONParser.parse_json t v)
+    ThisContr (n, t, JSONParser.parse_json t v)
 
 (****************************************************************)
 (*                    JSON printing                             *)
