@@ -307,7 +307,7 @@ simple_exp :
 (* Function *)
 | FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
     { match iwt with
-      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
