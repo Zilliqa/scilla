@@ -1,36 +1,29 @@
 {
   "cashflow_tags": {
-    "State variables": [ { "field": "map1", "tag": "(Map NoInfo)" } ],
+    "State variables": [
+      { "field": "m", "tag": "(Map NoInfo)" },
+      { "field": "f_m_opt", "tag": "(Map (Option NoInfo))" },
+      { "field": "f_opt", "tag": "(Option NoInfo)" }
+    ],
     "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "TestNonInplaceMapWarn",
+    "vname": "UnboxResult4",
     "params": [],
     "fields": [
+      { "vname": "m", "type": "Map (Uint32) (Uint32)", "depth": 1 },
       {
-        "vname": "map1",
-        "type": "Map (Uint128) (Map (Uint128) (Uint128))",
-        "depth": 2
-      }
+        "vname": "f_m_opt",
+        "type": "Map (Uint32) (Option (Uint32))",
+        "depth": 1
+      },
+      { "vname": "f_opt", "type": "Option (Uint32)", "depth": 0 }
     ],
     "transitions": [
-      {
-        "vname": "slowLoad",
-        "params": [ { "vname": "k", "type": "Uint128" } ]
-      },
-      {
-        "vname": "slowSlowLoad",
-        "params": [ { "vname": "k", "type": "Uint128" } ]
-      },
-      {
-        "vname": "slowStore",
-        "params": [ { "vname": "k", "type": "Uint128" } ]
-      },
-      {
-        "vname": "slowSlowStore",
-        "params": [ { "vname": "k", "type": "Uint128" } ]
-      }
+      { "vname": "tr1", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr2", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr3", "params": [ { "vname": "k", "type": "Uint32" } ] }
     ],
     "procedures": [],
     "events": [],
@@ -76,100 +69,90 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused transition parameter: k",
+      "warning_message": "Write only field: f_opt",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
+        "file": "contracts/unbox_result4.scilla",
+        "line": 16,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: f_m_opt",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
         "line": 22,
-        "column": 27
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused transition parameter: k",
-      "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 13,
-        "column": 26
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Unused load statement to: a",
-      "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 14,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused transition parameter: k",
+      "warning_message": "Read only field, consider making it a contract parameter: m",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 9,
-        "column": 22
+        "file": "contracts/unbox_result4.scilla",
+        "line": 15,
+        "column": 12
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused map get statement to: a",
+      "warning_message": "Unused bind statement to: v_opt2_alias",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 10,
+        "file": "contracts/unbox_result4.scilla",
+        "line": 28,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Variable a has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "warning_message": "Unused bind statement to: v_opt_alias",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 10,
+        "file": "contracts/unbox_result4.scilla",
+        "line": 21,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt_alias has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 21,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 2
     },
     {
-      "warning_message": "Consider using in-place Map access",
+      "warning_message": "Variable v_opt2_alias has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 19,
-        "column": 14
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 14,
-        "column": 8
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
-    },
-    {
-      "warning_message": "Consider using in-place Map access",
-      "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 10,
+        "file": "contracts/unbox_result4.scilla",
+        "line": 28,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
+      "warning_id": 2
     },
     {
-      "warning_message": "No transition in contract TestNonInplaceMapWarn contains an accept statement\n",
+      "warning_message": "Variable v_opt2 has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
       "start_location": {
-        "file": "checker/good/map_no_inplace_warn.scilla",
-        "line": 3,
+        "file": "contracts/unbox_result4.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "No transition in contract UnboxResult4 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/unbox_result4.scilla",
+        "line": 8,
         "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
