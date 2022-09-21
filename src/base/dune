@@ -22,8 +22,8 @@
  (wrapped true)
  (libraries core core_unix core_unix.sys_unix num hex stdint angstrom
    polynomials cryptokit secp256k1 bitstring yojson fileutils scilla_crypto
-   menhirLib ocamlgraph pprint)
+   menhirLib ocamlgraph)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare
-    ppx_string_interpolation bisect_ppx --conditional))
+    bisect_ppx --conditional))
  (synopsis "Scilla workbench implementation."))

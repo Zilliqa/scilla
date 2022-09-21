@@ -18,6 +18,7 @@
 
 (** Scilla code formatter *)
 
+open Scilla_base
 open Base
 open PPrint
 

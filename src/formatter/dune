@@ -1,0 +1,16 @@
+; (ocamllex
+;  (modules ExtendedScillaLexer))
+
+; (menhir
+;  (flags "--table")
+;  (modules ExtendedScillaParser))
+
+(library
+ (name scilla_format)
+ (modes byte native)
+ (public_name scilla.format)
+ (wrapped true)
+ (libraries core scilla_base pprint)
+ (synopsis "Library to format Scilla code")
+ (preprocess
+  (pps ppx_string_interpolation ppx_compare ppx_sexp_conv)))

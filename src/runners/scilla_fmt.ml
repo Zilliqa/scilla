@@ -18,6 +18,7 @@
 
 open Core
 open Scilla_base
+open Scilla_format
 open Literal
 open GlobalConfig
 open ErrorUtils
