@@ -27,8 +27,8 @@ open PPrint
 module Format (SR : Syntax.Rep) (ER : Syntax.Rep) (Lit : Literal.ScillaLiteral) =
 struct
 
-  (* instantiated syntax *)
-  module Ast = Syntax.ScillaSyntax (SR) (ER) (Lit)
+  (* instantiated syntax extended with comments *)
+  module Ast = ExtendedSyntax.ExtendedScillaSyntax (SR) (ER) (Lit)
 
   module type DOC = sig
     val of_type : Ast.SType.t -> PPrint.document
@@ -92,12 +92,44 @@ struct
     (* Add parentheses only if the condition if true *)
     let parens_if cond doc = if cond then parens doc else doc
 
+    (** Add formatted [comments] around [doc]. *)
+    let wrap_comments comments doc =
+      let comment = enclose !^"(*" !^"*)" in
+      let spaced s =
+        let has_prefix prefix = String.is_prefix s ~prefix in
+        let has_suffix suffix = String.is_suffix s ~suffix in
+        let s = if has_prefix " " || has_prefix "*" then s else " " ^ s in
+        let s = if has_suffix " " || has_suffix "*" then s else s ^ " " in
+        s
+      in
+      let left, above, right =
+        List.fold_left comments
+          ~init:([],[],[])
+          ~f:(fun (acc_l, acc_a, acc_r) -> function
+            | (_, s, Ast.ComLeft) ->
+                acc_l @ [comment !^(spaced s); space], acc_a, acc_r
+            | (_, s, Ast.ComAbove) ->
+                acc_l, (comment !^(spaced s))::acc_a, acc_r
+            | (_, s, Ast.ComRight) ->
+                acc_l, acc_a, [space; comment !^(spaced s)] @ acc_r)
+        |> fun (l, a, r) ->
+            let a' = if List.is_empty a then empty
+                    else (concat_map (fun c -> c ^^^ hardline) a)
+            in
+            let l' = concat l in
+            let r' = concat r in
+            l', a', r'
+      in
+      concat [above; left; doc; right]
+
     let of_builtin b = !^(Syntax.pp_builtin b)
 
     let of_id id = !^(Ast.SIdentifier.as_error_string id)
 
-    let of_ids ids =
-      separate_map space of_id ids
+    let of_ann_id (id, comments) = of_id id |> wrap_comments comments
+
+    let of_ann_ids ids =
+      separate_map space of_ann_id ids
 
     let rec of_type_with_prec p typ =
       let open Ast.SType in
@@ -150,7 +182,7 @@ struct
     let of_types typs ~sep =
       group @@ separate_map sep (fun ty -> of_type_with_prec 1 ty) typs
 
-    let of_typed_id id typ = of_id id ^^^ colon ^//^ group (of_type typ)
+    let of_typed_ann_id id typ = of_ann_id id ^^^ colon ^//^ group (of_type typ)
 
     let rec of_literal lit =
       let rec walk p = function
@@ -202,14 +234,14 @@ struct
 
     let of_payload = function
       | Ast.MLit lit -> of_literal lit
-      | Ast.MVar id -> of_id id
+      | Ast.MVar id -> of_ann_id id
 
     let of_pattern pat =
       let rec of_pattern_aux ~top_parens = function
       | Ast.Wildcard -> !^"_"
-      | Ast.Binder id -> of_id id
+      | Ast.Binder id -> of_ann_id id
       | Ast.Constructor (constr_id, pats) ->
-          let constr_id = of_id constr_id in
+          let constr_id = of_ann_id constr_id in
           if List.is_empty pats then
             constr_id
           else
@@ -218,10 +250,10 @@ struct
       in
       of_pattern_aux ~top_parens:false pat
 
-    let rec of_expr (expr, _ann) =
-      match expr with
+    let rec of_expr (expr, _ann, comments) =
+      (match expr with
       | Ast.Literal lit -> of_literal lit
-      | Ast.Var id -> of_id id
+      | Ast.Var id -> of_ann_id id
       | Ast.Fun (id, typ, body) ->
         (* TODO: nested functions should not be indented:
            fun (a : String) =>
@@ -233,20 +265,20 @@ struct
         let body = of_expr body in
         (* fun ($id : $typ) =>
              $body *)
-        fun_kwd ^^^ parens (of_typed_id id typ) ^^^ darrow ^^ indent (hardline ^^ body)
+        fun_kwd ^^^ parens (of_typed_ann_id id typ) ^^^ darrow ^^ indent (hardline ^^ body)
       | Ast.App (fid, args) ->
-        let fid = of_id fid
-        and args = of_ids args in
+        let fid = of_ann_id fid
+        and args = of_ann_ids args in
         fid ^//^ args
       | Ast.Builtin ((builtin, _ann), _types, typed_ids) ->
         let builtin = of_builtin builtin
-        and args = of_ids typed_ids in
+        and args = of_ann_ids typed_ids in
         builtin_kwd ^^^ builtin ^//^ args
       | Ast.Let (id, otyp, lhs, body) ->
         let id =
           match otyp with
-          | None -> of_id id
-          | Some typ -> of_typed_id id typ
+          | None -> of_ann_id id
+          | Some typ -> of_typed_ann_id id typ
         and lhs = of_expr lhs
         and body = of_expr body in
         (*
@@ -271,27 +303,27 @@ struct
         *)
         (group (group (let_kwd ^^^ id ^^^ equals ^//^ lhs) ^/^ in_kwd)) ^/^ body
       | Ast.TFun (ty_var, body) ->
-        let ty_var = of_id ty_var
+        let ty_var = of_ann_id ty_var
         and body = of_expr body in
         (* tfun $ty_var => $body *)
         (* (^/^) -- means concat with _breakable_ space *)
         tfun_kwd ^^^ ty_var ^^^ darrow ^//^ body
       | Ast.TApp (id, typs) ->
-        let tfid = of_id id
+        let tfid = of_ann_id id
         (* TODO: remove unnecessary parens around primitive types:
            e.g. "Nat" does not need parens but "forall 'X. 'X" needs them in type applications *)
         and typs = separate_map space (fun typ -> parens @@ of_type typ) typs in
         at ^^ tfid ^//^ typs
       | Ast.MatchExpr (ident, branches) ->
-        match_kwd ^^^ of_id ident ^^^ with_kwd ^/^
+        match_kwd ^^^ of_ann_id ident ^^^ with_kwd ^/^
         separate_map hardline
           (fun (pat, e) -> group (pipe ^^^ of_pattern pat ^^^ darrow ^//^ group (of_expr e)))
           branches
         ^^ hardline ^^ end_kwd
       | Ast.Constr (id, typs, args) ->
-        let id = of_id id
+        let id = of_ann_id id
         (* TODO: remove unnecessary parens around primitive types *)
-        and args_doc = of_ids args in
+        and args_doc = of_ann_ids args in
         if Base.List.is_empty typs then
           if Base.List.is_empty args then id else id ^//^ args_doc
         else
@@ -310,44 +342,46 @@ struct
             rbrace
       | Fixpoint _ -> failwith "Fixpoints cannot appear in user contracts"
       | GasExpr _ -> failwith "Gas annotations cannot appear in user contracts's expressions"
+      ) |> wrap_comments comments
 
       let of_map_access map keys =
-        let map = of_id map
-        and keys = concat_map (fun k -> brackets @@ of_id k) keys in
+        let map = of_ann_id map
+        and keys = concat_map (fun k -> brackets @@ of_ann_id k) keys in
         map ^^ keys
 
-      let rec of_stmt (stmt, _ann) = match stmt with
+      let rec of_stmt (stmt, _ann, comments) =
+        (match stmt with
         | Ast.Load (id, field) ->
-          of_id id ^^^ rev_arrow ^//^ of_id field
+          of_ann_id id ^^^ rev_arrow ^//^ of_ann_id field
         | Ast.RemoteLoad (id, addr, field) ->
-          of_id id ^^^ blockchain_arrow ^//^ of_id addr ^^ dot ^^ of_id field
+          of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_ann_id field
         | Ast.Store (field, id) ->
-          of_id field ^^^ assign ^//^ of_id id
+          of_ann_id field ^^^ assign ^//^ of_ann_id id
         | Ast.Bind (id, expr) ->
-          of_id id ^^^ equals ^//^ of_expr expr
+          of_ann_id id ^^^ equals ^//^ of_expr expr
         | Ast.MapUpdate (map, keys, mode) ->
           (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
           (match mode with
-           | Some value -> of_map_access map keys ^^^ assign ^//^ of_id value
+           | Some value -> of_map_access map keys ^^^ assign ^//^ of_ann_id value
            | None -> delete_kwd ^^^ of_map_access map keys)
         | Ast.MapGet (id, map, keys, mode) ->
           (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
           (* If the bool is set, then we interpret this as value retrieve,
             otherwise as an "exists" query. *)
            if mode then
-            of_id id ^^^ rev_arrow ^//^ of_map_access map keys
+            of_ann_id id ^^^ rev_arrow ^//^ of_map_access map keys
            else
-            of_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map keys
+            of_ann_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map keys
         | Ast.RemoteMapGet (id, addr, map, keys, mode) ->
           (* v <-& adr.m[k1][k2][...] OR b <-& exists adr.m[k1][k2][...] *)
           (* If the bool is set, then we interpret this as value retrieve,
             otherwise as an "exists" query. *)
            if mode then
-            of_id id ^^^ blockchain_arrow ^//^ of_id addr ^^ dot ^^ of_map_access map keys
+            of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map keys
            else
-            of_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_id addr ^^ dot ^^ of_map_access map keys
+            of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map keys
         | Ast.MatchStmt (id, branches) ->
-          match_kwd ^^^ of_id id ^^^ with_kwd ^/^
+          match_kwd ^^^ of_ann_id id ^^^ with_kwd ^/^
           separate_map hardline
             (fun (pat, stmts) -> group (pipe ^^^ of_pattern pat ^^^ darrow ^//^ group (of_stmts stmts)))
             branches
@@ -357,30 +391,31 @@ struct
             match query with
             | CurBlockNum -> blocknumber_kwd
             | ChainID -> chainid_kwd
-            | Timestamp ts -> timestamp_kwd ^^ parens (of_id ts)
+            | Timestamp ts -> timestamp_kwd ^^ parens (of_ann_id ts)
             | ReplicateContr (addr, init_params) ->
-              replicate_contract_kwd ^^ parens (of_id addr ^^ comma ^^^ of_id init_params)
+              replicate_contract_kwd ^^ parens (of_ann_id addr ^^ comma ^^^ of_ann_id init_params)
           in
-          of_id id ^^^ blockchain_arrow ^//^ query
+          of_ann_id id ^^^ blockchain_arrow ^//^ query
         | Ast.TypeCast (id, addr, typ) ->
-          of_id id ^^^ blockchain_arrow ^//^ of_id addr ^^^ as_kwd ^^^ of_type typ
+          of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^^ as_kwd ^^^ of_type typ
         | Ast.AcceptPayment ->
           accept_kwd
         | Ast.Iterate (arg_list, proc) ->
           (* forall l p *)
-          forall_kwd ^//^ of_id arg_list ^//^ of_id proc
+          forall_kwd ^//^ of_ann_id arg_list ^//^ of_ann_id proc
         | Ast.SendMsgs msgs ->
-          send_kwd ^//^ of_id msgs
+          send_kwd ^//^ of_ann_id msgs
         | Ast.CreateEvnt events ->
-          event_kwd ^//^ of_id events
+          event_kwd ^//^ of_ann_id events
         | Ast.CallProc (proc, args) ->
-          if List.is_empty args then of_id proc
-          else of_id proc ^//^ of_ids args
+          if List.is_empty args then of_ann_id proc
+          else of_ann_id proc ^//^ of_ann_ids args
         | Ast.Throw oexc ->
           (match oexc with
            | None -> throw_kwd
-           | Some exc -> throw_kwd ^//^ of_id exc)
+           | Some exc -> throw_kwd ^//^ of_ann_id exc)
         | Ast.GasStmt _ -> failwith "Gas annotations cannot appear in user contracts's statements"
+        ) |> wrap_comments comments
 
       and of_stmts stmts =
         separate_map (semi ^^ hardline) (fun s -> of_stmt s) stmts
@@ -391,13 +426,13 @@ struct
           lparen
           (separate_map
             (comma ^^ sep)
-            (fun (p, typ) -> of_typed_id p typ)
+            (fun (p, typ) -> of_typed_ann_id p typ)
             typed_params)
           rparen
 
       let of_component Ast.{comp_type; comp_name; comp_params; comp_body} =
         let comp_type = !^(Syntax.component_type_to_string comp_type)
-        and comp_name = of_id comp_name
+        and comp_name = of_ann_id comp_name
         and comp_params = of_parameters comp_params ~sep:(break 1)
         and comp_body = of_stmts comp_body in
         group (comp_type ^^^ comp_name ^//^ comp_params) ^^
@@ -405,7 +440,7 @@ struct
         end_kwd
 
       let of_ctr_def Ast.{cname; c_arg_types} =
-        let constructor_name = of_id cname
+        let constructor_name = of_ann_id cname
         and constructor_args_types =
           (* TODO: break sequences of long types (e.g. ByStr20 with contract ................... end Uint256 is unreadable) *)
           of_types ~sep:(break 1) c_arg_types
@@ -419,12 +454,12 @@ struct
         | Ast.LibVar (definition, otyp, expr) ->
           let definition =
             match otyp with
-            | None -> of_id definition
-            | Some typ -> of_typed_id definition typ
+            | None -> of_ann_id definition
+            | Some typ -> of_typed_ann_id definition typ
           and expr = of_expr expr in
           let_kwd ^^^ definition ^^^ equals ^//^ expr
         | Ast.LibTyp (typ_name, constr_defs) ->
-          let typ_name = of_id typ_name
+          let typ_name = of_ann_id typ_name
           and constr_defs =
             separate_map hardline (fun cd -> pipe ^^^ of_ctr_def cd) constr_defs
           in
@@ -432,7 +467,7 @@ struct
           constr_defs
 
       let of_library Ast.{lname; lentries} =
-        library_kwd ^^^ of_id lname ^^
+        library_kwd ^^^ of_ann_id lname ^^
         if List.is_empty lentries then hardline
         else
           let lentries =
@@ -444,12 +479,12 @@ struct
           twice hardline ^^ lentries ^^ hardline
 
       let of_contract Ast.{cname; cparams; cconstraint; cfields; ccomps} =
-        let cname = of_id cname
+        let cname = of_ann_id cname
         and cparams = of_parameters cparams ~sep:hardline
         and cconstraint =
           let true_ctr = Lit.LType.TIdentifier.Name.parse_simple_name "True" in
           match cconstraint with
-          | (Ast.Literal (Lit.ADTValue (c, [], [])), _annot) when [%equal: _] c true_ctr ->
+          | (Ast.Literal (Lit.ADTValue (c, [], [])), _annot, _comment) when [%equal: _] c true_ctr ->
             (* trivially True contract constraint does not get rendered *)
             empty
           | _ ->
@@ -462,7 +497,7 @@ struct
             separate_map
               (twice hardline)
                 (fun (field, typ, init) ->
-                  field_kwd ^^^ of_typed_id field typ ^^^ equals ^//^ of_expr init)
+                  field_kwd ^^^ of_typed_ann_id field typ ^^^ equals ^//^ of_expr init)
               cfields
             ^^ twice hardline
         and ccomps =
@@ -477,8 +512,8 @@ struct
         let imports =
           let import_lib (lib, onamespace) =
             match onamespace with
-            | None -> of_id lib
-            | Some namespace -> of_id lib ^^^ as_kwd ^^^ of_id namespace
+            | None -> of_ann_id lib
+            | Some namespace -> of_ann_id lib ^^^ as_kwd ^^^ of_ann_id namespace
           in
           let imported_libs =
             separate_map (hardline) (fun imp -> import_lib imp) elibs

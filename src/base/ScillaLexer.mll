@@ -29,6 +29,11 @@ module MkLexer (S : ParserUtil.Syn) = struct
 
   exception Error of string
 
+  let comments = ref []
+  let add_comment start_p s =
+    let loc = ErrorUtils.toLoc start_p in
+    comments := (loc, s) :: !comments
+  let get_comments () = List.rev !comments
 }
 
 let digit = ['0'-'9']
@@ -55,7 +60,7 @@ rule read =
 
   (* Whitespaces *)    
   | newline       { new_line lexbuf; read lexbuf }
-  | "(*"          { comment [lexbuf.lex_curr_p] lexbuf }
+  | "(*"          { comment (Buffer.create 50) [lexbuf.lex_start_p] lexbuf }
   | white         { read lexbuf }
 
   (* Numbers and hashes *)
@@ -148,15 +153,18 @@ and read_string buf =
   | eof { raise (Error ("String is not terminated")) }
 
 (* Nested comments, keeping a list of where comments open *)
-and comment braces =
+and comment buf braces =
   parse
-  | "(*"      { comment (lexbuf.lex_curr_p::braces) lexbuf}
+  | "(*"      { comment buf (lexbuf.lex_curr_p::braces) lexbuf }
   | "*)"      { match braces with
-                  _::[] -> read lexbuf
-                | _ -> comment (List.tl_exn braces) lexbuf }
-  | newline   { new_line lexbuf; comment braces lexbuf}
-  | _         { comment braces lexbuf}
-  | eof       { lexbuf.lex_curr_p <- List.hd_exn braces; raise (Error ("Comment unfinished"))}
+                  p::[] -> add_comment p (Buffer.contents buf);
+                           read lexbuf
+                | _ -> comment buf (List.tl_exn braces) lexbuf }
+  | newline   { new_line lexbuf; comment buf braces lexbuf }
+  | _         { Buffer.add_string buf (Lexing.lexeme lexbuf);
+                comment buf braces lexbuf }
+  | eof       { lexbuf.lex_curr_p <- List.hd_exn braces;
+                raise (Error ("Comment unfinished")) }
 
 {
 end
