@@ -170,9 +170,10 @@ let output_message_json gas_remaining mlist =
 
 let output_event_json elist =
   let open JSON.JSONLiteral in
-  List.map elist ~f:(function
-    | Msg m -> JSON.Event.event_to_json m
-    | _ -> `Null)
+  `List 
+    (List.map elist ~f:(function
+         | Msg m -> JSON.Event.event_to_json m
+         | _ -> `Null))
 
 let assert_no_address_type_in_type t gas_remaining =
   let open RunnerType in
@@ -409,8 +410,12 @@ let run_with_args args =
   if is_library then
     if is_deployment then deploy_library args gas_remaining
     else
-      (* Messages to libraries are ignored, but tolerated *)
-      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
+      (* Messages to libraries are ignored, but tolerated. *)
+      `Assoc [
+        ("gas_remaining", `String (Uint64.to_string gas_remaining));
+        ("messages", output_message_json gas_remaining []);
+        ("events", output_event_json []);
+      ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
@@ -700,7 +705,7 @@ let run_with_args args =
 
                 let osj = output_state_json cstate'.balance field_vals in
                 let omj = output_message_json gas mlist in
-                let oej = `List (output_event_json elist) in
+                let oej = output_event_json elist in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
 
                 ((omj, osj, oej, accepted_b), gas')
