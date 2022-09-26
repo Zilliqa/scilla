@@ -203,22 +203,6 @@ the cursor currently is.
 ;; Scilla mode
 (load-file "/path/to/scilla-mode.el")
 ```
-### Vim plugin
-
-A vim plugin for editing Scilla contracts is provided.
-
-You can install the vim config files through Pathogen by:
-```
-git clone https://github.com/edisonljh/vim-scilla.git ~/.vim/bundle/vim-scilla
-```
-
-Or through Vundle by adding the following line to your `~/.vimrc`:
-```
-Plugin 'edisonljh/vim-scilla'
-```
-
-Repo: [vim-scilla](https://github.com/edisonljh/vim-scilla).
-
 ### VSCode Plugin
 
 Visual Studio Code support for Scilla is avaiable. [Github Source](https://github.com/as1ndu/vscode-scilla)
