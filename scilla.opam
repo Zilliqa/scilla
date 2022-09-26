@@ -34,6 +34,7 @@ depends: [
   "menhir"
   "ocaml" {>= "4.11.0" & < "4.15~"}
   "ocamlgraph" {>= "2.0.0" & < "2.1~"}
+  "ocamlformat" {= "0.22.4"}
   "ocaml-protoc" {>= "1.2.0" & < "2.3~"}
   "ounit" {= "2.2.6"}
   "patdiff" {>= "v0.15.0" & < "v0.16~"}
