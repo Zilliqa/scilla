@@ -234,7 +234,7 @@ let rec pp_literal_simplified l =
       let items =
         "["
         ^ List.fold_left m ~init:"" ~f:(fun a (s, _t, l') ->
-              let t = "(" ^ s ^ " : " ^ pp_literal_simplified l' ^ ")" in
+              let t = "(" ^ (PPIdentifier.as_string s) ^ " : " ^ pp_literal_simplified l' ^ ")" in
               if String.is_empty a then t else a ^ " ; " ^ t)
         ^ "]"
       in

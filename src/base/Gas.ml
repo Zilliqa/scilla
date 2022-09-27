@@ -80,8 +80,8 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     (* Message: an associative array *)
     | Msg m ->
         foldM
-          ~f:(fun acc (s, _t, lit') ->
-            let%bind cs = literal_cost (StringLit s) in
+          ~f:(fun acc (lab, _t, lit') ->
+            let%bind cs = literal_cost (StringLit (GI.as_string lab)) in
             let%bind clit' = literal_cost lit' in
             pure (acc + cs + clit'))
           ~init:0 m

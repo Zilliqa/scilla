@@ -514,9 +514,10 @@ module Message = struct
   let replicate_contr_to_json m =
     let m' =
       List.filter_map m ~f:(fun (f, t, l) ->
-          if String.equal f ContractUtil.MessagePayload.replicate_contr_label
+          let f_as_string = JSONIdentifier.as_string f in
+          if String.equal f_as_string ContractUtil.MessagePayload.replicate_contr_label
           then None
-          else Some (f, t, l))
+          else Some (f_as_string, t, l))
     in
     `List (slist_to_json m')
 end

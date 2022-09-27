@@ -446,13 +446,13 @@ module Configuration = struct
     | Msg m ->
         (* All outgoing messages must have certain mandatory fields *)
         let tag_found =
-          List.exists m ~f:(fun (x, _, _) -> String.(tag_label = x))
+          List.exists m ~f:(fun (x, _, _) -> String.(tag_label = EvalIdentifier.as_string x))
         in
         let amount_found =
-          List.exists m ~f:(fun (x, _, _) -> String.(amount_label = x))
+          List.exists m ~f:(fun (x, _, _) -> String.(amount_label = EvalIdentifier.as_string x))
         in
         let recipient_found =
-          List.exists m ~f:(fun (x, _, _) -> String.(recipient_label = x))
+          List.exists m ~f:(fun (x, _, _) -> String.(recipient_label = EvalIdentifier.as_string x))
         in
         let uniq_entries =
           not

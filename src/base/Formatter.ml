@@ -194,7 +194,7 @@ struct
           braces (
             separate_map
               (semi ^^ break 1)
-              (fun (field, _typ, value) -> !^field ^^^ colon ^^^ of_literal value)
+              (fun (field, _typ, value) -> !^(Lit.LType.TIdentifier.as_error_string field) ^^^ colon ^^^ of_literal value)
               typed_assocs
           )
       in walk 0 lit
