@@ -508,7 +508,10 @@ struct
         cfields ^^
         ccomps
 
-      let of_contract_module Ast.{smver; libs; elibs; contr} =
+      let of_contract_module Ast.{smver; file_comment; lib_comment; libs; elibs; contr_comment; contr} =
+        ignore @@ file_comment;
+        ignore @@ lib_comment;
+        ignore @@ contr_comment;
         let imports =
           let import_lib (lib, onamespace) =
             match onamespace with
