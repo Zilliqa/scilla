@@ -170,10 +170,10 @@ let output_message_json gas_remaining mlist =
 
 let output_event_json elist =
   let open JSON.JSONLiteral in
-  `List 
+  `List
     (List.map elist ~f:(function
-         | Msg m -> JSON.Event.event_to_json m
-         | _ -> `Null))
+      | Msg m -> JSON.Event.event_to_json m
+      | _ -> `Null))
 
 let assert_no_address_type_in_type t gas_remaining =
   let open RunnerType in
@@ -411,11 +411,14 @@ let run_with_args args =
     if is_deployment then deploy_library args gas_remaining
     else
       (* Messages to libraries are ignored, but tolerated. *)
-      `Assoc [
-        ("gas_remaining", `String (Uint64.to_string gas_remaining));
-        ("messages", output_message_json gas_remaining []);
-        ("events", output_event_json []);
-      ]
+      `Assoc
+        [
+          ("gas_remaining", `String (Uint64.to_string gas_remaining));
+          ( RunnerName.as_string ContractUtil.accepted_label,
+            `String (Bool.to_string false) );
+          ("messages", output_message_json gas_remaining []);
+          ("events", output_event_json []);
+        ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
