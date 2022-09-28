@@ -34,6 +34,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let tests =
     [
+      "bad_cast_2.scilla";
+      "bad_cast_3.scilla";
       "bad_map_key_2.scilla";
       "bad_map_key_3.scilla";
       "bad_map_key_4.scilla";
@@ -250,6 +252,7 @@ module ExpTests = Scilla_test.Util.DiffBasedTests (struct
       "exp_t-tfun-tid-with.scilexp";
       "exp_t-tfun-with.scilexp";
       "exp_t-with.scilexp";
+      "list_to_map.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1
