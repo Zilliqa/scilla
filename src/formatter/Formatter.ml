@@ -92,9 +92,10 @@ struct
     (* Add parentheses only if the condition if true *)
     let parens_if cond doc = if cond then parens doc else doc
 
+    let comment = enclose !^"(*" !^"*)"
+
     (** Add formatted [comments] around [doc]. *)
     let wrap_comments comments doc =
-      let comment = enclose !^"(*" !^"*)" in
       let spaced s =
         let has_prefix prefix = String.is_prefix s ~prefix in
         let has_suffix suffix = String.is_suffix s ~suffix in
@@ -509,9 +510,7 @@ struct
         ccomps
 
       let of_contract_module Ast.{smver; file_comment; lib_comment; libs; elibs; contr_comment; contr} =
-        ignore @@ file_comment;
-        ignore @@ lib_comment;
-        ignore @@ contr_comment;
+        let mk_comment = Option.value_map ~default:empty ~f:(fun c -> comment !^c) in
         let imports =
           let import_lib (lib, onamespace) =
             match onamespace with
@@ -528,9 +527,14 @@ struct
           | Some lib -> of_library lib ^^ twice hardline
           | None -> empty
         in
-        scilla_version_kwd ^^^ !^(Int.to_string smver) ^^ twice hardline ^^
+        scilla_version_kwd ^^^ !^(Int.to_string smver) ^^
+        hardline ^^
+        mk_comment file_comment ^^
+        hardline ^^
         imports ^^
+        mk_comment lib_comment ^^
         contract_library ^^
+        mk_comment contr_comment ^^
         of_contract contr ^^ hardline
   end
 
