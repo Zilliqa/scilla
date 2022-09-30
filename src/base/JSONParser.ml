@@ -262,7 +262,7 @@ let gen_parser (t' : JSONType.t) : Basic.t -> JSONLiteral.t =
         let _ = add_adt_parser (pp_typ t) (Parser p) in
         (* Return parser *)
         p
-    | _ -> raise (mk_invalid_json ~kind:"Invalid type" ?inst:None)
+    | _ -> raise (mk_invalid_json ~kind:"Invalid type" ?inst:(Some (TUType.pp_typ_error t)))
   in
   recurser t'
 
