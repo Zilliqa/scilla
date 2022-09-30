@@ -1,0 +1,15 @@
+(* Expected answer *)
+(* (ADTValue Some()((IntLit 32 239))) *)
+
+let k1 = Int32 1 in
+let k2 = Int32 2 in
+let k3 = Int32 3 in
+let v1 = Int32 42 in
+let v2 = Int32 239 in
+let v3 = Int32 112 in
+
+let m0 = Emp Int32 Int32 in
+let m1 = builtin put m0 k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+let m3 = builtin put m2 k1 v3 in
+builtin get m3 k2

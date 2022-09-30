@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Missing _amount or _recipient in Message\n",
+      "error_message": "Missing _amount or _recipient in Message",
       "start_location": {
         "file": "checker/bad/bad_message2.scilla",
         "line": 17,
@@ -11,7 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Identifier status used more than once\n",
+      "error_message": "Identifier used more than once: status",
       "start_location": {
         "file": "checker/bad/bad_message2.scilla",
         "line": 25,
@@ -22,9 +22,32 @@
   ],
   "warnings": [
     {
-      "warning_message":
-        "No transition in contract Empty contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "checker/bad/bad_message2.scilla",
+        "line": 25,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "checker/bad/bad_message2.scilla",
+        "line": 17,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract Empty contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/bad_message2.scilla",
+        "line": 11,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

@@ -1,0 +1,74 @@
+scilla_version 0
+
+(* Import shape:
+ *
+ *   0x986556789012345678901234567890123456abcd (TestLib1)
+ *                         |
+ *                         |
+ *   0x111256789012345678901234567890123456abef (TestLib3)
+ *                         |
+ *                         |
+ *                      contract
+*)
+
+import TestLib3 IntUtils
+
+library ContractLib
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+      Cons {Message} msg nil_msg
+
+contract Hello()
+
+transition Hi ()
+  one = Uint32 1;
+  two = Uint32 2;
+  nil = Nil {Uint32};
+  single = Cons {Uint32} one nil;
+  double = Cons {Uint32} two single;
+
+  unsorted = double;
+  e = { _eventname : "unsorted"; unsorted : double };
+  event e;
+
+  sorted = foo_uint32 uint32_lt double;
+  e = { _eventname : "sorted"; sorted : sorted };
+  event e
+end
+
+transition TestNestedImport1 ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* wrapped_c1 is a constructor from TestLib3 wrapping a constructor from TestLib1 containing the value 42. *)
+  (* TestLib3 members may be pattern-matched. *)
+  match wrapped_c1 with
+  | WrapperConstructor wrapped_val =>
+    (* It should be possible to send a value of a type from TestLib1 despite that type being unavailble here *)
+    msg = { _tag : "" ; _recipient : recipient ; _amount : Uint128 0 ; param : wrapped_val };
+    msgs = one_msg msg;
+    send msgs;
+    (* expose_lift_TestType1 exposes a function from TestLib1 to anyone importing TestLib3 *)
+    res = expose_lift_TestType1 wrapped_val;
+    (* res is expected to have value 42 *)
+    e = { _eventname : "Nested_import_value" ; res : res };
+    event e
+  end
+end
+
+transition TestNestedImport2 ()
+  recipient = 0x123456789abcdef123456789abcdef123456789a;
+  (* wrapped_c1 is a constructor from TestLib3 wrapping a constructor from TestLib1 containing the value True. *)
+  match wrapped_c2 with
+  | WrapperConstructor wrapped_val =>
+    (* It should be possible to send a value of a type from TestLib1 despite that type being unavailble here *)
+    msg = { _tag : "" ; _recipient : recipient ; _amount : Uint128 0 ; param : wrapped_val };
+    msgs = one_msg msg;
+    send msgs;
+    (* expose_lift_TestType1 exposes a function from TestLib1 to anyone importing TestLib3 *)
+    res = expose_lift_TestType1 wrapped_val;
+    (* res is expected to have value 1 *)
+    e = { _eventname : "Nested_import_value" ; res : res };
+    event e
+  end
+end

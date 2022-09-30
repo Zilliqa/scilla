@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Literal constructor ShogiLib.North does not belong to type Bool",
+        "Literal constructor does not belong to expected type: ShogiLib.North does not belong to Bool",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

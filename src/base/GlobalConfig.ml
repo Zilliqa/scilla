@@ -16,14 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ScillaUtil.FilePathInfix
 
 (* Available debug levels for functions in DbgMsg *)
 type debug_kind = Debug_None | Debug_Normal | Debug_Verbose
 
 let debug_level = ref Debug_None
-
 let log_file = ref ""
 
 let rec get_highest_numbered_log files =
@@ -45,14 +44,13 @@ let rec get_highest_numbered_log files =
  * scilla-runner-[0-9]+.log and return the next in sequence *)
 let create_log_filename dir =
   if (not (Caml.Sys.file_exists dir)) || not (Caml.Sys.is_directory dir) then
-    Core.Unix.mkdir dir ~perm:0o766;
+    Core_unix.mkdir dir ~perm:0o766;
   (* Arbitrary *)
-  let files = Sys.readdir dir in
+  let files = Sys_unix.readdir dir in
   let num = get_highest_numbered_log (Array.to_list files) in
   dir ^/ "scilla-runner-" ^ Int.to_string (num + 1) ^. "log"
 
 let get_debug_level () = !debug_level
-
 let set_debug_level l = debug_level := l
 
 let get_log_file () =
@@ -66,33 +64,19 @@ let set_log_file s = log_file := s
 type trace_kind = Trace_None | Trace_Statement | Trace_Expression
 
 let trace_level = ref Trace_None
-
 let trace_file = ref ""
-
 let get_trace_level () = !trace_level
-
 let set_trace_level l = trace_level := l
-
 let get_trace_file () = !log_file
-
 let set_trace_file s = trace_file := s
-
 let pp_lit = ref true
-
 let set_pp_lit b = pp_lit := b
-
 let get_pp_lit () = !pp_lit
-
 let json_errors = ref false
-
 let set_use_json_errors b = json_errors := b
-
 let use_json_errors () = !json_errors
-
 let validate_json_b = ref false
-
 let set_validate_json b = validate_json_b := b
-
 let validate_json () = !validate_json_b
 
 module StdlibTracker = struct

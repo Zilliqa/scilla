@@ -1,7 +1,8 @@
 {
   "errors": [
     {
-      "error_message": "ADT type Pair expects 2 arguments but got 1.\n",
+      "error_message":
+        "ADT type constructor arity mismatch: ADT type Pair expects 2 arguments but got 1",
       "start_location": {
         "file": "typecheck/bad/adt-error1.scilexp",
         "line": 5,

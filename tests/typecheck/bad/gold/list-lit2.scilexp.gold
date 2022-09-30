@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: Int64 expected, but Int32 provided.",
+        "Type unassignable: Int64 expected, but Int32 provided",
       "start_location": {
         "file": "typecheck/bad/list-lit2.scilexp",
         "line": 6,

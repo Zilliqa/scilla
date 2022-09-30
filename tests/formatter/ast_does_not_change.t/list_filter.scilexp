@@ -1,0 +1,18 @@
+let int_filter = @list_filter Int32 in
+
+let f = fun (i : Int32) =>
+  let five = Int32 5 in
+  builtin lt five i in
+
+let one = Int32 1 in
+let two = Int32 2 in
+let ten = Int32 10 in
+let eleven = Int32 11 in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} one nil in
+let l2 = Cons {Int32} ten l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} eleven l3 in
+
+int_filter f l4

@@ -1,0 +1,57 @@
+scilla_version 0
+
+library MyLib
+
+(* Not all instantiations of 'A are legal hash argument types *)
+let poly_hash =
+  tfun 'A =>
+  fun (x : 'A) =>
+  builtin sha256hash x
+
+(* Not possible to hash a closure *)
+let fun_hash =
+  fun (x : Uint128 -> Uint128) =>
+  builtin sha256hash x
+
+(* Not possible to hash a closure *)
+let typ_fun_hash =
+  fun (x : forall 'A. 'A -> 'A) =>
+  builtin sha256hash x
+
+type MyTyp =
+| MyC of Int32
+
+(* ADTs may be hashed *)
+let adt_hash =
+  fun (x : MyTyp) =>
+  builtin sha256hash x
+
+(* Polymorphic ADTs may be hashed if instantiated *)
+let list_hash =
+  fun (x : List Uint128) =>
+  builtin sha256hash x
+
+
+(* Messages may be hashed *)
+let msg_hash =
+  fun (x : ByStr20) =>
+  let msg = { _tag : ""; _recipient : x; _amount : Uint128 0 } in
+  builtin sha256hash msg
+
+(* Events may be hashed *)
+let ev_hash =
+  let e = { _eventname : "hashtest" } in
+  builtin sha256hash e
+
+(* Addresses may be hashed *)
+let addr_hash =
+  fun (x : ByStr20 with contract end) =>
+  builtin sha256hash x
+
+(* Maps may be hashed *)
+let map_hash =
+  fun (x : Map ByStr20 Uint128) =>
+  builtin sha256hash x
+
+contract HashArg ()
+

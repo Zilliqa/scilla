@@ -1,0 +1,33 @@
+[
+  {
+    "vname": "_balance",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+      {
+        "address": "0x55345678901234567890123456789012345678ff",
+        "state": [
+          {
+            "vname": "_nonce",
+            "type": "Uint64",
+            "value": "0"
+          },
+          {
+            "vname": "_balance",
+            "type": "Uint128",
+            "value": "42"
+          },
+          {
+            "vname": "_this_address",
+            "type": "ByStr20",
+            "value": "0x55345678901234567890123456789012345678ff"
+          }
+        ]
+      }
+    ]
+  }
+]

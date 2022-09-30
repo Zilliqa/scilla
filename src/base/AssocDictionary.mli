@@ -21,7 +21,6 @@
 (**********************************************************)
 
 type key = string
-
 type 'a dict
 
 (* Creates empty dictionary *)

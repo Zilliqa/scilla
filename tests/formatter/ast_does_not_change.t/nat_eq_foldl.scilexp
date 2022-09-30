@@ -1,0 +1,7 @@
+let zero = Zero in 
+let one  = Succ zero in
+let two  = Succ one in
+let three = Succ two in
+let four = Succ three in
+
+nat_eq four four

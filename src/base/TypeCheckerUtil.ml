@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Printf
 open Literal
 open ParserUtil
@@ -64,7 +64,7 @@ let disambiguate e (std_lib : GlobalSyntax.libtree list) =
     }
   in
   match disambiguate_exp imp_dicts e with
-  | Error _ -> fail0 (sprintf "Failed to disambiguate\n")
+  | Error _ -> fail0 ~kind:"Failed to disambiguate" ?inst:None
   | Ok e ->
       plog
       @@ sprintf "\n[Disambiguation]:\nExpression successfully disambiguated.\n";

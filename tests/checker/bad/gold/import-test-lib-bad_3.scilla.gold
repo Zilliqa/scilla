@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract ImportNestedTestLibBad3:\n",
+      "error_message": "Type error(s) in contract: ImportNestedTestLibBad3",
       "start_location": {
         "file": "checker/bad/import-test-lib-bad_3.scilla",
         "line": 18,
@@ -11,7 +11,8 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "No data type with constructor BaseConstructor1 found",
+      "error_message":
+        "No data type with this constructor found: BaseConstructor1",
       "start_location": {
         "file": "checker/bad/import-test-lib-bad_3.scilla",
         "line": 23,

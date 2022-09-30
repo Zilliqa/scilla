@@ -1,0 +1,49 @@
+[
+  {
+    "vname": "_balance",
+    "type": "Uint128",
+    "value": "0"
+  },
+  { "vname": "voided_cheques", "type": "Map (ByStr33) (Map (ByStr32) (Bool))", "value": [] },
+  {
+    "vname": "fee_address",
+    "type": "ByStr20",
+    "value" : "0x1499856ca9a32e717e9e872923fd3f4740af99e7" 
+  },
+  {
+    "vname": "current_owner",
+    "type": "Option (ByStr20)",
+    "value": { "constructor": "Some", "argtypes": ["ByStr20"], "arguments": ["0x22ed1259dfc29843a481f3801a95429761095366"] }
+  },
+  {
+    "vname": "pending_owner",
+    "type": "Option (ByStr20)",
+    "value": { "constructor": "None", "argtypes": ["ByStr20"], "arguments": [] }
+  },
+  {
+    "vname": "token_proxy",
+    "type": "Option (ByStr20)",
+    "value": { "constructor": "Some", "argtypes": ["ByStr20"], "arguments": ["0x1382ce590d4d64437cef3ba786b12e13707e2ec9"] }
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+         		
+            "address": "0x8a79bac7a6383211ae902f34e86c6b729906346d",
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "0" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0x8a79bac7a6383211ae902f34e86c6b729906346d" },
+		{ "vname": "token_owners", "type": "Map (Uint256) (ByStr20)", "value": [
+			{
+				"key": "2947",
+				"val": "0xd2E93873971ac7c97DdcaF575E73379679f15a8E"
+			}
+		]}
+            ]
+        }
+    ]
+  }
+]

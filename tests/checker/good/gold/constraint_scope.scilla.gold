@@ -80,10 +80,10 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused library ADT: MyTyp",
+      "warning_message": "Unused ADT constructor: Val2",
       "start_location": {
         "file": "checker/good/constraint_scope.scilla",
-        "line": 7,
+        "line": 9,
         "column": 1
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -130,9 +130,12 @@
       "warning_id": 2
     },
     {
-      "warning_message":
-        "No transition in contract Constraint contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Constraint contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/constraint_scope.scilla",
+        "line": 15,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

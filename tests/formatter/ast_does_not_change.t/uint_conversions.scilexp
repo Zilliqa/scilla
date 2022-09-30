@@ -1,0 +1,41 @@
+let zero = Int32 0 in
+let one = Int32 1 in
+let minus_one = Int32 -1 in
+let big_num = Uint64 999999999999999999 in
+let big_num2 = Uint128 999999999999999999 in
+
+let res1 = builtin to_uint32 zero in (* Some 0 *)
+let res2 = builtin to_uint32 one in  (* Some 1 *)
+let res3 = builtin to_uint32 minus_one in (* None *)
+let res4 = builtin to_uint32 big_num in   (* None *)
+let res5 = builtin to_uint64 big_num2 in   (* Some big_num2 *)
+let res6 = builtin to_uint64 minus_one in   (* None *)
+
+let zero = 0x00 in
+let one_1 = 0x01 in
+let one_3 = 0x000001 in
+let one_4 = 0x00000001 in
+let one_8 = 0x0000000000000001 in
+let one_16 = 0x00000000000000000000000000000001 in
+let one_32 = 0x0000000000000000000000000000000000000000000000000000000000000001 in
+
+let res7 = builtin to_uint32 zero in
+let res8 = builtin to_uint32 one_1 in
+let res9 = builtin to_uint32 one_3 in
+let res10 = builtin to_uint32 one_4 in
+let res12 = builtin to_uint64 one_1 in
+let res12 = builtin to_uint64 one_4 in
+let res12 = builtin to_uint64 one_8 in
+
+let res12 = builtin to_uint128 one_1 in
+let res12 = builtin to_uint128 one_4 in
+let res12 = builtin to_uint128 one_8 in
+let res12 = builtin to_uint128 one_16 in
+
+let res11 = builtin to_uint256 one_1 in
+let res11 = builtin to_uint256 one_8 in
+let res11 = builtin to_uint256 one_16 in
+let res11 = builtin to_uint256 one_32 in
+
+
+Int32 0

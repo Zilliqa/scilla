@@ -1,9 +1,9 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-OCAML_VERSION_RECOMMENDED=4.08.1
+OCAML_VERSION_RECOMMENDED=4.11.2
 # In case of upgrading ocamlformat version:
 # package.json also needs updating
-OCAMLFORMAT_VERSION=0.18.0
+OCAMLFORMAT_VERSION=0.22.4
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
 
@@ -99,10 +99,12 @@ test: dev
 	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune runtest --force
 
 gold: dev
 	ulimit -n 4096; dune exec -- tests/base/testsuite_base.exe -update-gold true
 	ulimit -n 4096; dune exec -- tests/testsuite.exe -update-gold true
+	dune promote
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
@@ -153,7 +155,7 @@ zilliqa-docker:
 # Create an opam-based development environment
 .PHONY : opamdep
 opamdep:
-	opam init --compiler=$(OCAML_VERSION_RECOMMENDED) --yes
+	opam init --compiler=ocaml-base-compiler.$(OCAML_VERSION_RECOMMENDED) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install --yes $(OPAM_DEV_DEPS)
@@ -164,7 +166,7 @@ dev-deps:
 
 .PHONY : opamdep-ci
 opamdep-ci:
-	opam init --disable-sandboxing --compiler=$(OCAML_VERSION) --yes
+	opam init --disable-sandboxing --compiler=ocaml-base-compiler.$(OCAML_VERSION) --yes
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
@@ -177,7 +179,7 @@ coverage :
 	BISECT_ENABLE=YES make
 	dune build @install
 	ulimit -n 1024; dune exec -- tests/testsuite.exe
-	bisect-ppx-report html
+	bisect-ppx-report html -o ./coverage
 	make clean
 	-find . -type f -name 'bisect*.coverage' | xargs rm
 

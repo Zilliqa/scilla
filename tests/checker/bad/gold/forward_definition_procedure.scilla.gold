@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type error(s) in contract ForwardDefinitionProcedure:\n",
+        "Type error(s) in contract: ForwardDefinitionProcedure",
       "start_location": {
         "file": "checker/bad/forward_definition_procedure.scilla",
         "line": 5,
@@ -12,7 +12,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Procedure Proc2 is not in scope.",
+      "error_message": "Procedure is not in scope: Proc2",
       "start_location": {
         "file": "checker/bad/forward_definition_procedure.scilla",
         "line": 12,

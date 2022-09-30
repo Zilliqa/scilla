@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open Syntax
 open ErrorUtils
@@ -43,14 +43,16 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     | StringLit s -> s
     | IntLit il -> bstring_from_int_lit il
     | UintLit uil -> bstring_from_uint_lit uil
-    | BNum s -> s
+    | BNum s -> Literal.BNumLit.get s
     | ByStr bs -> Bystr.to_raw_bytes bs
     | ByStrX bs -> Bystrx.to_raw_bytes bs
     | Msg entries ->
-        let raw_entries =
-          List.map entries ~f:(fun (s, _t, v) -> s ^ serialize_literal v)
-        in
-        Core_kernel.String.concat ~sep:"" raw_entries
+        (* Sort keys so that message key permutations do not affect hashes  *)
+        entries
+        |> Caml.List.sort (fun (s1, _t1, _v1) (s2, _t2, _v2) ->
+               String.compare s1 s2)
+        |> List.map ~f:(fun (s, _t, v) -> s ^ ":" ^ serialize_literal v)
+        |> String.concat ~sep:";"
     | Map (_, tbl) ->
         let raw_strings =
           let tbl' =
@@ -66,18 +68,23 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               serialize_literal k :: serialize_literal v :: acc)
             [] tbl'
         in
-        Core_kernel.String.concat ~sep:"" raw_strings
+        String.concat ~sep:"" raw_strings
     | ADTValue (cons_name, _, params) ->
+        (* This serialization scheme may lead to hash collisions, but for
+           backwards compatibility reasons we cannot fix it, since there are
+           deployed contracts that hash ADTs.
+
+           Example: (Pair 0x1234 0x) and (Pair 0x12 0x34) serialize to the same
+           string, so the hash will be the same. *)
         let raw_params = List.map params ~f:serialize_literal in
-        Core_kernel.String.concat ~sep:""
-          (BIName.as_string cons_name :: raw_params)
+        Core.String.concat ~sep:"" (BIName.as_string cons_name :: raw_params)
     | Clo _fun -> "(Clo <fun>)"
     | TAbs _fun -> "(Tabs <fun>)"
 
   let builtin_fail name ls =
     fail0
-    @@ sprintf "Cannot apply built-in %s to a list of arguments:%s." name
-         (print_literal_list ls)
+      ~kind:(sprintf "Cannot apply built-in %s to a list of arguments" name)
+      ~inst:(print_literal_list ls)
 
   (*******************************************************)
   (**************** String *******************************)
@@ -135,7 +142,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
         | _ -> builtin_fail (sprintf "String.to_ascii") ls
       in
       if validate_string_literal s then pure @@ StringLit s
-      else fail0 "String.to_ascii: Not printable"
+      else fail0 ~kind:"String.to_ascii: Not printable" ?inst:None
 
     let strrev _ ls _ =
       match ls with
@@ -306,11 +313,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_int32 _ ls _ = to_int_helper ls Bits32
-
     let to_int64 _ ls _ = to_int_helper ls Bits64
-
     let to_int128 _ ls _ = to_int_helper ls Bits128
-
     let to_int256 _ ls _ = to_int_helper ls Bits256
   end
 
@@ -478,11 +482,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | None -> pure @@ build_none_lit (PrimType iptyp)
 
     let to_uint32 _ ls _ = to_uint_helper ls Bits32
-
     let to_uint64 _ ls _ = to_uint_helper ls Bits64
-
     let to_uint128 _ ls _ = to_uint_helper ls Bits128
-
     let to_uint256 _ ls _ = to_uint_helper ls Bits256
 
     let to_nat _ ls _ =
@@ -505,7 +506,9 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
               (bstring_from_uint_lit nl)
           with
           | Some nlbs -> pure @@ ByStrX nlbs
-          | None -> fail0 "Internal error in converting UintLit to ByStrX")
+          | None ->
+              fail0 ~kind:"Internal error in converting UintLit to ByStrX"
+                ?inst:None)
       | _ -> builtin_fail "Uint.to_bystrx: unsupported type" ls
   end
 
@@ -517,36 +520,41 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
 
     let eq _ ls _ =
       match ls with
-      | [ BNum x; BNum y ] -> pure @@ build_bool_lit Core_kernel.String.(x = y)
+      | [ BNum x; BNum y ] ->
+          pure
+          @@ build_bool_lit
+               Core.String.(Literal.BNumLit.get x = Literal.BNumLit.get y)
       | _ -> builtin_fail "BNum.eq" ls
 
     let blt _ ls _ =
       match ls with
       | [ BNum x; BNum y ] ->
           pure
-            (let i1 = big_int_of_string x in
-             let i2 = big_int_of_string y in
+            (let i1 = big_int_of_string (Literal.BNumLit.get x) in
+             let i2 = big_int_of_string (Literal.BNumLit.get y) in
              build_bool_lit (lt_big_int i1 i2))
       | _ -> builtin_fail "BNum.blt" ls
 
     let badd _ ls _ =
       match ls with
       | [ BNum x; UintLit y ] ->
-          let i1 = big_int_of_string x in
+          let i1 = big_int_of_string (Literal.BNumLit.get x) in
           let i2 = big_int_of_string (string_of_uint_lit y) in
           if ge_big_int i2 (big_int_of_int 0) then
-            pure @@ BNum (string_of_big_int (add_big_int i1 i2))
+            let%bind res =
+              Literal.BNumLit.create (string_of_big_int (add_big_int i1 i2))
+            in
+            pure @@ BNum res
           else
-            fail0
-            @@ sprintf "Cannot add a negative value (%s) to a block."
-                 (string_of_uint_lit y)
+            fail0 ~kind:"Cannot add a negative value to a block"
+              ~inst:(string_of_uint_lit y)
       | _ -> builtin_fail "BNum.badd" ls
 
     let bsub _ ls _ =
       match ls with
       | [ BNum x; BNum y ] -> (
-          let i1 = big_int_of_string x in
-          let i2 = big_int_of_string y in
+          let i1 = big_int_of_string (Literal.BNumLit.get x) in
+          let i2 = big_int_of_string (Literal.BNumLit.get y) in
           let d = Big_int.sub_big_int i1 i2 in
           match
             build_prim_literal (Int_typ Bits256) (Big_int.string_of_big_int d)
@@ -554,8 +562,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           | Some l -> pure l
           | None ->
               fail0
-              @@ sprintf
-                   "Unable to express result of BNum subtraction in Int256")
+                ~kind:"Unable to express result of BNum subtraction in Int256"
+                ?inst:None)
       | _ -> builtin_fail "BNum.bsub" ls
   end
 
@@ -634,7 +642,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
       | [ ByStrX bs ] when Bystrx.width bs <= width_bytes ->
           (* of_bytes_big_endian functions expect 2^n number of bytes exactly *)
           let rem = width_bytes - Bystrx.width bs in
-          let pad = Core_kernel.String.make rem '\000' in
+          let pad = Core.String.make rem '\000' in
           let bs_padded = Bytes.of_string (pad ^ Bystrx.to_raw_bytes bs) in
           let l =
             match x with
@@ -649,8 +657,8 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
     let bech32_to_bystr20 _ ls _ =
       match ls with
       | [ StringLit prfx; StringLit addr ] -> (
-          if Core_kernel.String.(prfx <> "zil") then
-            fail0 "Only zil bech32 addresses are supported"
+          if Core.String.(prfx <> "zil") then
+            pure @@ build_none_lit (bystrx_typ Type.address_length)
           else
             match Bech32.decode_bech32_addr ~prfx ~addr with
             | Some bys20 -> (
@@ -659,22 +667,22 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                     pure
                     @@ build_some_lit (ByStrX b)
                          (bystrx_typ Type.address_length)
-                | None -> fail0 "Invalid bech32 decode")
-            | None -> fail0 "bech32 decoding failed")
+                | None ->
+                    pure @@ build_none_lit (bystrx_typ Type.address_length))
+            | None -> pure @@ build_none_lit (bystrx_typ Type.address_length))
       | _ -> builtin_fail "Crypto.bech32_to_bystr20" ls
 
     let bystr20_to_bech32 _ ls _ =
       match ls with
       | [ StringLit prfx; ByStrX addr ] -> (
-          if Core_kernel.String.(prfx <> "zil") then
-            fail0 "Only zil bech32 addresses are supported"
+          if Core.String.(prfx <> "zil") then pure @@ build_none_lit string_typ
           else
             match
               Bech32.encode_bech32_addr ~prfx ~addr:(Bystrx.to_raw_bytes addr)
             with
             | Some bech32 ->
                 pure @@ build_some_lit (StringLit bech32) string_typ
-            | None -> fail0 "bech32 encoding failed")
+            | None -> pure @@ build_none_lit string_typ)
       | _ -> builtin_fail "Crypto.bystr20_to_bech32" ls
 
     let concat _ ls _ =
@@ -789,7 +797,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           (* Hash the public key *)
           let pkh = sha256_hasher pks in
           (* and extract the least significant 20 bytes. *)
-          let addr = Core_kernel.String.suffix pkh 20 in
+          let addr = Core.String.suffix pkh 20 in
           match Bystrx.of_raw_bytes Type.address_length addr with
           | Some bs -> pure @@ ByStrX bs
           | None -> builtin_fail "schnorr_get_address: Internal error." ls)
@@ -840,7 +848,7 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
           match Snark.alt_bn128_pairing_product pairs' with
           | None -> pure @@ build_none_lit bool_typ
           | Some b -> pure @@ build_some_lit (build_bool_lit b) bool_typ)
-      | _ -> builtin_fail "Crypto.alt_bn128_G1_mul" ls
+      | _ -> builtin_fail "Crypto.alt_bn128_pairing_product" ls
   end
 
   (***********************************************************)
@@ -1090,19 +1098,22 @@ module ScillaEvalBuiltIns (SR : Rep) (ER : Rep) = struct
                 fun_type_applies type_elab vargtypes ~lc:(ER.get_loc rep)
               in
               pure (res_type, exec)
-            else fail0 @@ "Name or arity don't match"
+            else fail0 ~kind:"Name or arity don't match" ?inst:None
       in
       let dict = eval_built_in_multidict op in
       let%bind _, (res_type, exec) =
         tryM dict ~f:finder ~msg:(fun () ->
             mk_error1
-              (sprintf
-                 "Type error: cannot apply \"%s\" built-in to argument(s) of \
-                  type(s) %s%s."
-                 (pp_builtin op)
-                 (if List.is_empty targtypes then ""
-                 else sprintf "{%s} " (pp_typ_list_error targtypes))
-                 (pp_typ_list_error vargtypes))
+              ~kind:
+                (sprintf
+                   "Type error: cannot apply \"%s\" built-in to argument(s) of \
+                    type(s)"
+                   (pp_builtin op))
+              ~inst:
+                (sprintf "%s %s"
+                   (if List.is_empty targtypes then ""
+                   else sprintf "{%s} " (pp_typ_list_error targtypes))
+                   (pp_typ_list_error vargtypes))
               (ER.get_loc rep))
       in
       pure (res_type, exec)

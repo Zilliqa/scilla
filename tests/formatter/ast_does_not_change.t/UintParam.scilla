@@ -1,0 +1,13 @@
+scilla_version 0
+
+library UintParam
+
+contract UintParam ()
+
+transition Uint128Test (x : Uint128)
+  (* Do nothing. The test is whether negative parameters are rejected *)
+end
+
+transition Uint256Test (x : Uint256)
+  (* Do nothing. The test is whether negative parameters are rejected *)
+end

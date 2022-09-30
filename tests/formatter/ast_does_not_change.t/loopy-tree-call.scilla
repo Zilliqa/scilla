@@ -1,0 +1,76 @@
+scilla_version 0
+
+import ListUtils BoolUtils
+
+(* This contract has just transition, which does the following: *)
+(* 1. Create an event signalling execution. *)
+(* 2. Call the same transition in each of the address provided as its argument. *)
+(*    All addresses it got as the argument, except the one being called *)
+(*    and with _this_address is passed as a parameter. *)
+(* A counter is maintained to terminate the chain / loop. *)
+
+library LoopTreeCall
+
+let one = Uint32 1
+
+let mk_executed_event =
+  fun (this : ByStr20) =>
+    { _eventname : "loopy-tree-call executed"; this_address : this }
+
+let list_append_element =
+  fun (ls : List ByStr20) =>
+  fun (elm : ByStr20) =>
+    let appender = @list_append ByStr20 in
+    let nil = Nil {ByStr20} in
+    let elm_ls = Cons {ByStr20} elm nil in
+    appender ls elm_ls
+
+(* Remove recipient from other_instances, append this_address and create a message with new_length. *)
+let create_msg =
+  fun (new_length : Uint32) =>
+  fun (recipient : ByStr20) =>
+  fun (other_instances : List ByStr20) =>
+  fun (this_address : ByStr20) =>
+    let filter = @list_filter ByStr20 in
+    let filter_recipient =
+      fun (addr : ByStr20) =>
+        let eq = builtin eq recipient addr in
+        negb eq
+    in
+    let filter_this_addr =
+      fun (addr : ByStr20) =>
+        let eq = builtin eq this_address addr in
+        negb eq
+    in
+    let recipient_filtered = filter filter_recipient other_instances in
+    let this_recipient_filtered = filter filter_this_addr recipient_filtered in
+    (* We now have a list without either of recipient or this_address. append this_address. *)
+    let new_other_instances = list_append_element this_recipient_filtered this_address in
+    { _tag : "Exec"; _amount : Uint128 0; _recipient : recipient; chain_length : new_length; other_instances : new_other_instances }
+
+(* Create a list of outgoing messages, sending to each of other_instances. *)
+let create_msgs =
+  fun (new_length : Uint32) =>
+  fun (other_instances : List ByStr20) =>
+  fun (this_address : ByStr20) =>
+    let map_bystr20 = @list_map ByStr20 Message in
+    let mapper =
+      fun (a : ByStr20) =>
+        create_msg new_length a other_instances this_address
+    in
+    map_bystr20 mapper other_instances
+
+contract LoopTreeCall(max_chain_length : Uint32)
+
+transition Exec (chain_length : Uint32, other_instances : List ByStr20)
+  proceed = builtin lt chain_length max_chain_length;
+  match proceed with
+  | False =>
+  | True =>
+    new_length = builtin add chain_length one;
+    messages = create_msgs new_length other_instances _this_address;
+    e = mk_executed_event _this_address;
+    event e;
+    send messages
+  end
+end

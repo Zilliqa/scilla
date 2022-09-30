@@ -1,0 +1,16 @@
+
+let int_length = @list_length Int32 in
+
+let one = Int32 1 in
+let two = Int32 2 in
+let ten = Int32 10 in
+let eleven = Int32 11 in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} one nil in
+let l2 = Cons {Int32} ten l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} eleven l3 in
+let emp_length = int_length nil in
+let l1_length = int_length l1 in
+int_length l4

@@ -1,0 +1,10 @@
+scilla_version 0
+
+library Constraint
+
+(* This contract will be initialised with param = False *)
+(* Initialisation should therefore fail *)
+contract Constraint(param : Bool)
+with
+  param
+=>

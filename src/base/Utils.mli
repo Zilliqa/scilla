@@ -16,11 +16,9 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 (* Add to list only if unique considering equal *)
 val list_add_unique : equal:('a -> 'a -> bool) -> 'a List.t -> 'a -> 'a List.t
-
 val int_fold : init:'a -> f:('a -> int -> 'a) -> int -> 'a
-
 val ftimer : string -> f:(unit -> 'a) -> 'a

@@ -29,6 +29,7 @@ let tests env =
                 Good.ShogiTests.tests env;
                 Good.TypeInfoTests.tests env;
                 Good.InitArgTests.tests env;
+                Good.CallgraphTests.tests env;
               ];
          "bad"
          >::: [

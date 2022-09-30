@@ -1,0 +1,10 @@
+let int_rest = @list_tail Int64 in
+
+let one = Int64 1 in
+let two = Int64 2 in
+let three = Int64 3 in
+let nil = Nil {Int64} in
+
+let l2 = Cons {Int64} two nil in
+let l3 = Cons {Int64} one l2 in
+int_rest l3

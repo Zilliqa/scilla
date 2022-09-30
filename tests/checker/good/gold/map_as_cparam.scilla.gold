@@ -1,8 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "x", "tag": "NoInfo" },
-      { "field": "f", "tag": "NoInfo" }
+      { "field": "x", "tag": "NoInfo" }, { "field": "f", "tag": "NoInfo" }
     ],
     "ADT constructors": []
   },
@@ -12,15 +11,13 @@
     "params": [
       {
         "vname": "x",
-        "type":
-          "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract field g : Bool end)"
+        "type": "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract field g : Bool end)"
       }
     ],
     "fields": [
       {
         "vname": "f",
-        "type":
-          "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract field g : Bool end)",
+        "type": "Map (ByStr20 with contract field f : Uint128 end) (ByStr20 with contract field g : Bool end)",
         "depth": 1
       }
     ],
@@ -79,9 +76,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract T contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract T contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/map_as_cparam.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

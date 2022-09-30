@@ -15,7 +15,7 @@
   You should have received a copy of the GNU General Public License along with
 *)
 
-open Core_kernel
+open Core
 open Sexplib.Std
 open Literal
 open Syntax
@@ -33,7 +33,9 @@ module CashflowRep (R : Rep) = struct
     | NotMoney
     | Money
     | Map of money_tag
-    | Adt of CFName.t * money_tag list (* name of adt paired with tags of type params *)
+    | Adt of
+        CFName.t
+        * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
   [@@deriving sexp, equal]
 
@@ -49,23 +51,14 @@ module CashflowRep (R : Rep) = struct
   type rep = money_tag * R.rep [@@deriving sexp]
 
   let get_loc r = match r with _, rr -> R.get_loc rr
-
   let dummy_rep = (NoInfo, R.dummy_rep)
-
   let mk_rep (t : money_tag) (s : R.rep) = (t, s)
-
   let address_rep = mk_rep NoInfo R.address_rep
-
   let uint128_rep = mk_rep NoInfo R.uint128_rep
-
   let uint32_rep = mk_rep NoInfo R.uint32_rep
-
   let bnum_rep = mk_rep NoInfo R.bnum_rep
-
   let string_rep = mk_rep NoInfo R.string_rep
-
   let parse_rep s = (NoInfo, R.parse_rep s)
-
   let get_rep_str r = match r with _, rr -> R.get_rep_str rr
 end
 
@@ -135,6 +128,15 @@ struct
     match p with
     | MLit l -> CFSyntax.MLit l
     | MVar v -> CFSyntax.MVar (add_noinfo_to_ident v)
+
+  let cf_init_tag_bcinfo p =
+    match p with
+    | CurBlockNum -> CFSyntax.CurBlockNum
+    | ChainID -> CFSyntax.ChainID
+    | Timestamp v -> CFSyntax.Timestamp (add_noinfo_to_ident v)
+    | ReplicateContr (addr, iparams) ->
+        CFSyntax.ReplicateContr
+          (add_noinfo_to_ident addr, add_noinfo_to_ident iparams)
 
   let rec cf_init_tag_expr erep =
     let e, rep = erep in
@@ -220,7 +222,8 @@ struct
                 ~f:(fun (p, ss) ->
                   (cf_init_tag_pattern p, List.map ~f:cf_init_tag_stmt ss))
                 pss )
-      | ReadFromBC (x, s) -> CFSyntax.ReadFromBC (add_noinfo_to_ident x, s)
+      | ReadFromBC (x, s) ->
+          CFSyntax.ReadFromBC (add_noinfo_to_ident x, cf_init_tag_bcinfo s)
       | TypeCast (x, r, t) ->
           CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment
@@ -513,8 +516,7 @@ struct
     match targ with
     | PrimType _ | MapType _ | FunType _ -> true
     | ADT _ (* TODO: Detect induction, and ignore only when inductive *)
-    | TypeVar _ (* TypeVars tagged at type level *)
-    | PolyFun _ (* Ignore *)
+    | TypeVar _ (* TypeVars tagged at type level *) | PolyFun _ (* Ignore *)
     | Unit ->
         (* Ignore *)
         false

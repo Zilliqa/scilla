@@ -1,0 +1,109 @@
+{
+  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Dead",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      {
+        "vname": "Foo",
+        "params": [ { "vname": "x", "type": "dead_code_test10.C" } ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "dead_code_test10.C",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test10.C", "argtypes": [] },
+          {
+            "cname": "dead_code_test10.C1",
+            "argtypes": [ "dead_code_test10.B" ]
+          }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "dead_code_test10.B",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "dead_code_test10.B1",
+            "argtypes": [ "dead_code_test10.A" ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "dead_code_test10.A",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test10.A1", "argtypes": [] },
+          { "cname": "dead_code_test10.A2", "argtypes": [] }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Unused transition parameter: x",
+      "start_location": {
+        "file": "contracts/dead_code_test10.scilla",
+        "line": 17,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract Dead contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/dead_code_test10.scilla",
+        "line": 15,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

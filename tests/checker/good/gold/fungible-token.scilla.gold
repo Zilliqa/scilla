@@ -149,9 +149,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract FungibleToken contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract FungibleToken contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/fungible-token.scilla",
+        "line": 47,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

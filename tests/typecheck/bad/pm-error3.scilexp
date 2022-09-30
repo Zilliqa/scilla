@@ -1,0 +1,8 @@
+let x = Int32 42 in
+let y = Int32 41 in
+let c = builtin eq x y in
+match c with
+| True => x
+| None => y
+| _ => y
+end

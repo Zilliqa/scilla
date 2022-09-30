@@ -1,0 +1,14 @@
+[
+  {
+    "vname": "BLOCKNUMBER",
+    "type": "BNum",
+    "value": "100"
+  },
+  {
+      "vname" : "REPLICATE_CONTRACT",
+      "type" : "ByStr20 with contract end",
+      "value" : {
+          "[\"0x55345678901234567890123456789012345678ff\",[]]" : "0x11345678901234567890123456789012345678aa"
+      }
+  }
+]

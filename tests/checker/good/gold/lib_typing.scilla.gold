@@ -80,9 +80,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract LibTyping contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract LibTyping contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/lib_typing.scilla",
+        "line": 9,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

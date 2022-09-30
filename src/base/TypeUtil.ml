@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Sexplib.Std
 open Literal
@@ -42,9 +42,7 @@ module type QualifiedTypes = sig
   type t
 
   val t_of_sexp : Sexp.t -> t
-
   val sexp_of_t : t -> Sexp.t
-
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 
@@ -53,18 +51,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   type resolve_result
 
   val rr_loc : resolve_result -> loc
-
   val rr_rep : resolve_result -> R.rep
-
   val rr_typ : resolve_result -> Q.t inferred_type
-
   val rr_pp : resolve_result -> string
-
   val mk_qual_tp : TUType.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
-
     type restore
 
     (* Make new type environment *)
@@ -135,9 +128,7 @@ functor
     type resolve_result = { qt : Q.t inferred_type; rep : R.rep }
 
     let rr_loc rr = R.get_loc rr.rep
-
     let rr_rep rr = rr.rep
-
     let rr_typ rr = rr.qt
 
     let rr_pp rr =
@@ -227,10 +218,11 @@ functor
               let open Datatypes.DataTypeDictionary in
               let%bind adt = lookup_name ~sloc:(get_rep n) (get_id n) in
               if List.length ts <> List.length adt.tparams then
-                fail1
-                  (sprintf "ADT type %s expects %d arguments but got %d.\n"
-                     (as_error_string n) (List.length adt.tparams)
-                     (List.length ts))
+                fail1 ~kind:"ADT type constructor arity mismatch"
+                  ~inst:
+                    (sprintf "ADT type %s expects %d arguments but got %d"
+                       (as_error_string n) (List.length adt.tparams)
+                       (List.length ts))
                   (get_rep n)
               else foldM ~f:(fun _ ts' -> is_wf_typ' ts' tb) ~init:() ts
           | PrimType _ | Unit -> pure ()
@@ -241,11 +233,12 @@ functor
               else if Caml.Hashtbl.mem tenv.tvars a then pure ()
               else
                 fail0
-                @@ sprintf "Unbound type variable %s in type %s" a
-                     (pp_typ_error t)
+                  ~kind:
+                    (sprintf "Unbound type variable in type %s" (pp_typ_error t))
+                  ~inst:a
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
-          | Address None -> pure ()
-          | Address (Some fts) ->
+          | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+          | Address (ContrAddr fts) ->
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:() ~f:(fun _ (_, t) ->
                   is_wf_typ' t tb)
         in
@@ -266,13 +259,11 @@ functor
             let sloc =
               match lopt with Some l -> R.get_loc l | None -> dummy_loc
             in
-            fail1
-              (sprintf "Couldn't resolve the identifier \"%s\".\n"
-                 (TUName.as_error_string id))
+            fail1 ~kind:"Couldn't resolve identifier"
+              ~inst:(TUName.as_error_string id)
               sloc
 
       let existsT env id = Hashtbl.mem env.tenv (TUName.as_string id)
-
       let existsV env id = Hashtbl.mem env.tvars (TUName.as_string id)
 
       let mk () =
@@ -302,9 +293,10 @@ module TypeUtilities = struct
 
   type typeCheckerErrorType = TypeError | GasError
 
-  let mk_type_error0 msg = (TypeError, mk_error0 msg)
+  let[@warning "-16"] mk_type_error0 ~kind ?inst =
+    (TypeError, mk_error0 ~kind ?inst)
 
-  let mk_type_error1 msg loc = (TypeError, mk_error1 msg loc)
+  let mk_type_error1 ~kind ?inst loc = (TypeError, mk_error1 ~kind ?inst loc)
 
   let wrap_error_with_errortype errorType res =
     match res with Ok r -> Ok r | Error e -> Error (errorType, e)
@@ -313,13 +305,9 @@ module TypeUtilities = struct
 
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
-
   let tvar i = TypeVar i
-
   let tfun_typ i t = PolyFun (i, t)
-
   let map_typ k v = MapType (k, v)
-
   let unit_typ = Unit
 
   (* Return True if corresponding elements are `type_equiv`,
@@ -340,9 +328,10 @@ module TypeUtilities = struct
       =
     if type_assignable ~expected ~actual then pure ()
     else
-      fail1
-        (sprintf "Type unassignable: %s expected, but %s provided."
-           (pp_typ expected) (pp_typ actual))
+      fail1 ~kind:"Type unassignable"
+        ~inst:
+          (sprintf "%s expected, but %s provided" (pp_typ expected)
+             (pp_typ actual))
         lc
 
   let rec is_ground_type t =
@@ -356,23 +345,28 @@ module TypeUtilities = struct
         true
     | _ -> true
 
-  let rec is_serializable_storable_helper accept_maps allow_unserializable
-      check_addresses t seen_adts =
-    let rec recurser t seen_adts =
+  let rec is_legal_type_helper ~allow_maps ~allow_messages_events
+      ~allow_closures ~allow_polymorphism ~allow_unit ~check_addresses t
+      seen_adts seen_tvars =
+    let rec recurser t seen_adts seen_tvars =
       match t with
       | FunType (a, r) ->
-          allow_unserializable && recurser a seen_adts && recurser r seen_adts
-      | PolyFun (_, t) -> allow_unserializable && recurser t seen_adts
-      | Unit -> allow_unserializable
+          allow_closures
+          && recurser a seen_adts seen_tvars
+          && recurser r seen_adts seen_tvars
+      | PolyFun (tvar, t) ->
+          allow_polymorphism && recurser t seen_adts (tvar :: seen_tvars)
+      | Unit -> allow_unit
       | MapType (kt, vt) ->
-          accept_maps && recurser kt seen_adts && recurser vt seen_adts
-      | TypeVar _ ->
-          (* If we are inside an ADT, then type variable
-             instantiations are handled outside *)
-          not @@ List.is_empty seen_adts
+          allow_maps
+          && recurser kt seen_adts seen_tvars
+          && recurser vt seen_adts seen_tvars
+      | TypeVar tvar ->
+          (* Type variables can occur legally inside PolyFuns (if polymorphism is allowed) or inside ADTs *)
+          List.mem seen_tvars tvar ~equal:String.( = )
       | PrimType _ ->
-          (* Messages and Events are not serialisable in terms of contract parameters *)
-          allow_unserializable
+          (* Messages and Events are considered primitive types *)
+          allow_messages_events
           || TUType.(
                (not @@ [%equal: TUType.t] t msg_typ)
                || [%equal: TUType.t] t event_typ)
@@ -388,40 +382,65 @@ module TypeUtilities = struct
                 let adt_serializable =
                   List.for_all adt.tmap ~f:(fun (_, carg_list) ->
                       List.for_all carg_list ~f:(fun carg ->
-                          recurser carg (tname :: seen_adts)))
+                          recurser carg (tname :: seen_adts)
+                            (adt.tparams @ seen_tvars)))
                 in
                 adt_serializable
-                && List.for_all ts ~f:(fun t -> recurser t seen_adts))
-      | Address (Some fts) when check_addresses ->
+                && List.for_all ts ~f:(fun t -> recurser t seen_adts seen_tvars)
+          )
+      | Address (ContrAddr fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-          IdLoc_Comp.Map.for_all fts ~f:(fun t -> is_legal_field_type t)
+          IdLoc_Comp.Map.for_all fts ~f:(fun t ->
+              is_legal_field_type_helper t seen_adts seen_tvars)
       | Address _ -> true
     in
-    recurser t seen_adts
+    recurser t seen_adts seen_tvars
 
-  and is_legal_message_field_type t =
-    (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
-    is_serializable_storable_helper false false false t []
-
-  and is_legal_transition_parameter_type t =
-    (* Maps are not allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper false false true t []
-
-  and is_legal_procedure_parameter_type t =
-    (* Like transition parametes, except that polymorphic parameters are allowed,
-       since parameters do not need to be serializable. *)
-    is_serializable_storable_helper false true true t []
-
-  and is_legal_contract_parameter_type t =
-    (* Like fields. Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true false true t []
-
-  and is_legal_field_type t =
+  and is_legal_field_type_helper t seen_adts seen_tvars =
     (* Maps are allowed. Address values should be checked for storable field types. *)
-    is_serializable_storable_helper true false true t []
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:true t seen_adts seen_tvars
 
-  let is_legal_map_key_type t = is_prim_type t || is_address_type t
+  let is_legal_message_field_type t =
+    (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:false t [] []
+
+  let is_legal_transition_parameter_type t =
+    (* Maps are not allowed. Address values should be checked for storable field types. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:true t [] []
+
+  let is_legal_procedure_parameter_type t =
+    (* Like transition parametes, except messages, events and closures are allowed,
+       since parameters do not need to be serializable. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:true
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:true t [] []
+
+  let is_legal_contract_parameter_type t =
+    (* Like transitions parameters, except maps are allowed (due to an exploited bug). Address values should be checked for storable field types. *)
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:true t [] []
+
+  let is_legal_field_type t = is_legal_field_type_helper t [] []
+
+  let is_legal_hash_argument_type t =
+    (* Only closures and type closures are disallowed. Addresses behave like ByStr20. *)
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:true
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:false t [] []
+
+  let is_legal_map_key_type t =
+    (* Only primitive (non-message and non-event) types are allowed. Addresses behave like ByStr20, and are thus allowed. *)
+    is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:false t [] []
 
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
@@ -431,8 +450,10 @@ module TypeUtilities = struct
     then pure TUType.event_typ
     else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
     then pure TUType.exception_typ
-    else
-      fail1 "Invalid message construct. Not any of send, event or exception." lc
+    else if
+      List.exists m ~f:(fun (x, _, _) -> String.(replicate_contr_label = x))
+    then pure TUType.replicate_contr_typ
+    else fail1 ~kind:"Invalid message construct." ?inst:None lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =
@@ -441,38 +462,48 @@ module TypeUtilities = struct
     | MapType (_, vt'), 1 -> pure vt'
     | MapType (_, vt'), nkeys' when nkeys' > 1 ->
         map_access_type vt' (nindices - 1)
-    | _, _ -> fail0 "Cannot index into map: Too many index keys."
+    | _, _ ->
+        fail0 ~kind:"Cannot index into map: Too many index keys." ?inst:None
 
   (* The depth of a nested map. *)
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let address_field_type f t =
-    let is_balance = [%equal: TUName.t] (get_id f) ContractUtil.balance_label in
+  let address_field_type loc f t =
+    let preknown_field_type =
+      if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
+        Some ContractUtil.balance_type
+      else if [%equal: TUName.t] (get_id f) ContractUtil.codehash_label then
+        Some ContractUtil.codehash_type
+      else None
+    in
     let not_declared () =
-      fail0
-      @@ sprintf "Field %s is not declared in address type %s."
-           (as_error_string f) (pp_typ t)
+      fail1 ~kind:"Field is not declared in address type"
+        ~inst:
+          (sprintf "%s is not declared in %s" (as_error_string f) (pp_typ t))
+        loc
     in
     match t with
-    | Address None ->
-        if is_balance then pure ContractUtil.balance_type else not_declared ()
-    | Address (Some fts) -> (
-        if is_balance then pure ContractUtil.balance_type
-        else
-          let loc_removed =
-            List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
-                (get_id f, t))
-          in
-          match
-            List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
-          with
-          | Some ft -> pure ft
-          | None -> not_declared ())
+    | Address AnyAddr
+      when [%equal: TUName.t] (get_id f) ContractUtil.balance_label ->
+        pure @@ ContractUtil.balance_type
+    | (Address LibAddr | Address CodeAddr | Address (ContrAddr _))
+      when Option.is_some preknown_field_type ->
+        pure @@ Option.value_exn preknown_field_type
+    | Address (ContrAddr fts) -> (
+        let loc_removed =
+          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
+              (get_id f, t))
+        in
+        match
+          List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
+        with
+        | Some ft -> pure ft
+        | None -> not_declared ())
     | _ ->
-        fail0
-        @@ sprintf "Attempting to read field from non-address type %s."
-             (pp_typ t)
+        fail1 ~kind:"Invalid field read"
+          ~inst:(TUIdentifier.as_string f ^ " from " ^ pp_typ t)
+          loc
 
   let pp_typ_list_error ts =
     let tss = List.map ~f:(fun t -> pp_typ_error t) ts in
@@ -491,20 +522,23 @@ module TypeUtilities = struct
     | FunType (Unit, rest), [] -> pure rest
     | t, [] -> pure t
     | _ ->
-        fail1
-          (sprintf
-             "The type\n\
-              %s\n\
-              doesn't apply, as a function, to the arguments of types\n\
-              %s."
-             (pp_typ_error ft)
-             (pp_typ_list_error argtypes))
+        fail1 ~kind:"Ill-typed function application"
+          ~inst:
+            (sprintf
+               "The type\n\
+                %s\n\
+                doesn't apply, as a function, to the arguments of types\n\
+                %s."
+               (pp_typ_error ft)
+               (pp_typ_list_error argtypes))
           lc
 
   let proc_type_applies ~lc formals actuals =
     map2M formals actuals
       ~f:(fun expected actual -> assert_type_assignable ~expected ~actual ~lc)
-      ~msg:(fun () -> mk_error1 "Incorrect number of arguments to procedure" lc)
+      ~msg:(fun () ->
+        mk_error1 ~kind:"Incorrect number of arguments to procedure" ?inst:None
+          lc)
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
@@ -513,7 +547,7 @@ module TypeUtilities = struct
         let%bind n, tp =
           match refresh_tfun pf afv with
           | PolyFun (a, b) -> pure (a, b)
-          | _ -> Error (mk_error0 "This can't happen!")
+          | _ -> Error (mk_error0 ~kind:"This can't happen!" ?inst:None)
         in
         (* This needs to account for gas *)
         let tp' = subst_type_in_type n a tp in
@@ -528,7 +562,7 @@ module TypeUtilities = struct
              %s."
             (pp_typ_error tf) (pp_typ_list_error args)
         in
-        Error (mk_error0 msg)
+        Error (mk_error0 ~kind:msg ?inst:None)
 
   (****************************************************************)
   (*                        Working with ADTs                     *)
@@ -540,10 +574,11 @@ module TypeUtilities = struct
 
   let validate_param_length ~lc cn plen alen =
     if plen <> alen then
-      fail1
-        (sprintf "Constructor %s expects %d type arguments, but got %d."
-           (TUName.as_error_string cn)
-           plen alen)
+      fail1 ~kind:"Constructor type arguments arity mismatch"
+        ~inst:
+          (sprintf "%s expects %d type arguments, but got %d."
+             (TUName.as_error_string cn)
+             plen alen)
         lc
     else pure ()
 
@@ -596,15 +631,15 @@ module TypeUtilities = struct
           let%bind () = validate_param_length ~lc cn plen alen in
           pure targs
         else
-          fail1
-            (sprintf
-               "Types don't match: pattern uses a constructor of type %s, but \
-                value of type %s is given."
-               (TUName.as_string adt.tname)
-               (as_string name))
-            (get_rep name)
-    | _ ->
-        fail1 (sprintf "Not an algebraic data type: %s" (pp_typ_error atyp)) lc
+          fail1 ~kind:"Wrong constructor in pattern matching"
+            ~inst:
+              (sprintf
+                 "Expected a constructor of type %s, but a constructor of type \
+                  %s is given"
+                 (as_string name)
+                 (TUName.as_string adt.tname))
+            lc
+    | _ -> fail1 ~kind:"Not an algebraic data type" ~inst:(pp_typ_error atyp) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
     let open Datatypes.DataTypeDictionary in
@@ -620,15 +655,14 @@ module TypeUtilities = struct
 
   let assert_all_same_type ~lc ts =
     match ts with
-    | [] -> fail1 "Checking an empty type list." lc
+    | [] -> fail1 ~kind:"Checking an empty type list" ?inst:None lc
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not ([%equal: TUType.t] t t')) with
+        match List.find ts' ~f:(fun t' -> not (type_equivalent t t')) with
         | None -> pure ()
         | Some _ ->
             fail1
-              (sprintf "Not all types of the branches %s are equivalent."
-                 (pp_typ_list_error ts))
-              lc)
+              ~kind:"Not all types of pattern matching branches are equivalent"
+              ~inst:(pp_typ_list_error ts) lc)
 
   (****************************************************************)
   (*                     Typing literals                          *)
@@ -658,8 +692,8 @@ module TypeUtilities = struct
     | ADTValue (cname, ts, _) ->
         let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
         pure @@ ADT (mk_loc_id adt.tname, ts)
-    | Clo _ -> fail0 @@ "Cannot type runtime closure."
-    | TAbs _ -> fail0 @@ "Cannot type runtime type function"
+    | Clo _ -> fail0 ~kind:"Cannot type runtime closure" ?inst:None
+    | TAbs _ -> fail0 ~kind:"Cannot type runtime type function" ?inst:None
 
   (* Use when the type of l must be verified using dynamic typechecks or otherwise. *)
   let assert_literal_type ?(lc = dummy_loc) ~expected l =
@@ -670,21 +704,22 @@ module TypeUtilities = struct
           let%bind dyn_checks_acc' = recurser t arg dyn_checks_acc in
           fun_typ_recurser res_t rest dyn_checks_acc'
       | ADT (_, _), [] -> pure @@ dyn_checks_acc
-      | _, _ -> fail1 (sprintf "Malformed ADT literal %s\n" (pp_literal l)) lc
+      | _, _ -> fail1 ~kind:"Malformed ADT literal" ~inst:(pp_literal l) lc
     and recurser expected l dyn_check_acc =
       match (expected, l) with
       | (Address _ as res_t), ByStrX bs
         when Bystrx.width bs = Type.address_length ->
           (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
-          pure @@ (res_t, bs) :: dyn_check_acc
+          pure @@ ((res_t, bs) :: dyn_check_acc)
       | ADT (tname, targs), ADTValue (cname, _, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)
           if not @@ [%equal: TUName.t] (get_id tname) adt.tname then
-            fail0
-            @@ sprintf "Literal constructor %s does not belong to type %s"
-                 (TUName.as_error_string cname)
-                 (TUIdentifier.as_error_string tname)
+            fail0 ~kind:"Literal constructor does not belong to expected type"
+              ~inst:
+                (sprintf "%s does not belong to %s"
+                   (TUName.as_error_string cname)
+                   (TUIdentifier.as_error_string tname))
           else
             (* Elaborate constructor using expected type arguments *)
             let%bind c_fun_typ = elab_constr_type ~lc cname targs in
@@ -738,16 +773,16 @@ module TypeUtilities = struct
               let%bind t' = is_wellformed_lit l in
               if not @@ [%equal: TUType.t] t t' then
                 fail0
-                @@ sprintf
-                     "Message/Event has inconsistent values and types at field \
-                      %s"
-                     n
+                  ~kind:
+                    "Message/Event has inconsistent values and types at field"
+                  ~inst:n
               else if acc then pure (is_legal_message_field_type t)
               else pure false)
             ~init:true m
         in
         if not all_legal then
-          fail0 @@ sprintf "Message/Event has invalid / non-storable parameters"
+          fail0 ~kind:"Message/Event has invalid / non-storable parameters"
+            ?inst:None
         else pure msg_typ
     | Map ((kt, vt), kv) ->
         if is_legal_map_key_type kt then
@@ -765,31 +800,31 @@ module TypeUtilities = struct
                      && type_assignable ~expected:vt ~actual:vt'))
               kv (pure true)
           in
-          if not valid then
-            fail0 @@ sprintf "Malformed literal %s" (pp_literal l)
+          if not valid then fail0 ~kind:"Malformed literal" ~inst:(pp_literal l)
             (* We have a valid Map literal. *)
           else pure (MapType (kt, vt))
-        else
-          fail0 @@ sprintf "Not a primitive map key type: %s." (pp_typ_error kt)
+        else fail0 ~kind:"Not a primitive map key type" ~inst:(pp_typ_error kt)
     | ADTValue (cname, ts, args) ->
         let%bind adt, constr = DataTypeDictionary.lookup_constructor cname in
         let tparams = adt.tparams in
         let tname = adt.tname in
         if not (List.length tparams = List.length ts) then
-          fail0
-          @@ sprintf
-               "Wrong number of type parameters for ADT %s (%i) in constructor \
-                %s."
-               (TUName.as_error_string tname)
-               (List.length ts)
-               (TUName.as_error_string cname)
+          fail0 ~kind:"Type parameters arity mismatch for ADT constructor"
+            ~inst:
+              (sprintf
+                 "Wrong number of type parameters for ADT %s (%i) in \
+                  constructor %s."
+                 (TUName.as_error_string tname)
+                 (List.length ts)
+                 (TUName.as_error_string cname))
         else if not (List.length args = constr.arity) then
-          fail0
-          @@ sprintf
-               "Wrong number of arguments to ADT %s (%i) in constructor %s."
-               (TUName.as_error_string tname)
-               (List.length args)
-               (TUName.as_error_string cname)
+          fail0 ~kind:"Arity mismatch for ADT constructor"
+            ~inst:
+              (sprintf
+                 "Wrong number of arguments to ADT %s (%i) in constructor %s."
+                 (TUName.as_error_string tname)
+                 (List.length args)
+                 (TUName.as_error_string cname))
           (* Verify that the types of args match that declared. *)
         else
           let res = ADT (mk_loc_id tname, ts) in
@@ -800,10 +835,9 @@ module TypeUtilities = struct
                 type_assignable ~expected ~actual)
           in
           if not args_valid then
-            fail0
-            @@ sprintf "Malformed ADT %s. Arguments do not match expected types"
-                 (pp_literal l)
+            fail0 ~kind:"Malformed ADT. Arguments do not match expected types"
+              ~inst:(pp_literal l)
           else pure @@ res
-    | Clo _ -> fail0 @@ "Cannot type-check runtime closure."
-    | TAbs _ -> fail0 @@ "Cannot type-check runtime type function."
+    | Clo _ -> fail0 ~kind:"Cannot type-check runtime closure" ?inst:None
+    | TAbs _ -> fail0 ~kind:"Cannot type-check runtime type function" ?inst:None
 end

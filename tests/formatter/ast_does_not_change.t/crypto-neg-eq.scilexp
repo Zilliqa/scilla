@@ -1,0 +1,17 @@
+let px = 0x025a6f4181d2b4ea8b724290ffb40156eb0adb514c688556eb79cdea0752c2bb in
+let py = 0x2eff3f31dea215f1eb86023a133a996eb6300b44da664d64251d05381bb8a02e in
+let zero = 0x0000000000000000000000000000000000000000000000000000000000000000 in
+let pt = Pair {ByStr32 ByStr32} px py in
+let p_opt = builtin alt_bn128_G1_neg pt in 
+match p_opt with 
+| Some p =>
+  let sum_opt = builtin alt_bn128_G1_add p pt in 
+  match sum_opt with 
+  | Some (Pair a b) => 
+    let b1 = builtin eq a zero in 
+    let b2 = builtin eq b zero in 
+    andb b1 b2
+  | None => False 
+  end
+| None => False
+end

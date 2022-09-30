@@ -16,13 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Type
 open Literal
 open Syntax
 open MonadUtil
 open Stdint
-open Core_kernel.Result.Let_syntax
+open Core.Result.Let_syntax
 open PrettyPrinters
 module CULiteral = GlobalLiteral
 module CUType = CULiteral.LType
@@ -35,42 +35,33 @@ module CUName = CUIdentifier.Name
 
 module MessagePayload = struct
   let tag_label = "_tag"
-
   let tag_type = CUType.string_typ
-
   let amount_label = "_amount"
-
   let amount_type = CUType.uint128_typ
-
   let sender_label = "_sender"
-
-  let sender_type = CUType.address_typ None
-
+  let sender_type = CUType.address_typ AnyAddr
   let origin_label = "_origin"
-
-  let origin_type = CUType.address_typ None
-
+  let origin_type = CUType.address_typ AnyAddr
   let recipient_label = "_recipient"
-
   let recipient_type = CUType.bystrx_typ address_length
-
   let eventname_label = "_eventname"
-
   let exception_label = "_exception"
+  let replicate_contr_label = "_replicate_contract"
 
   let get_value_for_entry lab f es =
     match List.find es ~f:(fun (x, _, _) -> String.(x = lab)) with
     | None ->
-        fail0
-        @@ sprintf "No field \"%s\" in message [%s]." lab
-             (pp_typ_literal_map es)
+        fail0 ~kind:"Missing field in message"
+          ~inst:
+            (sprintf "No field \"%s\" in message [%s]." lab
+               (pp_typ_literal_map es))
     | Some (_, _, p) ->
         f p
         |> Option.value
              ~default:
                (fail0
-               @@ sprintf "Wrong value of the entry \"%s\": %s." lab
-                    (pp_literal p))
+                  ~kind:(sprintf "Wrong value of the entry \"%s\"" lab)
+                  ~inst:(pp_literal p))
 
   let get_tag =
     get_value_for_entry tag_label (function
@@ -96,14 +87,12 @@ module MessagePayload = struct
             if Uint128.(compare i zero) >= 0 then Some (pure i)
             else
               Some
-                (fail0
-                @@ sprintf "Amount should be non-negative: %s"
-                     (Uint128.to_string i))
+                (fail0 ~kind:"Amount should be non-negative"
+                   ~inst:(Uint128.to_string i))
           with Failure _ ->
             Some
-              (fail0
-              @@ sprintf "Could not convert string %s to Stdint.Uint128."
-                   (Uint128.to_string i)))
+              (fail0 ~kind:"Could not convert string to Stdint.Uint128"
+                 ~inst:(Uint128.to_string i)))
       | _ -> None)
 
   let get_other_entries es =
@@ -115,7 +104,9 @@ end
 (*****************************************************************)
 
 let blocknum_name = "BLOCKNUMBER"
-
+let chainid_name = "CHAINID"
+let timestamp_name = "TIMESTAMP"
+let replicate_contract_name = "REPLICATE_CONTRACT"
 let blocknum_type = CUType.bnum_typ
 
 (*****************************************************************)
@@ -123,25 +114,17 @@ let blocknum_type = CUType.bnum_typ
 (*****************************************************************)
 
 let label_name_of_string str = CUName.parse_simple_name str
-
 let nonce_label = label_name_of_string "_nonce"
-
 let nonce_type = CUType.uint64_typ
-
 let balance_label = label_name_of_string "_balance"
-
 let balance_type = CUType.uint128_typ
-
 let creation_block_label = label_name_of_string "_creation_block"
-
 let this_address_label = label_name_of_string "_this_address"
-
 let scilla_version_label = label_name_of_string "_scilla_version"
-
 let accepted_label = label_name_of_string "_accepted"
-
 let extlibs_label = label_name_of_string "_extlibs"
-
+let codehash_label = label_name_of_string "_codehash"
+let codehash_type = CUType.bystrx_typ 32
 let no_store_fields = [ balance_label ]
 
 module ScillaContractUtil (SR : Rep) (ER : Rep) = struct

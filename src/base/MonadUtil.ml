@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Result.Let_syntax
 open ErrorUtils
 open Stdint
@@ -28,7 +28,6 @@ open Stdint
    implement state-passing (for gas accounting) by means of
    insantiating it suitably in `EvalMonad` to take an additional
    parameter of type `int` for gas accounting.
-
 *)
 
 module CPSMonad = struct
@@ -53,17 +52,16 @@ end
 
 (* Monadic evaluation results *)
 let fail (s : scilla_error list) = Error s
-
 let pure e = return e
 
-(* fail with just a message, no location info. *)
-let fail0 (msg : string) = fail @@ mk_error0 msg
+(* fail with just a message (containing error kind and an instance of the error), no location info. *)
+let[@warning "-16"] fail0 ~kind ?inst = fail @@ mk_error0 ~kind ?inst
 
 (* fail with a message and start location. *)
-let fail1 msg sloc = fail @@ mk_error1 msg sloc
+let fail1 ~kind ?inst sloc = fail @@ mk_error1 ~kind ?inst sloc
 
 (* fail with a message and both start and end locations. *)
-let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
+let fail2 ~kind ?inst sloc eloc = fail @@ mk_error2 ~kind ?inst sloc eloc
 
 (* Monadic fold-left for error *)
 let rec foldM ~f ~init ls =
@@ -230,22 +228,18 @@ module EvalMonad = struct
 
   (* Monadic evaluation results *)
   let fail s k remaining_gas = k (Error s) remaining_gas
-
   let pure e = return e
 
-  (* fail with just a message, no location info. *)
-  let fail0 (msg : string) = fail @@ mk_error0 msg
+  (* fail with just a message (containing error kind and an instance of the error), no location info. *)
+  let fail0 ~kind ?inst = fail @@ mk_error0 ~kind ?inst
 
   (* fail with a message and start location. *)
-  let fail1 msg sloc = fail @@ mk_error1 msg sloc
+  let fail1 ~kind ?inst sloc = fail @@ mk_error1 ~kind ?inst sloc
 
   (* fail with a message and both start and end locations. *)
-  let fail2 msg sloc eloc = fail @@ mk_error2 msg sloc eloc
-
-  let fromR r =
-    match r with Core_kernel.Error s -> fail s | Core_kernel.Ok a -> pure a
-
-  let out_of_gas_err = mk_error0 "Ran out of gas"
+  let fail2 ~kind ?inst sloc eloc = fail @@ mk_error2 ~kind ?inst sloc eloc
+  let fromR r = match r with Core.Error s -> fail s | Core.Ok a -> pure a
+  let out_of_gas_err = mk_error0 ~kind:"Insufficient gas" ?inst:None
 
   (* [Wrappers for Gas Accounting]  *)
   let checkwrap_opR op_thunk cost k remaining_gas =

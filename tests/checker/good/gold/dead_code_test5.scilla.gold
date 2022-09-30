@@ -1,0 +1,127 @@
+{
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "dead_code_test5.TestType": [
+          { "constructor": "dead_code_test5.T", "tags": [ "NoInfo" ] }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Dead5",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      { "vname": "dummy1", "params": [] },
+      { "vname": "dummy2", "params": [] }
+    ],
+    "procedures": [],
+    "events": [
+      {
+        "vname": "Error",
+        "params": [ { "vname": "err_code", "type": "Uint32" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "dead_code_test5.TestType",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test5.T", "argtypes": [ "Uint128" ] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "dead_code_test5.Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "dead_code_test5.InternalError", "argtypes": [] },
+          { "cname": "dead_code_test5.OtherError", "argtypes": [] }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Unreachable pattern OtherError",
+      "start_location": {
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 16,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: OtherError",
+      "start_location": {
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 8,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: map2",
+      "start_location": {
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 37,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract Dead5 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/dead_code_test5.scilla",
+        "line": 25,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

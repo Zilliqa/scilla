@@ -1,0 +1,4 @@
+let tf = 
+  tfun 'A => None {'A} in 
+let tf_applied = @tf Int128 in
+tf_applied 

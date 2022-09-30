@@ -15,7 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Core_kernel
+open Core
 open Stdint
 open OUnit2
 open Scilla_base
@@ -32,7 +32,6 @@ module TestArith (SmallInt : Int) = struct
   type arith_error = Overflow | Underflow | Div_by_zero [@@deriving sexp]
 
   let min_small_int = SmallInt.(to_int min_int)
-
   let max_small_int = SmallInt.(to_int max_int)
 
   let test binop big_binop a_int b_int =
@@ -72,6 +71,21 @@ module TestArith (SmallInt : Int) = struct
       done
     done
 
+  let test_all_pow pow_op =
+    let open Base in
+    (* for integer `**` power function *)
+    for a_int = 0 to 2 do
+      for b_int = 0 to 6 do
+        let b32 = Uint32.of_int b_int in
+        let actual = SmallInt.to_int (pow_op (SmallInt.of_int a_int) b32) in
+        let expected = a_int ** b_int in
+        assert_bool
+          (sprintf "Got pow %d %d = %d, but expected %d" a_int b_int actual
+             expected)
+          (expected = actual)
+      done
+    done
+
   let test_all_isqrt isqrt_op =
     for a = min_small_int to max_small_int do
       let asqrt = SmallInt.to_int @@ isqrt_op (SmallInt.of_int a) in
@@ -98,6 +112,7 @@ let builtin_arith_8bit_tests =
            ("signed 8-bit: safe mul", TestSigned.test_all I8_safe.mul Int.( * ));
            ("signed 8-bit: safe div", TestSigned.test_all I8_safe.div Int.( / ));
            ("signed 8-bit: safe rem", TestSigned.test_all I8_safe.rem Int.rem);
+           ("signed 8-bit: safe pow", TestSigned.test_all_pow I8_safe.pow);
            ( "unsigned 8-bit: safe add",
              TestUnsigned.test_all U8_safe.add Int.( + ) );
            ( "unsigned 8-bit: safe sub",
@@ -109,6 +124,7 @@ let builtin_arith_8bit_tests =
            ( "unsigned 8-bit: safe rem",
              TestUnsigned.test_all U8_safe.rem Int.rem );
            ("unsigned 8-bit: isqrt", TestUnsigned.test_all_isqrt U8_safe.isqrt);
+           ("unsigned 8-bit: safe pow", TestUnsigned.test_all_pow U8_safe.pow);
          ]
 
 module All = struct

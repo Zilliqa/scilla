@@ -1,50 +1,16 @@
-########## Global owners ##########
+# The scilla-team will be the default owners for everything in the repo.
+# This way the devops can maintain it without the need to patch this file.
+* @Zilliqa/scilla-team
 
-*                  @jjcnn @vaivaswatha @anton-trunov
-
-
-########## Source code ##########
-
-## default OCaml reviewers
-*.ml                @vaivaswatha @jjcnn @anton-trunov
-*.mli               @vaivaswatha @jjcnn @anton-trunov
-
-## default C and C++ reviewers
-*.cpp              @vaivaswatha @AmritKumar
-*.c                @vaivaswatha @AmritKumar
-*.h                @vaivaswatha @AmritKumar
-
-
-########## Build system, CI, opam ##########
-
-*dune*             @vaivaswatha @anton-trunov
-/.dockerignore     @vaivaswatha @Gnnng
-/.travis.yml       @vaivaswatha @Gnnng
-/Dockerfile*       @vaivaswatha @Gnnng
-/Makefile          @vaivaswatha @anton-trunov
-/scripts/build_openssl.sh @vaivaswatha
-*.opam             @vaivaswatha @anton-trunov
-
-
-########## Test suite ##########
-
-## Scilla contracts in the testsuite
-/tests/*.scilla    @edisonljh @evesnow91 @AmritKumar @vaivaswatha @jjcnn
-
-
-########## Documentation ##########
-
-/README.md        @AmritKumar @jjcnn @vaivaswatha
-/INSTALL.md       @vaivaswatha @anton-trunov
-/docs/            @jjcnn
-
-
-########## Tools ##########
-
-#/misc/emacs-mode  @vaivaswatha
-#/misc/vim-plugin  @edisonljh
-
-
-########## GitHub metadata, including this file ##########
-
-/.github/         @AmritKumar @vaivaswatha @anton-trunov
+## Devops-related things
+/.dockerignore
+/.travis.yml
+/Dockerfile*         
+/scripts/build_deps.sh
+/scripts/build_openssl.sh
+/scripts/cryptoutils.sh
+/scripts/install_cmake_ubuntu.sh
+/scripts/install_opam2_ubuntu.sh
+/scripts/install_secp256k1.sh
+/scripts/install_shellcheck_ubuntu.sh
+/scripts/schnorr.sh                      @Zilliqa/devops-team

@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type unassignable: Int32 expected, but String provided.",
+        "Type unassignable: Int32 expected, but String provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 19,
@@ -13,7 +13,7 @@
     },
     {
       "error_message":
-        "Type unassignable: String expected, but Int64 provided.",
+        "Type unassignable: String expected, but Int64 provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 38,
@@ -23,7 +23,7 @@
     },
     {
       "error_message":
-        "Type unassignable: Map (Int32) (Map (Int64) (String)) expected, but String provided.",
+        "Type unassignable: Map (Int32) (Map (Int64) (String)) expected, but String provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 45,
@@ -32,7 +32,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type failure in map access. Cannot index into key a",
+      "error_message": "Type failure in map access. Cannot index into key: a",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 53,
@@ -42,7 +42,7 @@
     },
     {
       "error_message":
-        "Type unassignable: String expected, but Map (Int64) (String) provided.",
+        "Type unassignable: String expected, but Map (Int64) (String) provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 70,
@@ -51,7 +51,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type failure in map access. Cannot index into key b",
+      "error_message": "Type failure in map access. Cannot index into key: b",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 88,
@@ -61,7 +61,7 @@
     },
     {
       "error_message":
-        "Type unassignable: String expected, but Int32 provided.",
+        "Type unassignable: String expected, but Int32 provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 95,
@@ -71,7 +71,7 @@
     },
     {
       "error_message":
-        "Type unassignable: Int32 expected, but Int64 provided.",
+        "Type unassignable: Int32 expected, but Int64 provided",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 102,
@@ -80,7 +80,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type failure in map access. Cannot index into key b",
+      "error_message": "Type failure in map access. Cannot index into key: b",
       "start_location": {
         "file": "checker/bad/inplace-map.scilla",
         "line": 117,

@@ -16,13 +16,12 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Bitstring
 open Utils
 
 (* https://github.com/Zilliqa/Zilliqa/wiki/Address-Standard#specification *)
 let bech32_addr_len ~prfx = String.length prfx + 1 + 32 + 6
-
 let bech32_payload_len = 32
 
 (* Ignoring prefix, separator and checksum characters. *)
@@ -60,9 +59,7 @@ let bech32_polymod_step pre =
   lxor (-((b lsr 4) land 1) land 0x2a1462b3)
 
 let ascii_of_char c = Caml.Char.code c
-
 let char_of_ascii i = Caml.Char.chr i
-
 let bytes_of_bitstring bs = Bytes.of_string @@ string_of_bitstring bs
 
 (* Decodes a bech32 address string to a string of 20 bytes.

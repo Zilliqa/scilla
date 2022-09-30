@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Error during pattern-match checking of library badpm:\n",
+        "Error during pattern-match checking of library: badpm",
       "start_location": {
         "file": "checker/bad/BadPMLib.scillib",
         "line": 5,

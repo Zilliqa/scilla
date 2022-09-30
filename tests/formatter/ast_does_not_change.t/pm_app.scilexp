@@ -1,0 +1,15 @@
+(* Expected result: *)
+(* (ADTValue False()()) *)
+let andb = 
+  fun (b : Bool) => fun (c : Bool) =>
+    match b with 
+    | False => False
+    | True  => match c with 
+               | False => False
+               | True  => True
+               end
+    end
+in
+let x = True in
+let y = False in
+andb x y

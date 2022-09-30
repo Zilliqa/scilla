@@ -31,23 +31,22 @@ open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
 type value_table = (string, value_type) Hashtbl.t
-
 and value_type = NonMapVal of string | MapVal of value_table
 
 type type_table = (string, string) Hashtbl.t
 
 (* State of the full blockchain, i.e., for all addresses.
- * None indicates *this* address and Some indicates "external state". *)
-type blockchain_state = (string option, value_table * type_table) Hashtbl.t
+ * None indicates *this* address and Some indicates "external state". 
+ * The blockchain info (BLOCKNUMBER etc) is stored in the *this* key. *)
+type blockchain_state =
+  ( string option,
+    value_table * type_table * StateService.bcinfo_state )
+  Hashtbl.t
 
 let thread_pool : (string, blockchain_state) Hashtbl.t = Hashtbl.create 4
-
 let num_pending_requests = 5
-
 let fetch_message = "Fetching state value failed"
-
 let update_message = "Updating state value failed"
-
 let fail a = Error a
 
 let decode_serialized_value value =
@@ -70,27 +69,29 @@ module MakeServer () = struct
   module IPCTestServer = IPCIdl (IDL.GenServer ())
 
   (* Global state of the server thread. *)
-  let table = Hashtbl.create 8
+  let table : blockchain_state = Hashtbl.create 8
 
   let binary_rpc conn =
-    let ic = Unix.in_channel_of_descr conn in
-    let oc = Unix.out_channel_of_descr conn in
+    let ic = Core_unix.in_channel_of_descr conn in
+    let oc = Core_unix.out_channel_of_descr conn in
     let request = Jsonrpc.call_of_string (Caml.input_line ic) in
     let response = (IDL.server IPCTestServer.implementation) request |> M.run in
     IPCUtil.send_delimited oc (Jsonrpc.string_of_response response)
 
   let prepare_server sock_addr =
-    (try Unix.unlink sock_addr with Unix.Unix_error (Unix.ENOENT, _, _) -> ());
+    (try Core_unix.unlink sock_addr
+     with Core_unix.Unix_error (Core_unix.ENOENT, _, _) -> ());
     let socket =
-      Unix.socket ~domain:Unix.PF_UNIX ~kind:Unix.SOCK_STREAM ~protocol:0 ()
+      Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
+        ~protocol:0 ()
     in
-    Unix.bind socket ~addr:(Unix.ADDR_UNIX sock_addr);
-    Unix.listen socket ~backlog:num_pending_requests;
+    Core_unix.bind socket ~addr:(Core_unix.ADDR_UNIX sock_addr);
+    Core_unix.listen socket ~backlog:num_pending_requests;
     let server () =
       while true do
-        let conn, _ = Unix.accept socket in
+        let conn, _ = Core_unix.accept socket in
         binary_rpc conn;
-        Unix.close conn
+        Core_unix.close conn
       done
     in
     server
@@ -127,7 +128,7 @@ module MakeServer () = struct
     in
     let contr_state = Hashtbl.find_opt table addr_opt in
     match contr_state with
-    | Some (vt, tt) -> (
+    | Some (vt, tt, _bcinfo) -> (
         let query = decode_serialized_query query in
         let t = Hashtbl.find_opt tt query.name in
         match query with
@@ -172,13 +173,15 @@ module MakeServer () = struct
               | MapVal m -> recurser_update ~new_val m tail))
     in
     let query = decode_serialized_query query in
-    let vt, tt =
+    let vt, tt, _bcinfo =
       match Hashtbl.find_opt table addr_opt with
-      | Some (vt, tt) -> (vt, tt)
+      | Some (vt, tt, bcinfo) -> (vt, tt, bcinfo)
       | None ->
-          let vt, tt = (Hashtbl.create 8, Hashtbl.create 8) in
-          Hashtbl.replace table addr_opt (vt, tt);
-          (vt, tt)
+          let vt, tt, bcinfo =
+            (Hashtbl.create 8, Hashtbl.create 8, Hashtbl.create 1)
+          in
+          Hashtbl.replace table addr_opt (vt, tt, bcinfo);
+          (vt, tt, bcinfo)
     in
     (* Update type if provided *)
     let () =
@@ -209,6 +212,34 @@ module MakeServer () = struct
 
   let set_ext_state_value caddr query value scilla_type =
     set_value_helper (Some caddr) query value (Some scilla_type)
+
+  let set_bcinfo ~query_name ~query_args value =
+    let bcit =
+      match Hashtbl.find_opt table None with
+      | Some (_, _, bcit) -> bcit
+      | None ->
+          let ((_, _, bcit) as entry) =
+            (Hashtbl.create 8, Hashtbl.create 8, Hashtbl.create 1)
+          in
+          Hashtbl.replace table None entry;
+          bcit
+    in
+    (match Hashtbl.find_opt bcit query_name with
+    | Some subm -> Hashtbl.replace subm query_args value
+    | None ->
+        let subm = Hashtbl.create 1 in
+        Hashtbl.replace subm query_args value;
+        Hashtbl.add bcit query_name subm);
+    pure ()
+
+  let fetch_bcinfo ~query_name ~query_args =
+    let _, _, bcit = Hashtbl.find table None in
+    match Hashtbl.find_opt bcit query_name with
+    | Some subm -> (
+        match Hashtbl.find_opt subm query_args with
+        | Some value -> pure (true, value)
+        | None -> pure (false, ""))
+    | None -> pure (false, "")
 end
 
 let start_server ~sock_addr =
@@ -223,10 +254,16 @@ let start_server ~sock_addr =
           IDL.T.return @@ ServerModule.update_state_value q v);
       ServerModule.IPCTestServer.set_ext_state_value (fun addr q v t ->
           IDL.T.return @@ ServerModule.set_ext_state_value addr q v t);
+      ServerModule.IPCTestServer.set_bcinfo (fun query_name query_args value ->
+          IDL.T.return @@ ServerModule.set_bcinfo ~query_name ~query_args value);
+      ServerModule.IPCTestServer.fetch_bcinfo (fun query_name query_args ->
+          IDL.T.return @@ ServerModule.fetch_bcinfo ~query_name ~query_args);
       ServerModule.IPCTestServer.fetch_ext_state_value (fun a q ->
           IDL.T.return @@ ServerModule.fetch_ext_state_value a q);
       let server = ServerModule.prepare_server sock_addr in
-      let _ = Thread.create ~on_uncaught_exn:`Kill_whole_process server () in
+      let _ =
+        Core_thread.create ~on_uncaught_exn:`Kill_whole_process server ()
+      in
       Hashtbl.replace thread_pool sock_addr ServerModule.table
 
 let stop_server ~sock_addr =

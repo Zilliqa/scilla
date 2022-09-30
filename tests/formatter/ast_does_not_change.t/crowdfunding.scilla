@@ -1,0 +1,151 @@
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+
+import BoolUtils
+
+library Crowdfunding
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let check_update = 
+  fun (bs : Map ByStr20 Uint128) =>
+  fun (sender : ByStr20) =>
+  fun (amount : Uint128) =>
+    let c = builtin contains bs sender in
+    match c with 
+    | False => 
+      let bs1 = builtin put bs sender amount in
+      Some {Map ByStr20 Uint128} bs1 
+    | True  => None {Map ByStr20 Uint128}
+    end
+
+let blk_leq =
+  fun (blk1 : BNum) =>
+  fun (blk2 : BNum) =>
+    let bc1 = builtin blt blk1 blk2 in 
+    let bc2 = builtin eq blk1 blk2 in 
+    orb bc1 bc2
+
+let accepted_code = Int32 1
+let missed_deadline_code = Int32 2
+let already_backed_code  = Int32 3
+let not_owner_code  = Int32 4
+let too_early_code  = Int32 5
+let got_funds_code  = Int32 6
+let cannot_get_funds  = Int32 7
+let cannot_reclaim_code = Int32 8
+let reclaimed_code = Int32 9
+  
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+contract Crowdfunding
+
+(*  Parameters *)
+(owner     : ByStr20,
+ max_block : BNum,
+ goal      : Uint128)
+
+(* Mutable fields *)
+field backers : Map ByStr20 Uint128 = Emp ByStr20 Uint128
+field funded : Bool = False
+
+transition Donate ()
+  blk <- & BLOCKNUMBER;
+  in_time = blk_leq blk max_block;
+  match in_time with 
+  | True  => 
+    bs  <- backers;
+    res = check_update bs _sender _amount;
+    match res with
+    | None => 
+      e = {_eventname : "DonationFailure"; donor : _sender; amount : _amount; code : already_backed_code};
+      event e
+    | Some bs1 =>
+      backers := bs1; 
+      accept; 
+      e = {_eventname : "DonationSuccess"; donor : _sender; amount : _amount; code : accepted_code};
+      event e
+    end  
+  | False => 
+	e = {_eventname : "DonationFailure"; donor : _sender; amount : _amount; code : missed_deadline_code};
+    event e
+  end 
+end
+
+transition GetFunds ()
+  is_owner = builtin eq owner _sender;
+  match is_owner with
+  | False =>
+	e = {_eventname : "GetFundsFailure"; caller : _sender; amount : Uint128 0; code : not_owner_code};
+    event e
+  | True => 
+    blk <- & BLOCKNUMBER;
+    in_time = blk_leq blk max_block;
+    c1 = negb in_time;
+    bal <- _balance;
+    c2 = builtin lt bal goal;
+    c3 = negb c2;
+    c4 = andb c1 c3;
+    match c4 with 
+    | False =>  
+	    e = {_eventname : "GetFundsFailure"; caller : _sender; amount : Uint128 0; code : cannot_get_funds};
+      event e
+    | True => 
+      tt = True;
+      funded := tt;
+  	  msg  = {_tag : ""; _recipient : owner; _amount : bal}; 
+	  msgs = one_msg msg;
+	  e = {_eventname : "GetFundsSuccess"; caller : owner; amount : bal; code : got_funds_code};
+      event e;
+	  send msgs
+    end
+  end   
+end
+
+(* transition ClaimBack *)
+transition ClaimBack ()
+  blk <- & BLOCKNUMBER;
+  after_deadline = builtin blt max_block blk;
+  match after_deadline with
+  | False =>
+	e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : too_early_code};
+    event e
+  | True =>
+    bs <- backers;
+    bal <- _balance;
+    (* Goal has not been reached *)
+    f <- funded;
+    c1 = builtin lt bal goal;
+    c2 = builtin contains bs _sender;
+    c3 = negb f;
+    c4 = andb c1 c2;
+    c5 = andb c3 c4;
+    match c5 with
+    | False =>
+	    e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
+      event e
+    | True =>
+      res = builtin get bs _sender;
+      match res with
+      | None =>
+	      e = { _eventname : "ClaimBackFailure"; caller : _sender; amount : Uint128 0; code : cannot_reclaim_code};
+        event e
+      | Some v =>
+        bs1 = builtin remove bs _sender;
+        backers := bs1;
+	      msg  = {_tag : ""; _recipient : _sender; _amount : v};
+	      msgs = one_msg msg;
+	      e = { _eventname : "ClaimBackSuccess"; caller : _sender; amount : v; code : reclaimed_code};
+        event e;
+	      send msgs
+      end
+    end
+  end  
+end

@@ -1,0 +1,23 @@
+  
+
+let int_zip = @list_zip Uint32 Uint32 in
+
+let one = Uint32 1 in
+let two = Uint32 2 in
+let three = Uint32 3 in
+let four = Uint32 4 in
+
+let nil = Nil {Uint32} in
+let l0 = Cons {Uint32} four nil in
+let l1 = Cons {Uint32} three l0 in
+let l2 = Cons {Uint32} two l1 in
+let l3 = Cons {Uint32} one l2 in
+
+(* (1,1);(2,2);(3,3);(4,4) *)
+let res1 = int_zip l3 l3 in
+
+(* (1,2);(2,3);(3,4) *)
+let res2 = int_zip l3 l2 in
+
+(* (2,1);(3,2);(4,3) *)
+int_zip l2 l3

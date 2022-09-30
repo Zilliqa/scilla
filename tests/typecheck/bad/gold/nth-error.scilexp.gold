@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "error_message": "ADT Int32 not found",
+      "error_message": "ADT not found: Int32",
       "start_location": {
         "file": "typecheck/bad/nth-error.scilexp",
         "line": 13,

@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Type error(s) in contract Crowdfunding:\n",
+      "error_message": "Type error(s) in contract: Crowdfunding",
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 48,
@@ -11,7 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library Crowdfunding:\n",
+      "error_message": "Type error in library: Crowdfunding",
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 9,
@@ -20,7 +20,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Type error in library variable check_update:\n",
+      "error_message": "Type error in library variable: check_update",
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 16,
@@ -29,7 +29,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "ADT Uint12 not found",
+      "error_message": "ADT not found: Uint12",
       "start_location": {
         "file": "checker/bad/unbound.scilla",
         "line": 19,

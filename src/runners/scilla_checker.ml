@@ -16,13 +16,13 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open ErrorUtils
 open DebugMessage
 
 let () =
   try
-    let result = Checker.run None ~exe_name:Sys.argv.(0) in
+    let result = Checker.run None ~exe_name:(Sys.get_argv ()).(0) in
     pout @@ sprintf "%s\n" result
   with FatalError msg -> exit_with_error msg

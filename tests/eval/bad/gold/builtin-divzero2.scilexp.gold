@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Cannot apply built-in Int.div: Division by zero / IntOverflow error occurred to a list of arguments:[  (Int32 -2147483648),\n  (Int32 -1)].",
+        "Cannot apply built-in Int.div: Division by zero / IntOverflow error occurred to a list of arguments: [  (Int32 -2147483648),\n  (Int32 -1)]",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

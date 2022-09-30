@@ -26,8 +26,7 @@
       { "vname": "admin", "type": "ByStr20 with end", "depth": 0 },
       {
         "vname": "listed_tokens",
-        "type":
-          "Map (String) (ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end)",
+        "type": "Map (String) (ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end)",
         "depth": 1
       },
       {
@@ -48,8 +47,7 @@
           { "vname": "token_code", "type": "String" },
           {
             "vname": "new_token",
-            "type":
-              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
+            "type": "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
           }
         ]
       },
@@ -121,8 +119,7 @@
         "params": [
           {
             "vname": "token",
-            "type":
-              "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
+            "type": "ByStr20 with contract field allowances : Map (ByStr20) (Map (ByStr20) (Uint128)) end"
           },
           { "vname": "expected", "type": "Uint128" }
         ]
@@ -287,9 +284,12 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "No transition in contract SimpleExchange contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract SimpleExchange contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/simple-dex-remote-reads.scilla",
+        "line": 81,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

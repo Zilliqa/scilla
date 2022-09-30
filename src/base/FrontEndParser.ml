@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Lexing
 open ErrorUtils
 open MonadUtil
@@ -34,7 +34,7 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   module FEPType = FESyntax.SType
 
   (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
-  let fail_err msg lexbuf = fail1 msg (toLoc lexbuf.lex_curr_p)
+  let fail_err msg lexbuf = fail1 ~kind:msg ?inst:None (toLoc lexbuf.lex_curr_p)
 
   let parse_lexbuf checkpoint_starter lexbuf filename =
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
@@ -61,7 +61,8 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     in
     try MInter.loop_handle success failure supplier checkpoint with
     | Lexer.Error msg -> fail_err ("Lexical error: " ^ msg) lexbuf
-    | Syntax.SyntaxError (msg, loc) -> fail1 ("Syntax error: " ^ msg) loc
+    | Syntax.SyntaxError (msg, loc) ->
+        fail1 ~kind:("Syntax error: " ^ msg) ?inst:None loc
     | Parser.Error -> fail_err "Syntax error." lexbuf
 
   let parse_file checkpoint_starter filename =
@@ -78,15 +79,12 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     parse_lexbuf checkpoint_starter lexbuf "Prelude"
 
   let parse_type s = parse_string Parser.Incremental.type_term s
-
   let parse_expr s = parse_string Parser.Incremental.exp_term s
 
   let parse_expr_from_file filename =
     parse_file Parser.Incremental.exp_term filename
 
   let parse_expr_from_stdin () = parse_stdin Parser.Incremental.exp_term
-
   let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
-
   let parse_cmodule filename = parse_file Parser.Incremental.cmodule filename
 end
