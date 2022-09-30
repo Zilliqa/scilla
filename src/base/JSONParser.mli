@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core
 open Yojson
 module JSONTypeUtilities = TypeUtil.TypeUtilities
 module JSONIdentifier = TypeUtil.TUIdentifier
@@ -42,27 +41,3 @@ val constr_pattern_arg_types_exn : JSONType.t -> JSONName.t -> JSONType.t list
 
 (*  Wrapper for DataTypeDictionary.lookup_name  *)
 val lookup_adt_name_exn : 'a JSONIdentifier.t -> Datatypes.adt
-
-(*************************************)
-(*********** ADT parsers *************)
-(*************************************)
-
-type adt_parser_entry = Incomplete | Parser of (Basic.t -> JSONLiteral.t)
-
-(* ADT parsers table *)
-val adt_parsers : (string, adt_parser_entry) Caml.Hashtbl.t
-
-(* Put an ADT parser to the table *)
-val add_adt_parser : string -> adt_parser_entry -> unit
-
-(* Safe lookup of an ADT parser in the table *)
-val lookup_adt_parser_opt : string -> adt_parser_entry option
-
-(* Look up an ADT parser in the table, throws if not found *)
-val lookup_adt_parser : string -> adt_parser_entry
-
-(* Generate a parser *)
-val gen_parser : JSONType.t -> Basic.t -> JSONLiteral.t
-
-(* Parse JSON *)
-val parse_json : JSONType.t -> Basic.t -> JSONLiteral.t
