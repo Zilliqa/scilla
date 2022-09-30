@@ -136,4 +136,4 @@ let reset () =
   trace_level := Trace_None;
   trace_file := "";
   pp_lit := true;
-  json_errors := false;
+  json_errors := false
