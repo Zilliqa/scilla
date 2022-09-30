@@ -275,16 +275,16 @@ let adt_parsers =
   let open Caml in
   let ht : (string, adt_parser_entry) Hashtbl.t = Hashtbl.create 10 in
   ht
-              
+
 let add_adt_parser adt_name parser =
   let open Caml in
   let _ = Hashtbl.replace adt_parsers adt_name parser in
   ()
-    
+
 let lookup_adt_parser_opt adt_name =
   let open Caml in
   Hashtbl.find_opt adt_parsers adt_name
-  
+
 let lookup_adt_parser adt_name =
   let open Caml in
   match Hashtbl.find_opt adt_parsers adt_name with

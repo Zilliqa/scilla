@@ -72,4 +72,3 @@ let lookup_adt_name_exn name =
   match DataTypeDictionary.lookup_name (JSONIdentifier.get_id name) with
   | Error emsg -> raise (Invalid_json emsg)
   | Ok s -> s
-
