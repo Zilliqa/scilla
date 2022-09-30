@@ -509,8 +509,11 @@ struct
         cfields ^^
         ccomps
 
-      let of_contract_module Ast.{smver; file_comment; lib_comment; libs; elibs; contr_comment; contr} =
-        let mk_comment = Option.value_map ~default:empty ~f:(fun c -> comment !^c) in
+      let of_contract_module Ast.{smver; file_comments; lib_comments; libs; elibs; contr_comments; contr} =
+        let mk_comments cs =
+          List.fold_left cs ~init:[] ~f:(fun acc c -> acc @ [comment !^c])
+          |> concat_map (fun c -> c ^^^ hardline)
+        in
         let imports =
           let import_lib (lib, onamespace) =
             match onamespace with
@@ -527,14 +530,13 @@ struct
           | Some lib -> of_library lib ^^ twice hardline
           | None -> empty
         in
-        scilla_version_kwd ^^^ !^(Int.to_string smver) ^^
-        hardline ^^
-        mk_comment file_comment ^^
+        scilla_version_kwd ^^^ !^(Int.to_string smver) ^^ hardline ^^
+        mk_comments file_comments ^^
         hardline ^^
         imports ^^
-        mk_comment lib_comment ^^
+        mk_comments lib_comments ^^
         contract_library ^^
-        mk_comment contr_comment ^^
+        mk_comments contr_comments ^^
         of_contract contr ^^ hardline
   end
 

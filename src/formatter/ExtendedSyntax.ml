@@ -143,11 +143,11 @@ struct
 
   type cmodule = {
     smver : int;
-    file_comment : string option;
-    lib_comment : string option;
+    file_comments : string list;
+    lib_comments : string list;
     libs : library option;
     elibs : (SR.rep id_ann * SR.rep id_ann option) list;
-    contr_comment : string option;
+    contr_comments : string list;
     contr : contract;
   }
   [@@deriving sexp]
@@ -509,11 +509,11 @@ struct
 
   (** Extracts top-level comments of the [cmod] based on their locations. *)
   let parse_toplevel_comments tr (cmod : Syn.cmodule) :
-      string option * string option * string option =
+      string list * string list * string list =
     let get_first_comment () = List.hd tr.comments in
     let get_second_comment () = List.nth tr.comments 1 in
     let cut_comments () = tr.comments <- List.tl_exn tr.comments in
-    let has_imports = List.is_empty cmod.elibs in
+    let has_imports = not @@ List.is_empty cmod.elibs in
     let has_library = Option.is_some cmod.libs in
     (* Returns true if there are import statements and there is a comment
        before them. *)
@@ -540,45 +540,54 @@ struct
       let contr_loc = SR.get_loc (SIdentifier.get_rep cmod.contr.cname) in
       contr_loc.lnum < comment2_loc.lnum
     in
-    (* File comment has be located on the top of the contract module. *)
-    let file_comment =
-      match (get_first_comment (), get_second_comment ()) with
-      | Some (comment1_loc, comment1), Some (comment2_loc, _) ->
-          if
-            (has_imports && is_comment_before_imports comment1_loc)
-            || (not has_imports) && has_library
-               && is_comment_before_lib comment2_loc
-            || (not has_imports) && (not has_library)
-               && is_comment_before_contract comment2_loc
-          then (
-            cut_comments ();
-            Some comment1)
-          else None
-      | _ -> None
+    (* File comments have be located on the top of the contract module. *)
+    let file_comments =
+      let rec aux acc =
+        match (get_first_comment (), get_second_comment ()) with
+        | Some (comment1_loc, comment1), Some (comment2_loc, _) ->
+            if
+              (has_imports && is_comment_before_imports comment1_loc)
+              || (not has_imports) && has_library
+                 && is_comment_before_lib comment2_loc
+              || (not has_imports) && (not has_library)
+                 && is_comment_before_contract comment2_loc
+            then (
+              cut_comments ();
+              aux (acc @ [ comment1 ]))
+            else acc
+        | _ -> acc
+      in
+      aux []
     in
-    (* Library comment is a comment located above the library definition. *)
-    let lib_comment =
-      match get_first_comment () with
-      | Some (comment_loc, comment)
-        when has_library && is_comment_before_lib comment_loc ->
-          cut_comments ();
-          Some comment
-      | _ -> None
+    (* Library comments are comments located above the library definition. *)
+    let lib_comments =
+      let rec aux acc =
+        match get_first_comment () with
+        | Some (comment_loc, comment)
+          when has_library && is_comment_before_lib comment_loc ->
+            cut_comments ();
+            aux (acc @ [ comment ])
+        | _ -> acc
+      in
+      aux []
     in
     (* Contract comment is a comment located above the contract definition. *)
-    let contract_comment =
-      match get_first_comment () with
-      | Some (comment_loc, comment) when is_comment_before_contract comment_loc
-        ->
-          cut_comments ();
-          Some comment
-      | _ -> None
+    let contract_comments =
+      let rec aux acc =
+        match get_first_comment () with
+        | Some (comment_loc, comment)
+          when is_comment_before_contract comment_loc ->
+            cut_comments ();
+            aux (acc @ [ comment ])
+        | _ -> acc
+      in
+      aux []
     in
-    (file_comment, lib_comment, contract_comment)
+    (file_comments, lib_comments, contract_comments)
 
   let extend_cmodule tr (cmod : Syn.cmodule) : ExtSyn.cmodule =
     let smver = cmod.smver in
-    let file_comment, lib_comment, contr_comment =
+    let file_comments, lib_comments, contr_comments =
       parse_toplevel_comments tr cmod
     in
     let elibs = List.map cmod.elibs ~f:(fun l -> extend_elib tr l) in
@@ -587,7 +596,7 @@ struct
           Some (extend_lib tr l))
     in
     let contr = extend_contract tr cmod.contr in
-    { smver; file_comment; lib_comment; libs; elibs; contr_comment; contr }
+    { smver; file_comments; lib_comments; libs; elibs; contr_comments; contr }
 end
 
 module LocalLiteralTransformer =
