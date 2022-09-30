@@ -536,9 +536,9 @@ struct
          (* Contract comment *)
          contract Something
     *)
-    let is_comment_before_contract comment2_loc =
+    let is_comment_before_contract comment_loc =
       let contr_loc = SR.get_loc (SIdentifier.get_rep cmod.contr.cname) in
-      contr_loc.lnum < comment2_loc.lnum
+      contr_loc.lnum > comment_loc.lnum
     in
     (* File comments have be located on the top of the contract module. *)
     let file_comments =
