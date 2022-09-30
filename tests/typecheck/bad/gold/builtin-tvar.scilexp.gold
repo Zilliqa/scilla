@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s) ['A; 'A].",
+        "Type error: cannot apply \"eq\" built-in to argument(s) of type(s): ['A; 'A]",
       "start_location": {
         "file": "typecheck/bad/builtin-tvar.scilexp",
         "line": 5,

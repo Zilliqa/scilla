@@ -64,4 +64,4 @@ let cmd_group =
   Command.group ~summary:"Scilla client"
     [ ("run", run); ("check", check); ("disambiguate", disambiguate) ]
 
-let () = Command.run cmd_group
+let () = Command_unix.run cmd_group

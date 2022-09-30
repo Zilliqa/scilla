@@ -46,7 +46,7 @@
     | "ByStr" -> Bystr_typ
     | _ -> let re = Str.regexp "ByStr\\([0-9]+\\)$" in
            if Str.string_match re d 0 then
-             let b = Core_kernel.Int.of_string (Str.matched_group 1 d) in
+             let b = Core.Int.of_string (Str.matched_group 1 d) in
              Bystrx_typ b
            else raise (SyntaxError ("Invalid primitive type", loc))
 
@@ -73,6 +73,20 @@
 
   let build_bool_literal v loc =
     (Literal (SLiteral.build_bool_lit v), loc)
+
+  let build_bcfetch op args loc =
+    match op with
+    | "BLOCKNUMBER" -> CurBlockNum
+    | "CHAINID" -> ChainID
+    | "TIMESTAMP" -> (
+      match args with
+      | [ id ] -> Timestamp(id)
+      | _ -> raise (SyntaxError ("TIMESTAMP takes a single blocknumber argument", loc)))
+    | "REPLICATE_CONTRACT" -> (
+      match args with
+      | [ addr; iparams ] -> ReplicateContr(addr, iparams)
+      | _ -> raise (SyntaxError ("Usage: REPLICATE_CONTRACT(addr, iparams)", loc)))
+    | _ -> raise (SyntaxError ("Unknown blockchain fetch operation " ^ op, loc))
 
 %}
 
@@ -229,7 +243,7 @@ t_map_value_allow_targs :
 address_typ :
 | d = CID; WITH; END;
     { if d = "ByStr20"
-      then Address None
+      then Address AnyAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
@@ -238,7 +252,15 @@ address_typ :
         let fs' = List.fold_left (fun acc (id, t) -> 
           SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
         in
-        Address (Some fs')
+        Address (ContrAddr fs')
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; LIBRARY; END;
+    { if d = "ByStr20"
+      then Address LibAddr
+      else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
+| d = CID; WITH; c = SPID; END;
+    { if d = "ByStr20" && c = "_codehash"
+      then Address CodeAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | (* Adding this production in preparation for contract parameters *)
   d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
@@ -366,6 +388,9 @@ builtin_args :
 | args = nonempty_list(sident) { args }
 | LPAREN; RPAREN { [] }
 
+bcfetch_args :
+| LPAREN; args = separated_list(COMMA, sident); RPAREN { args }
+
 exp_term :
 | e = exp; EOF { e }
 
@@ -381,7 +406,10 @@ stmt:
 | r = remote_fetch_stmt { r }
 | l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
 | l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
-| l = ID; FETCH; AND; c = CID { (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), c), toLoc $startpos) }
+| l = ID; FETCH; AND; c = CID; args_opt = option(bcfetch_args) { 
+    let bcinfo = build_bcfetch c (Option.value args_opt ~default:[]) (toLoc $startpos) in
+    (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), bcinfo), toLoc $startpos) 
+  }
 | l = ID; FETCH; r = ID; keys = nonempty_list(map_access)
   { MapGet( to_loc_id l (toLoc $startpos(l)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
 | l = ID; FETCH; EXISTS; r = ID; keys = nonempty_list(map_access)
@@ -393,7 +421,7 @@ stmt:
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
 | SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
-| THROW; mopt = option(sid); { Throw (Core_kernel.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
+| THROW; mopt = option(sid); { Throw (Core.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
 | (* procedure call *)
@@ -491,7 +519,7 @@ contract:
   comps = list(component)
   { { cname   = to_loc_id c (toLoc $startpos(c));
       cparams = params;
-      cconstraint = Core_kernel.Option.value ct ~default:(build_bool_literal true dummy_loc);
+      cconstraint = Core.Option.value ct ~default:(build_bool_literal true dummy_loc);
       cfields = fs;
       ccomps = comps } }
 

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open Yojson
@@ -67,7 +67,8 @@ and adttyps_to_json tlist =
 and literal_to_json lit =
   let open PPLiteral in
   match lit with
-  | StringLit x | BNum x -> `String x
+  | StringLit x -> `String x
+  | BNum x -> `String (BNumLit.get x)
   | ByStr bs -> `String (Bystr.hex_encoding bs)
   | ByStrX bs -> `String (Bystrx.hex_encoding bs)
   | IntLit x -> `String (string_of_int_lit x)
@@ -108,7 +109,7 @@ let scilla_error_to_json elist =
   let err_to_json (e : scilla_error) =
     `Assoc
       [
-        ("error_message", `String e.emsg);
+        ("error_message", `String (mk_error_description e));
         ("start_location", loc_to_json e.startl);
         ("end_location", loc_to_json e.endl);
       ]
@@ -142,7 +143,7 @@ let scilla_error_to_jstring ?(pp = true) elist =
 let scilla_error_to_sstring elist =
   let strip_nl s = Str.global_replace (Str.regexp "[\n]") " " s in
   let pp e =
-    let msg = strip_nl e.emsg in
+    let msg = strip_nl (mk_error_description e) in
     sprintf "%s:%d:%d: error: %s" e.startl.fname e.startl.lnum e.startl.cnum msg
   in
   List.fold elist ~init:"" ~f:(fun acc e -> acc ^ "\n" ^ pp e) ^ "\n"
@@ -223,7 +224,7 @@ let rec pp_literal_simplified l =
       "(Uint"
       ^ Int.to_string (uint_lit_width i)
       ^ " " ^ string_of_uint_lit i ^ ")"
-  | BNum b -> "(BNum " ^ b ^ ")"
+  | BNum b -> "(BNum " ^ BNumLit.get b ^ ")"
   | ByStr bs -> "(ByStr " ^ Bystr.hex_encoding bs ^ ")"
   | ByStrX bsx ->
       "(ByStr"

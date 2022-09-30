@@ -20,7 +20,6 @@
 (** {2 Types} *)
 
 type proto_scilla_val_map = { m : (string * proto_scilla_val) list }
-
 and proto_scilla_val = Bval of bytes | Mval of proto_scilla_val_map
 
 type proto_scilla_query = {

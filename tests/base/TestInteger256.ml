@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 
 let uint256_max_str =
@@ -34,15 +34,10 @@ module Uint256_Emu = struct
   type t = big_int
 
   let zero = zero_big_int
-
   let one = unit_big_int
-
   let max_int = big_int_of_string uint256_max_str
-
   let min_int = zero
-
   let of_string s = big_int_of_string s
-
   let to_string i = string_of_big_int i
 
   let mod_unsigned a =
@@ -50,15 +45,10 @@ module Uint256_Emu = struct
     mod_big_int a (add_big_int max_int one)
 
   let add a b = mod_unsigned (add_big_int a b)
-
   let sub a b = mod_unsigned (sub_big_int a b)
-
   let mul a b = mod_unsigned (mult_big_int a b)
-
   let div a b = div_big_int a b
-
   let rem a b = mod_big_int a b
-
   let compare a b = compare_big_int a b
 end
 
@@ -68,15 +58,10 @@ module Int256_Emu = struct
   type t = big_int
 
   let zero = zero_big_int
-
   let one = unit_big_int
-
   let max_int = big_int_of_string int256_max_str
-
   let min_int = big_int_of_string int256_min_str
-
   let of_string s = big_int_of_string s
-
   let to_string i = string_of_big_int i
 
   (* take module of result of some operation so that it is in range of Int256. *)
@@ -88,11 +73,8 @@ module Int256_Emu = struct
     else t
 
   let add a b = mod_signed (add_big_int a b)
-
   let sub a b = mod_signed (sub_big_int a b)
-
   let mul a b = mod_signed (mult_big_int a b)
-
   let isneg a = sign_big_int a = -1
 
   let divrem x y =
@@ -210,27 +192,16 @@ module type IntRep = sig
   type t
 
   val compare : t -> t -> int
-
   val of_string : string -> t
-
   val to_string : t -> string
-
   val add : t -> t -> t
-
   val sub : t -> t -> t
-
   val mul : t -> t -> t
-
   val div : t -> t -> t
-
   val rem : t -> t -> t
-
   val zero : t
-
   val one : t
-
   val min_int : t
-
   val max_int : t
 end
 
@@ -357,19 +328,8 @@ module IntTester (IR1 : IntRep) (IR2 : IntRep) = struct
         let div_rev = binary_test_create rhs lhs "div" in
         let rem_rev = binary_test_create rhs lhs "rem" in
         let compare_rev = binary_test_create rhs lhs "compare" in
-        add
-        ::
-        sub
-        ::
-        mul
-        ::
-        div
-        ::
-        rem
-        ::
-        compare
-        ::
-        add_rev :: sub_rev :: mul_rev :: div_rev :: rem_rev :: compare_rev :: tl)
+        add :: sub :: mul :: div :: rem :: compare :: add_rev :: sub_rev
+        :: mul_rev :: div_rev :: rem_rev :: compare_rev :: tl)
 end
 
 let non_arithmetic_tests =
@@ -523,17 +483,13 @@ let non_arithmetic_tests =
 module Uint256Tester = IntTester (Uint256) (Uint256_Emu)
 
 let list_uint256 = Uint256Tester.binary_tests binary_inputs_uint
-
 let uint256_tests_list = List.append [ t1_uint; t2_uint; t3_uint ] list_uint256
-
 let uint256_tests = "uint256_tests" >::: uint256_tests_list
 
 module Int256Tester = IntTester (Int256) (Int256_Emu)
 
 let list_int256 = Int256Tester.binary_tests binary_inputs_int
-
 let int256_tests_list = List.append [ t1_int; t2_int; t3_int ] list_int256
-
 let int256_tests = "int256_tests" >::: int256_tests_list
 
 (* The test to be called from Testsuite. *)

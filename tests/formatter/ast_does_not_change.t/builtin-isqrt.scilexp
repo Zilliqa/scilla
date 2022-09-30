@@ -1,0 +1,24 @@
+let zero = Uint32 0 in
+let one = Uint32 1 in
+let two = Uint64 2 in
+let three = Uint32 3 in
+let four = Uint128 4 in
+let six = Uint32 6 in
+let ten = Uint32 10 in
+let thirty_six = Uint256 36 in
+let uint256_max = Uint256 57896044618658097711785492504343953926634992332820282019728792003956564819967 in
+let uint128_max = Uint128 340282366920938463463374607431768211455 in
+
+let isqrt_zero = builtin isqrt zero in
+let isqrt_one = builtin isqrt one in
+let isqrt_two = builtin isqrt two in
+let isqrt_three = builtin isqrt three in
+let isqrt_four = builtin isqrt four in
+let isqrt_six = builtin isqrt six in
+let isqrt_ten = builtin isqrt ten in
+let isqrt_thirty_six = builtin isqrt thirty_six in
+let isqrt_uint256_max = builtin isqrt uint256_max in
+let isqrt_uint128_max = builtin isqrt uint128_max in
+
+zero
+

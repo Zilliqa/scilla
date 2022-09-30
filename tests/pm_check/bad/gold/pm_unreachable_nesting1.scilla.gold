@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches):\nPattern 4 is unreachable.",
+        "Type error in pattern matching on `y` of type List (Option (Int32)) (or one of its branches):\nPattern is unreachable: 4",
       "start_location": {
         "file": "pm_check/bad/pm_unreachable_nesting1.scilla",
         "line": 9,

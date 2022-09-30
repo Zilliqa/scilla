@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Address 0xabfeccdc9012345678901234567890f777564325 does not satisfy type ByStr20 with contract field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field transactionCount : Uint32 end\n",
+        "Address does not satisfy type: address is 0xabfeccdc9012345678901234567890f777564325, expected type is ByStr20 with contract field admin : ByStr20 with end, field owners : Map (ByStr20 with end) (Bool), field signatures : Map (Uint32) (Map (ByStr20 with end) (Bool)), field transactionCount : Uint32 end",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

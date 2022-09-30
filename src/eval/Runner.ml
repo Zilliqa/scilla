@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open ParserUtil
 open Literal
@@ -112,7 +112,7 @@ let map_json_input_strings_to_names map =
   List.map map ~f:(fun (x, t, l) ->
       match String.split x ~on:'.' with
       | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
-      | _ -> raise (mk_invalid_json (sprintf "invalid name %s in json input" x)))
+      | _ -> raise (mk_invalid_json ~kind:"invalid name in json input" ~inst:x))
 
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
@@ -131,8 +131,8 @@ let input_state_json filename =
     | Some v -> v
     | None ->
         raise
-        @@ mk_invalid_json
-             (sprintf "%s field missing" (RunnerName.as_string balance_label))
+        @@ mk_invalid_json ~kind:"Field missing"
+             ~inst:(RunnerName.as_string balance_label)
   in
   let bal_int =
     match bal_lit with
@@ -141,7 +141,9 @@ let input_state_json filename =
         x
     | _ ->
         raise
-          (mk_invalid_json (RunnerName.as_string balance_label ^ " invalid"))
+          (mk_invalid_json
+             ~kind:(RunnerName.as_string balance_label ^ " invalid")
+             ?inst:None)
   in
   let no_bal_states =
     List.filter states ~f:(fun (x, _, _) ->
@@ -163,14 +165,15 @@ let output_message_json gas_remaining mlist =
       | Msg m -> JSON.Message.message_to_json m
       | _ ->
           fatal_error_gas_scale Gas.scale_factor
-            (mk_error0 "Attempt to send non-message construct.")
+            (mk_error0 ~kind:"Attempt to send non-message construct" ?inst:None)
             gas_remaining))
 
 let output_event_json elist =
   let open JSON.JSONLiteral in
-  List.map elist ~f:(function
-    | Msg m -> JSON.Event.event_to_json m
-    | _ -> `Null)
+  `List
+    (List.map elist ~f:(function
+      | Msg m -> JSON.Event.event_to_json m
+      | _ -> `Null))
 
 let assert_no_address_type_in_type t gas_remaining =
   let open RunnerType in
@@ -179,7 +182,7 @@ let assert_no_address_type_in_type t gas_remaining =
     | PrimType _ -> ()
     | Address _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 "Address type not allowed in json file")
+          (mk_error0 ~kind:"Address type not allowed in json file" ?inst:None)
           gas_remaining
     | MapType (kt, vt) ->
         let () = recurser kt in
@@ -187,7 +190,7 @@ let assert_no_address_type_in_type t gas_remaining =
     | ADT (_, ts) -> List.iter ts ~f:recurser
     | FunType _ | TypeVar _ | PolyFun _ | Unit ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 (sprintf "Illegal type in json file: %s" (pp_typ t)))
+          (mk_error0 ~kind:"Illegal type in json file" ~inst:(pp_typ t))
           gas_remaining
   in
   recurser t
@@ -198,7 +201,7 @@ let assert_no_address_type_in_literal l gas_remaining =
   let open RunnerType in
   let throw_address_type_error () =
     fatal_error_gas_scale Gas.scale_factor
-      (mk_error0 "Address type not allowed in json file")
+      (mk_error0 ~kind:"Address type not allowed in json file" ?inst:None)
       gas_remaining
   in
   let rec recurser l =
@@ -217,8 +220,7 @@ let assert_no_address_type_in_literal l gas_remaining =
     | ADTValue (_, _, ls) -> List.iter ls ~f:recurser
     | Msg _ | Clo _ | TAbs _ ->
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0
-             (sprintf "Unknown literal in json file: %s" (pp_literal l)))
+          (mk_error0 ~kind:"Unknown literal in json file" ~inst:(pp_literal l))
           gas_remaining
   in
   recurser l
@@ -229,7 +231,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
     try JSON.ContractState.get_json_data init_file
     with Invalid_json s ->
       fatal_error_gas_scale Gas.scale_factor
-        (s @ mk_error0 (sprintf "Failed to parse json %s:\n" init_file))
+        (s @ mk_error0 ~kind:"Failed to parse json" ~inst:init_file)
         gas_remaining
   in
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
@@ -241,7 +243,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
            (n, l))
   in
   (* Check for version mismatch. Subtract penalty for mismatch. *)
-  let emsg = mk_error0 "Scilla version mismatch\n" in
+  let emsg = mk_error0 ~kind:"Scilla version mismatch" ?inst:None in
   let rgas =
     Uint64.sub gas_remaining (Uint64.of_int Gas.version_mismatch_penalty)
   in
@@ -284,7 +286,7 @@ let perform_dynamic_typechecks checks gas_remaining =
       sprintf "Gas charge type %s must be handled by GasCharge\n"
         (RG.GasGasCharge.pp_gas_charge g)
     in
-    Error (mk_error0 msg)
+    Error (mk_error0 ~kind:msg ?inst:None)
   in
   List.fold_left checks ~init:gas_remaining ~f:(fun gas_remaining (t, caddr) ->
       (* The gas cost is static, but we go through the gas cost mechanism for maintainability *)
@@ -294,7 +296,7 @@ let perform_dynamic_typechecks checks gas_remaining =
         | Ok (GasCharge.GInt cost) -> Uint64.of_int cost
         | Ok (GasCharge.GFloat _) ->
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0 "GasCharge evaluated to float")
+              (mk_error0 ~kind:"GasCharge evaluated to float" ?inst:None)
               gas_remaining
         | Error s -> fatal_error_gas_scale Gas.scale_factor s gas_remaining
       in
@@ -330,7 +332,9 @@ let deploy_library args gas_remaining =
               args.input_init
           in
           plog msg;
-          fatal_error_gas_scale Gas.scale_factor (mk_error0 msg) gas_remaining
+          fatal_error_gas_scale Gas.scale_factor
+            (mk_error0 ~kind:msg ?inst:None)
+            gas_remaining
       | Some this_address ->
           let elibs =
             List.map
@@ -381,7 +385,18 @@ let run_with_args args =
       GlobalConfig.StdlibTracker.file_extn_library
   in
   let gas_remaining = Uint64.mul args.gas_limit Gas.scale_factor in
-  if is_library then deploy_library args gas_remaining
+  if is_library then
+    if is_deployment then deploy_library args gas_remaining
+    else
+      (* Messages to libraries are ignored, but tolerated. *)
+      `Assoc
+        [
+          ("gas_remaining", `String (Uint64.to_string gas_remaining));
+          ( RunnerName.as_string ContractUtil.accepted_label,
+            `String (Bool.to_string false) );
+          ("messages", output_message_json gas_remaining []);
+          ("events", output_event_json []);
+        ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
@@ -409,8 +424,8 @@ let run_with_args args =
             in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0
-                 (sprintf "Ran out of gas when parsing contract/init files.\n"))
+              (mk_error0 ~kind:"Insufficient gas to parse contract/init files"
+                 ?inst:None)
               gas_remaining
         | Some this_address ->
             let elibs =
@@ -452,17 +467,6 @@ let run_with_args args =
                 dis_cmod.smver
             in
 
-            (* Retrieve block chain state  *)
-            let bstate =
-              try JSON.BlockChainState.get_json_data args.input_blockchain
-              with Invalid_json s ->
-                fatal_error_gas_scale Gas.scale_factor
-                  (s
-                  @ mk_error0
-                      (sprintf "Failed to parse json %s:\n"
-                         args.input_blockchain))
-                  gas_remaining
-            in
             let ( ( output_msg_json,
                     output_state_json,
                     output_events_json,
@@ -475,7 +479,7 @@ let run_with_args args =
                 in
                 (* Initializing the contract's state, just for checking things. *)
                 let init_res =
-                  init_module libs_env dis_cmod initargs Uint128.zero bstate
+                  init_module libs_env dis_cmod initargs Uint128.zero
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
@@ -495,7 +499,10 @@ let run_with_args args =
                         else Some { fname = s; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
-                  let () = initialize ~sm ~fields ~ext_states:[] in
+                  let () =
+                    initialize ~sm ~fields ~ext_states:[]
+                      ~bcinfo:(Caml.Hashtbl.create 0)
+                  in
                   let field_vals' =
                     if args.reinit then
                       (* Retrieve state variables *)
@@ -503,9 +510,8 @@ let run_with_args args =
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                          @ mk_error0 ~kind:"Failed to parse json"
+                              ~inst:args.input_state)
                           gas_remaining
                     else field_vals
                   in
@@ -552,9 +558,8 @@ let run_with_args args =
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
                       (s
-                      @ mk_error0
-                          (sprintf "Failed to parse json %s:\n"
-                             args.input_message))
+                      @ mk_error0 ~kind:"Failed to parse json"
+                          ~inst:args.input_message)
                       gas_remaining
                 in
                 let () = validate_incoming_message mmsg gas_remaining in
@@ -562,7 +567,7 @@ let run_with_args args =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     let cstate, gas_remaining, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
@@ -579,19 +584,32 @@ let run_with_args args =
                     in
                     let () =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
-                        ~ext_states:[]
+                        ~ext_states:[] ~bcinfo:(Caml.Hashtbl.create 0)
                     in
                     (cstate, gas_remaining)
                   else
+                    (* Retrieve block chain state  *)
+                    let bcinfo =
+                      try
+                        JSON.BlockChainState.get_json_data args.input_blockchain
+                      with Invalid_json s ->
+                        fatal_error_gas_scale Gas.scale_factor
+                          (s
+                          @ mk_error0
+                              ~kind:
+                                (sprintf "Failed to parse json %s:\n"
+                                   args.input_blockchain)
+                              ?inst:None)
+                          gas_remaining
+                    in
                     (* Retrieve state variables *)
                     let curargs, cur_bal, ext_states =
                       try input_state_json args.input_state
                       with Invalid_json s ->
                         fatal_error_gas_scale Gas.scale_factor
                           (s
-                          @ mk_error0
-                              (sprintf "Failed to parse json %s:\n"
-                                 args.input_state))
+                          @ mk_error0 ~kind:"Failed to parse json"
+                              ~inst:args.input_state)
                           gas_remaining
                     in
                     let field_vals, _ignore_gas_remaining =
@@ -600,7 +618,7 @@ let run_with_args args =
                     in
                     (* Initializing the contract's state *)
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
@@ -627,6 +645,7 @@ let run_with_args args =
                     in
                     let () =
                       StateService.initialize ~sm:Local ~fields ~ext_states
+                        ~bcinfo
                     in
                     (cstate, gas_remaining)
                 in
@@ -637,9 +656,6 @@ let run_with_args args =
                 plog
                   (sprintf "Executing message:\n%s\n"
                      (JSON.Message.message_to_jstring mmsg));
-                plog
-                  (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_typ_literal_map bstate));
                 let prepped_message, pending_dyn_checks, gas_remaining =
                   let pmsg = prepare_for_message ctr mmsg in
                   check_prepare_message pmsg gas_remaining
@@ -647,9 +663,7 @@ let run_with_args args =
                 let gas_remaining =
                   perform_dynamic_typechecks pending_dyn_checks gas_remaining
                 in
-                let step_result =
-                  handle_message prepped_message cstate bstate
-                in
+                let step_result = handle_message prepped_message cstate in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining
                 in
@@ -664,13 +678,15 @@ let run_with_args args =
                     | Ok fv, Ok () -> fv
                     | _ ->
                         fatal_error_gas_scale Gas.scale_factor
-                          (mk_error0 "Error finalizing state from StateService")
+                          (mk_error0
+                             ~kind:"Error finalizing state from StateService"
+                             ?inst:None)
                           gas
                 in
 
                 let osj = output_state_json cstate'.balance field_vals in
                 let omj = output_message_json gas mlist in
-                let oej = `List (output_event_json elist) in
+                let oej = output_event_json elist in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
 
                 ((omj, osj, oej, accepted_b), gas')

@@ -1,0 +1,17 @@
+(* Expected result *)
+(* (IntLit 32 3) *)
+
+let a = Int32 1 in
+let b = Int32 2 in
+let n  = None {Int32} in
+let o1 = Some {Int32} a in
+let o2 = Some {Int32} b in
+let p1 = Pair {(Option Int32) (Option Int32)} o1 o2 in
+let p2 = Pair {(Option Int32) (Option Int32)} o1 n in
+let p3 = Pair {(Option Int32) (Option Int32)} n o2 in
+
+match p1 with
+  | Pair None None => Int32 100
+  | Pair (Some x) (Some y) =>
+    builtin add x y
+end

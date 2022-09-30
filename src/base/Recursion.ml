@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -72,8 +72,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind () = is_adt_in_scope s in
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
-      | Address None -> pure ()
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
@@ -115,6 +115,13 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           pure @@ RecursionSyntax.Constructor (s, new_ps)
     in
     walk p
+
+  let recursion_bcinfo = function
+    | CurBlockNum -> RecursionSyntax.CurBlockNum
+    | ChainID -> RecursionSyntax.ChainID
+    | Timestamp s -> RecursionSyntax.Timestamp s
+    | ReplicateContr (addr, iparams) ->
+        RecursionSyntax.ReplicateContr (addr, iparams)
 
   let recursion_exp erep =
     let rec walk erep =
@@ -203,7 +210,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 pss
             in
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
-        | ReadFromBC (x, f) -> pure @@ RecursionSyntax.ReadFromBC (x, f)
+        | ReadFromBC (x, f) ->
+            pure @@ RecursionSyntax.ReadFromBC (x, recursion_bcinfo f)
         | TypeCast (x, r, t) -> pure @@ RecursionSyntax.TypeCast (x, r, t)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)
@@ -213,8 +221,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             if is_proc_in_scope (get_id p) then
               pure @@ RecursionSyntax.CallProc (p, args)
             else
-              fail1
-                (sprintf "Procedure %s is not in scope." (as_error_string p))
+              fail1 ~kind:"Procedure is not in scope" ~inst:(as_error_string p)
                 (SR.get_loc rep)
         | Throw ex -> pure @@ RecursionSyntax.Throw ex
         | GasStmt g -> pure @@ RecursionSyntax.GasStmt (recursion_gas_charge g)
@@ -285,12 +292,14 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           forallM targs ~f:walk
       | TypeVar _ ->
           (* Disallow polymorphic definitions for the time being. *)
-          fail1 "Type variables not allowed in type definitions" error_loc
+          fail1 ~kind:"Type variables not allowed in type definitions"
+            ?inst:None error_loc
       | PolyFun _ ->
           (* Disallow polymorphic definitions for the time being. *)
-          fail1 "Type variables not allowed in type definitions" error_loc
-      | Address None -> pure ()
-      | Address (Some fts) ->
+          fail1 ~kind:"Type variables not allowed in type definitions"
+            ?inst:None error_loc
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
@@ -298,18 +307,18 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
   let recursion_lib_entry lib_entry =
     match lib_entry with
     | LibVar (n, t, e) ->
-        wrap_with_info
-          ( sprintf "Type error in library variable %s:\n" (as_error_string n),
-            ER.get_loc (get_rep n) )
+        wrap_with_info ~kind:"Type error in library variable"
+          ~inst:(as_error_string n)
+          (ER.get_loc (get_rep n))
         @@ let%bind new_e = recursion_exp e in
            let%bind () =
              match t with Some t' -> recursion_typ t' | None -> pure ()
            in
            pure (RecursionSyntax.LibVar (n, t, new_e))
     | LibTyp (tname, ctr_defs) ->
-        wrap_with_info
-          ( sprintf "Type error in library type %s:\n" (as_error_string tname),
-            ER.get_loc (get_rep tname) )
+        wrap_with_info ~kind:"Type error in library type"
+          ~inst:(as_error_string tname)
+          (ER.get_loc (get_rep tname))
         @@ let%bind checked_ctr_defs =
              mapM ctr_defs ~f:(fun ({ cname; c_arg_types } : ctr_def) ->
                  let error_loc = ER.get_loc (get_rep cname) in
@@ -350,13 +359,12 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
 
   let recursion_library lib =
     let { lname; lentries } = lib in
-    wrap_with_info
-      ( sprintf "Type error in library %s:\n" (as_error_string lname),
-        SR.get_loc (get_rep lname) )
+    wrap_with_info ~kind:"Type error in library" ~inst:(as_error_string lname)
+      (SR.get_loc (get_rep lname))
     @@ let%bind recursion_entries =
          foldM lentries ~init:[] ~f:(fun rec_entries entry ->
              let%bind new_entry = recursion_lib_entry entry in
-             pure @@ new_entry :: rec_entries)
+             pure @@ (new_entry :: rec_entries))
        in
        pure
          {
@@ -443,9 +451,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         * RecursionSyntax.libtree list,
         scilla_error list )
       result =
-    wrap_with_info
-      ( sprintf "Type error(s) in library %s:\n" (as_error_string md.libs.lname),
-        SR.get_loc (get_rep md.libs.lname) )
+    wrap_with_info ~kind:"Type error(s) in library"
+      ~inst:(as_error_string md.libs.lname)
+      (SR.get_loc (get_rep md.libs.lname))
     @@ let%bind recursion_rprins, recursion_elibs, recursion_md_libs, emsgs =
          recursion_rprins_elibs recursion_principles ext_libs (Some md.libs)
        in
@@ -454,7 +462,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          match recursion_md_libs with
          | Some s -> pure s
          | None ->
-             fail1 "Internal error in typing library module."
+             fail1 ~kind:"Internal error in typing library module." ?inst:None
                (SR.get_loc (get_rep md.libs.lname))
        in
 
@@ -477,9 +485,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         scilla_error list )
       result =
     let { smver; libs; elibs; contr } = md in
-    wrap_with_info
-      ( sprintf "Type error(s) in contract %s:\n" (as_error_string contr.cname),
-        SR.get_loc (get_rep contr.cname) )
+    wrap_with_info ~kind:"Type error(s) in contract"
+      ~inst:(as_error_string contr.cname)
+      (SR.get_loc (get_rep contr.cname))
     @@ let%bind recursion_rprins, recursion_elibs, recursion_md_libs, emsgs =
          recursion_rprins_elibs recursion_principles ext_libs libs
        in

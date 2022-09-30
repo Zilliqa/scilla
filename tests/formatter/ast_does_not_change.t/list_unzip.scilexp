@@ -1,0 +1,20 @@
+    
+let int_unzip = @list_unzip Int128 Int128 in
+
+let one = Int128 1 in
+let two = Int128 2 in
+let three = Int128 3 in
+let four = Int128 4 in
+
+let nil = Nil {(Pair Int128 Int128)} in
+let n0 = Pair {Int128 Int128} four four in
+let n1 = Pair {Int128 Int128} three three in
+let n2 = Pair {Int128 Int128} two two in
+let n3 = Pair {Int128 Int128} one one in
+
+let l0 = Cons {(Pair Int128 Int128)} n0 nil in
+let l1 = Cons {(Pair Int128 Int128)} n1 l0 in
+let l2 = Cons {(Pair Int128 Int128)} n2 l1 in
+let l3 = Cons {(Pair Int128 Int128)} n3 l2 in
+
+int_unzip l3

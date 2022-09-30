@@ -44,9 +44,6 @@ let copy_from_tstring s =
 type rawBytes_Z
 
 let rawBytes_Z : rawBytes_Z structure typ = structure "rawBytes_Z"
-
 let rawBytes_data = field rawBytes_Z "data" (ptr char)
-
 let rawBytes_len = field rawBytes_Z "len" int
-
 let () = seal rawBytes_Z

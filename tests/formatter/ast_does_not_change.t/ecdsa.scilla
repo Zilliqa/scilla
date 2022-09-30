@@ -1,0 +1,41 @@
+scilla_version 0
+
+import PairUtils
+
+library Ecdsa
+
+let one_msg = 
+  fun (msg : Message) => 
+    let nil_msg = Nil {Message} in
+    Cons {Message} msg nil_msg
+
+let fst_f = @fst (ByStr32) (ByStr33)
+let snd_f = @snd (ByStr32) (ByStr33)
+
+contract Ecdsa
+()
+
+field pub_key : Option (ByStr33) = None {ByStr33}
+
+transition verify(msg : ByStr, sig : ByStr64)
+  pubk_o <- pub_key;
+  match pubk_o with
+  | Some pubk =>
+    sig = builtin ecdsa_verify pubk msg sig;
+    match sig with
+    | True =>
+      m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "verification successful" };
+      mone = one_msg m;
+      send mone
+    | False =>
+      m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "verification failed" };
+      mone = one_msg m;
+      send mone
+    end
+  | None =>
+    (* We don't have a key-pair. *)
+    m = { _tag : ""; _recipient : _sender; _amount : Uint128 0; status : "no key error" };
+    mone = one_msg m;
+    send mone
+  end
+end

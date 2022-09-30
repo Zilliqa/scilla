@@ -1,0 +1,147 @@
+{
+  "cashflow_tags": {
+    "State variables": [ { "field": "m", "tag": "(Map NoInfo)" } ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "UnboxResult5",
+    "params": [],
+    "fields": [
+      { "vname": "m", "type": "Map (Uint32) (Uint32)", "depth": 1 }
+    ],
+    "transitions": [
+      { "vname": "tr1", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr2", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr3", "params": [ { "vname": "k", "type": "Uint32" } ] }
+    ],
+    "procedures": [
+      {
+        "vname": "pr",
+        "params": [ { "vname": "ty", "type": "unbox_result5.Ty1" } ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "unbox_result5.Ty1",
+        "tparams": [],
+        "tmap": [
+          { "cname": "unbox_result5.T1", "argtypes": [ "Option (Uint32)" ] },
+          { "cname": "unbox_result5.T2", "argtypes": [] }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: m",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 21,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: k",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 33,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused map get statement to: v_opt",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: v_opt_alias",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused procedure parameter: ty",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 16,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt_alias has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 28,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result5.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

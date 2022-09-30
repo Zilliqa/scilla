@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "State type of field gmap : Map (ByStr20) (Pair (Int32) (Int64)) does not match the declared type Map (ByStr20) (Pair (Int32) (Int32))",
+        "State type of field does not match the declared type: Field gmap : Map (ByStr20) (Pair (Int32) (Int64)) does not match the declared type Map (ByStr20) (Pair (Int32) (Int32))",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

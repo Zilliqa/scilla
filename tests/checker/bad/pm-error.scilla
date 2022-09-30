@@ -1,0 +1,16 @@
+scilla_version 0
+
+library Dead6
+
+let x = Int32 19
+let y = Int32 23
+
+contract Dead6()
+
+transition dummy ()
+  equals = builtin eq x y;
+  match equals with
+  | Some equals =>
+  | None =>
+  end
+end

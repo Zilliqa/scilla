@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Stdint
 
 type uint256 = { high : uint128; low : uint128 }
@@ -38,11 +38,8 @@ module Uint256 = struct
   type t = uint256
 
   let zero = { high = Uint128.zero; low = Uint128.zero }
-
   let one = { high = Uint128.zero; low = Uint128.one }
-
   let max_int = { high = Uint128.max_int; low = Uint128.max_int }
-
   let min_int = zero
 
   let compare a b =
@@ -245,7 +242,6 @@ module Uint256 = struct
     r
 
   let abs a = a
-
   let neg _ = raise (Failure "Cannot negate Uint256")
 
   let of_string s =
@@ -314,6 +310,8 @@ module Uint256 = struct
 
   let[@warning "-32"] of_uint128 a =
     { low = Uint128.of_uint128 a; high = Uint128.zero }
+
+  let of_int a = { low = Uint128.of_int a; high = Uint128.zero }
 end
 
 (*  https://github.com/andrenth/ocaml-stdint/blob/master/lib/int128_stubs.c *)
@@ -321,11 +319,8 @@ module Int256 = struct
   type t = uint256
 
   let zero = { high = Uint128.zero; low = Uint128.zero }
-
   let one = { high = Uint128.zero; low = Uint128.one }
-
   let max_int = Uint256.clearbit Uint256.max_int 255
-
   let min_int = Uint256.setbit zero 255
 
   let add a b =
@@ -340,15 +335,10 @@ module Int256 = struct
 
   (* For signed, logical and arithmetic right shifts are different. *)
   let shift_right _ _ = raise (Failure "Int256: shift_right not implemented")
-
   let shift_right_logical a shift = Uint256.shift_right a shift
-
   let logand a b = Uint256.logand a b
-
   let logor a b = Uint256.logor a b
-
   let logxor a b = Uint256.logxor a b
-
   let lognot a = Uint256.lognot a
 
   let mul a b =
@@ -363,7 +353,6 @@ module Int256 = struct
 
   (* Is the bit at position i set?, where i=0 is the least significant bit. *)
   let isset a i = Uint256.isset a i
-
   let isneg a = isset a 255
 
   let neg a =
@@ -429,8 +418,12 @@ module Int256 = struct
     Uint256.to_bytes_little_endian i buf off
 
   let of_bytes_big_endian buf off = Uint256.of_bytes_big_endian buf off
-
   let of_bytes_little_endian buf off = Uint256.of_bytes_little_endian buf off
+
+  (* Not the most efficient implementation but it gets the job done.
+     I went for this solution because it is correct if Int256.of_string is correct:
+     it's easy to mess up with the fixed-width arithmetic *)
+  let of_int a = of_string (Int.to_string a)
 end
 
 type int256 = Int256.t

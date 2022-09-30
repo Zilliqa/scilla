@@ -11,8 +11,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Failed to disambiguate imported library BadADTLib2.\n",
+      "error_message": "Failed to disambiguate imported library: BadADTLib2",
       "start_location": {
         "file": "checker/bad/bad_adt_lib_2.scilla",
         "line": 3,

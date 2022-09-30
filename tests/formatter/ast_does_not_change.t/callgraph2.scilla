@@ -1,0 +1,27 @@
+scilla_version 0
+
+library Callgraph2
+
+let one32 = Uint32 1
+let one64 = Uint64 1
+let none32 =  None {Uint32}
+let none64 =  None {Uint64}
+
+let option_value =
+  tfun 'A =>
+  fun (default: 'A) =>
+  fun (v: Option 'A) =>
+    match v with
+    | Some v => v
+    | None => default
+    end
+let option_uint32 = @option_value Uint32
+let option_uint64 = @option_value Uint64
+let option_uint64_alias = option_uint64
+
+contract Callgraph2()
+
+transition tr1(a: Uint32)
+  r1 = option_uint32 one32 none32;
+  r2 = option_uint64_alias one64 none64
+end

@@ -1,8 +1,7 @@
 {
   "cashflow_tags": {
     "State variables": [
-      { "field": "z1", "tag": "NoInfo" },
-      { "field": "z2", "tag": "NoInfo" }
+      { "field": "z1", "tag": "NoInfo" }, { "field": "z2", "tag": "NoInfo" }
     ],
     "ADT constructors": []
   },
@@ -64,8 +63,7 @@
   },
   "warnings": [
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: z2",
+      "warning_message": "Read only field, consider making it a contract parameter: z2",
       "start_location": {
         "file": "contracts/dead_code_test4.scilla",
         "line": 25,
@@ -75,8 +73,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "Read only field, consider making it a contract parameter: z1",
+      "warning_message": "Read only field, consider making it a contract parameter: z1",
       "start_location": {
         "file": "contracts/dead_code_test4.scilla",
         "line": 24,
@@ -116,8 +113,7 @@
       "warning_id": 3
     },
     {
-      "warning_message":
-        "x is a new variable. It does not reassign the previously defined variable.",
+      "warning_message": "x is a new variable. It does not reassign the previously defined variable.",
       "start_location": {
         "file": "contracts/dead_code_test4.scilla",
         "line": 15,
@@ -127,9 +123,12 @@
       "warning_id": 2
     },
     {
-      "warning_message":
-        "No transition in contract Dead4 contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Dead4 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/dead_code_test4.scilla",
+        "line": 6,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

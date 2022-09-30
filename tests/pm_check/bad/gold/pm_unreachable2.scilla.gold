@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Type error in pattern matching on `b` of type Bool (or one of its branches):\nPattern 2 is unreachable.",
+        "Type error in pattern matching on `b` of type Bool (or one of its branches):\nPattern is unreachable: 2",
       "start_location": {
         "file": "pm_check/bad/pm_unreachable2.scilla",
         "line": 6,

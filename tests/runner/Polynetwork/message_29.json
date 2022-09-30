@@ -1,0 +1,79 @@
+{
+    "_tag": "verifyHeaderAndExecuteTx",
+    "_amount": "0",
+    "_sender" : "0x12345678901234567890123456789012345678ab",
+    "_origin" : "0x12345678901234567890123456789012345678ab",
+    "params": [
+        {
+            "vname" : "proof",
+            "type" : "Polynetwork.Proof",
+            "value" : {
+                "constructor" : "Polynetwork.Proof",
+                "argtypes" : [],
+                "arguments" : [
+                    "0x2000ca93f8738111a063d8ab7221f47c70a4cade0ca4a2829df494cd4b5e231bd60300000000000000204caa77a3d2ddfaa318c550f1f38dd09d610dcff827d1f2ccd4ddcafaa6c553cc081b0000000000000014b7041bc96b15da728fdfc1c47cbfc687b845adeb0200000000000000144ddcf539d13e92d4151b7f5e607d4a09f725c47d06756e6c6f636b4a14406d31a9291bdaed4f4bc31b97dc468f88256ded14344cfc3b8635f72f14200aaf2168d9f75df86fd35300000000000000000000000000000000000000000000000000000000000000",
+                    [
+                        {
+                            "constructor" : "Pair",
+                            "argtypes" : ["ByStr1", "ByStr32"],
+                            "arguments" : [
+                                "0x01",
+                                "0x77d99c0f0857535155071d49ded129993a5b98575761985e90e2d26c7a569a0d"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        },
+        {
+            "vname" : "rawHeader",
+            "type" : "ByStr",
+            "value" : "0x000000009b91561700000000622b986e745766256e1b3bb6b478d3da265614dc3a481a1ece3c02a499cbec5c00000000000000000000000000000000000000000000000000000000000000008d8021b0dffcf4361f82ac31b6f990da35f304c1d11342b59b80bd836a8af94d9b970da4cb85cb93e406ce857353c33223b7558aad3f5c903bbd838fce0650314417185f9e43000082ad40a6f1e63ecffd0c017b226c6561646572223a322c227672665f76616c7565223a22424a4f784a3942326b4e446c48736a533359424150386b34414d4e446a716e7a4b32624c5839485576576272497a6d502f48425874783541654e626242436b48306c5734746f4a697455783947304d2b6d3350394677413d222c227672665f70726f6f66223a2258514a30514145775474586c5675594d68454f2f766e566f75776b394442416f4b686962506d3042706e6d3854436e7034334d73767455323868436f6c6c6c5075685573764b34647a7935416e34577730576d4639673d3d222c226c6173745f636f6e6669675f626c6f636b5f6e756d223a302c226e65775f636861696e5f636f6e666967223a6e756c6c7d0000000000000000000000000000000000000000"
+        },
+        {
+            "vname" : "headerProof",
+            "type" : "Polynetwork.Proof",
+            "value" : {
+                "constructor" : "Polynetwork.Proof",
+                "argtypes" : [],
+                "arguments" : ["0x", []]
+            }
+        },
+        {
+            "vname" : "curRawHeader",
+            "type" : "ByStr",
+            "value" : "0x"
+        },
+        {
+            "vname" : "headerSig",
+            "type" : "List Polynetwork.Signature",
+            "value" : [
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x63fd63a8448a034a594c7e34034c0455628c3e879e6981e879b6f20ad1994f3e349d5021592a10908074d5ffc3d72384ee7dbfa7ad4b41388944c22dd3276bc701"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0xb046097a68620061598e5c59367f1faab18548ece6c8d6aca1572f95eee3915623eeba8a9c06a1886a16bd019f0d294fc1b204f273a32f4fcfcec994368827f001"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x87206061136d01eb706c1950926d2986d20c3cc879977ccecbae6f8771dfc8873e9c269122575c7493a424f8cce1144e33115ed2402af40f141caf53fef4869500"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x87206061136d01eb706c1950926d2986d20c3cc879977ccecbae6f8771dfc8873e9c269122575c7493a424f8cce1144e33115ed2402af40f141caf53fef4869500"]
+                },
+                {
+                    "constructor" : "Polynetwork.Signature",
+                    "argtypes" : [],
+                    "arguments" : ["0x1c58c13bc05bff169897898d9c044e93006c8181e6231c1d7ab92b5bc45dd0242a65018cc843404e1e20f6748df88c48ba9a383a51c6493b0358153f0e2d78ca01"]
+                }
+            ]
+        }
+    ]
+}

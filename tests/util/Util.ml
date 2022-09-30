@@ -16,14 +16,21 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 open Scilla_base.ScillaUtil.FilePathInfix
 
-(* Helper funcation borrowed from Batteries library *)
+(* Parses and pretty-prints JSON to ignore whitespace changes
+   in the future versions of JSON pretty-printers *)
+let normalize_json s =
+  s |> Yojson.Basic.from_string |> Yojson.Basic.pretty_to_string
+
+(* Helper function inspired by one from Batteries library  *)
 let stream_to_string fl =
   let buf = Buffer.create 4096 in
-  Stream.iter (Buffer.add_char buf) fl;
+  (* OUnit uses potentially infinite streams and
+     if a stream is finite, it may throw an exception *)
+  (try Seq.iter (Buffer.add_char buf) fl with _exn -> ());
   Buffer.contents buf
 
 type tsuite_env = {
@@ -37,8 +44,8 @@ type tsuite_env = {
 }
 
 let run_tests tests =
-  let tests_dir_default = Sys.getcwd () ^/ "tests" in
-  let stdlib_dir_default = Sys.getcwd () ^/ "src" ^/ "stdlib" in
+  let tests_dir_default = Sys_unix.getcwd () ^/ "tests" in
+  let stdlib_dir_default = Sys_unix.getcwd () ^/ "src" ^/ "stdlib" in
   let ext_ipc_server_default = "" in
   let tests_dir =
     Conf.make_string "tests_dir" tests_dir_default "Directory containing tests"
@@ -79,14 +86,11 @@ let run_tests tests =
   in
   run_test_tt_main ("tests" >::: List.map ~f:(( |> ) env) tests)
 
-let output_verifier goldoutput_file msg print_diff output filter =
-  (* load all data from file *)
-  let gold_output = filter @@ In_channel.read_all goldoutput_file in
-  let output' = filter output in
+let output_verifier gold_output msg print_diff output =
   let pp_diff fmt =
     let open Patdiff_kernel in
-    let gold = Diff_input.{ name = goldoutput_file; text = gold_output } in
-    let out = Diff_input.{ name = "test output"; text = output' } in
+    let gold = Diff_input.{ name = "expected output"; text = gold_output } in
+    let out = Diff_input.{ name = "actual output"; text = output } in
     let open Patdiff.Compare_core in
     match diff_strings Configuration.default ~prev:gold ~next:out with
     | `Same -> ()
@@ -99,16 +103,28 @@ let output_verifier goldoutput_file msg print_diff output filter =
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~pp_diff:(fun fmt _ -> pp_diff fmt)
-      gold_output output' ~msg
+      gold_output output ~msg
   else
     assert_equal
       ~cmp:(fun e o -> String.(strip e = strip o))
       ~printer:(fun s -> s)
-      gold_output output' ~msg
+      gold_output output ~msg
 
-let output_updater goldoutput_file test_name data =
-  Out_channel.write_all goldoutput_file ~data;
-  Printf.printf "Updated gold output for test %s\n" test_name
+(* XXX: in case of json_errors we should probably not do string conversions
+        and operate directly on the JSON's AST *)
+let output_updater goldoutput_file test_name data ~json_errors =
+  let update_goldoutput_file () =
+    Out_channel.write_all goldoutput_file ~data;
+    Printf.printf "Updated gold output for test %s\n" test_name
+  in
+  if json_errors && Sys_unix.file_exists_exn goldoutput_file then (
+    let normalized_gold =
+      normalize_json @@ In_channel.read_all goldoutput_file
+    in
+    let normalized_actual = normalize_json @@ data in
+    if String.( <> ) normalized_gold normalized_actual then
+      update_goldoutput_file ())
+  else update_goldoutput_file ()
 
 let prepare_cli_usage bin args = bin ^ " " ^ String.concat ~sep:" " args
 
@@ -120,27 +136,16 @@ let print_cli_usage flag bin args =
 
 module type TestSuiteInput = sig
   val tests : string list
-
   val gold_path : string -> string -> string list
-
   val test_path : string -> string list
-
   val runner : string
-
   val ignore_predef_args : bool
-
   val json_errors : bool
-
   val exit_code : UnixLabels.process_status
-
   val additional_libdirs : string list list
-
   val gas_limit : Stdint.uint64
-
   val custom_args : string list
-
   val provide_init_arg : bool
-
   val diff_filter : string -> string
 end
 
@@ -160,7 +165,7 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         let goldoutput_file = make_filename (gold_path dir fname) in
         let additional_dirs = List.map ~f:make_filename additional_libdirs in
         let stdlib = make_relative dir (env.stdlib_dir test_ctxt) in
-        let path = string_of_path @@ stdlib :: additional_dirs in
+        let path = string_of_path @@ (stdlib :: additional_dirs) in
         let args' =
           if ignore_predef_args then custom_args @ [ input_file ]
           else
@@ -181,12 +186,25 @@ module DiffBasedTests (Input : TestSuiteInput) = struct
         print_cli_usage (env.print_cli test_ctxt) runner args;
         assert_command
           ~foutput:(fun s ->
-            let out = stream_to_string s in
+            let actual_output = stream_to_string s in
             if env.update_gold test_ctxt then
-              output_updater goldoutput_file input_file out
+              output_updater goldoutput_file input_file actual_output
+                ~json_errors
+            else if Sys_unix.file_exists_exn goldoutput_file then
+              let gold_output =
+                (* load all data from file *)
+                let non_normalized_gold_output =
+                  In_channel.read_all goldoutput_file
+                in
+                if json_errors then normalize_json non_normalized_gold_output
+                else non_normalized_gold_output
+              in
+              output_verifier (diff_filter gold_output) msg
+                (env.print_diff test_ctxt)
+                (diff_filter actual_output)
             else
-              output_verifier goldoutput_file msg (env.print_diff test_ctxt) out
-                diff_filter)
+              assert_failure
+                ("The gold file " ^ goldoutput_file ^ " does not exist"))
           ~exit_code ~use_stderr:true ~chdir:dir ~ctxt:test_ctxt runner args)
 
   let tests env = "exptests" >::: build_exp_tests env tests

@@ -1,0 +1,13 @@
+(* Expected result: 42 *)
+let v = Int32 42 in
+let y = Some {Int32} v in
+let z = Int32 3 in 
+let b = True in
+let c = Some {(Option Int32)} y in
+match b with 
+    | False => Int32 1
+    | True  => match c with 
+               | Some (Some x) => x
+               | None  => z
+               end
+    end

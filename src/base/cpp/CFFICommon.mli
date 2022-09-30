@@ -40,7 +40,5 @@ val copy_from_tstring : string -> string
 type rawBytes_Z
 
 val rawBytes_Z : rawBytes_Z structure typ
-
 val rawBytes_data : (char Ctypes_static.ptr, rawBytes_Z structure) field
-
 val rawBytes_len : (int, rawBytes_Z structure) field

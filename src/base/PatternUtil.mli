@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 (* Pattern match expression descriptions *)
 module Exp_descriptions : sig
@@ -37,7 +37,6 @@ module Exp_descriptions : sig
 
   (* Add arguments alongside constructor *)
   val augment_ctx : ('a * 'b list) list -> 'b -> ('a * 'b list) list
-
   val pos_ctx : (string * exp_dsc List.t) list -> (string * exp_dsc List.t) list
 end
 

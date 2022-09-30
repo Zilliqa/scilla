@@ -2,7 +2,7 @@
   "gas_remaining": "4001901",
   "errors": [
     {
-      "error_message": "Cannot type runtime closure.",
+      "error_message": "Cannot type runtime closure",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

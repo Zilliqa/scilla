@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Printf
 open Scilla_base
 open Literal
@@ -53,7 +53,7 @@ open TypeCheckerUtil
 (* Check that the expression parses *)
 let check_parsing filename =
   match FEParser.parse_file Parser.Incremental.exp_term filename with
-  | Error _ -> fail0 (sprintf "Failed to parse input file %s\n." filename)
+  | Error _ -> fail0 ~kind:"Failed to parse input file" ~inst:filename
   | Ok e ->
       plog
       @@ sprintf "\n[Parsing]:\nExpression in [%s] is successfully parsed.\n"
@@ -65,7 +65,7 @@ let run () =
   GlobalConfig.reset ();
   ErrorUtils.reset_warnings ();
   Datatypes.DataTypeDictionary.reinit ();
-  let cli = parse_cli None ~exe_name:Sys.argv.(0) in
+  let cli = parse_cli None ~exe_name:Sys.(get_argv ()).(0) in
   let open GlobalConfig in
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
   let filename = cli.input_file in

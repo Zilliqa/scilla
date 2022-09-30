@@ -1,0 +1,11 @@
+scilla_version 0
+
+library UnusedLibraryEntryBug
+
+let zero_address : ByStr20 = 0x0000000000000000000000000000000000000000
+
+contract UnusedLibraryEntryBug ()
+
+transition Foo()
+  maybe_contract_address <-& zero_address as ByStr20 with contract end
+end

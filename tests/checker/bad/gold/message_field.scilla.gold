@@ -3,7 +3,7 @@
   "errors": [
     {
       "error_message":
-        "Type mismatch for Message field _amount. Expected Uint128 but got Int32",
+        "Type mismatch for Message field: _amount. Expected Uint128 but got Int32",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 15,
@@ -13,7 +13,7 @@
     },
     {
       "error_message":
-        "Type mismatch for Message field _recipient. Expected ByStr20 but got ByStr2",
+        "Type mismatch for Message field: _recipient. Expected ByStr20 but got ByStr2",
       "start_location": {
         "file": "checker/bad/message_field.scilla",
         "line": 23,

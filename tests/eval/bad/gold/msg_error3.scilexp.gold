@@ -2,7 +2,7 @@
   "gas_remaining": "4001901",
   "errors": [
     {
-      "error_message": "Identifier \"o\" is not bound in environment:\n",
+      "error_message": "Identifier is not bound in environment: o",
       "start_location": {
         "file": "eval/bad/msg_error3.scilexp",
         "line": 6,

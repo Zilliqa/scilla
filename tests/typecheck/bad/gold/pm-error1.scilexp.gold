@@ -2,7 +2,7 @@
   "errors": [
     {
       "error_message":
-        "Not all types of the branches [Int32; Int64] are equivalent.",
+        "Not all types of pattern matching branches are equivalent: [Int32; Int64]",
       "start_location": {
         "file": "typecheck/bad/pm-error1.scilexp",
         "line": 4,

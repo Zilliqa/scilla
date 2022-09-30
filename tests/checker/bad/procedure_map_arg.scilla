@@ -33,7 +33,7 @@ procedure Proc3(f : forall 'A . 'A -> Bool )
   new_arg = Int32 0
 end
 
-(* Function arguments to procedures are allowed *)
+(* Function arguments to procedures not allowed *)
 procedure Proc4(f : Bool -> Bool )
   new_arg = Int32 0
 end

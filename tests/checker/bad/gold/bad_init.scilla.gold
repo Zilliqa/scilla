@@ -6,8 +6,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Unable to parse JSON file checker/bad/bad_init.json. ",
+      "error_message": "Unable to parse JSON file: checker/bad/bad_init.json",
       "start_location": { "file": "", "line": 0, "column": 0 },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

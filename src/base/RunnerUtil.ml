@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Printf
 open GlobalConfig
 open ErrorUtils
@@ -58,21 +58,21 @@ let get_init_this_address_and_extlibs filename =
           name_addr_pairs
       then
         fatal_error
-        @@ mk_error0
-             (sprintf "Duplicate extlib map entries in init JSON file %s."
-                filename)
+        @@ mk_error0 ~kind:"Duplicate extlib map entries in init JSON file"
+             ~inst:filename
       else (this_address, name_addr_pairs)
     with Invalid_json s ->
       fatal_error
-        (s @ mk_error0 (sprintf "Unable to parse JSON file %s. " filename))
+        (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:filename)
 
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib name sloc =
-  let errmsg = sprintf "Failed to import library %s. " name in
   let fname, this_address, initf =
     match StdlibTracker.find_lib_dir name with
-    | None -> fatal_error @@ mk_error1 (errmsg ^ "Not found.\n") sloc
+    | None ->
+        let errmsg = sprintf "Failed to import library (not found)" in
+        fatal_error @@ mk_error1 ~kind:errmsg ~inst:name sloc
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
@@ -84,7 +84,8 @@ let import_lib name sloc =
         (libf, this_address, extlibs)
   in
   match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
-  | Error s -> fatal_error (s @ (mk_error1 "Failed to parse.\n") sloc)
+  | Error s ->
+      fatal_error (s @ (mk_error1 ~kind:"Failed to parse" ?inst:None) sloc)
   | Ok lmod ->
       plog (sprintf "Successfully imported external library %s\n" name);
       (lmod, this_address, initf)
@@ -109,7 +110,7 @@ let import_libs names_and_namespaces init_address_map =
                   sprintf "Cyclic dependence found when importing %s."
                     (as_error_string libname)
             in
-            fatal_error @@ mk_error1 errmsg (get_rep libname)
+            fatal_error @@ mk_error1 ~kind:errmsg ?inst:None (get_rep libname)
           else
             let ilib_address =
               Option.value
@@ -131,10 +132,8 @@ let import_libs names_and_namespaces init_address_map =
             | Error s ->
                 fatal_error
                   (s
-                  @ mk_error1
-                      (sprintf "Failed to disambiguate imported library %s.\n"
-                         (as_string libname))
-                      (get_rep libname))
+                  @ mk_error1 ~kind:"Failed to disambiguate imported library"
+                      ~inst:(as_string libname) (get_rep libname))
             | Ok dis_lib ->
                 let libnode =
                   {
@@ -148,14 +147,14 @@ let import_libs names_and_namespaces init_address_map =
   in
   importer names_and_namespaces init_address_map []
 
-let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
+let stdlib_not_found_err ?(exe_name = (Sys.get_argv ()).(0)) () =
   fatal_error
-    (mk_error0
-       ("A path to Scilla stdlib not found. Please set "
-      ^ StdlibTracker.scilla_stdlib_env
-      ^ " environment variable, or pass through command-line argument for this \
-         script.\n" ^ "Example:\n" ^ exe_name
-      ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
+    (mk_error0 ~kind:"A path to Scilla stdlib not found"
+       ~inst:
+         ("Please set " ^ StdlibTracker.scilla_stdlib_env
+        ^ " environment variable, or pass through command-line argument for \
+           this script.\n" ^ "Example:\n" ^ exe_name
+        ^ " list_sort.scilla -libdir ./src/stdlib/\n"))
 
 (* Parse all libraries that can be found in ldirs. *)
 let import_all_libs ldirs =
@@ -166,7 +165,7 @@ let import_all_libs ldirs =
      *)
     if not (Caml.Sys.file_exists dir) then []
     else
-      let files = Array.to_list (Sys.readdir dir) in
+      let files = Array.to_list (Sys_unix.readdir dir) in
       List.filter_map files ~f:(fun file ->
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
@@ -203,6 +202,8 @@ type runner_cli = {
   p_contract_info : bool;
   p_type_info : bool;
   disable_analy_warn : bool;
+  dump_callgraph : bool;
+  dump_callgraph_stdout : bool;
 }
 
 let parse_cli args ~exe_name =
@@ -218,6 +219,8 @@ let parse_cli args ~exe_name =
   let r_cf_token_fields = ref [] in
   let r_validate_json = ref true in
   let r_disable_analy_warn = ref false in
+  let r_dump_callgraph = ref false in
+  let r_dump_callgraph_stdout = ref false in
 
   let speclist =
     [
@@ -279,6 +282,12 @@ let parse_cli args ~exe_name =
       ( "-disable-developer-warnings",
         Arg.Unit (fun () -> r_disable_analy_warn := true),
         "Disable analyses' warnings" );
+      ( "-dump-callgraph",
+        Arg.Unit (fun () -> r_dump_callgraph := true),
+        "Save callgraph in .dot format" );
+      ( "-dump-callgraph-stdout",
+        Arg.Unit (fun () -> r_dump_callgraph_stdout := true),
+        "Print callgraph to stdout and exit" );
     ]
   in
 
@@ -300,7 +309,7 @@ let parse_cli args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist anon_handler mandatory_usage
         with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in
@@ -322,4 +331,6 @@ let parse_cli args ~exe_name =
     init_file = !r_init_file;
     p_type_info = !r_type_info;
     disable_analy_warn = !r_disable_analy_warn;
+    dump_callgraph = !r_dump_callgraph;
+    dump_callgraph_stdout = !r_dump_callgraph_stdout;
   }

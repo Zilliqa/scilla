@@ -17,11 +17,7 @@
 *)
 
 val plog : string -> unit (* Prints to log file *)
-
 val pvlog : (unit -> string) -> unit (* Verbose print to log file *)
-
 val pout : string -> unit (* Prints to stdout and log file *)
-
 val perr : string -> unit (* Prints to stderr and log file *)
-
 val ptrace : string -> unit (* Prints to trace file, if set, or to stdout. *)

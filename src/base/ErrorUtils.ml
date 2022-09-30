@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 (* Location info, slightly more usable than Lexing.position *)
 type loc = {
@@ -41,18 +41,36 @@ let dummy_loc = toLoc Lexing.dummy_pos
 let get_loc_str (l : loc) : string =
   l.fname ^ ":" ^ Int.to_string l.lnum ^ ":" ^ Int.to_string l.cnum
 
-type scilla_error = { emsg : string; startl : loc; endl : loc }
+type scilla_error = {
+  ekind : string;
+  einst : string option;
+  startl : loc;
+  endl : loc;
+}
+
+(* combine the error kind and the concrete error instance *)
+let mk_error_description err =
+  let optional_instance =
+    match err.einst with None | Some "" -> "" | Some einst -> ": " ^ einst
+  in
+  err.ekind ^ optional_instance
 
 let sprint_scilla_error_list elist =
   List.fold elist ~init:"" ~f:(fun acc e ->
-      acc ^ "\n\n" ^ e.emsg ^ "[" ^ get_loc_str e.startl ^ "]["
+      acc ^ "\n\n" ^ mk_error_description e ^ "[" ^ get_loc_str e.startl ^ "]["
       ^ get_loc_str e.endl ^ "]" ^ "\n")
 
-let mk_error0 msg = [ { emsg = msg; startl = dummy_loc; endl = dummy_loc } ]
+(* we don't use optional parameters here, because optional parameters
+   can only be implicitly applied after a positional parameter,
+   and we don't have any positional parameters for mk_error0 *)
+let[@warning "-16"] mk_error0 ~kind ?inst =
+  [ { ekind = kind; einst = inst; startl = dummy_loc; endl = dummy_loc } ]
 
-let mk_error1 msg sloc = [ { emsg = msg; startl = sloc; endl = dummy_loc } ]
+let mk_error1 ~kind ?inst sloc =
+  [ { ekind = kind; einst = inst; startl = sloc; endl = dummy_loc } ]
 
-let mk_error2 msg sloc eloc = [ { emsg = msg; startl = sloc; endl = eloc } ]
+let mk_error2 ~kind ?inst sloc eloc =
+  [ { ekind = kind; einst = inst; startl = sloc; endl = eloc } ]
 
 type scilla_warning = { wmsg : string; wstartl : loc; wendl : loc; wid : int }
 
@@ -60,7 +78,7 @@ let warnings_list = ref []
 
 (* flag a warning, specifying a message and a warning "id".
    The "id" can be used to enable or disable specific warnings.
- *)
+*)
 let warn0 msg id =
   let warning =
     { wmsg = msg; wstartl = dummy_loc; wendl = dummy_loc; wid = id }
@@ -76,16 +94,17 @@ let warn2 msg id sloc eloc =
   warnings_list := warning :: !warnings_list
 
 let get_warnings () = !warnings_list
-
 let reset_warnings () = warnings_list := []
 
 exception Invalid_json of scilla_error list
 
-let mk_invalid_json msg = Invalid_json (mk_error0 msg)
+let[@warning "-16"] mk_invalid_json ~kind ?inst =
+  Invalid_json (mk_error0 ~kind ?inst)
 
 exception InternalError of scilla_error list
 
-let mk_internal_error msg = InternalError (mk_error0 msg)
+let[@warning "-16"] mk_internal_error ~kind ?inst =
+  InternalError (mk_error0 ~kind ?inst)
 
 exception FatalError of string
 

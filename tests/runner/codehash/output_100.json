@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7999",
+  "errors": [
+    {
+      "error_message":
+        "No code (library or contract) found at address: 0x12345678901234567890123456789012345678ff",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}
