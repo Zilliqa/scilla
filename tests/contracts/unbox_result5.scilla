@@ -1,0 +1,37 @@
+scilla_version 0
+
+(* This test checks that we don't warn about Option values used as arguments
+   of ADT contructors. *)
+
+library UnboxResult5
+
+type Ty1 =
+| T1 of (Option Uint32)
+| T2
+
+contract UnboxResult5()
+
+field m: Map Uint32 Uint32 = Emp Uint32 Uint32
+
+procedure pr(ty: Ty1)
+  accept
+end
+
+transition tr1(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  a = T1 v_opt;
+  pr a
+end
+
+transition tr2(k: Uint32)
+  v_opt <- m[k]; (* no warning *)
+  v_opt_alias = v_opt; (* warning *)
+  a = T1 v_opt;
+  pr a
+end
+
+transition tr3(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  a = T2;
+  pr a
+end

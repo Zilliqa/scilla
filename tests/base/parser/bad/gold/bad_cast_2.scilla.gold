@@ -1,10 +1,9 @@
 {
-  "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Ends in an error in state: 286.\n",
+      "error_message": "Casts to non-ByStr20 types are not allowed.\n",
       "start_location": {
-        "file": "checker/bad/bad_cast_2.scilla",
+        "file": "base/parser/bad/bad_cast_2.scilla",
         "line": 11,
         "column": 4
       },
