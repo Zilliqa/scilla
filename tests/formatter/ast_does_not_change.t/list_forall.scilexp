@@ -1,0 +1,27 @@
+let one = Int32 1 in
+let two = Int32 2 in
+let three = Int32 3 in
+let four = Int32 4 in
+let five = Int32 5 in
+
+let int_forall = @list_forall Int32 in
+let f =
+  fun (a : Int32) => builtin lt a three
+in
+let g =
+  fun (a : Int32) => builtin lt a five
+in
+
+let nil = Nil {Int32} in
+let l1 = Cons {Int32} four nil in
+let l2 = Cons {Int32} three l1 in
+let l3 = Cons {Int32} two l2 in
+let l4 = Cons {Int32} one l3 in
+
+(* test if all are < 3 (false) *)
+let res1 = int_forall f l4 in
+(* test if all are < 5 (true) *)
+let res2 = int_forall g l4 in
+(* vacuously true *)
+int_forall f nil
+

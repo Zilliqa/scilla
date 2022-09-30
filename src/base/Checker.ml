@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ParserUtil
 open Syntax
 open ErrorUtils
@@ -35,6 +35,7 @@ open Cashflow
 open Accept
 open Stdint
 open Literal
+open Callgraph
 
 (* Modules use local names, which are then disambiguated *)
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
@@ -58,6 +59,7 @@ module GUA = ScillaGUA (TCSRep) (TCERep)
 module CF = ScillaCashflowChecker (TCSRep) (TCERep)
 module AC = ScillaAcceptChecker (TCSRep) (TCERep)
 module TI = ScillaTypeInfo (TCSRep) (TCERep)
+module CG = ScillaCallgraph (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
@@ -158,8 +160,8 @@ let check_patterns_lmodule e rlibs elibs =
     @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
-let check_sanity m rlibs elibs =
-  let res = SC.contr_sanity m rlibs elibs in
+let check_sanity m call_graph rlibs elibs =
+  let res = SC.contr_sanity call_graph m rlibs elibs in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
@@ -335,11 +337,18 @@ let check_cmodule cli =
     let type_info =
       if cli.p_type_info then TI.type_info_cmod typed_cmod else []
     in
+    let cg = CG.mk typed_cmod in
+    (if cli.dump_callgraph_stdout then (
+     CG.dump_callgraph stdout cg;
+     exit 0)
+    else if cli.dump_callgraph then
+      let out = Out_channel.create (cli.input_file ^ ".dot") ~binary:true in
+      CG.dump_callgraph out cg);
     let%bind () =
       if cli.disable_analy_warn then pure ()
       else
         wrap_error_with_gas remaining_gas
-        @@ check_sanity typed_cmod typed_rlibs typed_elibs
+        @@ check_sanity typed_cmod cg typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod

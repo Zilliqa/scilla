@@ -30,7 +30,7 @@ let () =
       Testexps.All.tests;
       Testtypes.All.tests;
       Testpm.All.tests;
-      Testchecker.All.tests;
+      Testchecker.All.tests
       (* TestGasExpr.All.tests;
-         TestGasContracts.All.tests; *)
+         TestGasContracts.All.tests; *);
     ]

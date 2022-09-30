@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open ParserUtil
 open MonadUtil
@@ -116,8 +116,6 @@ module Configuration = struct
     balance : uint128;
     (* Was incoming money accepted? *)
     accepted : bool;
-    (* Blockchain state *)
-    blockchain_state : BlockchainState.t;
     (* Available incoming funds *)
     incoming_funds : uint128;
     (* Procedures available to the current component. The list is in
@@ -138,7 +136,6 @@ module Configuration = struct
     let pp_fields = pp_typ_map conf.fields in
     let pp_balance = Uint128.to_string conf.balance in
     let pp_accepted = Bool.to_string conf.accepted in
-    let pp_bc_conf = pp_literal_map conf.blockchain_state in
     let pp_in_funds = Uint128.to_string conf.incoming_funds in
     (*  let pp_procs = TODO... *)
     let pp_emitted = pp_literal_list conf.emitted in
@@ -159,13 +156,11 @@ module Configuration = struct
        %s\n\
        Emitted events =\n\
        %s\n"
-      pp_env pp_fields pp_balance pp_accepted pp_bc_conf pp_in_funds pp_emitted
-      pp_events
+      pp_env pp_fields pp_balance pp_accepted pp_in_funds pp_emitted pp_events
 
   (*  Manipulations with configuration *)
 
   let store i l = fromR @@ StateService.update ~fname:i ~keys:[] ~value:l
-
   let lookup st k = Env.lookup st.env k
 
   (* Helper function for remote fetches *)
@@ -303,7 +298,76 @@ module Configuration = struct
         in
         pure { st with env = kvs @ filtered_env }
 
-  let bc_lookup st k = BlockchainState.lookup st.blockchain_state k
+  let bc_lookup st k sloc =
+    match k with
+    | CurBlockNum ->
+        let%bind bnum_s =
+          fromR
+          @@ StateService.fetch_bcinfo ~query_name:ContractUtil.blocknum_name
+               ~query_args:""
+        in
+        let%bind sbn = fromR @@ Literal.BNumLit.create bnum_s in
+        pure (EvalLiteral.BNum sbn)
+    | ChainID ->
+        let%bind cid_s =
+          fromR
+          @@ StateService.fetch_bcinfo ~query_name:ContractUtil.chainid_name
+               ~query_args:""
+        in
+        pure
+          (EvalLiteral.UintLit (EvalLiteral.Uint32L (Uint32.of_string cid_s)))
+    | Timestamp s -> (
+        let%bind bnum =
+          match%bind fromR @@ lookup st s with
+          | BNum bnl -> pure bnl
+          | lit ->
+              fail1 ~kind:"Timestamp argument of incorrect type. Expected BNum."
+                ~inst:(pp_literal lit) sloc
+        in
+        match
+          StateService.fetch_bcinfo ~query_name:ContractUtil.timestamp_name
+            ~query_args:(Literal.BNumLit.get bnum)
+        with
+        | Ok bnum_s ->
+            pure
+            @@ EvalLiteral.build_some_lit
+                 (EvalLiteral.UintLit
+                    (EvalLiteral.Uint64L (Uint64.of_string bnum_s)))
+                 EvalType.uint64_typ
+        | Error _ -> pure @@ EvalLiteral.build_none_lit EvalType.uint64_typ)
+    | ReplicateContr (addr, iparams) -> (
+        let%bind params_j =
+          match%bind fromR @@ lookup st iparams with
+          | Msg m -> pure @@ JSON.Message.replicate_contr_to_json m
+          | lit ->
+              fail1 ~kind:"Expected ReplicateContr object."
+                ~inst:(pp_literal lit) sloc
+        in
+        let%bind addr_j =
+          match%bind fromR @@ lookup st addr with
+          | ByStrX b as b' when EvalLiteral.Bystrx.width b = Type.address_length
+            ->
+              pure @@ PrettyPrinters.literal_to_json b'
+          | lit -> fail0 ~kind:"Expected address object." ~inst:(pp_literal lit)
+        in
+        let ipc_arg = Yojson.to_string (`List [ addr_j; params_j ]) in
+        match
+          StateService.fetch_bcinfo
+            ~query_name:ContractUtil.replicate_contract_name ~query_args:ipc_arg
+        with
+        | Ok new_addr -> (
+            match
+              EvalLiteral.build_prim_literal (Bystrx_typ Type.address_length)
+                new_addr
+            with
+            | Some l -> pure l
+            | None ->
+                fail1 ~kind:"Error parsing new address of replicated contract"
+                  ?inst:None sloc)
+        | Error s ->
+            fail1 ~kind:"Error replicating contract"
+              ~inst:(ErrorUtils.sprint_scilla_error_list s)
+              sloc)
 
   let accept_incoming st =
     if st.accepted then (* Do nothing *)
@@ -470,6 +534,19 @@ module EvalTypecheck = struct
     in
     pure @@ Option.is_some this_typ_opt
 
+  (* Checks that _codehash is defined *)
+  let is_library_or_contract_addr ~caddr =
+    let this_id = EvalIdentifier.mk_loc_id codehash_label in
+    let%bind _, this_typ_opt =
+      StateService.external_fetch ~caddr ~fname:this_id ~keys:[] ~ignoreval:true
+    in
+    pure @@ Option.is_some this_typ_opt
+
+  let is_library_addr ~caddr =
+    let%bind is_library_or_contract_addr = is_library_or_contract_addr ~caddr in
+    let%bind is_contract_addr = is_contract_addr ~caddr in
+    pure (is_library_or_contract_addr && not is_contract_addr)
+
   (* Checks that balance > 0 || nonce > 0 *)
   let is_user_addr ~caddr =
     (* First check if the address is a user address with balance > 0 || nonce > 0 *)
@@ -494,7 +571,7 @@ module EvalTypecheck = struct
     (* True if the address is in use, false otherwise *)
     let%bind user_addr = is_user_addr ~caddr in
     if not user_addr then
-      let%bind contract_addr = is_contract_addr ~caddr in
+      let%bind contract_addr = is_library_or_contract_addr ~caddr in
       pure contract_addr
     else pure true
 
@@ -512,42 +589,56 @@ module EvalTypecheck = struct
   type evalTCResult =
     | AddressNotInUse
     | NoContractAtAddress
+    | NoLibraryAtAddress
+    | NeitherCodeAtAddress
     | FieldTypeMismatch
     | Success
 
-  let typecheck_fts ~caddr fts_opt =
-    match fts_opt with
-    | None ->
+  let typecheck_addr ~caddr = function
+    | EvalType.AnyAddr ->
         let%bind in_use = is_address_in_use ~caddr in
         if not in_use then pure AddressNotInUse else pure Success
-    | Some fts ->
+    | LibAddr ->
+        let%bind in_use = is_library_addr ~caddr in
+        if not in_use then pure NoLibraryAtAddress else pure Success
+    | CodeAddr ->
+        let%bind in_use = is_library_or_contract_addr ~caddr in
+        if not in_use then pure NeitherCodeAtAddress else pure Success
+    | ContrAddr fts ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in
         if not contract_addr then pure NoContractAtAddress
         else
-          let%bind fts_ok = typecheck_remote_fields ~caddr fts in
+          let%bind fts_ok =
+            typecheck_remote_fields ~caddr
+              (EvalType.IdLoc_Comp.Map.to_alist fts)
+          in
           if not fts_ok then pure FieldTypeMismatch else pure Success
 
-  let get_fts_opt_from_address t =
+  let get_addrkind_from_address t =
     let open EvalType in
     match t with
-    | Address fts_opt -> pure fts_opt
+    | Address a -> pure a
     | _ ->
         fail0 ~kind:"Unable to perform dynamic typecheck on type"
           ~inst:(pp_typ t)
 
   let assert_typecheck_remote_field_types ~caddr t =
     let open EvalType in
-    let%bind fts_opt = get_fts_opt_from_address t in
-    let%bind tc_res =
-      typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt)
-    in
+    let%bind addrkind = get_addrkind_from_address t in
+    let%bind tc_res = typecheck_addr ~caddr addrkind in
     match tc_res with
     | AddressNotInUse ->
         fail0 ~kind:"Address not in use"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | NoContractAtAddress ->
         fail0 ~kind:"No contract found at address"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
+    | NoLibraryAtAddress ->
+        fail0 ~kind:"No library found at address"
+          ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
+    | NeitherCodeAtAddress ->
+        fail0 ~kind:"No code (library or contract) found at address"
           ~inst:(EvalLiteral.Bystrx.hex_encoding caddr)
     | FieldTypeMismatch ->
         fail0 ~kind:"Address does not satisfy type"
@@ -558,12 +649,11 @@ module EvalTypecheck = struct
     | Success -> pure ()
 
   let typecheck_remote_field_types ~caddr t =
-    let open EvalType in
-    let%bind fts_opt = get_fts_opt_from_address t in
-    let%bind tc_res =
-      typecheck_fts ~caddr (Option.map ~f:IdLoc_Comp.Map.to_alist fts_opt)
-    in
+    let%bind addrkind = get_addrkind_from_address t in
+    let%bind tc_res = typecheck_addr ~caddr addrkind in
     match tc_res with
-    | AddressNotInUse | NoContractAtAddress | FieldTypeMismatch -> pure false
+    | AddressNotInUse | NoContractAtAddress | FieldTypeMismatch
+    | NoLibraryAtAddress | NeitherCodeAtAddress ->
+        pure false
     | Success -> pure true
 end

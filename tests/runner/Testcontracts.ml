@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 open Scilla_base
 open ScillaUtil.FilePathInfix
@@ -24,11 +24,8 @@ open Scilla_test.Util
 open OUnitTest
 
 let testsuit_gas_limit = "8000"
-
 let ipc_socket_addr = Filename.temp_dir_name ^/ "scillaipcsocket"
-
 let succ_code : UnixLabels.process_status = WEXITED 0
-
 let fail_code : UnixLabels.process_status = WEXITED 1
 
 let do_start_mock_server env test_ctxt =
@@ -40,14 +37,14 @@ let build_ipc_addr_thread env test_ctxt start_mock_server =
   else env.ext_ipc_server test_ctxt
 
 let build_state_args ipc_mode start_mock_server ipc_addr_thread state_json_path
-    =
+    blockchain_json_path =
   if ipc_mode then
     let balance =
       StateIPCTest.setup_and_initialize ~start_mock_server
-        ~sock_addr:ipc_addr_thread ~state_json_path
+        ~sock_addr:ipc_addr_thread ~state_json_path ~blockchain_json_path
     in
     [ "-ipcaddress"; ipc_addr_thread; "-balance"; balance ]
-  else [ "-istate"; state_json_path ]
+  else [ "-istate"; state_json_path; "-iblockchain"; blockchain_json_path ]
 
 let get_interpreter_output env test_ctxt exit_code output_file s =
   if Poly.(exit_code = succ_code) && not (env.server test_ctxt) then
@@ -57,10 +54,11 @@ let get_interpreter_output env test_ctxt exit_code output_file s =
 let output_test_result env test_ctxt test_name ipc_mode goldoutput_file msg out
     =
   if env.update_gold test_ctxt && not (ipc_mode || env.server test_ctxt) then
-    output_updater goldoutput_file test_name out
+    output_updater goldoutput_file test_name out ~json_errors:true
   else
-    output_verifier goldoutput_file msg (env.print_diff test_ctxt) out (fun s ->
-        s)
+    let non_normalized_gold_output = In_channel.read_all goldoutput_file in
+    let gold_output = normalize_json non_normalized_gold_output in
+    output_verifier gold_output msg (env.print_diff test_ctxt) out
 
 let foutput env test_ctxt test_name ipc_mode ipc_addr_thread exit_code
     output_file goldoutput_file msg s =
@@ -117,7 +115,7 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
       >:: (* function to run scilla-runner and check exit code *)
       fun test_ctxt ->
       let tests_dir =
-        FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+        FilePath.make_relative (Sys_unix.getcwd ()) (env.tests_dir test_ctxt)
       in
       let contract_dir = tests_dir ^/ "contracts" in
       let dir = tests_dir ^/ "runner" ^/ name in
@@ -139,8 +137,6 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
           "-imessage";
           dir ^/ "message_" ^ istr ^. "json";
           "-jsonerrors";
-          "-iblockchain";
-          dir ^/ "blockchain_" ^ istr ^. "json";
           "-pplit";
           Bool.to_string pplit;
         ]
@@ -153,10 +149,11 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
         build_ipc_addr_thread env test_ctxt start_mock_server
       in
       let state_json_path = dir ^/ "state_" ^ istr ^. "json" in
+      let blockchain_json_path = dir ^/ "blockchain_" ^ istr ^. "json" in
       let args_state =
         args_basic
         @ build_state_args ipc_mode start_mock_server ipc_addr_thread
-            state_json_path
+            state_json_path blockchain_json_path
       in
       let args' =
         List.fold_right additional_libs ~init:args_state
@@ -186,17 +183,13 @@ let rec build_contract_tests_with_init_file ?(pplit = true) env name exit_code i
      * So test both the JSON parsers, one that does validation, one that doesn't.
      * Both should succeed. *)
     if Poly.(exit_code = succ_code && not is_library) then
-      test ~ipc_mode:true
-      ::
-      test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name is_library
+      test ~ipc_mode:true :: test ~ipc_mode:false
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name is_library
     else
       test ~ipc_mode:false
-      ::
-      build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
-        additional_libs init_name is_library
+      :: build_contract_tests_with_init_file ~pplit env name exit_code (i + 1) n
+           additional_libs init_name is_library
 
 (*
  * Build tests to invoke scilla-runner with the right arguments, for
@@ -220,7 +213,7 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     =
   name ^ "_init" >:: fun test_ctxt ->
   let tests_dir =
-    FilePath.make_relative (Sys.getcwd ()) (env.tests_dir test_ctxt)
+    FilePath.make_relative (Sys_unix.getcwd ()) (env.tests_dir test_ctxt)
   in
   (* Files for the contract are in contract/(crowdfunding|zil-game|etc). *)
   let contract_dir = tests_dir ^/ "contracts" in
@@ -249,8 +242,6 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
       "-jsonerrors";
       "-gaslimit";
       testsuit_gas_limit;
-      "-iblockchain";
-      dir ^/ "blockchain_1" ^. "json";
     ]
   in
   let start_mock_server = do_start_mock_server env test_ctxt in
@@ -259,9 +250,10 @@ let build_contract_init_test env exit_code name init_name ~is_library ~ipc_mode
     if ipc_mode then
       (* A state json with _balance is required *)
       let state_json_path = dir ^/ init_name ^ "_state" ^. "json" in
+      let blockchain_json_path = dir ^/ "blockchain_1.json" in
       basic_args
       @ build_state_args ipc_mode start_mock_server ipc_addr_thread
-          state_json_path
+          state_json_path blockchain_json_path
     else basic_args
   in
   (* Use scilla-client instead of scilla-runner when running tests in server-mode *)
@@ -498,11 +490,25 @@ let contract_tests env =
                 "chain-call-balance-3"
                 >::: build_contract_tests env "chain-call-balance-3" succ_code 1
                        1 [];
+                "codehash"
+                >::: build_contract_tests env "codehash" succ_code 1 4 [];
+                "timestamp"
+                >::: build_contract_tests env "timestamp" succ_code 1 2 [];
+                "chainid"
+                >::: build_contract_tests env "chainid" succ_code 1 1 [];
+                "replicate"
+                >::: build_contract_tests env "replicate" succ_code 1 1 [];
+                "ark-store-hashes-in-mutable-maps"
+                >::: build_contract_tests env "ark" succ_code 1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [
                 "helloWorld_f"
                 >::: build_contract_tests env "helloWorld" fail_code 5 11 [];
+                "codehash"
+                >::: build_contract_tests env "codehash" fail_code 100 102 [];
+                "replicate"
+                >::: build_contract_tests env "replicate" fail_code 100 100 [];
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
@@ -589,6 +595,8 @@ let contract_tests env =
                 "accounting_tests"
                 >::: build_contract_tests env "accounting_tests" fail_code 100
                        109 [];
+                "ark-store-hashes-in-mutable-maps-idempotent"
+                >::: build_contract_tests env "ark" fail_code 2 2 [];
               ];
          "misc_tests" >::: build_misc_tests env;
        ]

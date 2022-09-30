@@ -19,10 +19,9 @@
 open Core
 open Scilla_eval
 open Api
-module U = Unix
+module U = Core_unix
 module M = Idl.IdM
 module IDL = Idl.Make (M)
-
 module IDLClient = API (IDL.GenClient ())
 
 (* Send data to the socket. *)
@@ -48,7 +47,5 @@ let mk_call name ~sock_path args =
   rpc ~sock_path @@ Rpc.call name (mk_params args)
 
 let run = mk_call "run"
-
 let check = mk_call "check"
-
 let disambiguate = mk_call "disambiguate"

@@ -1,0 +1,32 @@
+(* Expected output: (IntLit 32 21) *)
+
+let zero = Zero in
+let one  = Succ zero in
+let two  = Succ one in
+let three = Succ two in
+let four = Succ three in
+let five = Succ four in
+let six = Succ five in
+let seven = Succ six in
+
+let fib = fun (n : Nat) =>
+  let iter_fun =
+    fun (res : Pair Int32 Int32) => fun (n: Nat) =>
+      match res with
+      | Pair x y => let z = builtin add x y in
+      Pair {Int32 Int32} z x
+      end
+    in
+  let zero = Int32 0 in
+  let one = Int32 1 in
+  let init_val = Pair {Int32 Int32} one zero in
+  let typed_folder = @nat_fold (Pair Int32 Int32) in
+	let	folder = typed_folder iter_fun init_val in
+  let res = folder n in
+	match res with
+	|	Pair x y => x
+	end
+
+in
+
+fib seven

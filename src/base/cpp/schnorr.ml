@@ -24,9 +24,7 @@ open Foreign
 open CFFICommon
 
 let privkey_len = 32
-
 let pubkey_len = 33
-
 let signature_len = 64
 
 let genKeyPair () =

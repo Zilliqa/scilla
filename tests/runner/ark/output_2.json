@@ -1,0 +1,52 @@
+{
+  "gas_remaining": "7563",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Error\")) ; (code : (Int32 -7))])",
+      "start_location": {
+        "file": "tests/contracts/ark.scilla",
+        "line": 161,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from IsNotExpired",
+      "start_location": {
+        "file": "tests/contracts/ark.scilla",
+        "line": 208,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from IsValidSide",
+      "start_location": {
+        "file": "tests/contracts/ark.scilla",
+        "line": 243,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from IsValidPrice",
+      "start_location": {
+        "file": "tests/contracts/ark.scilla",
+        "line": 219,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from ExecuteTrade",
+      "start_location": {
+        "file": "tests/contracts/ark.scilla",
+        "line": 371,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

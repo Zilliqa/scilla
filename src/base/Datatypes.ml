@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open MonadUtil
 open Result.Let_syntax
@@ -56,12 +56,10 @@ type adt = {
 
 module DataTypeDictionary = struct
   let dtname_of_string str = DTName.parse_simple_name str
-
   let dtid_of_string str = DTIdentifier.mk_loc_id @@ dtname_of_string str
 
   (* Booleans *)
   let c_true = { cname = dtname_of_string "True"; arity = 0 }
-
   let c_false = { cname = dtname_of_string "False"; arity = 0 }
 
   let t_bool =
@@ -74,7 +72,6 @@ module DataTypeDictionary = struct
 
   (* Natural numbers *)
   let c_zero = { cname = dtname_of_string "Zero"; arity = 0 }
-
   let c_succ = { cname = dtname_of_string "Succ"; arity = 1 }
 
   let t_nat =
@@ -87,7 +84,6 @@ module DataTypeDictionary = struct
 
   (* Option *)
   let c_some = { cname = dtname_of_string "Some"; arity = 1 }
-
   let c_none = { cname = dtname_of_string "None"; arity = 0 }
 
   let t_option =
@@ -100,7 +96,6 @@ module DataTypeDictionary = struct
 
   (* Lists *)
   let c_cons = { cname = dtname_of_string "Cons"; arity = 2 }
-
   let c_nil = { cname = dtname_of_string "Nil"; arity = 0 }
 
   let t_list =
@@ -202,15 +197,10 @@ module DataTypeDictionary = struct
 
   (* Get typing map for a constructor *)
   let constr_tmap adt cn = List.Assoc.find adt.tmap cn ~equal:[%equal: DTName.t]
-
   let bool_typ = ADT (TIdentifier.mk_loc_id t_bool.tname, [])
-
   let nat_typ = ADT (TIdentifier.mk_loc_id t_nat.tname, [])
-
   let option_typ t = ADT (TIdentifier.mk_loc_id t_option.tname, [ t ])
-
   let list_typ t = ADT (TIdentifier.mk_loc_id t_list.tname, [ t ])
-
   let pair_typ t s = ADT (TIdentifier.mk_loc_id t_product.tname, [ t; s ])
 
   (* Get all known ADTs *)
@@ -226,33 +216,19 @@ end
 
 (* Helper functions for matching against names *)
 let match_simple_names n m = [%equal: DTName.t] n m
-
 let is_true_ctr_name = match_simple_names DataTypeDictionary.c_true.cname
-
 let is_false_ctr_name = match_simple_names DataTypeDictionary.c_false.cname
-
 let is_bool_adt_name = match_simple_names DataTypeDictionary.t_bool.tname
-
 let is_nil_ctr_name = match_simple_names DataTypeDictionary.c_nil.cname
-
 let is_cons_ctr_name = match_simple_names DataTypeDictionary.c_cons.cname
-
 let is_list_adt_name = match_simple_names DataTypeDictionary.t_list.tname
-
 let is_pair_ctr_name = match_simple_names DataTypeDictionary.c_pair.cname
-
 let is_pair_adt_name = match_simple_names DataTypeDictionary.t_product.tname
-
 let is_zero_ctr_name = match_simple_names DataTypeDictionary.c_zero.cname
-
 let is_succ_ctr_name = match_simple_names DataTypeDictionary.c_succ.cname
-
 let is_nat_adt_name = match_simple_names DataTypeDictionary.t_nat.tname
-
 let is_none_ctr_name = match_simple_names DataTypeDictionary.c_none.cname
-
 let is_some_ctr_name = match_simple_names DataTypeDictionary.c_some.cname
-
 let is_option_adt_name = match_simple_names DataTypeDictionary.t_option.tname
 
 (* Convert Scilla list to OCaml list.
@@ -263,7 +239,7 @@ let scilla_list_to_ocaml v =
     | ADTValue (c, _, []) when is_nil_ctr_name c -> pure []
     | ADTValue (c, _, [ h; t ]) when is_cons_ctr_name c ->
         let%bind rest = convert_to_list t in
-        pure @@ h :: rest
+        pure @@ (h :: rest)
     | _ -> fail0 ~kind:"Cannot convert scilla list to ocaml list:\n" ?inst:None
   in
   convert_to_list v
@@ -287,15 +263,10 @@ module SnarkTypes = struct
   open DataTypeDictionary
 
   let scalar_type = bystrx_typ scalar_len
-
   let g1point_type = pair_typ scalar_type scalar_type
-
   let g2point_type = pair_typ (bystrx_typ g2comp_len) (bystrx_typ g2comp_len)
-
   let g2comp_type = bystrx_typ g2comp_len
-
   let g1g2pair_type = pair_typ g1point_type g2point_type
-
   let g1g2pair_list_type = list_typ g1g2pair_type
 
   let scilla_scalar_to_ocaml s =

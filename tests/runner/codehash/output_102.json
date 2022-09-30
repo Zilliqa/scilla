@@ -1,0 +1,16 @@
+{
+  "gas_remaining": "7956",
+  "errors": [
+    {
+      "error_message":
+        "Error loading remote field: _codehash at address 0x12345678901234567890123456789012345678ff",
+      "start_location": {
+        "file": "tests/contracts/codehash.scilla",
+        "line": 31,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,4 @@
+(None),
+{ [prefix -> (String "zzil")],
+  [bystr20_addr -> (ByStr20 0x7aa7ea9f4534d8d70224b9c2fb165242f321f12b)] }
+Gas remaining: 4001882

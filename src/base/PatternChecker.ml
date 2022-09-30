@@ -16,7 +16,7 @@
 
 open Literal
 open Syntax
-open Core_kernel
+open Core
 open ErrorUtils
 open MonadUtil
 open Result.Let_syntax
@@ -45,7 +45,6 @@ struct
   open TU
 
   let wrap_pmcheck_err e ?(opt = "") = wrap_err e "patternmatch checking" ~opt
-
   let wrap_pmcheck_serr s ?(opt = "") = wrap_serr s "patternmatch checking" ~opt
 
   (**************************************************************)
@@ -187,6 +186,16 @@ struct
         CheckedPatternSyntax.Constructor
           (s, List.map sps ~f:(fun sp -> lift_pattern sp))
 
+  let lift_bcinfo = function
+    | CurBlockNum -> CheckedPatternSyntax.CurBlockNum
+    | ChainID -> CheckedPatternSyntax.ChainID
+    | Timestamp (Ident (s, r)) ->
+        CheckedPatternSyntax.Timestamp (PCIdentifier.mk_id s r)
+    | ReplicateContr (Ident (s_addr, r_addr), Ident (s_iparams, r_iparams)) ->
+        CheckedPatternSyntax.ReplicateContr
+          ( PCIdentifier.mk_id s_addr r_addr,
+            PCIdentifier.mk_id s_iparams r_iparams )
+
   let rec pm_check_expr erep =
     let e, rep = erep in
     match e with
@@ -269,7 +278,7 @@ struct
               in
               pure @@ (CheckedPatternSyntax.MatchStmt (x, checked_clauses), rep)
           | ReadFromBC (i, s) ->
-              pure @@ (CheckedPatternSyntax.ReadFromBC (i, s), rep)
+              pure @@ (CheckedPatternSyntax.ReadFromBC (i, lift_bcinfo s), rep)
           | TypeCast (x, r, t) ->
               pure @@ (CheckedPatternSyntax.TypeCast (x, r, t), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
@@ -283,7 +292,7 @@ struct
               pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)
         in
         let%bind checked_stmts = pm_check_stmts sts in
-        pure @@ checked_s :: checked_stmts
+        pure @@ (checked_s :: checked_stmts)
 
   let pm_check_component t =
     let { comp_type; comp_name; comp_params; comp_body } = t in
@@ -392,7 +401,7 @@ struct
     let { cname = ctr_cname; cparams; cconstraint; cfields; ccomps } = contr in
     let kind = "Type error(s) in contract"
     and inst = PCIdentifier.as_error_string ctr_cname ^ "\n" in
-    wrap_with_info ~kind ~inst dummy_loc
+    wrap_with_info ~kind ~inst (SR.get_loc (PCIdentifier.get_rep ctr_cname))
     @@ let%bind checked_rlibs = pm_check_libentries rlibs in
        let%bind checked_elibs = mapM elibs ~f:pm_check_libtree in
 

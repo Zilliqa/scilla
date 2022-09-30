@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 
 type args = {
@@ -35,37 +35,21 @@ type args = {
 }
 
 let f_input_init = ref ""
-
 let f_input_state = ref ""
-
 let f_input_message = ref ""
-
 let f_input_blockchain = ref ""
-
 let f_output = ref ""
-
 let f_input = ref ""
-
 let f_trace_file = ref ""
-
 let f_trace_level = ref ""
-
 let d_libs = ref []
-
 let v_gas_limit = ref Stdint.Uint64.zero
-
 let v_balance = ref None
-
 let b_pp_lit = ref true
-
 let b_json_errors = ref false
-
 let b_pp_json = ref true
-
 let b_validate_json = ref true
-
 let i_ipc_address = ref ""
-
 let b_reinit = ref false
 
 let reset () =
@@ -98,20 +82,19 @@ let process_trace () =
   | _ -> ()
 
 let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
-
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
-
 let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
   let invalid_optional_fname fname =
-    not (String.is_empty fname || Sys.file_exists fname)
+    not (String.is_empty fname || Sys_unix.file_exists_exn fname)
   in
   let msg = "" in
   let msg =
     (* init.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_init then "Invalid initialization file\n"
+    if not @@ Sys_unix.file_exists_exn !f_input_init then
+      "Invalid initialization file\n"
     else msg
   in
   let msg =
@@ -127,14 +110,14 @@ let validate_main usage =
     else msg
   in
   let msg =
-    (* input_blockchain.json is mandatory *)
-    if not @@ Sys.file_exists !f_input_blockchain then
+    (* input_blockchain.json is not mandatory, but if provided, should be valid *)
+    if invalid_optional_fname !f_input_blockchain then
       msg ^ "Invalid input blockchain state\n"
     else msg
   in
   let msg =
     (* input file is mandatory *)
-    if not @@ Sys.file_exists !f_input then
+    if not @@ Sys_unix.file_exists_exn !f_input then
       msg ^ "Invalid input contract file\n"
     else msg
   in
@@ -144,14 +127,16 @@ let validate_main usage =
     if
       String.(
         !f_input_message <> ""
-        && (!f_input_state <> ""
-            && (!i_ipc_address <> "" || Option.is_some !v_balance)
-           || !f_input_state = ""
-              && (!i_ipc_address = "" || Option.is_none !v_balance)))
+        && ((!f_input_state <> ""
+             && (!i_ipc_address <> "" || Option.is_some !v_balance)
+            || !f_input_state = ""
+               && (!i_ipc_address = "" || Option.is_none !v_balance))
+           || not (Bool.equal (!f_input_blockchain = "") (!f_input_state = ""))
+           ))
     then
       msg
-      ^ "Input message provided, but either none or both of input state / (IPC \
-         address and balance) provided\n"
+      ^ "Input message provided, but either none or both of input state, \
+         blockchain info / (IPC address and balance) provided\n"
     else msg
   in
   (* If reinit is provided, then we can't have a message. *)
@@ -177,7 +162,7 @@ let parse args ~exe_name =
         Arg.Unit
           (fun () ->
             DebugMessage.pout
-              (Core_kernel.sprintf "Scilla version: %s\n"
+              (Core.sprintf "Scilla version: %s\n"
                  PrettyPrinters.scilla_version_string);
             if true then exit 0;
             (* if "true" to avoid warning on exit 0 *)
@@ -263,7 +248,7 @@ let parse args ~exe_name =
 
   let mandatory_usage =
     "Usage:\n" ^ exe_name ^ " -init init.json [-istate input_state.json]"
-    ^ " -iblockchain input_blockchain.json [-imessage input_message.json]"
+    ^ " [-iblockchain input_blockchain.json] [-imessage input_message.json]"
     ^ " [-o output.json] -i input.scilla -libdir /path/to/stdlib"
     ^ " -gaslimit limit" ^ "\n"
   in
@@ -279,7 +264,7 @@ let parse args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist ignore_anon mandatory_usage
         with Arg.Bad msg ->
           PrettyPrinters.fatal_error_noformat (Printf.sprintf "%s\n" msg))

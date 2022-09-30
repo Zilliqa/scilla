@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open Identifier
 open ParserUtil
@@ -155,8 +155,8 @@ let builtin_executor env f targs args_id =
   let res () = op targs arg_lits ret_typ in
   pure (res, Uint64.of_int cost)
 
-(* Replace address types with ByStr20 in a literal. 
-   This is to ensure that address types are treated as ByStr20 throughout the interpreter.  *)
+(* Replace address types with ByStr20 in a literal.
+   This is to ensure that address types are treated as ByStr20 throughout the interpreter. *)
 let replace_address_types l =
   let rec replace_in_type t =
     match t with
@@ -192,7 +192,7 @@ let replace_address_types l =
    The following evaluator is implemented in a monadic style, with the
    monad, at the moment to be CPS, with the specialised return result
    type as described in [Specialising the Return Type of Closures].
- *)
+*)
 
 let rec exp_eval erep env =
   let e, loc = erep in
@@ -312,7 +312,7 @@ let rec exp_eval erep env =
   | GasExpr (g, e') ->
       let thunk () = exp_eval e' env in
       let%bind cost = fromR @@ eval_gas_charge env g in
-      let emsg = sprintf "Ran out of gas" in
+      let emsg = sprintf "Insufficient gas" in
       (* Add end location too: https://github.com/Zilliqa/scilla/issues/134 *)
       checkwrap_op thunk (Uint64.of_int cost)
         (mk_error1 ~kind:emsg ?inst:None loc)
@@ -337,7 +337,6 @@ and try_apply_as_type_closure v arg_type =
    The following function is used as an initial continuation to
    "bootstrap" the gas-aware computation and then retrieve not just
    the result, but also the remaining gas.
-
 *)
 let init_gas_kont r gas' =
   match r with Ok z -> Ok (z, gas') | Error msg -> Error (msg, gas')
@@ -351,7 +350,6 @@ let init_gas_kont r gas' =
    [Specialising the Return Type of Closures]). In short, it fully
    evaluates an expression with the fixed continuation, after which
    the result is passed further to the callee's continuation `k`.
-
 *)
 let exp_eval_wrapper_no_cps expr env k gas =
   let eval_res = exp_eval expr env init_gas_kont gas in
@@ -426,7 +424,7 @@ let rec stmt_eval conf stmts =
               stmt_eval conf' sts
           | _ -> fail0 ~kind:"Expected address to be ByStr20 value" ?inst:None)
       | ReadFromBC (x, bf) ->
-          let%bind l = Configuration.bc_lookup conf bf in
+          let%bind l = Configuration.bc_lookup conf bf sloc in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
       | TypeCast (x, r, t) ->
@@ -549,12 +547,8 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind proc_conf =
     Configuration.bind_all
       { conf with env = conf.init_env; procedures = proc_rest }
-      (origin
-       ::
-       sender
-       ::
-       amount
-       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
+      (origin :: sender :: amount
+      :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
       (origin_value :: sender_value :: amount_value :: actuals)
   in
   let%bind conf' = stmt_eval proc_conf proc.comp_body in
@@ -566,32 +560,6 @@ and try_apply_as_procedure conf proc proc_rest actuals =
       procedures = conf.procedures;
       component_stack = proc.comp_name :: conf.component_stack;
     }
-
-(*******************************************************)
-(*          BlockchainState initialization             *)
-(*******************************************************)
-
-let check_blockchain_entries entries =
-  let expected = [ (ContractUtil.blocknum_name, ContractUtil.blocknum_type) ] in
-  (* every entry must be expected *)
-  let c1 =
-    List.for_all entries ~f:(fun (s, t, _) ->
-        List.exists expected ~f:(fun (x, xt) ->
-            String.(x = s) && [%equal: EvalType.t] xt t))
-  in
-  (* everything expected must be entered *)
-  (* everything expected must be entered *)
-  let c2 =
-    List.for_all expected ~f:(fun (x, xt) ->
-        List.exists entries ~f:(fun (s, t, _) ->
-            String.(x = s) && [%equal: EvalType.t] xt t))
-  in
-  if c1 && c2 then pure entries
-  else
-    fail0 ~kind:"Mismatch in input blockchain variables"
-      ~inst:
-        (sprintf "expected:\n%s\nprovided:\n%s\n" (pp_str_typ_map expected)
-           (pp_typ_literal_map entries))
 
 (*******************************************************)
 (*              Contract initialization                *)
@@ -806,14 +774,13 @@ let check_contr libs_env cconstraint cfields initargs curargs =
   pure curfield_vals
 
 (* Initialize a module with given arguments and initial balance *)
-let init_module libenv md initargs init_bal bstate =
+let init_module libenv md initargs init_bal =
   let { contr; _ } = md in
   let ({ cparams; cfields; _ } : contract) = contr in
   let%bind initcstate, pending_dyn_checks =
     init_contract libenv cparams cfields initargs init_bal
   in
   (* blockchain input provided is only validated and not used here. *)
-  let%bind () = EvalMonad.ignore_m @@ check_blockchain_entries bstate in
   let cstate = { initcstate with fields = initcstate.fields } in
   pure (contr, cstate, pending_dyn_checks)
 
@@ -913,14 +880,38 @@ let prepare_for_message contr entries =
   let%bind tenv, pending_dyn_checks = check_message_entries tparams other in
   pure ((tenv, incoming_amount, tprocedures, tbody, tname), pending_dyn_checks)
 
-(* 
-Handle message:
-* tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
-* cstate : ContractState.t - current contract state
-* bstate : (string * type * literal) list - blockchain state
+(* Subtract the amounts to be transferred *)
+let post_process_msgs cstate outs =
+  (* Evey outgoing message should carry an "_amount" tag *)
+  let%bind amounts =
+    mapM outs ~f:(fun l ->
+        match l with
+        | Msg es -> fromR @@ MessagePayload.get_amount es
+        | _ -> fail0 ~kind:"Not a message literal" ~inst:(pp_literal l))
+  in
+  let open Uint128 in
+  let to_be_transferred =
+    List.fold_left amounts ~init:zero ~f:(fun z a -> add z a)
+  in
+  let open ContractState in
+  if compare cstate.balance to_be_transferred < 0 then
+    fail0
+      ~kind:"The balance is too low to transfer all the funds in the messages"
+      ~inst:
+        (sprintf "balance = %s, amount to transfer = %s"
+           (to_string cstate.balance)
+           (to_string to_be_transferred))
+  else
+    let balance = sub cstate.balance to_be_transferred in
+    pure { cstate with balance }
+
+(*
+   Handle message:
+   * tenv, incoming_funds, procedures, stmts, tname: Result of prepare_for_message, minus dynamic typechecks
+   * cstate : ContractState.t - current contract state
+   * bstate : (string * type * literal) list - blockchain state
 *)
-let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
-    bstate =
+let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
   let open ContractState in
   let { env; fields; balance } = cstate in
   (* Add all values to the contract environment *)
@@ -941,7 +932,6 @@ let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate
       fields;
       balance;
       accepted = false;
-      blockchain_state = List.map bstate ~f:(fun x -> (fst3 x, trd3 x));
       incoming_funds;
       procedures;
       component_stack = [ tname ];

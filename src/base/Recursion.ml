@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -72,8 +72,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           let%bind () = is_adt_in_scope s in
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
-      | Address None -> pure ()
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
@@ -115,6 +115,13 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           pure @@ RecursionSyntax.Constructor (s, new_ps)
     in
     walk p
+
+  let recursion_bcinfo = function
+    | CurBlockNum -> RecursionSyntax.CurBlockNum
+    | ChainID -> RecursionSyntax.ChainID
+    | Timestamp s -> RecursionSyntax.Timestamp s
+    | ReplicateContr (addr, iparams) ->
+        RecursionSyntax.ReplicateContr (addr, iparams)
 
   let recursion_exp erep =
     let rec walk erep =
@@ -203,7 +210,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
                 pss
             in
             pure @@ RecursionSyntax.MatchStmt (x, new_pss)
-        | ReadFromBC (x, f) -> pure @@ RecursionSyntax.ReadFromBC (x, f)
+        | ReadFromBC (x, f) ->
+            pure @@ RecursionSyntax.ReadFromBC (x, recursion_bcinfo f)
         | TypeCast (x, r, t) -> pure @@ RecursionSyntax.TypeCast (x, r, t)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)
@@ -290,8 +298,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           (* Disallow polymorphic definitions for the time being. *)
           fail1 ~kind:"Type variables not allowed in type definitions"
             ?inst:None error_loc
-      | Address None -> pure ()
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+      | Address (ContrAddr fts) ->
           forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
@@ -356,7 +364,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     @@ let%bind recursion_entries =
          foldM lentries ~init:[] ~f:(fun rec_entries entry ->
              let%bind new_entry = recursion_lib_entry entry in
-             pure @@ new_entry :: rec_entries)
+             pure @@ (new_entry :: rec_entries))
        in
        pure
          {

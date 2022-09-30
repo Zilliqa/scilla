@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -39,9 +39,7 @@ module TypecheckerERep (R : Rep) = struct
   type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp]
 
   let dummy_rep = (PlainTypes.mk_qualified_type Unit, R.dummy_rep)
-
   let get_loc r = match r with _, rr -> R.get_loc rr
-
   let mk_rep (r : R.rep) (t : PlainTypes.t inferred_type) = (t, r)
 
   let address_rep =
@@ -55,13 +53,9 @@ module TypecheckerERep (R : Rep) = struct
     mk_rep R.uint128_rep (PlainTypes.mk_qualified_type uint32_typ)
 
   let bnum_rep = mk_rep R.bnum_rep (PlainTypes.mk_qualified_type bnum_typ)
-
   let string_rep = mk_rep R.string_rep (PlainTypes.mk_qualified_type string_typ)
-
   let parse_rep s = (PlainTypes.mk_qualified_type uint128_typ, R.parse_rep s)
-
   let get_rep_str r = match r with _, rr -> R.get_rep_str rr
-
   let get_type (r : rep) = fst r
 end
 
@@ -92,7 +86,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   open EvalMonad.Let_syntax
 
   let fromR errorType r =
-    match r with Error s -> fail (errorType, s) | Core_kernel.Ok a -> pure a
+    match r with Error s -> fail (errorType, s) | Core.Ok a -> pure a
 
   let fromR_TE r = fromR TypeError r
 
@@ -101,17 +95,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
 
   let strip_error_type res =
     match res with Ok (r, g) -> Ok (r, g) | Error ((_, e), g) -> Error (e, g)
-
-  (*****************************************************************)
-  (*               Blockchain component typing                     *)
-  (*****************************************************************)
-
-  let bc_types = [ (blocknum_name, blocknum_type) ]
-
-  let lookup_bc_type x =
-    match List.Assoc.find bc_types x ~equal:String.( = ) with
-    | Some t -> pure t
-    | None -> fail (mk_type_error0 ~kind:"Unknown blockchain field" ~inst:x)
 
   (**************************************************************)
   (*             Auxiliary functions for typing                 *)
@@ -167,8 +150,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
-      | Address None -> 1
-      | Address (Some fts) ->
+      | Address AnyAddr | Address CodeAddr | Address LibAddr -> 1
+      | Address (ContrAddr fts) ->
           IdLoc_Comp.Map.fold fts ~init:1 ~f:(fun ~key:_ ~data:t acc ->
               acc + type_size t)
     in
@@ -183,8 +166,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | PolyFun (_, _) ->
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
-        | Address None -> 1
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> 1
+        | Address (ContrAddr fts) ->
             max 1
               (IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc ->
                    acc + cost t))
@@ -218,15 +201,15 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
-        | Address None -> pure t
-        | Address (Some fts) ->
+        | Address AnyAddr | Address LibAddr | Address CodeAddr -> pure t
+        | Address (ContrAddr fts) ->
             let%bind fts_res =
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:IdLoc_Comp.Map.empty
                 ~f:(fun acc (key, t) ->
                   let%bind dis_t = recurser t in
                   pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
             in
-            pure (Address (Some fts_res))
+            pure (Address (ContrAddr fts_res))
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
@@ -616,10 +599,13 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     pure (typed_m, typed_keys, res)
 
   let type_remote_map_access env adr m keys =
+    let lc = get_rep adr in
     let%bind adr_type =
-      fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some (get_rep adr))
+      fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some lc)
     in
-    let%bind m_type = fromR_TE @@ address_field_type m (rr_typ adr_type).tp in
+    let%bind m_type =
+      fromR_TE @@ address_field_type (ER.get_loc lc) m (rr_typ adr_type).tp
+    in
     let%bind typed_keys, res = type_map_access_helper env m_type keys in
     let typed_m = add_type_to_ident m (mk_qual_tp m_type) in
     let typed_adr = add_type_to_ident adr (rr_typ adr_type) in
@@ -629,7 +615,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     match repstmts with stmts, env -> (s :: stmts, env)
 
   let get_tenv_fields env = env.fields
-
   let get_tenv_pure env = env.pure
 
   let rec type_stmts stmts get_loc env =
@@ -657,14 +642,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts
         | RemoteLoad (x, adr, f) ->
+            let lc = get_rep adr in
             let%bind pure', adr_type, ident_type =
               let%bind adr_typ =
-                fromR_TE
-                @@ TEnv.resolveT env.pure (get_id adr)
-                     ~lopt:(Some (get_rep adr))
+                fromR_TE @@ TEnv.resolveT env.pure (get_id adr) ~lopt:(Some lc)
               in
               let%bind fr =
-                fromR_TE @@ address_field_type f (rr_typ adr_typ).tp
+                fromR_TE
+                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp
               in
               pure @@ ((x, fr), rr_typ adr_typ, mk_qual_tp fr)
             in
@@ -715,8 +700,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | Bind (x, e) ->
             let%bind ((_, (ityp, _)) as checked_e) = type_expr e env.pure in
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, ityp.tp) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, ityp.tp) ]
+                [] (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x ityp in
             pure
@@ -771,8 +757,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (v, v_type') ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (v, v_type') ]
+                [] (type_stmts sts get_loc)
             in
             (* Update annotations. *)
             pure
@@ -793,8 +780,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_v = add_type_to_ident v (mk_qual_tp v_type') in
             (* Check rest of the statements. *)
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (v, v_type') ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (v, v_type') ]
+                [] (type_stmts sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -803,15 +791,57 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    rep )
                  checked_stmts
         | ReadFromBC (x, bf) ->
-            let%bind bt = lookup_bc_type bf in
+            let%bind bt, bf' =
+              match bf with
+              | CurBlockNum -> pure (bnum_typ, TypedSyntax.CurBlockNum)
+              | ChainID -> pure (uint32_typ, TypedSyntax.ChainID)
+              | Timestamp bn -> (
+                  match%bind type_actuals env.pure [ bn ] with
+                  | [ targ ], [ bn' ] ->
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep bn'))
+                             ~expected:bnum_typ ~actual:targ
+                      in
+                      pure (option_typ uint64_typ, TypedSyntax.Timestamp bn')
+                  | _ ->
+                      fail
+                        (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
+              | ReplicateContr (addr, iparams) -> (
+                  match%bind type_actuals env.pure [ addr; iparams ] with
+                  | [ targ_addr; targ_iparams ], [ addr'; iparams' ] ->
+                      let contr_typ =
+                        address_typ (ContrAddr IdLoc_Comp.Map.empty)
+                      in
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep addr'))
+                             ~expected:contr_typ ~actual:targ_addr
+                      in
+                      let%bind () =
+                        fromR_TE
+                        @@ assert_type_assignable
+                             ~lc:(ETR.get_loc (get_rep iparams'))
+                             ~expected:replicate_contr_typ ~actual:targ_iparams
+                      in
+                      pure
+                        (contr_typ, TypedSyntax.ReplicateContr (addr', iparams'))
+                  | _ ->
+                      fail
+                        (mk_type_error0 ~kind:"Cannot occur" ~inst:(pp_stmt s)))
+            in
+
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, bt) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, bt) ]
+                [] (type_stmts sts get_loc)
             in
             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.ReadFromBC (typed_x, bf), rep)
+                 (TypedSyntax.ReadFromBC (typed_x, bf'), rep)
                  checked_stmts
         | TypeCast (x, r, t) ->
             (* Only allow casts to address types *)
@@ -819,7 +849,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               fromR_TE
               @@ assert_type_assignable
                    ~lc:(ER.get_loc (get_rep r))
-                   ~expected:(address_typ None) ~actual:t
+                   ~expected:(address_typ AnyAddr) ~actual:t
             in
             let%bind r_typ =
               fromR_TE
@@ -837,8 +867,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_x = add_type_to_ident x res_typ in
             let typed_r = add_type_to_ident r (rr_typ r_typ) in
             let%bind checked_stmts =
-              with_extended_env env get_tenv_pure [ (x, res_typ.tp) ] []
-                (type_stmts sts get_loc)
+              with_extended_env env get_tenv_pure
+                [ (x, res_typ.tp) ]
+                [] (type_stmts sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -864,7 +895,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                     let%bind typed_clause =
                       type_match_stmt_branch env sct ptrn ex get_loc
                     in
-                    pure @@ typed_clause :: checked_clauses_acc)
+                    pure @@ (typed_clause :: checked_clauses_acc))
               in
               let checked_clauses = List.rev checked_clauses_rev in
               let%bind checked_stmts = type_stmts sts get_loc env in
@@ -1065,7 +1096,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
           let typed_fs = add_type_to_ident fn ar in
           if is_legal_field_type ft then
             let _ = TEnv.addT fields_env fn (mk_qual_tp ft).tp in
-            pure @@ (typed_fs, ft, typed_expr) :: acc
+            pure @@ ((typed_fs, ft, typed_expr) :: acc)
           else
             fail
               (mk_type_error1 ~kind:"Values of this type cannot be stored"

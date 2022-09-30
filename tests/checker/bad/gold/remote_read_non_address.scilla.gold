@@ -2,9 +2,12 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message":
-        "Attempting to read field from non-address type: ByStr20",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "error_message": "Invalid field read: _balance from ByStr20",
+      "start_location": {
+        "file": "checker/bad/remote_read_non_address.scilla",
+        "line": 10,
+        "column": 11
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],

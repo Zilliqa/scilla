@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 
 (****************************************************************)
@@ -26,7 +26,8 @@ module Exp_descriptions = struct
   type yes_no_maybe = Yes | No | Maybe
 
   type exp_dsc =
-    | Pos of string * exp_dsc list (* expression matches constructor name with listed subdescriptions *)
+    | Pos of string * exp_dsc list
+      (* expression matches constructor name with listed subdescriptions *)
     | Neg of string list
 
   (* expression does not match list of constructor names *)
@@ -55,8 +56,9 @@ module Exp_descriptions = struct
                     pattern match context"
                  ?inst:None)
         | (_, _, dargs) :: spss ->
-            build_dsc ctx_rest (Pos (c_name, List.rev args @ dsc :: dargs)) spss
-        )
+            build_dsc ctx_rest
+              (Pos (c_name, List.rev args @ (dsc :: dargs)))
+              spss)
 
   let augment_ctx ctx dsc =
     match ctx with

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open Literal
 open GlobalConfig
@@ -30,7 +30,7 @@ let raise_if_error = function Ok _ -> () | Error e -> fatal_error e
 let run () =
   let r_input_file = ref "" in
   let usage =
-    "Usage:\n" ^ Sys.argv.(0) ^ " input.scilla (or input.scillib)\n"
+    "Usage:\n" ^ Sys.(get_argv ()).(0) ^ " input.scilla (or input.scillib)\n"
   in
   let anon_handler s = r_input_file := s in
   let () = Arg.parse [] anon_handler usage in

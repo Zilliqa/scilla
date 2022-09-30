@@ -1,0 +1,4 @@
+let bech32str = "zil102n74869xnvdwq3yh8p0k9jjgtejruft268tg8" in
+let prefix = "zil" in
+builtin bech32_to_bystr20 prefix bech32str
+

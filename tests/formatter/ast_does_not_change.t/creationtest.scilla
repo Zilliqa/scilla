@@ -1,0 +1,5 @@
+scilla_version 0
+contract Test ()
+field is_owner: ByStr20 = 0xabababababababababababababababababababab field a: BNum = BNum 200
+transition e()
+end

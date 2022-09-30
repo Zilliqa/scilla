@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Printf
 open GlobalConfig
 open ErrorUtils
@@ -147,7 +147,7 @@ let import_libs names_and_namespaces init_address_map =
   in
   importer names_and_namespaces init_address_map []
 
-let stdlib_not_found_err ?(exe_name = Sys.argv.(0)) () =
+let stdlib_not_found_err ?(exe_name = (Sys.get_argv ()).(0)) () =
   fatal_error
     (mk_error0 ~kind:"A path to Scilla stdlib not found"
        ~inst:
@@ -165,7 +165,7 @@ let import_all_libs ldirs =
      *)
     if not (Caml.Sys.file_exists dir) then []
     else
-      let files = Array.to_list (Sys.readdir dir) in
+      let files = Array.to_list (Sys_unix.readdir dir) in
       List.filter_map files ~f:(fun file ->
           let open FilePath in
           if check_extension file StdlibTracker.file_extn_library then
@@ -202,6 +202,8 @@ type runner_cli = {
   p_contract_info : bool;
   p_type_info : bool;
   disable_analy_warn : bool;
+  dump_callgraph : bool;
+  dump_callgraph_stdout : bool;
 }
 
 let parse_cli args ~exe_name =
@@ -217,6 +219,8 @@ let parse_cli args ~exe_name =
   let r_cf_token_fields = ref [] in
   let r_validate_json = ref true in
   let r_disable_analy_warn = ref false in
+  let r_dump_callgraph = ref false in
+  let r_dump_callgraph_stdout = ref false in
 
   let speclist =
     [
@@ -278,6 +282,12 @@ let parse_cli args ~exe_name =
       ( "-disable-developer-warnings",
         Arg.Unit (fun () -> r_disable_analy_warn := true),
         "Disable analyses' warnings" );
+      ( "-dump-callgraph",
+        Arg.Unit (fun () -> r_dump_callgraph := true),
+        "Save callgraph in .dot format" );
+      ( "-dump-callgraph-stdout",
+        Arg.Unit (fun () -> r_dump_callgraph_stdout := true),
+        "Print callgraph to stdout and exit" );
     ]
   in
 
@@ -299,7 +309,7 @@ let parse_cli args ~exe_name =
     | Some argv -> (
         try
           Arg.parse_argv ~current:(ref 0)
-            (List.to_array @@ exe_name :: argv)
+            (List.to_array @@ (exe_name :: argv))
             speclist anon_handler mandatory_usage
         with Arg.Bad msg -> fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in
@@ -321,4 +331,6 @@ let parse_cli args ~exe_name =
     init_file = !r_init_file;
     p_type_info = !r_type_info;
     disable_analy_warn = !r_disable_analy_warn;
+    dump_callgraph = !r_dump_callgraph;
+    dump_callgraph_stdout = !r_dump_callgraph_stdout;
   }

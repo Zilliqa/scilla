@@ -15,7 +15,7 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Core_kernel
+open Core
 open Stdint
 open OUnit2
 open Scilla_base

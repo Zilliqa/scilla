@@ -3,8 +3,8 @@
  (public_name scilla.eval)
  (wrapped true)
  (modes byte native)
- (libraries core angstrom stdint yojson cryptokit scilla_base rpclib unix
-   rpclib.json rresult ocaml-protoc)
+ (libraries core core_unix.sys_unix angstrom stdint yojson cryptokit
+   scilla_base rpclib unix rpclib.json rresult ocaml-protoc)
  (preprocess
   (pps ppx_sexp_conv ppx_let bisect_ppx --conditional ppx_deriving_rpc
     ppx_deriving.show ppx_compare))

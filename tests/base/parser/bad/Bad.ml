@@ -16,33 +16,26 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 (* Add tests in alphabetical order *)
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "base"; "parser"; "bad"; f ]
-
   let runner = "parser-dummy"
-
   let ignore_predef_args = true
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.zero
-
   let custom_args = []
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
     [
+      "bad_cast_2.scilla";
+      "bad_cast_3.scilla";
       "bad_map_key_2.scilla";
       "bad_map_key_3.scilla";
       "bad_map_key_4.scilla";
@@ -152,23 +145,14 @@ end)
 
 module LibTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "base"; "parser"; "bad"; "lib"; f ]
-
   let runner = "parser-dummy"
-
   let ignore_predef_args = true
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.zero
-
   let custom_args = []
-
   let additional_libdirs = [ [ "parser"; "bad"; "lib" ] ]
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -199,23 +183,14 @@ end)
 
 module ExpTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "base"; "parser"; "bad"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "base"; "parser"; "bad"; "exps"; f ]
-
   let runner = "parser-dummy"
-
   let ignore_predef_args = true
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.zero
-
   let custom_args = []
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -277,6 +252,7 @@ module ExpTests = Scilla_test.Util.DiffBasedTests (struct
       "exp_t-tfun-tid-with.scilexp";
       "exp_t-tfun-with.scilexp";
       "exp_t-with.scilexp";
+      "list_to_map.scilexp";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1

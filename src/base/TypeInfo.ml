@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open TypeUtil
 open Literal
 open Syntax
@@ -125,7 +125,15 @@ struct
                   patternsts @ branchts)
             in
             ots :: List.concat clausets
-        | ReadFromBC (v, _) | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
+        | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
+        | ReadFromBC (v, bf) ->
+            List.map ~f:calc_ident_locs
+              (v
+              ::
+              (match bf with
+              | CurBlockNum | ChainID -> []
+              | Timestamp s -> [ s ]
+              | ReplicateContr (addr, iparams) -> [ addr; iparams ]))
         | TypeCast (v, r, _) -> [ calc_ident_locs v; calc_ident_locs r ]
         | AcceptPayment | GasStmt _ -> []
         | CallProc (_, il) -> List.map il ~f:calc_ident_locs

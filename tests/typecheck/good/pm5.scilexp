@@ -1,0 +1,5 @@
+let b = False in
+match b with
+| True => tfun 'A => Uint32 0
+| False => tfun 'B => Uint32 0
+end

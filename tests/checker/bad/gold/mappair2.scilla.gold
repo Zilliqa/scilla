@@ -60,9 +60,12 @@
       "warning_id": 1
     },
     {
-      "warning_message":
-        "No transition in contract Test contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "warning_message": "No transition in contract Test contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/mappair2.scilla",
+        "line": 30,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

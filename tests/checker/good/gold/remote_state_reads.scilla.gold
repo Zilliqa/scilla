@@ -577,8 +577,23 @@
     },
     {
       "warning_message":
+        "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 125,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
         "No transition in contract RRContract contains an accept statement\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "contracts/remote_state_reads.scilla",
+        "line": 11,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 1
     }

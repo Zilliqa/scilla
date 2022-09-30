@@ -15,12 +15,11 @@
   You should have received a copy of the GNU General Public License along with
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
-open Core_kernel
+open Core
 
 [@@@ocaml.warning "-27-30-39"]
 
 type proto_scilla_val_map = { m : (string * proto_scilla_val) list }
-
 and proto_scilla_val = Bval of bytes | Mval of proto_scilla_val_map
 
 type proto_scilla_query = {

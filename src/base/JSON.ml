@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Literal
 open Syntax
 open ErrorUtils
@@ -31,8 +31,10 @@ module JSONLiteral = GlobalLiteral
 module JSONType = JSONLiteral.LType
 module JSONIdentifier = JSONType.TIdentifier
 module JSONName = JSONIdentifier.Name
+
 module JSONBuiltIns =
   ScillaBuiltIns (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+
 module JSONFrontEndParser = FrontEndParser.ScillaFrontEndParser (JSONLiteral)
 open JSONTypeUtilities
 open JSONIdentifier
@@ -50,11 +52,8 @@ type json_parsed_field =
 (****************************************************************)
 
 let json_exn_wrapper = JSONParser.json_exn_wrapper
-
 let member_exn = JSONParser.member_exn
-
 let to_string_exn = JSONParser.to_string_exn
-
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 
 let from_file f =
@@ -74,6 +73,10 @@ let parse_typ_exn t =
 
 let to_list_exn j =
   let thunk () = Basic.Util.to_list j in
+  json_exn_wrapper thunk
+
+let to_assoc_exn j =
+  let thunk () = Basic.Util.to_assoc j in
   json_exn_wrapper thunk
 
 let build_prim_lit_exn t v =
@@ -507,26 +510,58 @@ module Message = struct
   let message_to_jstring ?(pp = false) message =
     let j = message_to_json message in
     if pp then Basic.pretty_to_string j else Basic.to_string j
+
+  let replicate_contr_to_json m =
+    let m' =
+      List.filter_map m ~f:(fun (f, t, l) ->
+          if String.equal f ContractUtil.MessagePayload.replicate_contr_label
+          then None
+          else Some (f, t, l))
+    in
+    `List (slist_to_json m')
 end
 
 module BlockChainState = struct
-  (**  Returns a list of (vname:string,value:literal) items
-   **  from the json in the input filename. **)
+  (**  Returns bcinfo_state *)
   let get_json_data filename =
     let json = from_file filename in
     (* input json is a list of key/value pairs *)
     let jlist = json |> to_list_exn in
-    List.map jlist ~f:(fun j ->
-        match jobj_to_statevar j with
-        | ThisContr (name, t, v) -> (name, t, v)
-        | ExtrContrs _ ->
+    let state = Caml.Hashtbl.create (List.length jlist) in
+    List.iter jlist ~f:(fun j ->
+        let vname = member_exn "vname" j |> to_string_exn in
+        let value = member_exn "value" j in
+        match vname with
+        | "BLOCKNUMBER" ->
+            Caml.Hashtbl.replace state ContractUtil.blocknum_name
+              (let subm = Caml.Hashtbl.create 1 in
+               Caml.Hashtbl.add subm "" (to_string_exn value);
+               subm)
+        | "CHAINID" ->
+            Caml.Hashtbl.replace state ContractUtil.chainid_name
+              (let subm = Caml.Hashtbl.create 1 in
+               Caml.Hashtbl.add subm "" (to_string_exn value);
+               subm)
+        | "TIMESTAMP" ->
+            let ts = value |> to_assoc_exn in
+            Caml.Hashtbl.replace state ContractUtil.timestamp_name
+              (let subm = Caml.Hashtbl.create (List.length ts) in
+               List.iter ts ~f:(fun (bnum, timestamp) ->
+                   Caml.Hashtbl.add subm bnum (to_string_exn timestamp));
+               subm)
+        | "REPLICATE_CONTRACT" ->
+            let ts = value |> to_assoc_exn in
+            Caml.Hashtbl.replace state ContractUtil.replicate_contract_name
+              (let subm = Caml.Hashtbl.create (List.length ts) in
+               List.iter ts ~f:(fun (addr, new_addr) ->
+                   Caml.Hashtbl.add subm addr (to_string_exn new_addr));
+               subm)
+        | _ ->
             raise
               (mk_invalid_json
-                 ~kind:"_external cannot be present in a message JSON"
-                 ?inst:None))
-
-  (* Validation against pre-defined block state variables
-     is done in `Eval.check_blockchain_entries` *)
+                 ~kind:("Unknown field " ^ vname ^ " in blockchain JSON")
+                 ?inst:None));
+    state
 end
 
 module ContractInfo = struct

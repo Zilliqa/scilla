@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Result.Let_syntax
 open MonadUtil
@@ -52,9 +52,12 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
   let address_typecheck_cost t =
     let size =
       match t with
-      | Address (Some fts) ->
-          (* look up _this_address and every listed field *)
-          1 + IdLoc_Comp.Map.length fts
+      | Address t' -> (
+          match t' with
+          | ContrAddr fts ->
+              (* look up _this_address and every listed field *)
+              1 + IdLoc_Comp.Map.length fts
+          | LibAddr | CodeAddr | AnyAddr -> 0)
       | _ -> 0
     in
     let cost = 2 + size (* _balance and _nonce must also be looked up *) in
@@ -501,7 +504,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               pure
                 (GasGasCharge.ProdOf
                    ( GasGasCharge.StaticCost (base * 5),
-                     GasGasCharge.ValueOf (GI.get_id p) ))
+                     GasGasCharge.LogOf (GasGasCharge.ValueOf (GI.get_id p)) ))
           | _ -> fail0 ~kind:"Gas cost error for built-in pow" ?inst:None)
       | Builtin_isqrt -> (
           match args with

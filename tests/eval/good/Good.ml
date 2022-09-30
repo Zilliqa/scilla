@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 
 let explist =
@@ -46,6 +46,10 @@ let explist =
     "builtin-bsub.scilexp";
     "builtin-bech32-1.scilexp";
     "builtin-bech32-2.scilexp";
+    "builtin-bech32-3.scilexp";
+    "builtin-bech32-4.scilexp";
+    "builtin-bech32-5.scilexp";
+    "builtin-bech32-6.scilexp";
     "builtin-isqrt.scilexp";
     "builtin-eq-bystr.scilexp";
     "cons.scilexp";
@@ -56,6 +60,7 @@ let explist =
     "hash3.scilexp";
     "hash4.scilexp";
     "hash5.scilexp";
+    "hash_collisions.scilexp";
     "hash_map_stable1.scilexp";
     "hash_map_stable2.scilexp";
     "hash_map_stable3.scilexp";
@@ -123,6 +128,7 @@ let explist =
     "pm3.scilexp";
     "pm_app.scilexp";
     "pm_nesting.scilexp";
+    "pow_stress.scilexp";
     "string1.scilexp";
     "string2.scilexp";
     "times_two.scilexp";
@@ -163,27 +169,16 @@ let explist =
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "eval"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "eval"; "good"; f ]
-
   let runner = "eval-runner"
-
   let ignore_predef_args = false
-
-  let json_errors = true
-
+  let json_errors = false
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = []
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
-
   let tests = explist
-
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 

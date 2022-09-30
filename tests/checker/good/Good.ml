@@ -16,27 +16,18 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "contracts"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-contractinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -86,10 +77,29 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "dead_code_test2.scilla";
       "dead_code_test3.scilla";
       "dead_code_test4.scilla";
+      "dead_code_test5.scilla";
+      "dead_code_test6.scilla";
+      "dead_code_test7.scilla";
+      "dead_code_test8.scilla";
+      "dead_code_test9.scilla";
+      "dead_code_test10.scilla";
+      "dead_code_test11.scilla";
+      "dead_code_test12.scilla";
+      "dead_code_test13.scilla";
+      "dead_code_test14.scilla";
+      "unbox_result1.scilla";
+      "unbox_result2.scilla";
+      "unbox_result3.scilla";
+      "unbox_result4.scilla";
+      "unbox_result5.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
       "accounting_tests.scilla";
       "accounting_tests_support.scilla";
+      "timestamp.scilla";
+      "codehash.scilla";
+      "chainid.scilla";
+      "ark.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0
@@ -98,23 +108,14 @@ end)
 (* These tests differ from the regular contract tests by having an init file and additonal libdirs. *)
 module TestsWithInit = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "contracts"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-contractinfo" ]
-
   let additional_libdirs = [ [ "contracts" ] ]
-
   let provide_init_arg = true
-
   let diff_filter s = s
 
   let tests =
@@ -130,23 +131,14 @@ end)
 (* These differ from "Tests" because of an additional libdir argument. *)
 module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "checker"; "good"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-contractinfo" ]
-
   let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -196,53 +188,31 @@ end)
  * importing libraries whose addresses are specified in the init JSON *)
 module InitArgTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "checker"; "good"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = []
-
   let provide_init_arg = true
-
   let diff_filter s = s
-
   let additional_libdirs = [ [ "checker"; "good"; "lib" ] ]
-
   let tests = [ "blockchain_import.scilla" ]
-
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
 module ShogiTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "contracts"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-contractinfo" ]
-
   let additional_libdirs = [ [ "contracts"; "shogi_lib" ] ]
-
   let provide_init_arg = false
-
   let diff_filter s = s
-
   let tests = [ "shogi.scilla"; "shogi_proc.scilla" ]
-
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)
 
@@ -250,26 +220,30 @@ end)
  * because that adds a lot of diff noise when things change. *)
 module TypeInfoTests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".typeinfo.gold" ]
-
   let test_path f = [ "contracts"; f ]
-
   let runner = "scilla-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 8000
-
   let custom_args = [ "-cf"; "-typeinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
-
   let tests = [ "map_corners_test.scilla"; "auction.scilla" ]
+  let exit_code : UnixLabels.process_status = WEXITED 0
+end)
 
+module CallgraphTests = Scilla_test.Util.DiffBasedTests (struct
+  let gold_path dir f = [ dir; "checker"; "good"; "gold"; f ^ ".gold" ]
+  let test_path f = [ "contracts"; f ]
+  let runner = "scilla-checker"
+  let ignore_predef_args = false
+  let json_errors = false
+  let gas_limit = Stdint.Uint64.of_int 8000
+  let custom_args = [ "-dump-callgraph-stdout" ]
+  let additional_libdirs = []
+  let provide_init_arg = false
+  let diff_filter s = s
+  let tests = [ "callgraph1.scilla"; "callgraph2.scilla" ]
   let exit_code : UnixLabels.process_status = WEXITED 0
 end)

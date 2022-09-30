@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Scilla_base
 open ParserUtil
 open Literal
@@ -170,9 +170,10 @@ let output_message_json gas_remaining mlist =
 
 let output_event_json elist =
   let open JSON.JSONLiteral in
-  List.map elist ~f:(function
-    | Msg m -> JSON.Event.event_to_json m
-    | _ -> `Null)
+  `List
+    (List.map elist ~f:(function
+      | Msg m -> JSON.Event.event_to_json m
+      | _ -> `Null))
 
 let assert_no_address_type_in_type t gas_remaining =
   let open RunnerType in
@@ -393,7 +394,7 @@ let run_with_args args =
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+          (mk_error0 ~kind:"Insufficient gas to parse contract/init files"
              ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
@@ -401,7 +402,7 @@ let run_with_args args =
       let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
-          (mk_error0 ~kind:"Ran out of gas when parsing message" ?inst:None)
+          (mk_error0 ~kind:"Insufficient gas to parse message" ?inst:None)
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
   in
@@ -409,8 +410,15 @@ let run_with_args args =
   if is_library then
     if is_deployment then deploy_library args gas_remaining
     else
-      (* Messages to libraries are ignored, but tolerated *)
-      `Assoc [ ("gas_remaining", `String (Uint64.to_string gas_remaining)) ]
+      (* Messages to libraries are ignored, but tolerated. *)
+      `Assoc
+        [
+          ("gas_remaining", `String (Uint64.to_string gas_remaining));
+          ( RunnerName.as_string ContractUtil.accepted_label,
+            `String (Bool.to_string false) );
+          ("messages", output_message_json gas_remaining []);
+          ("events", output_event_json []);
+        ]
   else
     match FEParser.parse_cmodule args.input with
     | Error e ->
@@ -438,7 +446,7 @@ let run_with_args args =
             in
             plog msg;
             fatal_error_gas_scale Gas.scale_factor
-              (mk_error0 ~kind:"Ran out of gas when parsing contract/init files"
+              (mk_error0 ~kind:"Insufficient gas to parse contract/init files"
                  ?inst:None)
               gas_remaining
         | Some this_address ->
@@ -481,16 +489,6 @@ let run_with_args args =
                 dis_cmod.smver
             in
 
-            (* Retrieve block chain state  *)
-            let bstate =
-              try JSON.BlockChainState.get_json_data args.input_blockchain
-              with Invalid_json s ->
-                fatal_error_gas_scale Gas.scale_factor
-                  (s
-                  @ mk_error0 ~kind:"Failed to parse json"
-                      ~inst:args.input_blockchain)
-                  gas_remaining
-            in
             let ( ( output_msg_json,
                     output_state_json,
                     output_events_json,
@@ -503,7 +501,7 @@ let run_with_args args =
                 in
                 (* Initializing the contract's state, just for checking things. *)
                 let init_res =
-                  init_module libs_env dis_cmod initargs Uint128.zero bstate
+                  init_module libs_env dis_cmod initargs Uint128.zero
                 in
                 (* Prints stats after the initialization and returns the initial state *)
                 (* Will throw an exception if unsuccessful. *)
@@ -523,7 +521,10 @@ let run_with_args args =
                         else Some { fname = s; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
-                  let () = initialize ~sm ~fields ~ext_states:[] in
+                  let () =
+                    initialize ~sm ~fields ~ext_states:[]
+                      ~bcinfo:(Caml.Hashtbl.create 0)
+                  in
                   let field_vals' =
                     if args.reinit then
                       (* Retrieve state variables *)
@@ -588,7 +589,7 @@ let run_with_args args =
                   if is_ipc then
                     let cur_bal = args.balance in
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     let cstate, gas_remaining, _dyn_checks =
                       check_extract_cstate args.input init_res gas_remaining
@@ -605,10 +606,24 @@ let run_with_args args =
                     in
                     let () =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
-                        ~ext_states:[]
+                        ~ext_states:[] ~bcinfo:(Caml.Hashtbl.create 0)
                     in
                     (cstate, gas_remaining)
                   else
+                    (* Retrieve block chain state  *)
+                    let bcinfo =
+                      try
+                        JSON.BlockChainState.get_json_data args.input_blockchain
+                      with Invalid_json s ->
+                        fatal_error_gas_scale Gas.scale_factor
+                          (s
+                          @ mk_error0
+                              ~kind:
+                                (sprintf "Failed to parse json %s:\n"
+                                   args.input_blockchain)
+                              ?inst:None)
+                          gas_remaining
+                    in
                     (* Retrieve state variables *)
                     let curargs, cur_bal, ext_states =
                       try input_state_json args.input_state
@@ -625,7 +640,7 @@ let run_with_args args =
                     in
                     (* Initializing the contract's state *)
                     let init_res =
-                      init_module libs_env dis_cmod initargs cur_bal bstate
+                      init_module libs_env dis_cmod initargs cur_bal
                     in
                     (* Prints stats after the initialization and returns the initial state *)
                     (* Will throw an exception if unsuccessful. *)
@@ -652,6 +667,7 @@ let run_with_args args =
                     in
                     let () =
                       StateService.initialize ~sm:Local ~fields ~ext_states
+                        ~bcinfo
                     in
                     (cstate, gas_remaining)
                 in
@@ -662,9 +678,6 @@ let run_with_args args =
                 plog
                   (sprintf "Executing message:\n%s\n"
                      (JSON.Message.message_to_jstring mmsg));
-                plog
-                  (sprintf "In a Blockchain State:\n%s\n"
-                     (pp_typ_literal_map bstate));
                 let prepped_message, pending_dyn_checks, gas_remaining =
                   let pmsg = prepare_for_message ctr mmsg in
                   check_prepare_message pmsg gas_remaining
@@ -672,9 +685,7 @@ let run_with_args args =
                 let gas_remaining =
                   perform_dynamic_typechecks pending_dyn_checks gas_remaining
                 in
-                let step_result =
-                  handle_message prepped_message cstate bstate
-                in
+                let step_result = handle_message prepped_message cstate in
                 let (cstate', mlist, elist, accepted_b), gas =
                   check_after_step step_result gas_remaining
                 in
@@ -697,7 +708,7 @@ let run_with_args args =
 
                 let osj = output_state_json cstate'.balance field_vals in
                 let omj = output_message_json gas mlist in
-                let oej = `List (output_event_json elist) in
+                let oej = output_event_json elist in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in
 
                 ((omj, osj, oej, accepted_b), gas')

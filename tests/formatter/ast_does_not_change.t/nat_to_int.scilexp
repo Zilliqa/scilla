@@ -1,0 +1,8 @@
+
+let zero = Zero in
+let one = Succ zero in
+let two = Succ one in
+let three = Succ two in
+
+let res1 = nat_to_int zero in
+nat_to_int three

@@ -1,0 +1,8 @@
+scilla_version 0
+
+library Test
+
+type MultiSigWallet_MultiSigTransition =
+| Msw_MultiSigTransition_Allow of (List ByStr20)
+
+contract Test ()

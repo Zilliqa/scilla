@@ -1,0 +1,548 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "contract_owner", "tag": "NoInfo" },
+      { "field": "initial_fee_address", "tag": "NoInfo" },
+      { "field": "chain_id", "tag": "NotMoney" },
+      { "field": "current_owner", "tag": "(Option NotMoney)" },
+      { "field": "pending_owner", "tag": "(Option NoInfo)" },
+      { "field": "token_proxy", "tag": "(Option NotMoney)" },
+      { "field": "fee_address", "tag": "NoInfo" },
+      { "field": "voided_cheques", "tag": "(Map (Map NoInfo))" }
+    ],
+    "ADT constructors": [
+      {
+        "ark.Coins": [
+          { "constructor": "ark.Coins", "tags": [ "_", "Money" ] }
+        ]
+      },
+      {
+        "ark.NFT": [
+          { "constructor": "ark.NFT", "tags": [ "_", "NoInfo" ] }
+        ]
+      },
+      {
+        "ark.Cheque": [
+          {
+            "constructor": "ark.Cheque",
+            "tags": [ "_", "NoInfo", "NoInfo", "NotMoney", "NoInfo" ]
+          }
+        ]
+      },
+      {
+        "ark.Denom": [ { "constructor": "ark.Token", "tags": [ "NoInfo" ] } ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "ARK",
+    "params": [
+      { "vname": "contract_owner", "type": "ByStr20" },
+      { "vname": "initial_fee_address", "type": "ByStr20" },
+      { "vname": "chain_id", "type": "Uint32" }
+    ],
+    "fields": [
+      { "vname": "current_owner", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "pending_owner", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "token_proxy", "type": "Option (ByStr20)", "depth": 0 },
+      { "vname": "fee_address", "type": "ByStr20", "depth": 0 },
+      {
+        "vname": "voided_cheques",
+        "type": "Map (ByStr33) (Map (ByStr32) (Bool))",
+        "depth": 2
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "ExecuteTrade",
+        "params": [
+          { "vname": "token", "type": "ark.NFT" },
+          { "vname": "price", "type": "ark.Coins" },
+          { "vname": "fee_amount", "type": "Uint128" },
+          { "vname": "sell_cheque", "type": "ark.Cheque" },
+          { "vname": "buy_cheque", "type": "ark.Cheque" }
+        ]
+      },
+      {
+        "vname": "VoidCheque",
+        "params": [
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" },
+          { "vname": "signature", "type": "ByStr64" }
+        ]
+      },
+      {
+        "vname": "SetTokenProxy",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "TransferOwnership",
+        "params": [ { "vname": "new_owner", "type": "ByStr20" } ]
+      },
+      { "vname": "AcceptOwnership", "params": [] },
+      { "vname": "RevokeOwnership", "params": [] },
+      {
+        "vname": "TransferFromSuccessCallBack",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "recipient", "type": "ByStr20" },
+          { "vname": "token_id", "type": "Uint256" }
+        ]
+      },
+      {
+        "vname": "ZRC6_TransferFromCallback",
+        "params": [
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" },
+          { "vname": "token_id", "type": "Uint256" }
+        ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "ThrowError",
+        "params": [ { "vname": "err", "type": "ark.Error" } ]
+      },
+      {
+        "vname": "IsOwner",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "IsPendingOwner",
+        "params": [ { "vname": "address", "type": "ByStr20" } ]
+      },
+      { "vname": "NoPendingOwner", "params": [] },
+      {
+        "vname": "IsNotExpired",
+        "params": [ { "vname": "expiry", "type": "BNum" } ]
+      },
+      {
+        "vname": "IsValidPrice",
+        "params": [ { "vname": "price", "type": "ark.Coins" } ]
+      },
+      {
+        "vname": "IsValidFee",
+        "params": [
+          { "vname": "price", "type": "ark.Coins" },
+          { "vname": "fee", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "IsValidSide",
+        "params": [
+          { "vname": "s1", "type": "ark.Side" },
+          { "vname": "s2", "type": "ark.Side" }
+        ]
+      },
+      {
+        "vname": "IsNotVoided",
+        "params": [
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" }
+        ]
+      },
+      {
+        "vname": "IsValidSignature",
+        "params": [
+          { "vname": "action", "type": "ark.Action" },
+          { "vname": "cheque_hash", "type": "ByStr32" },
+          { "vname": "pubkey", "type": "ByStr33" },
+          { "vname": "signature", "type": "ByStr64" }
+        ]
+      },
+      {
+        "vname": "ValidateAndConsumeCheque",
+        "params": [
+          { "vname": "token", "type": "ark.NFT" },
+          { "vname": "price", "type": "ark.Coins" },
+          { "vname": "fee_amount", "type": "Uint128" },
+          { "vname": "valid_direction", "type": "ark.Side" },
+          { "vname": "cheque", "type": "ark.Cheque" }
+        ]
+      },
+      {
+        "vname": "TransferCoins",
+        "params": [
+          { "vname": "coins", "type": "ark.Coins" },
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "TransferNFT",
+        "params": [
+          { "vname": "token", "type": "ark.NFT" },
+          { "vname": "from", "type": "ByStr20" },
+          { "vname": "to", "type": "ByStr20" }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "OwnershipRevoked",
+        "params": [ { "vname": "current_owner", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "OwnershipTransferAccepted",
+        "params": [
+          { "vname": "previous_current_owner", "type": "Option (ByStr20)" },
+          { "vname": "current_owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "OwnershipTransferInitiated",
+        "params": [
+          { "vname": "current_owner", "type": "ByStr20" },
+          { "vname": "pending_owner", "type": "ByStr20" }
+        ]
+      },
+      {
+        "vname": "SetTokenProxySuccess",
+        "params": [ { "vname": "token_proxy", "type": "ByStr20" } ]
+      },
+      {
+        "vname": "VoidChequeSuccess",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "sender", "type": "ByStr20" },
+          { "vname": "cheque_hash", "type": "ByStr32" }
+        ]
+      },
+      {
+        "vname": "ExecuteTradeSuccess",
+        "params": [
+          { "vname": "initiator", "type": "ByStr20" },
+          { "vname": "token", "type": "ark.NFT" },
+          { "vname": "seller", "type": "ByStr20" },
+          { "vname": "buyer", "type": "ByStr20" },
+          { "vname": "proceeds", "type": "ark.Coins" },
+          { "vname": "fees", "type": "ark.Coins" },
+          { "vname": "sell_cheque", "type": "ark.Cheque" },
+          { "vname": "buy_cheque", "type": "ark.Cheque" }
+        ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "ark.Coins",
+        "tparams": [],
+        "tmap": [
+          { "cname": "ark.Coins", "argtypes": [ "ark.Denom", "Uint128" ] }
+        ]
+      },
+      {
+        "tname": "ark.Side",
+        "tparams": [],
+        "tmap": [
+          { "cname": "ark.Buy", "argtypes": [] },
+          { "cname": "ark.Sell", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "ark.NFT",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "ark.NFT",
+            "argtypes": [
+              "ByStr20 with contract field token_owners : Map (Uint256) (ByStr20) end",
+              "Uint256"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "ark.Action",
+        "tparams": [],
+        "tmap": [
+          { "cname": "ark.Execute", "argtypes": [] },
+          { "cname": "ark.Void", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      },
+      {
+        "tname": "ark.Error",
+        "tparams": [],
+        "tmap": [
+          { "cname": "ark.CodeNotOwner", "argtypes": [] },
+          { "cname": "ark.CodeNotPendingOwner", "argtypes": [] },
+          { "cname": "ark.CodePendingOwnerNotEmpty", "argtypes": [] },
+          { "cname": "ark.CodeTokenProxyNotSet", "argtypes": [] },
+          { "cname": "ark.CodeTokenProxyAlreadySet", "argtypes": [] },
+          { "cname": "ark.CodeSignatureInvalid", "argtypes": [] },
+          { "cname": "ark.CodeChequeAlreadyVoided", "argtypes": [] },
+          { "cname": "ark.CodeChequeExpired", "argtypes": [] },
+          { "cname": "ark.CodeInvalidPrice", "argtypes": [] },
+          { "cname": "ark.CodeInvalidFee", "argtypes": [] },
+          { "cname": "ark.CodeInvalidSide", "argtypes": [] },
+          { "cname": "ark.CodeInvalidOwner", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "ark.Cheque",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "ark.Cheque",
+            "argtypes": [
+              "ark.Side", "BNum", "Uint128", "ByStr33", "ByStr64"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "ark.Denom",
+        "tparams": [],
+        "tmap": [
+          { "cname": "ark.Zil", "argtypes": [] },
+          { "cname": "ark.Token", "argtypes": [ "ByStr20" ] }
+        ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message":
+        "Read only field, consider making it a contract parameter: fee_address",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 378,
+        "column": 21
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: ListUtils",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 6,
+        "column": 17
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused imported library: IntUtils",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 6,
+        "column": 8
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused library value: zil",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 43,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: CodeChequeExpired",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 66,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: direction",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 102,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: expiry",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 102,
+        "column": 24
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: nonce",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 102,
+        "column": 31
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: signature",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 102,
+        "column": 44
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: denom",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 109,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: token_id",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 499,
+        "column": 66
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: to",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 499,
+        "column": 53
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: from",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 499,
+        "column": 38
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: token_id",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 493,
+        "column": 75
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: recipient",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 493,
+        "column": 55
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: from",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 493,
+        "column": 40
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: p",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 202,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "A hashing builtin is applied to argument \"price\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 123,
+        "column": 41
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "A hashing builtin is applied to argument \"token\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 122,
+        "column": 41
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "A hashing builtin is applied to argument \"direction\" whose compound type makes it prone to hash collisions. Consider using values of more primitive types in your hashing scheme.",
+      "start_location": {
+        "file": "contracts/ark.scilla",
+        "line": 121,
+        "column": 39
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    }
+  ],
+  "gas_remaining": "7860"
+}
+

@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open OUnit2
 open Scilla_base
 open Literal
@@ -76,6 +76,8 @@ let equivalent_types =
     (* Addresses *)
     ("ByStr20", "ByStr20");
     ("ByStr20 with end", "ByStr20 with end");
+    ("ByStr20 with library end", "ByStr20 with library end");
+    ("ByStr20 with _codehash end", "ByStr20 with _codehash end");
     ("ByStr20 with contract end", "ByStr20 with contract end");
     ( "ByStr20 with contract field x : Uint32 end",
       "ByStr20 with contract field x : Uint32 end" );
@@ -132,6 +134,10 @@ let assignable_but_not_equivalent_types =
   [
     (* Addresses *)
     ("ByStr20", "ByStr20 with end");
+    ("ByStr20", "ByStr20 with library end");
+    ("ByStr20", "ByStr20 with _codehash end");
+    ("ByStr20 with _codehash end", "ByStr20 with library end");
+    ("ByStr20 with _codehash end", "ByStr20 with contract end");
     ("ByStr20", "ByStr20 with contract end");
     ("ByStr20 with end", "ByStr20 with contract end");
     ("ByStr20 with end", "ByStr20 with contract field x : Uint32 end");
@@ -220,6 +226,7 @@ let not_assignable_in_either_direction_types =
     ( "forall 'A. 'A -> (forall 'A. List ('A)) -> 'B",
       "forall 'B. 'B -> (forall 'C. List ('C)) -> 'B" );
     (* Addresses *)
+    ("ByStr20 with library end", "ByStr20 with contract end");
     ( "ByStr20 with contract field x : Int32 end",
       "ByStr20 with contract field x : Uint32 end" );
     ( "ByStr20 with contract field x : Int32 end",
@@ -273,7 +280,6 @@ let not_assignable_in_either_direction_types =
   ]
 
 let make_test eq (t1, t2) = (t1, t2, eq)
-
 let reverse_test eq (t1, t2) = (t2, t1, eq)
 
 let all_type_equiv_tests =
@@ -391,23 +397,14 @@ let ground_type_tests = "ground_type_tests" >::: all_ground_type_tests
 
 module Tests = Scilla_test.Util.DiffBasedTests (struct
   let gold_path dir f = [ dir; "typecheck"; "good"; "gold"; f ^ ".gold" ]
-
   let test_path f = [ "typecheck"; "good"; f ]
-
   let runner = "type-checker"
-
   let ignore_predef_args = false
-
   let json_errors = true
-
   let gas_limit = Stdint.Uint64.of_int 4002000
-
   let custom_args = [ "-typeinfo" ]
-
   let additional_libdirs = []
-
   let provide_init_arg = false
-
   let diff_filter s = s
 
   let tests =
@@ -430,6 +427,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "pm2.scilexp";
       "pm3.scilexp";
       "pm4.scilexp";
+      "pm5.scilexp";
       "pair.scilexp";
       "subst.scilexp";
       "nat_to_int.scilexp";

@@ -64,7 +64,7 @@ Required Ubuntu packages can be installed as below:
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf
 ```
 
 On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
@@ -162,7 +162,7 @@ Disabling sandboxing is required since [WSL does not support Sandboxing](https:/
 To disable sandboxing, simply run:
 
 ```shell
-opam init --disable-sandboxing --compiler=4.08.1 --yes
+opam init --disable-sandboxing --compiler=ocaml-base-compiler.4.11.2 --yes
 ```
 
 7. Set up current shell to work with opam
@@ -182,7 +182,7 @@ opam install ./scilla.opam --deps-only --with-test
 then
 
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.08.1
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.11.2
 ```
 
 9. Build and install
@@ -230,7 +230,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
 
 #### Initialize opam
 ```shell
-opam init --compiler=4.08.1 --yes
+opam init --compiler=ocaml-base-compiler.4.11.2 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.
@@ -289,7 +289,7 @@ This is like a standard opam switch but instead of `$HOME/.opam`, it will reside
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
 To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.08.1
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.11.2
 ```
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
@@ -310,38 +310,12 @@ git clean -dfX --exclude=\!_opam/**
 
 Instead of local switches, you can install a global switch called `scilla` on your system as follows
 ```shell
-opam switch create scilla ocaml-base-compiler.4.08.1
+opam switch create scilla ocaml-base-compiler.4.11.2
 ```
 
 Now you will need to install scilla's dependencies with the following command:
 ```shell
 opam install ./scilla.opam --deps-only --with-test
 ```
-
-</details>
-
-## Using OCaml with Emacs
-
-Please, read the instructions below if you intend to hack on Scilla implementation.
-
-<details><summary>Instructions</summary>
-
-Scilla is written in [OCaml](https://ocaml.org/).
-You can read about how to setup your OCaml development environment [here](https://dev.realworldocaml.org/install.html).
-The following extensions would be useful for working on this codebase:
-
-* [tuareg](https://github.com/ocaml/tuareg) for syntax highlighting
-* [merlin](https://github.com/ocaml/merlin/wiki/emacs-from-scratch) for auto-completion
-* [ocp-indent](https://github.com/OCamlPro/ocp-indent) for smart indentation
-
-All those libraries can be installed via [opam-user-setup](https://github.com/OCamlPro/opam-user-setup):
-```shell
-opam install user-setup
-```
-
-Additionally, you might want to install a nice OCaml REPL called [utop](https://github.com/ocaml-community/utop).
-
-To enable flycheck mode (integration of `scilla-checker` with Emacs for editing Scilla files), install
-flycheck for Emacs. See installation instructions [here](http://www.flycheck.org/en/latest/user/installation.html).
 
 </details>

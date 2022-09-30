@@ -1,0 +1,61 @@
+{
+  "type_info": [
+    {
+      "vname": "b",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 1,
+        "column": 5
+      },
+      "end_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 1,
+        "column": 6
+      }
+    },
+    {
+      "vname": "b",
+      "type": "Bool",
+      "start_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 2,
+        "column": 7
+      },
+      "end_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 2,
+        "column": 8
+      }
+    },
+    {
+      "vname": "'A",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 3,
+        "column": 16
+      },
+      "end_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 3,
+        "column": 18
+      }
+    },
+    {
+      "vname": "'B",
+      "type": "Uint32",
+      "start_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 4,
+        "column": 17
+      },
+      "end_location": {
+        "file": "typecheck/good/pm5.scilexp",
+        "line": 4,
+        "column": 19
+      }
+    }
+  ],
+  "type": "forall 'A. Uint32"
+}

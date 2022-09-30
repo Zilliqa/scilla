@@ -1,0 +1,12 @@
+(* Expected answer *)
+(* (Map((PrimType Uint64)(PrimType Uint64))(((UintLit 64 2)(UintLit 64 239))((UintLit 64 1)(UintLit 64 42)))) *)
+
+let k1 = Uint64 1 in
+let k2 = Uint64 2 in
+let v1 = Uint64 42 in
+let v2 = Uint64 239 in
+
+let m0 = Emp Uint64 Uint64 in
+let m1 = builtin put m0 k1 v1 in
+let m2 = builtin put m1 k2 v2 in
+m2

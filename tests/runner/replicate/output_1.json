@@ -1,0 +1,19 @@
+{
+  "scilla_major_version": "0",
+  "gas_remaining": "7946",
+  "_accepted": "false",
+  "messages": [],
+  "states": [ { "vname": "_balance", "type": "Uint128", "value": "0" } ],
+  "events": [
+    {
+      "_eventname": "Replicated",
+      "params": [
+        {
+          "vname": "new_addr",
+          "type": "ByStr20",
+          "value": "0x11345678901234567890123456789012345678aa"
+        }
+      ]
+    }
+  ]
+}

@@ -3,12 +3,15 @@
   "errors": [
     {
       "error_message": "Type error(s) in contract: Matcher\n",
-      "start_location": { "file": "", "line": 0, "column": 0 },
+      "start_location": {
+        "file": "checker/bad/match-in-transition.scilla",
+        "line": 3,
+        "column": 10
+      },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Error during pattern-match checking of component: transition foo:\n",
+      "error_message": "Error during pattern-match checking of component: transition foo:\n",
       "start_location": {
         "file": "checker/bad/match-in-transition.scilla",
         "line": 7,
@@ -17,8 +20,7 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message":
-        "Type error in pattern matching on `x` (or one of its branches):\nNon-exhaustive pattern match.",
+      "error_message": "Type error in pattern matching on `x` (or one of its branches):\nNon-exhaustive pattern match.",
       "start_location": {
         "file": "checker/bad/match-in-transition.scilla",
         "line": 10,

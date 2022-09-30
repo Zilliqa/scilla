@@ -13,6 +13,7 @@ RUN apt-get update \
     && apt-get install -y software-properties-common \
     && add-apt-repository ppa:avsm/ppa -y \
     && apt-get update && apt-get install -y --no-install-recommends \
+    git \
     curl \
     wget \
     cmake \
@@ -28,10 +29,11 @@ RUN apt-get update \
     libsecp256k1-dev \
     libboost-system-dev \
     libboost-test-dev \
+    libboost-dev \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV OCAML_VERSION 4.08.1
+ENV OCAML_VERSION 4.11.2
 
 # CMake gets installed here
 ENV PATH="/root/.local/bin:${PATH}"

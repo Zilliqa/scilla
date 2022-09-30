@@ -1,0 +1,33 @@
+(* Detecting hash-collisions for the ADT hashing scheme *)
+let a = 0x12 in
+let b = 0x34 in
+let a = builtin to_bystr a in
+let b = builtin to_bystr b in
+let x = Pair {ByStr ByStr} a b in
+let e = 0x1234 in
+let f = 0x in
+let e = builtin to_bystr e in
+let f = builtin to_bystr f in
+let y = Pair {ByStr ByStr} e f in
+let hash_x = builtin keccak256hash x in
+let hash_y = builtin keccak256hash y in
+(* Must be different, i.e. False here. But for backwards compatibility reasons
+   we cannot fix it, since there are deployed contracts that hash ADTs.
+*)
+let equal_pair_hashes = builtin eq hash_x hash_y in
+
+(* Detecting hash-collisions for the message hashing scheme *)
+let msg1 = { _tag: ""; _recipient : 0x0011223344556677889900112233445566778899; _amount : Uint128 0 } in
+let msg2 = { _recipient : 0x0011223344556677889900112233445566778899; _tag: ""; _amount : Uint128 0 } in
+let hash_msg1 = builtin keccak256hash msg1 in
+let hash_msg2 = builtin keccak256hash msg2 in
+(* must be the same, i.e. True here (because this is just messages fields specified in different order) *)
+let equal_msg_hashes = builtin eq hash_msg1 hash_msg2 in
+
+let msg3 = { _tag: ""; _recipient : 0x0011223344556677889900112233445566778899; _amount : Uint128 0; foo : "bar"} in
+let msg4 = { _tag: ""; _recipient : 0x0011223344556677889900112233445566778899; _amount : Uint128 0; f : "oobar"} in
+let hash_msg3 = builtin keccak256hash msg3 in
+let hash_msg4 = builtin keccak256hash msg4 in
+(* must be different, i.e. False here *)
+let equal_msg_hashes2 = builtin eq hash_msg3 hash_msg4 in
+equal_msg_hashes2

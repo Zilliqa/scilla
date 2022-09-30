@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open Result.Let_syntax
 open ErrorUtils
 open MonadUtil
@@ -42,7 +42,6 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   open PreDisSyntax
 
   let wrap_disambiguation_err e ?(opt = "") = wrap_err e "Disambiguation" ~opt
-
   let wrap_disambiguation_serr s ?(opt = "") = wrap_serr s "Disambiguation" ~opt
 
   (**************************************************************)
@@ -217,8 +216,10 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_t = recurse t in
           pure @@ PostDisType.PolyFun (tvar, dis_t)
       | Unit -> pure @@ PostDisType.Unit
-      | Address None -> pure @@ PostDisType.Address None
-      | Address (Some fts) ->
+      | Address AnyAddr -> pure @@ PostDisType.Address AnyAddr
+      | Address CodeAddr -> pure @@ PostDisType.Address CodeAddr
+      | Address LibAddr -> pure @@ PostDisType.Address LibAddr
+      | Address (ContrAddr fts) ->
           let%bind dis_fts =
             foldM (IdLoc_Comp.Map.to_alist fts)
               ~init:PostDisType.IdLoc_Comp.Map.empty ~f:(fun acc (id, t) ->
@@ -227,7 +228,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ PostDisType.IdLoc_Comp.Map.set acc ~key:dis_id ~data:dis_t)
           in
-          pure @@ PostDisType.Address (Some dis_fts)
+          pure @@ PostDisType.Address (ContrAddr dis_fts)
     in
 
     recurse t
@@ -314,7 +315,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             foldrM msg_entries ~init:[] ~f:(fun acc (label, t, l) ->
                 let%bind res_l = recurser l in
                 let%bind res_t = disambiguate_type dicts.typ_dict t in
-                pure @@ (label, res_t, res_l) :: acc)
+                pure @@ ((label, res_t, res_l) :: acc))
           in
           pure @@ ResLit.Msg res_msg_entries
       | Map ((kt, vt), mentries) ->
@@ -639,15 +640,38 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.MatchStmt (dis_x, dis_pss), var_dict_acc)
         | ReadFromBC (x, f) ->
+            let disambiguate_bcinfo = function
+              | CurBlockNum -> pure @@ PostDisSyntax.CurBlockNum
+              | ChainID -> pure @@ PostDisSyntax.ChainID
+              | Timestamp id ->
+                  let%bind dis_id =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      id
+                  in
+                  pure @@ PostDisSyntax.Timestamp dis_id
+              | ReplicateContr (addr, iparams) ->
+                  let%bind dis_addr =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      addr
+                  in
+                  let%bind dis_iparams =
+                    disambiguate_identifier_helper var_dict_acc (SR.get_loc rep)
+                      iparams
+                  in
+                  pure @@ PostDisSyntax.ReplicateContr (dis_addr, dis_iparams)
+            in
+            let%bind f' = disambiguate_bcinfo f in
             let%bind dis_x = name_def_as_simple_global x in
             (* x is now in scope as a local, so remove from var dictionary *)
             let new_var_dict =
               remove_local_id_from_dict var_dict_acc (as_string x)
             in
-            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f), new_var_dict)
+            pure @@ (PostDisSyntax.ReadFromBC (dis_x, f'), new_var_dict)
         | TypeCast (x, r, t) ->
             let%bind dis_x = name_def_as_simple_global x in
-            let%bind dis_r = name_def_as_simple_global r in
+            let%bind dis_r =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) r
+            in
             let%bind dis_t = disambiguate_type dicts.typ_dict t in
             let new_var_dict =
               remove_local_id_from_dict var_dict_acc (as_string x)

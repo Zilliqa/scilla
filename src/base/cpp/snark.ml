@@ -26,23 +26,17 @@ external _force_link_ : unit -> unit = "alt_bn128_G1_add_Z"
 type scalar = string (* TODO: Replace this with something like ByStr32 *)
 
 let equal_scalar = String.equal
-
 let equal_string = String.equal
 
 type g1point = { g1x : scalar; g1y : scalar } [@@deriving equal]
-
 type g2point = { g2x : string; g2y : string } [@@deriving equal]
 
 (* TODO: Replace with (ByStr64,ByStr64) *)
 
 let scalar_len = 32
-
 let g1point_len = scalar_len + scalar_len
-
 let g2comp_len = 64
-
 let g2point_len = g2comp_len + g2comp_len
-
 let g1g2pair_len = g1point_len + g2point_len
 
 (* each pair in alt_bn128_pairing_product *)

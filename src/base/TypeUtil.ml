@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Core_kernel
+open Core
 open ErrorUtils
 open Sexplib.Std
 open Literal
@@ -42,9 +42,7 @@ module type QualifiedTypes = sig
   type t
 
   val t_of_sexp : Sexp.t -> t
-
   val sexp_of_t : t -> Sexp.t
-
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 
@@ -53,18 +51,13 @@ module type MakeTEnvFunctor = functor (Q : QualifiedTypes) (R : Rep) -> sig
   type resolve_result
 
   val rr_loc : resolve_result -> loc
-
   val rr_rep : resolve_result -> R.rep
-
   val rr_typ : resolve_result -> Q.t inferred_type
-
   val rr_pp : resolve_result -> string
-
   val mk_qual_tp : TUType.t -> Q.t inferred_type
 
   module TEnv : sig
     type t
-
     type restore
 
     (* Make new type environment *)
@@ -135,9 +128,7 @@ functor
     type resolve_result = { qt : Q.t inferred_type; rep : R.rep }
 
     let rr_loc rr = R.get_loc rr.rep
-
     let rr_rep rr = rr.rep
-
     let rr_typ rr = rr.qt
 
     let rr_pp rr =
@@ -246,8 +237,8 @@ functor
                     (sprintf "Unbound type variable in type %s" (pp_typ_error t))
                   ~inst:a
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
-          | Address None -> pure ()
-          | Address (Some fts) ->
+          | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
+          | Address (ContrAddr fts) ->
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:() ~f:(fun _ (_, t) ->
                   is_wf_typ' t tb)
         in
@@ -273,7 +264,6 @@ functor
               sloc
 
       let existsT env id = Hashtbl.mem env.tenv (TUName.as_string id)
-
       let existsV env id = Hashtbl.mem env.tvars (TUName.as_string id)
 
       let mk () =
@@ -315,13 +305,9 @@ module TypeUtilities = struct
 
   (* Some useful data type constructors *)
   let fun_typ t s = FunType (t, s)
-
   let tvar i = TypeVar i
-
   let tfun_typ i t = PolyFun (i, t)
-
   let map_typ k v = MapType (k, v)
-
   let unit_typ = Unit
 
   (* Return True if corresponding elements are `type_equiv`,
@@ -402,7 +388,7 @@ module TypeUtilities = struct
                 adt_serializable
                 && List.for_all ts ~f:(fun t -> recurser t seen_adts seen_tvars)
           )
-      | Address (Some fts) when check_addresses ->
+      | Address (ContrAddr fts) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
           IdLoc_Comp.Map.for_all fts ~f:(fun t ->
@@ -464,10 +450,10 @@ module TypeUtilities = struct
     then pure TUType.event_typ
     else if List.exists m ~f:(fun (x, _, _) -> String.(exception_label = x))
     then pure TUType.exception_typ
-    else
-      fail1
-        ~kind:"Invalid message construct. Not any of send, event or exception."
-        ?inst:None lc
+    else if
+      List.exists m ~f:(fun (x, _, _) -> String.(replicate_contr_label = x))
+    then pure TUType.replicate_contr_typ
+    else fail1 ~kind:"Invalid message construct." ?inst:None lc
 
   (* Given a map type and a list of key types, what is the type of the accessed value? *)
   let rec map_access_type mt nindices =
@@ -483,31 +469,41 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let address_field_type f t =
-    let is_balance = [%equal: TUName.t] (get_id f) ContractUtil.balance_label in
+  let address_field_type loc f t =
+    let preknown_field_type =
+      if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
+        Some ContractUtil.balance_type
+      else if [%equal: TUName.t] (get_id f) ContractUtil.codehash_label then
+        Some ContractUtil.codehash_type
+      else None
+    in
     let not_declared () =
-      fail0 ~kind:"Field is not declared in address type"
+      fail1 ~kind:"Field is not declared in address type"
         ~inst:
           (sprintf "%s is not declared in %s" (as_error_string f) (pp_typ t))
+        loc
     in
     match t with
-    | Address None ->
-        if is_balance then pure ContractUtil.balance_type else not_declared ()
-    | Address (Some fts) -> (
-        if is_balance then pure ContractUtil.balance_type
-        else
-          let loc_removed =
-            List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
-                (get_id f, t))
-          in
-          match
-            List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
-          with
-          | Some ft -> pure ft
-          | None -> not_declared ())
+    | Address AnyAddr
+      when [%equal: TUName.t] (get_id f) ContractUtil.balance_label ->
+        pure @@ ContractUtil.balance_type
+    | (Address LibAddr | Address CodeAddr | Address (ContrAddr _))
+      when Option.is_some preknown_field_type ->
+        pure @@ Option.value_exn preknown_field_type
+    | Address (ContrAddr fts) -> (
+        let loc_removed =
+          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
+              (get_id f, t))
+        in
+        match
+          List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
+        with
+        | Some ft -> pure ft
+        | None -> not_declared ())
     | _ ->
-        fail0 ~kind:"Attempting to read field from non-address type"
-          ~inst:(pp_typ t)
+        fail1 ~kind:"Invalid field read"
+          ~inst:(TUIdentifier.as_string f ^ " from " ^ pp_typ t)
+          loc
 
   let pp_typ_list_error ts =
     let tss = List.map ~f:(fun t -> pp_typ_error t) ts in
@@ -642,7 +638,7 @@ module TypeUtilities = struct
                   %s is given"
                  (as_string name)
                  (TUName.as_string adt.tname))
-            (get_rep name)
+            lc
     | _ -> fail1 ~kind:"Not an algebraic data type" ~inst:(pp_typ_error atyp) lc
 
   let constr_pattern_arg_types ?(lc = dummy_loc) atyp cn =
@@ -661,7 +657,7 @@ module TypeUtilities = struct
     match ts with
     | [] -> fail1 ~kind:"Checking an empty type list" ?inst:None lc
     | t :: ts' -> (
-        match List.find ts' ~f:(fun t' -> not ([%equal: TUType.t] t t')) with
+        match List.find ts' ~f:(fun t' -> not (type_equivalent t t')) with
         | None -> pure ()
         | Some _ ->
             fail1
@@ -714,7 +710,7 @@ module TypeUtilities = struct
       | (Address _ as res_t), ByStrX bs
         when Bystrx.width bs = Type.address_length ->
           (* ByStr20 literal found, address expected. Must be typechecked dynamically. *)
-          pure @@ (res_t, bs) :: dyn_check_acc
+          pure @@ ((res_t, bs) :: dyn_check_acc)
       | ADT (tname, targs), ADTValue (cname, _, cargs) ->
           let%bind adt, _ = DataTypeDictionary.lookup_constructor cname in
           (* Constructor must belong to ADT *)

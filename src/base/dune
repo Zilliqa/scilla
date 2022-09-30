@@ -20,9 +20,10 @@
  (modes byte native)
  (public_name scilla.base)
  (wrapped true)
- (libraries core num hex stdint angstrom polynomials cryptokit secp256k1
-   bitstring yojson fileutils scilla_crypto menhirLib)
+ (libraries core core_unix core_unix.sys_unix num hex stdint angstrom
+   polynomials cryptokit secp256k1 bitstring yojson fileutils scilla_crypto
+   menhirLib ocamlgraph pprint)
  (preprocess
-  (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare bisect_ppx
-    --conditional))
+  (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare
+    ppx_string_interpolation bisect_ppx --conditional))
  (synopsis "Scilla workbench implementation."))

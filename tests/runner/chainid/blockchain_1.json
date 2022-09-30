@@ -1,0 +1,12 @@
+[
+  {
+    "vname": "BLOCKNUMBER",
+    "type": "BNum",
+    "value": "100"
+  },
+  {
+    "vname": "CHAINID",
+    "type": "Uint21",
+    "value": "12218"
+  }
+]
