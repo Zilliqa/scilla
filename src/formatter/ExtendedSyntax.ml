@@ -265,7 +265,7 @@ struct
       | (loc, s) :: xs
         when (*    (* com *) start end                                  *)
              phys_equal loc.lnum loc_start.lnum && loc.cnum < loc_start.cnum ->
-          tr.comments <- xs;
+          pop_comment tr;
           aux ((loc, s, ExtSyn.ComLeft) :: acc) xs
       (* Placing comments above *)
       | (loc, s) :: xs
@@ -276,7 +276,7 @@ struct
              || (* (* com *) start end         (* com *) start
                                                           end *)
              (loc.lnum <= loc_start.lnum && loc.cnum < loc_start.cnum) ->
-          tr.comments <- xs;
+          pop_comment tr;
           aux ((loc, s, ExtSyn.ComAbove) :: acc) xs
       (* Placing comments right *)
       | (loc, s) :: xs
@@ -288,14 +288,14 @@ struct
              phys_equal loc.lnum loc_start.lnum
              && phys_equal loc.lnum loc_end.lnum
              && loc.cnum > loc_start.cnum && loc.cnum < loc_end.cnum ->
-          tr.comments <- xs;
+          pop_comment tr;
           aux ((loc, s, ExtSyn.ComRight) :: acc) xs
       | _ -> acc
     in
     if ErrorUtils.compare_loc loc_start loc_end > 0 then []
     else aux [] tr.comments
 
-  (** Collects a list of comments placed above the given location [loc]. *)
+  (** Collects a list of comments placed above [loc]. *)
   let collect_comments_above tr loc =
     let rec aux acc =
       match List.hd tr.comments with
@@ -306,8 +306,7 @@ struct
     in
     aux []
 
-  (** Collects a list of comments placed on the right of the given location
-      [loc]. *)
+  (** Collects a list of comments placed on the right of [loc]. *)
   let collect_comments_right tr loc =
     let rec aux acc =
       match List.hd tr.comments with
