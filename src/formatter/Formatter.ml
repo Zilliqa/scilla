@@ -92,12 +92,13 @@ struct
     (* Add parentheses only if the condition if true *)
     let parens_if cond doc = if cond then parens doc else doc
 
+    (* Wrap document in comment symbols *)
     let comment = enclose !^"(*" !^"*)"
 
-    (* Concatenate multiple comments to a single one. *)
-    let concat_comments cs =
+    (* Concatenate multiple comments to a single comment. *)
+    let concat_comments ?(sep=hardline) cs =
       List.fold_left cs ~init:[] ~f:(fun acc c -> acc @ [comment !^c])
-      |> concat_map (fun c -> c ^^^ hardline)
+      |> concat_map (fun c -> c ^^^ sep)
 
     (** Add formatted [comments] around [doc]. *)
     let wrap_comments comments doc =
@@ -446,7 +447,7 @@ struct
           indent (hardline ^^ comp_body) ^^ hardline ^^
         end_kwd
 
-      let of_ctr_def Ast.{cname; c_arg_types} =
+      let of_ctr_def Ast.{cname; c_comments; c_arg_types} =
         let constructor_name = of_ann_id cname
         and constructor_args_types =
           (* TODO: break sequences of long types (e.g. ByStr20 with contract ................... end Uint256 is unreadable) *)
@@ -454,8 +455,11 @@ struct
         in
         if List.is_empty c_arg_types then
           constructor_name
+          ^//^ concat_comments ~sep:space c_comments
         else
-          align (group (constructor_name ^//^ of_kwd) ^//^ constructor_args_types)
+          align (group (constructor_name ^//^ of_kwd) ^//^
+                 constructor_args_types ^//^
+                 concat_comments ~sep:space c_comments)
 
       let of_lib_entry = function
         | Ast.LibVar (comments, definition, otyp, expr) ->

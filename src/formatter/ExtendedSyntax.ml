@@ -123,7 +123,11 @@ struct
   }
   [@@deriving sexp]
 
-  type ctr_def = { cname : ER.rep id_ann; c_arg_types : SType.t list }
+  type ctr_def = {
+    cname : ER.rep id_ann;
+    c_comments : comment_text list;
+    c_arg_types : SType.t list;
+  }
   [@@deriving sexp]
 
   type lib_entry =
@@ -202,43 +206,9 @@ struct
        works by this way. *)
     { comments }
 
-  (** Creates comment annotations that must be placed between [loc_start] and
-      [loc_end] and removes them from the [tr.comments] list. *)
-  let place_comments tr loc_start loc_end =
-    let rec aux acc = function
-      (* Placing comments left *)
-      | (loc, s) :: xs
-        when (*    (* com *) start end                                  *)
-             phys_equal loc.lnum loc_start.lnum && loc.cnum < loc_start.cnum ->
-          tr.comments <- xs;
-          aux ((loc, s, ExtSyn.ComLeft) :: acc) xs
-      (* Placing comments above *)
-      | (loc, s) :: xs
-        when (* (* com *)                   (* com *)
-                  start end                   start
-                                               end *)
-             loc.lnum < loc_start.lnum
-             || (* (* com *) start end         (* com *) start
-                                                          end *)
-             (loc.lnum <= loc_start.lnum && loc.cnum < loc_start.cnum) ->
-          tr.comments <- xs;
-          aux ((loc, s, ExtSyn.ComAbove) :: acc) xs
-      (* Placing comments right *)
-      | (loc, s) :: xs
-        when (* start (* com *)
-                 end *)
-             phys_equal loc.lnum loc_start.lnum
-             && loc.lnum > loc_end.lnum && loc.cnum > loc_start.cnum
-             || (*    start (* com *) end                                  *)
-             phys_equal loc.lnum loc_start.lnum
-             && phys_equal loc.lnum loc_end.lnum
-             && loc.cnum > loc_start.cnum && loc.cnum < loc_end.cnum ->
-          tr.comments <- xs;
-          aux ((loc, s, ExtSyn.ComRight) :: acc) xs
-      | _ -> acc
-    in
-    if ErrorUtils.compare_loc loc_start loc_end > 0 then []
-    else aux [] tr.comments
+  (****************************************************************************)
+  (* Utility functions                                                        *)
+  (****************************************************************************)
 
   let first_comment tr = List.hd tr.comments
   let second_comment tr = List.nth tr.comments 1
@@ -280,6 +250,51 @@ struct
     let contr_loc = SR.get_loc (SIdentifier.get_rep cmod.contr.cname) in
     contr_loc.lnum > comment_loc.lnum
 
+  (****************************************************************************)
+  (* Collect functions                                                        *)
+  (*                                                                          *)
+  (* Collect functions collect comments for the required positions and remove *)
+  (* them from the Transformer's state.                                       *)
+  (****************************************************************************)
+
+  (** Collects comment annotations that must be placed between [loc_start] and
+      [loc_end] and removes them from the [tr.comments] list. *)
+  let collect_comments tr loc_start loc_end =
+    let rec aux acc = function
+      (* Placing comments left *)
+      | (loc, s) :: xs
+        when (*    (* com *) start end                                  *)
+             phys_equal loc.lnum loc_start.lnum && loc.cnum < loc_start.cnum ->
+          tr.comments <- xs;
+          aux ((loc, s, ExtSyn.ComLeft) :: acc) xs
+      (* Placing comments above *)
+      | (loc, s) :: xs
+        when (* (* com *)                   (* com *)
+                  start end                   start
+                                               end *)
+             loc.lnum < loc_start.lnum
+             || (* (* com *) start end         (* com *) start
+                                                          end *)
+             (loc.lnum <= loc_start.lnum && loc.cnum < loc_start.cnum) ->
+          tr.comments <- xs;
+          aux ((loc, s, ExtSyn.ComAbove) :: acc) xs
+      (* Placing comments right *)
+      | (loc, s) :: xs
+        when (* start (* com *)
+                 end *)
+             phys_equal loc.lnum loc_start.lnum
+             && loc.lnum > loc_end.lnum && loc.cnum > loc_start.cnum
+             || (*    start (* com *) end                                  *)
+             phys_equal loc.lnum loc_start.lnum
+             && phys_equal loc.lnum loc_end.lnum
+             && loc.cnum > loc_start.cnum && loc.cnum < loc_end.cnum ->
+          tr.comments <- xs;
+          aux ((loc, s, ExtSyn.ComRight) :: acc) xs
+      | _ -> acc
+    in
+    if ErrorUtils.compare_loc loc_start loc_end > 0 then []
+    else aux [] tr.comments
+
   (** Collects a list of comments placed above the given location [loc]. *)
   let collect_comments_above tr loc =
     let rec aux acc =
@@ -291,11 +306,26 @@ struct
     in
     aux []
 
+  (** Collects a list of comments placed on the right of the given location
+      [loc]. *)
+  let collect_comments_right tr loc =
+    let rec aux acc =
+      match List.hd tr.comments with
+      | Some (comment_loc, comment)
+        when phys_equal loc.lnum comment_loc.lnum && loc.cnum < comment_loc.cnum
+        ->
+          pop_comment tr;
+          aux (acc @ [ comment ])
+      | _ -> acc
+    in
+    aux []
+
   (* Collects file comments located on the top of the contract module. *)
   let collect_file_comments tr (cmod : Syn.cmodule) =
     (* Returns true if there are import statements and there is a comment
        before them. *)
     let has_imports = not @@ List.is_empty cmod.elibs in
+    let has_library = Option.is_some cmod.libs in
     let has_empty_library =
       Option.value_map cmod.libs ~default:false ~f:(fun lib ->
           List.is_empty lib.lentries)
@@ -307,7 +337,7 @@ struct
             (has_imports && is_comment_above_imports cmod comment1_loc)
             || (not has_imports) && has_empty_library
                && is_comment_before_lib cmod comment2_loc
-            || (not has_imports) && (not has_empty_library)
+            || (not has_imports) && (not has_library)
                && is_comment_before_contract cmod comment2_loc
           then (
             pop_comment tr;
@@ -342,12 +372,18 @@ struct
     in
     aux []
 
+  (****************************************************************************)
+  (* Extend functions                                                         *)
+  (*                                                                          *)
+  (* Extend functions extend AST with annotations.                            *)
+  (****************************************************************************)
+
   let extend_id ?(rep_end = None) tr id get_loc =
     let id_loc = get_loc (SIdentifier.get_rep id) in
     let end_loc =
       Option.value_map rep_end ~default:id_loc ~f:(fun rep -> get_loc rep)
     in
-    let comments = place_comments tr id_loc end_loc in
+    let comments = collect_comments tr id_loc end_loc in
     (id, comments)
 
   let extend_er_id ?(rep_end = None) tr id = extend_id tr id ~rep_end ER.get_loc
@@ -366,7 +402,7 @@ struct
 
   let rec extend_expr tr (e, ann) =
     let comment ?(rep_end = ann) () =
-      place_comments tr (ER.get_loc ann) (ER.get_loc rep_end)
+      collect_comments tr (ER.get_loc ann) (ER.get_loc rep_end)
     in
     match e with
     | Syn.Literal l -> (ExtSyn.Literal l, ann, comment ())
@@ -446,7 +482,7 @@ struct
         ExtSyn.ReplicateContr (addr', param')
 
   let rec extend_stmt tr (s, ann) =
-    let comment loc_end = place_comments tr (SR.get_loc ann) loc_end in
+    let comment loc_end = collect_comments tr (SR.get_loc ann) loc_end in
     let loc_end_er id = SIdentifier.get_rep id |> ER.get_loc in
     let loc_end_sr id = SIdentifier.get_rep id |> SR.get_loc in
     match s with
@@ -558,8 +594,10 @@ struct
         (ExtSyn.GasStmt gc', ann, c)
 
   let extend_ctr_def tr (ctr : Syn.ctr_def) =
+    let cname_loc = ER.get_loc (SIdentifier.get_rep ctr.cname) in
+    let c_comments = collect_comments_right tr cname_loc in
     let cname' = extend_er_id tr ctr.cname in
-    { ExtSyn.cname = cname'; c_arg_types = ctr.c_arg_types }
+    { ExtSyn.cname = cname'; c_comments; c_arg_types = ctr.c_arg_types }
 
   let extend_lentry tr = function
     | Syn.LibVar (id, ty_opt, ea) ->
