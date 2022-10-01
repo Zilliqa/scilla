@@ -30,3 +30,11 @@ transition bar ()
   foo
 end
 
+(*
+ * transition
+ * baz
+ *)
+transition baz ()
+  foo
+end
+

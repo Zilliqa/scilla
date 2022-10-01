@@ -160,7 +160,9 @@ and comment buf braces =
                   p::[] -> add_comment p (Buffer.contents buf);
                            read lexbuf
                 | _ -> comment buf (List.tl_exn braces) lexbuf }
-  | newline   { new_line lexbuf; comment buf braces lexbuf }
+  | newline   { new_line lexbuf;
+                Buffer.add_char buf '\n';
+                comment buf braces lexbuf }
   | _         { Buffer.add_string buf (Lexing.lexeme lexbuf);
                 comment buf braces lexbuf }
   | eof       { lexbuf.lex_curr_p <- List.hd_exn braces;
