@@ -138,7 +138,7 @@ struct
     cname : SR.rep id_ann;
     cparams : (ER.rep id_ann * SType.t) list;
     cconstraint : expr_annot;
-    cfields : (ER.rep id_ann * SType.t * expr_annot) list;
+    cfields : (comment_text list * ER.rep id_ann * SType.t * expr_annot) list;
     ccomps : component list;
   }
   [@@deriving sexp]
@@ -614,7 +614,11 @@ struct
     let cconstraint = extend_expr tr contr.cconstraint in
     let cfields =
       List.map contr.cfields ~f:(fun (id, ty, init) ->
-          (extend_er_id tr id, ty, extend_expr tr init))
+          let id_loc = ER.get_loc (SIdentifier.get_rep id) in
+          let comments = collect_comments_above tr id_loc in
+          let id' = extend_er_id tr id in
+          let init' = extend_expr tr init in
+          (comments, id', ty, init'))
     in
     let ccomps = List.map contr.ccomps ~f:(fun c -> extend_component tr c) in
     { cname; cparams; cconstraint; cfields; ccomps }

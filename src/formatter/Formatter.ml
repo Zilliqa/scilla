@@ -505,7 +505,8 @@ struct
           else
             separate_map
               (twice hardline)
-                (fun (field, typ, init) ->
+                (fun (comments, field, typ, init) ->
+                  concat_comments comments ^^
                   field_kwd ^^^ of_typed_ann_id field typ ^^^ equals ^//^ of_expr init)
               cfields
             ^^ twice hardline

@@ -1,0 +1,21 @@
+scilla_version 0
+
+library Fields1
+
+contract Fields1()
+
+(* Field description *)
+field f1 : Map Uint256 ByStr32 = Emp Uint256 ByStr32
+
+(*
+ * Multiline
+ * field
+ * description
+ *)
+field f2 : Map Uint256 ByStr32 = Emp Uint256 ByStr32
+
+field f3 : Map Uint256 ByStr32 = Emp Uint256 ByStr32
+(* Incorrect: the description of [f3] must be above the field.
+   This comment will be considered as a [f4] description. *)
+
+field f4 : Map Uint256 ByStr32 = Emp Uint256 ByStr32
