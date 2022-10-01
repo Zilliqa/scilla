@@ -94,6 +94,11 @@ struct
 
     let comment = enclose !^"(*" !^"*)"
 
+    (* Concatenate multiple comments to a single one. *)
+    let concat_comments cs =
+      List.fold_left cs ~init:[] ~f:(fun acc c -> acc @ [comment !^c])
+      |> concat_map (fun c -> c ^^^ hardline)
+
     (** Add formatted [comments] around [doc]. *)
     let wrap_comments comments doc =
       let spaced s =
@@ -431,11 +436,12 @@ struct
             typed_params)
           rparen
 
-      let of_component Ast.{comp_type; comp_name; comp_params; comp_body} =
+      let of_component Ast.{comp_comments; comp_type; comp_name; comp_params; comp_body} =
         let comp_type = !^(Syntax.component_type_to_string comp_type)
         and comp_name = of_ann_id comp_name
         and comp_params = of_parameters comp_params ~sep:(break 1)
         and comp_body = of_stmts comp_body in
+        concat_comments comp_comments ^^
         group (comp_type ^^^ comp_name ^//^ comp_params) ^^
           indent (hardline ^^ comp_body) ^^ hardline ^^
         end_kwd
@@ -510,10 +516,6 @@ struct
         ccomps
 
       let of_contract_module Ast.{smver; file_comments; lib_comments; libs; elibs; contr_comments; contr} =
-        let mk_comments cs =
-          List.fold_left cs ~init:[] ~f:(fun acc c -> acc @ [comment !^c])
-          |> concat_map (fun c -> c ^^^ hardline)
-        in
         let imports =
           let import_lib (lib, onamespace) =
             match onamespace with
@@ -531,12 +533,12 @@ struct
           | None -> empty
         in
         scilla_version_kwd ^^^ !^(Int.to_string smver) ^^ hardline ^^
-        mk_comments file_comments ^^
+        concat_comments file_comments ^^
         hardline ^^
         imports ^^
-        mk_comments lib_comments ^^
+        concat_comments lib_comments ^^
         contract_library ^^
-        mk_comments contr_comments ^^
+        concat_comments contr_comments ^^
         of_contract contr ^^ hardline
   end
 

@@ -114,6 +114,7 @@ struct
   (*******************************************************)
 
   type component = {
+    comp_comments : string list;
     comp_type : Syntax.component_type;
     comp_name : SR.rep id_ann;
     comp_params : (ER.rep id_ann * SType.t) list;
@@ -484,6 +485,18 @@ struct
     (import', import_as')
 
   let extend_component tr comp =
+    let comp_comments =
+      let comp_name_loc = SR.get_loc (SIdentifier.get_rep comp.Syn.comp_name) in
+      let rec aux acc =
+        match List.hd tr.comments with
+        | Some (comment_loc, comment) when comp_name_loc.lnum > comment_loc.lnum
+          ->
+            tr.comments <- List.tl_exn tr.comments;
+            aux (acc @ [ comment ])
+        | _ -> acc
+      in
+      aux []
+    in
     let comp_type = comp.Syn.comp_type in
     let comp_name = extend_sr_id tr comp.comp_name in
     let comp_params =
@@ -492,7 +505,7 @@ struct
     let comp_body =
       List.map comp.comp_body ~f:(fun stmt -> extend_stmt tr stmt)
     in
-    { ExtSyn.comp_type; comp_name; comp_params; comp_body }
+    { comp_comments; ExtSyn.comp_type; comp_name; comp_params; comp_body }
 
   let extend_contract tr (contr : Syn.contract) : ExtSyn.contract =
     let cname = extend_sr_id tr contr.cname in
