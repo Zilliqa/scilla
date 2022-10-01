@@ -458,18 +458,20 @@ struct
           align (group (constructor_name ^//^ of_kwd) ^//^ constructor_args_types)
 
       let of_lib_entry = function
-        | Ast.LibVar (definition, otyp, expr) ->
+        | Ast.LibVar (comments, definition, otyp, expr) ->
           let definition =
             match otyp with
             | None -> of_ann_id definition
             | Some typ -> of_typed_ann_id definition typ
           and expr = of_expr expr in
+          concat_comments comments ^^
           let_kwd ^^^ definition ^^^ equals ^//^ expr
-        | Ast.LibTyp (typ_name, constr_defs) ->
+        | Ast.LibTyp (comments, typ_name, constr_defs) ->
           let typ_name = of_ann_id typ_name
           and constr_defs =
             separate_map hardline (fun cd -> pipe ^^^ of_ctr_def cd) constr_defs
           in
+          concat_comments comments ^^
           type_kwd ^^^ typ_name ^^^ equals ^^ hardline ^^
           constr_defs
 
