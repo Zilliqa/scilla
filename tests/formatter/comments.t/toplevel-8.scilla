@@ -6,9 +6,6 @@ scilla_version 0
 (* file comment 4 *)
 (* file comment 5 *)
 
-(* library *)
-library Toplevel5
-
 (* contract comment *)
-contract Toplevel5()
+contract Toplevel8()
 

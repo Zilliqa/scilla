@@ -1,0 +1,13 @@
+scilla_version 0
+
+library Toplevel6
+
+
+(***************************************************)
+(*             Contract definition                 *)
+(***************************************************)
+contract Toplevel6 ()
+
+
+
+

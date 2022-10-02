@@ -230,12 +230,12 @@ struct
         let lib_loc = SR.get_loc (SIdentifier.get_rep lib.lname) in
         comment_loc.lnum < lib_loc.lnum
 
-  (** Returns true if [comment_loc] is a file comment located before the
+  (** Returns true if [comment_loc] is a file comment located above the
       contract definition :
          (* Contract comment *)
          contract Something()
     *)
-  let is_comment_before_contract (cmod : Syn.cmodule) comment_loc =
+  let is_comment_above_contract (cmod : Syn.cmodule) comment_loc =
     let contr_loc = SR.get_loc (SIdentifier.get_rep cmod.contr.cname) in
     contr_loc.lnum > comment_loc.lnum
 
@@ -310,39 +310,17 @@ struct
 
   (* Collects file comments located on the top of the contract module. *)
   let collect_file_comments tr (cmod : Syn.cmodule) =
-    (* Returns true if there are import statements and there is a comment
-       before them. *)
-    let has_imports = not @@ List.is_empty cmod.elibs in
-    let has_library = Option.is_some cmod.libs in
-    if has_imports then
-      (* If we have imports then the file comment can be located only above them:
-         scilla_version 0
-         (* File comment *)
-         import BoolUtils
-      *)
-      let first_import_loc =
-        List.hd_exn cmod.elibs |> fun (id, _) ->
-        SR.get_loc (SIdentifier.get_rep id)
-      in
-      collect_comments_above tr first_import_loc
-    else if has_library then
-      (* If we don't have import statements, the file comment could be
-         located before the library comment. In this case, it must be
-         separated with the library comment with at least one newline:
-
-           scilla_version 0
-           (* File comment *)
-
-           (* Library comment *)
-           library Something
-      *)
+    (* Utility function that collects file comments before library or contract
+       definition when we don't have imports. *)
+    let get_file_comments f =
       let rec aux idx acc =
         let result all =
-          (* [all] contains all the comments above the library definition . We
-             have to find a group of comments that are separated with at least
-             a single newline with the comments above library. If we have
-             multiple comments above the library comments, they will be
-             considered as a part of the file comment:
+          (* [all] contains all the comments above the library/contract
+             definition. We have to find a group of comments that are separated
+              with at least a single newline with the comments above
+              library/contract. If we have multiple comments above the
+              library/contract comments, they will be considered as a part of
+              the file comment:
                (* file comment1 *)
                (* file comment2 *)
 
@@ -352,15 +330,15 @@ struct
                (* library comment2 *)
                library Something
           *)
-          let rec first_library_comment_idx acc idx =
+          let rec first_comment_idx acc idx =
             match acc with
             | (c1_loc, _) :: (c2_loc, c2) :: cs ->
                 if c1_loc.lnum > c2_loc.lnum + 1 then Some (idx + 1)
-                else first_library_comment_idx ((c2_loc, c2) :: cs) (idx + 1)
+                else first_comment_idx ((c2_loc, c2) :: cs) (idx + 1)
             | _ -> None
           in
           let rev_all = List.rev all in
-          match first_library_comment_idx rev_all 0 with
+          match first_comment_idx rev_all 0 with
           | Some idx when (not @@ phys_equal idx 0) && idx < List.length acc ->
               List.sub rev_all ~pos:idx ~len:(List.length acc - idx)
               |> List.rev
@@ -371,13 +349,46 @@ struct
         in
         match nth_comment tr idx with
         | Some (comment1_loc, comment1) ->
-            if not @@ is_comment_above_lib cmod comment1_loc then result acc
+            if not @@ f cmod comment1_loc then result acc
             else aux (idx + 1) (acc @ [ (comment1_loc, comment1) ])
         | _ -> result acc
       in
       aux 0 []
-    else (* TODO: NYI *)
-      []
+    in
+    let has_imports = not @@ List.is_empty cmod.elibs in
+    let has_library = Option.is_some cmod.libs in
+    if has_imports then
+      (* If we have imports then the file comment can be located only above them:
+           scilla_version 0
+           (* File comment *)
+           import BoolUtils
+      *)
+      let first_import_loc =
+        List.hd_exn cmod.elibs |> fun (id, _) ->
+        SR.get_loc (SIdentifier.get_rep id)
+      in
+      collect_comments_above tr first_import_loc
+    else if has_library then
+      (* If we don't have import statements, the file comment may be located
+         above the library comment. In this case, it must be separated with
+         the library comment with at least one newline:
+           scilla_version 0
+           (* File comment *)
+
+           (* Library comment *)
+           library Something
+      *)
+      get_file_comments is_comment_above_lib
+    else
+      (* If we don't have import statements and library definition, the file
+         comment may be located above the contract comment:
+           scilla_version 0
+           (* File comment *)
+
+           (* Contract comment *)
+           contract Something
+      *)
+      get_file_comments is_comment_above_contract
 
   (** Collects library comments that are located above the library definition. *)
   let collect_lib_comments tr (cmod : Syn.cmodule) =
@@ -397,7 +408,7 @@ struct
     let rec aux acc =
       match first_comment tr with
       | Some (comment_loc, comment)
-        when is_comment_before_contract cmod comment_loc ->
+        when is_comment_above_contract cmod comment_loc ->
           pop_comment tr;
           aux (acc @ [ comment ])
       | _ -> acc
