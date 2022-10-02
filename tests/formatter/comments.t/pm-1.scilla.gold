@@ -58,3 +58,15 @@ procedure pr5 (a_opt : Uint32 Option Option)
   end
 end
 
+(* No extra whitespaces when there are no arm comments. *)
+procedure pr6 (a_opt : Uint32 Option Option)
+  match a_opt with
+  | None =>
+  | Some a =>
+    match a with
+    | None =>
+    | Some aa => accept
+    end
+  end
+end
+

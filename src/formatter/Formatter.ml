@@ -324,9 +324,16 @@ struct
       | Ast.MatchExpr (ident, branches) ->
         match_kwd ^^^ of_ann_id ident ^^^ with_kwd ^/^
         separate_map hardline
-          (fun (pat, e, cs) -> group (pipe ^^^ of_pattern pat ^^^ darrow ^^^
-                                      concat_comments ~sep:space cs ^//^
-                                      group (of_expr e)))
+          (fun (pat, e, cs) ->
+            let doc =
+              pipe ^^^ of_pattern pat ^^^ darrow
+            in
+            let doc = if not @@ List.is_empty cs then
+                      doc ^^^ concat_comments ~sep:space cs
+                      else doc
+            in
+            let doc = doc ^//^ group (of_expr e) in
+            group (doc))
           branches
         ^^ hardline ^^ end_kwd
       | Ast.Constr (id, typs, args) ->
@@ -392,9 +399,14 @@ struct
         | Ast.MatchStmt (id, branches) ->
           match_kwd ^^^ of_ann_id id ^^^ with_kwd ^/^
           separate_map hardline
-            (fun (pat, stmts, cs) -> group (pipe ^^^ of_pattern pat ^^^ darrow ^^^
-                                            concat_comments ~sep:space cs ^//^
-                                            group (of_stmts stmts)))
+            (fun (pat, stmts, cs) ->
+              let doc = pipe ^^^ of_pattern pat ^^^ darrow in
+              let doc = if not @@ List.is_empty cs then
+                        doc ^^^ concat_comments ~sep:space cs
+                        else doc
+              in
+              let doc = doc ^//^ group (of_stmts stmts) in
+              group (doc))
             branches
           ^^ hardline ^^ end_kwd
         | Ast.ReadFromBC (id, query) ->
