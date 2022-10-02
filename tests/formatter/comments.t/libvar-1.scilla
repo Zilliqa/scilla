@@ -1,0 +1,16 @@
+scilla_version 0
+
+library Libvar1
+
+let a = Int32 0 (* a comment *)
+
+(* b comment *)
+let b = Int32 0
+
+let c = Int32 0
+(* d comment *)
+
+let d = Int32 0
+
+contract Libvar1()
+

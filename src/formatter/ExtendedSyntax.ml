@@ -645,13 +645,17 @@ struct
   let extend_lentry tr = function
     | Syn.LibVar (id, ty_opt, ea) ->
         let id_loc = ER.get_loc (SIdentifier.get_rep id) in
-        let comments = collect_comments_above tr id_loc in
+        let comments =
+          collect_comments_above tr id_loc @ collect_comments_right tr id_loc
+        in
         let id' = extend_er_id tr id in
         let ea' = extend_expr tr ea in
         ExtSyn.LibVar (comments, id', ty_opt, ea')
     | Syn.LibTyp (id, ctrs) ->
         let id_loc = ER.get_loc (SIdentifier.get_rep id) in
-        let comments = collect_comments_above tr id_loc in
+        let comments =
+          collect_comments_above tr id_loc @ collect_comments_right tr id_loc
+        in
         let id' = extend_er_id tr id in
         let ctrs' = List.map ctrs ~f:(fun ctr -> extend_ctr_def tr ctr) in
         ExtSyn.LibTyp (comments, id', ctrs')

@@ -2,7 +2,7 @@ scilla_version 0
 
 library Typedef1
 
-type A =
+type A = (* A comment *)
   | A1 (* A1 comment *)
   | A2 of ByStr20 (* A2 comment *)
   | A3
@@ -10,5 +10,12 @@ type A =
   | A5 of ByStr20 ByStr20
   | A6 of ByStr20 ByStr20 (* A6 comment *)
 
+type B = (* B comment *)
+  | B1
+  | B2 (* Multiline B2
+    comment *)
+
+type C =
+  | C1
 
 contract Typedef1()
