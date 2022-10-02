@@ -29,6 +29,7 @@
   
   transition cfdeploy_incorrect (cfaddr : ByStr20 with contract end)
     owner = _sender;
+    (* This is incorrect, max_block must be BNum. *)
     max_block = Uint32 100;
     goal = Uint128 1000;
     m =

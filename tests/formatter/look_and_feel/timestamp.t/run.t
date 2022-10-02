@@ -1,6 +1,9 @@
   $ scilla-fmt timestamp.scilla
   scilla_version 0
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract HelloWorld ()
   
   

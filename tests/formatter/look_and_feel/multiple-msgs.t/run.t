@@ -1,8 +1,12 @@
   $ scilla-fmt multiple-msgs.scilla
   scilla_version 0
+  (* HelloWorld contract *)
   
   import ListUtils
   
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   library HelloWorld
   
   let one_msg =
@@ -11,6 +15,9 @@
       Cons {(Message)} msg nil_msg
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract HelloWorld ()
   
   
