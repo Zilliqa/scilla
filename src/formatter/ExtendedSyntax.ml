@@ -64,7 +64,8 @@ struct
     | Fun of ER.rep id_ann * SType.t * expr_annot
     | App of ER.rep id_ann * ER.rep id_ann list
     | Constr of SR.rep id_ann * SType.t list * ER.rep id_ann list
-    | MatchExpr of ER.rep id_ann * (pattern * expr_annot) list
+    | MatchExpr of
+        ER.rep id_ann * (pattern * expr_annot * comment_text list) list
     | Builtin of ER.rep Syntax.builtin_annot * SType.t list * ER.rep id_ann list
     | TFun of ER.rep id_ann * expr_annot
     | TApp of ER.rep id_ann * SType.t list
@@ -98,7 +99,8 @@ struct
         * ER.rep id_ann
         * ER.rep id_ann list
         * bool
-    | MatchStmt of ER.rep id_ann * (pattern * stmt_annot list) list
+    | MatchStmt of
+        ER.rep id_ann * (pattern * stmt_annot list * comment_text list) list
     | ReadFromBC of ER.rep id_ann * bcinfo_query
     | TypeCast of ER.rep id_ann * ER.rep id_ann * SType.t
     | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
@@ -284,6 +286,12 @@ struct
     if ErrorUtils.compare_loc loc_start loc_end > 0 then []
     else aux [] tr.comments
 
+  (** A wrapper for [collect_comments] that returns only texts of comments,
+      without location information. *)
+  let collect_comment_texts tr loc_start loc_end =
+    collect_comments tr loc_start loc_end
+    |> List.map ~f:(fun (_, text, _) -> text)
+
   (** Collects a list of comments placed above [loc]. *)
   let collect_comments_above tr loc =
     let rec aux acc =
@@ -436,12 +444,32 @@ struct
     | Syn.MLit l -> ExtSyn.MLit l
     | Syn.MVar v -> ExtSyn.MVar (extend_er_id tr v)
 
-  let rec extend_pattern tr = function
-    | Syn.Wildcard -> ExtSyn.Wildcard
-    | Syn.Binder id -> ExtSyn.Binder (extend_er_id tr id)
+  (** Extends the given pattern.
+      [body_loc] is a start position of the body of this arm. *)
+  let rec extend_pattern ?(body_loc = None) tr pat =
+    let get_arm_comments pat_loc =
+      Option.value_map body_loc
+        ~f:(fun body_loc -> collect_comment_texts tr pat_loc body_loc)
+        ~default:(collect_comments_right tr pat_loc)
+    in
+    match pat with
+    | Syn.Wildcard ->
+        let arm_comments = [] (* TODO: What is the start location here? *) in
+        (ExtSyn.Wildcard, arm_comments)
+    | Syn.Binder id ->
+        let id' = extend_er_id tr id in
+        let id_loc = ER.get_loc (SIdentifier.get_rep id) in
+        let arm_comments = get_arm_comments id_loc in
+        (ExtSyn.Binder id', arm_comments)
     | Syn.Constructor (id, args) ->
-        let args' = List.map args ~f:(fun arg -> extend_pattern tr arg) in
-        ExtSyn.Constructor (extend_sr_id tr id, args')
+        let id' = extend_sr_id tr id in
+        let id_loc = SR.get_loc (SIdentifier.get_rep id) in
+        let args' =
+          List.map args ~f:(fun arg ->
+              extend_pattern tr arg |> fun (pat', _) -> pat')
+        in
+        let arm_comments = get_arm_comments id_loc in
+        (ExtSyn.Constructor (id', args'), arm_comments)
 
   let rec extend_expr tr (e, ann) =
     let comment ?(rep_end = ann) () =
@@ -465,10 +493,10 @@ struct
           List.map msgs ~f:(fun (s, pld) -> (s, extend_payload tr pld))
         in
         (ExtSyn.Message msgs', ann, c)
-    | Syn.Fun (id, ty, (body, body_rep)) ->
+    | Syn.Fun (id, ty, (body, body_loc)) ->
         let c = comment ~rep_end:(SIdentifier.get_rep id) () in
-        let id' = extend_er_id tr id ~rep_end:(Some body_rep) in
-        let body' = extend_expr tr (body, body_rep) in
+        let id' = extend_er_id tr id ~rep_end:(Some body_loc) in
+        let body' = extend_expr tr (body, body_loc) in
         (ExtSyn.Fun (id', ty, body'), ann, c)
     | Syn.App (id, args) ->
         let c = comment () in
@@ -484,31 +512,36 @@ struct
         let c = comment () in
         let id' = extend_er_id tr id in
         let arms' =
-          List.map arms ~f:(fun (pat, body) ->
-              (extend_pattern tr pat, extend_expr tr body))
+          List.map arms ~f:(fun (pat, (body, body_rep)) ->
+              let pat', arm_comments =
+                let body_loc = Some (ER.get_loc body_rep) in
+                extend_pattern ~body_loc tr pat
+              in
+              let body' = extend_expr tr (body, body_rep) in
+              (pat', body', arm_comments))
         in
         (ExtSyn.MatchExpr (id', arms'), ann, c)
     | Syn.Builtin (builtin, ty, args) ->
         let c = comment () in
         let args' = List.map args ~f:(fun arg -> extend_er_id tr arg) in
         (ExtSyn.Builtin (builtin, ty, args'), ann, c)
-    | Syn.TFun (id, (body, body_rep)) ->
-        let c = comment ~rep_end:body_rep () in
+    | Syn.TFun (id, (body, body_loc)) ->
+        let c = comment ~rep_end:body_loc () in
         let id' = extend_er_id tr id in
-        let body' = extend_expr tr (body, body_rep) in
+        let body' = extend_expr tr (body, body_loc) in
         (ExtSyn.TFun (id', body'), ann, c)
     | Syn.TApp (id, tys) ->
         let c = comment () in
         let id' = extend_er_id tr id in
         (ExtSyn.TApp (id', tys), ann, c)
-    | Syn.Fixpoint (id, ty, (body, body_rep)) ->
-        let c = comment ~rep_end:body_rep () in
+    | Syn.Fixpoint (id, ty, (body, body_loc)) ->
+        let c = comment ~rep_end:body_loc () in
         let id' = extend_er_id tr id in
-        let body' = extend_expr tr (body, body_rep) in
+        let body' = extend_expr tr (body, body_loc) in
         (ExtSyn.Fixpoint (id', ty, body'), ann, c)
-    | Syn.GasExpr (gc, (body, body_rep)) ->
-        let c = comment ~rep_end:body_rep () in
-        let body' = extend_expr tr (body, body_rep) in
+    | Syn.GasExpr (gc, (body, body_loc)) ->
+        let c = comment ~rep_end:body_loc () in
+        let body' = extend_expr tr (body, body_loc) in
         let gc' =
           Syn.SGasCharge.sexp_of_gas_charge gc
           |> ExtSyn.SGasCharge.gas_charge_of_sexp
@@ -581,11 +614,17 @@ struct
         let id' = extend_er_id tr id in
         let arms' =
           List.map arms ~f:(fun (pat, stmts) ->
-              let pat' = extend_pattern tr pat in
+              let body_loc =
+                List.hd stmts
+                |> Option.value_map
+                     ~f:(fun (_, rep) -> Some (SR.get_loc rep))
+                     ~default:None
+              in
+              let pat', arm_comments = extend_pattern ~body_loc tr pat in
               let stmts' =
                 List.map stmts ~f:(fun stmt -> extend_stmt tr stmt)
               in
-              (pat', stmts'))
+              (pat', stmts', arm_comments))
         in
         (ExtSyn.MatchStmt (id', arms'), ann, c)
     | Syn.ReadFromBC (id, q) ->
