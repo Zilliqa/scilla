@@ -210,31 +210,20 @@ struct
   (* Utility functions                                                        *)
   (****************************************************************************)
 
+  let nth_comment tr = List.nth tr.comments
   let first_comment tr = List.hd tr.comments
-  let second_comment tr = List.nth tr.comments 1
+  let second_comment tr = nth_comment tr 1
 
   (** Removes the top comment from the given transformer. *)
   let pop_comment tr =
     if not @@ List.is_empty tr.comments then
       tr.comments <- List.tl_exn tr.comments
 
-  (** Returns true if [comment_loc] is located above the imports in the
-      contract module:
-        (* Comment *)
-        import BoolUtils
-    *)
-  let is_comment_above_imports (cmod : Syn.cmodule) comment_loc =
-    let first_import_loc =
-      List.hd_exn cmod.elibs |> fun (id, _) ->
-      SR.get_loc (SIdentifier.get_rep id)
-    in
-    if first_import_loc.lnum > comment_loc.lnum then true else false
-
   (** Returns true if [comment_loc] is located above the library definition:
       (* Library comment *)
       library Something
     *)
-  let is_comment_before_lib (cmod : Syn.cmodule) comment_loc =
+  let is_comment_above_lib (cmod : Syn.cmodule) comment_loc =
     match cmod.libs with
     | None -> false
     | Some lib ->
@@ -325,26 +314,70 @@ struct
        before them. *)
     let has_imports = not @@ List.is_empty cmod.elibs in
     let has_library = Option.is_some cmod.libs in
-    let has_empty_library =
-      Option.value_map cmod.libs ~default:false ~f:(fun lib ->
-          List.is_empty lib.lentries)
-    in
-    let rec aux acc =
-      match (first_comment tr, second_comment tr) with
-      | Some (comment1_loc, comment1), Some (comment2_loc, _) ->
-          if
-            (has_imports && is_comment_above_imports cmod comment1_loc)
-            || (not has_imports) && has_empty_library
-               && is_comment_before_lib cmod comment2_loc
-            || (not has_imports) && (not has_library)
-               && is_comment_before_contract cmod comment2_loc
-          then (
-            pop_comment tr;
-            aux (acc @ [ comment1 ]))
-          else acc
-      | _ -> acc
-    in
-    aux []
+    if has_imports then
+      (* If we have imports then the file comment can be located only above them:
+         scilla_version 0
+         (* File comment *)
+         import BoolUtils
+      *)
+      let first_import_loc =
+        List.hd_exn cmod.elibs |> fun (id, _) ->
+        SR.get_loc (SIdentifier.get_rep id)
+      in
+      collect_comments_above tr first_import_loc
+    else if has_library then
+      (* If we don't have import statements, the file comment could be
+         located before the library comment. In this case, it must be
+         separated with the library comment with at least one newline:
+
+           scilla_version 0
+           (* File comment *)
+
+           (* Library comment *)
+           library Something
+      *)
+      let rec aux idx acc =
+        let result all =
+          (* [all] contains all the comments above the library definition . We
+             have to find a group of comments that are separated with at least
+             a single newline with the comments above library. If we have
+             multiple comments above the library comments, they will be
+             considered as a part of the file comment:
+               (* file comment1 *)
+               (* file comment2 *)
+
+               (* file comment3 *)
+
+               (* library comment1 *)
+               (* library comment2 *)
+               library Something
+          *)
+          let rec first_library_comment_idx acc idx =
+            match acc with
+            | (c1_loc, _) :: (c2_loc, c2) :: cs ->
+                if c1_loc.lnum > c2_loc.lnum + 1 then Some (idx + 1)
+                else first_library_comment_idx ((c2_loc, c2) :: cs) (idx + 1)
+            | _ -> None
+          in
+          let rev_all = List.rev all in
+          match first_library_comment_idx rev_all 0 with
+          | Some idx when (not @@ phys_equal idx 0) && idx < List.length acc ->
+              List.sub rev_all ~pos:idx ~len:(List.length acc - idx)
+              |> List.rev
+              |> List.map ~f:(fun (_loc, c) ->
+                     pop_comment tr;
+                     c)
+          | _ -> []
+        in
+        match nth_comment tr idx with
+        | Some (comment1_loc, comment1) ->
+            if not @@ is_comment_above_lib cmod comment1_loc then result acc
+            else aux (idx + 1) (acc @ [ (comment1_loc, comment1) ])
+        | _ -> result acc
+      in
+      aux 0 []
+    else (* TODO: NYI *)
+      []
 
   (** Collects library comments that are located above the library definition. *)
   let collect_lib_comments tr (cmod : Syn.cmodule) =
@@ -352,7 +385,7 @@ struct
     let rec aux acc =
       match first_comment tr with
       | Some (comment_loc, comment)
-        when has_library && is_comment_before_lib cmod comment_loc ->
+        when has_library && is_comment_above_lib cmod comment_loc ->
           pop_comment tr;
           aux (acc @ [ comment ])
       | _ -> acc
