@@ -23,7 +23,7 @@ open ErrorUtils
 open Literal
 open GasCharge
 
-(** Annotated Scilla syntax extended with comment nodes. *)
+(** Annotated Scilla syntax extended with comment annotations. *)
 module ExtendedScillaSyntax
     (SR : Syntax.Rep)
     (ER : Syntax.Rep)
@@ -40,7 +40,7 @@ struct
   type annot_comment = comment list [@@deriving sexp]
 
   type 'a id_ann = 'a SIdentifier.t * annot_comment [@@deriving sexp]
-  (** Annotated identifier that may be commented *)
+  (** Annotated identifier that may be commented. *)
 
   (*******************************************************)
   (*                   Expressions                       *)
@@ -245,7 +245,7 @@ struct
   (* Collect functions                                                        *)
   (*                                                                          *)
   (* Collect functions collect comments for the required positions and remove *)
-  (* them from the Transformer's state.                                       *)
+  (* them from the Transformer's mutable state.                               *)
   (****************************************************************************)
 
   (** Collects comment annotations that must be placed between [loc_start] and
