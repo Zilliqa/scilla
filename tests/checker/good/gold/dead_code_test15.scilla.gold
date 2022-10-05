@@ -1,9 +1,17 @@
 {
-  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "cashflow_tags": {
+    "State variables": [ { "field": "param_contr", "tag": "NoInfo" } ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "Dead15",
-    "params": [],
+    "params": [
+      {
+        "vname": "param_contr",
+        "type": "ByStr20 with contract field param_unused : ByStr20, field param_used : ByStr20 end"
+      }
+    ],
     "fields": [],
     "transitions": [
       {
@@ -27,9 +35,15 @@
             "type": "ByStr20 with contract field field3 : Uint64, field field4 : Uint64 end"
           }
         ]
+      },
+      { "vname": "tr3", "params": [] }
+    ],
+    "procedures": [
+      {
+        "vname": "do_accept",
+        "params": [ { "vname": "a", "type": "ByStr20" } ]
       }
     ],
-    "procedures": [],
     "events": [],
     "ADTs": [
       {
@@ -73,10 +87,20 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused field in the contract address type: param_unused",
+      "start_location": {
+        "file": "contracts/dead_code_test15.scilla",
+        "line": 10,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused field in the contract address type: field4",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 26,
+        "line": 35,
         "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -86,7 +110,7 @@
       "warning_message": "Unused field in the contract address type: unused_field",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 13,
+        "line": 22,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -96,7 +120,7 @@
       "warning_message": "Unused transition parameter: contract_address",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 24,
+        "line": 33,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -106,7 +130,7 @@
       "warning_message": "Unused transition parameter: contract_address_unused",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 20,
+        "line": 29,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -116,7 +140,7 @@
       "warning_message": "Unused remote load statement to: a",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 28,
+        "line": 37,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -126,7 +150,7 @@
       "warning_message": "Unused transition parameter: contract_address",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 10,
+        "line": 19,
         "column": 16
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -136,7 +160,7 @@
       "warning_message": "Unused remote load statement to: a",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 14,
+        "line": 23,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -146,21 +170,21 @@
       "warning_message": "Unused remote load statement to: b",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 15,
+        "line": 24,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "No transition in contract Dead15 contains an accept statement\n",
+      "warning_message": "Unused procedure parameter: a",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 8,
-        "column": 10
+        "line": 15,
+        "column": 21
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
+      "warning_id": 3
     }
   ],
   "gas_remaining": "7999"
