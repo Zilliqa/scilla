@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Likely an incorrect map value type: arrow types, forall-types and type variables are not supported.\n",
+      "start_location": {
+        "file": "base/parser/bad/exps/list_to_map.scilexp",
+        "line": 7,
+        "column": 61
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

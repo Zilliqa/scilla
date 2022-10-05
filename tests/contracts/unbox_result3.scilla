@@ -1,0 +1,43 @@
+scilla_version 0
+
+(* This test checks that we don't generate false positives on library
+   function calls. *)
+
+import BoolUtils NatUtils
+
+library UnboxResult3
+
+let andb_lib =
+  fun (lhs : Bool) =>
+  fun (rhs : Bool) =>
+  andb lhs rhs
+
+contract UnboxResult3()
+
+field m: Map Uint32 Uint32 = Emp Uint32 Uint32
+field f_default: Uint32 = Uint32 42
+field dummy_1: Bool = True
+field dummy_2: Bool = False
+
+procedure pr_andb(lhs: Bool, rhs: Bool)
+  r = andb_lib lhs rhs
+end
+
+transition tr1(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  v_1 <- dummy_1;
+  v_2 <- dummy_2;
+  r = andb_lib v_1 v_2
+end
+
+transition tr2(k: Uint32)
+  v_opt <- m[k]; (* warning *)
+  v_1 <- dummy_1;
+  v_2 <- dummy_2;
+  pr_andb v_1 v_2
+end
+
+transition tr3(k: Uint32)
+  v_opt <- m[k]; (* no warning, matched inside a library function *)
+  r = uint32_to_nat_helper v_opt
+end
