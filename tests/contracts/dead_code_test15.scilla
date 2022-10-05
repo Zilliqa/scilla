@@ -5,7 +5,16 @@ scilla_version 0
 
 library Dead15
 
-contract Dead15()
+contract Dead15
+  (
+    param_contr : ByStr20 with contract
+      field param_unused : ByStr20,
+      field param_used : ByStr20 end
+  )
+
+procedure do_accept(a: ByStr20)
+  accept
+end
 
 transition tr1(contract_address: ByStr20 with contract
     field field1: ByStr20,
@@ -26,4 +35,10 @@ transition tr2(
       field field4: Uint64
     end)
   a <- & contract_address.field3
+end
+
+(* Use the parameter of the contract *)
+transition tr3()
+  a <-& param_contr.param_used;
+  do_accept a
 end
