@@ -168,7 +168,7 @@ dev-deps:
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=ocaml-base-compiler.$(OCAML_VERSION) --yes
 	eval $$(opam env)
-	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install ./scilla.opam --deps-only --with-test --yes --assume-depexts
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
 
 .PHONY : coverage
