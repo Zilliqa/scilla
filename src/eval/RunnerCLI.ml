@@ -48,7 +48,6 @@ let v_balance = ref None
 let b_pp_lit = ref true
 let b_json_errors = ref false
 let b_pp_json = ref true
-let b_validate_json = ref true
 let i_ipc_address = ref ""
 let b_reinit = ref false
 
@@ -67,7 +66,6 @@ let reset () =
   b_pp_lit := true;
   b_json_errors := false;
   b_pp_json := true;
-  b_validate_json := true;
   i_ipc_address := "";
   b_reinit := false
 
@@ -83,7 +81,6 @@ let process_trace () =
 
 let process_pplit () = GlobalConfig.set_pp_lit !b_pp_lit
 let process_json_errors () = GlobalConfig.set_use_json_errors !b_json_errors
-let process_json_validation () = GlobalConfig.set_validate_json true
 
 let validate_main usage =
   (* not mandatory file name input, but if provided, should be valid *)
@@ -272,7 +269,6 @@ let parse args ~exe_name =
   let () = process_trace () in
   let () = process_pplit () in
   let () = process_json_errors () in
-  let () = process_json_validation () in
   let () = validate_main usage in
   {
     input_init = !f_input_init;
