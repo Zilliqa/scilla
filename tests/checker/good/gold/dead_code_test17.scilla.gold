@@ -60,7 +60,7 @@
     {
       "warning_message": "Unused procedure: use_all",
       "start_location": {
-        "file": "tests/contracts/dead_code_test17.scilla",
+        "file": "contracts/dead_code_test17.scilla",
         "line": 17,
         "column": 11
       },
@@ -70,7 +70,7 @@
     {
       "warning_message": "Unused contract parameter: all_used",
       "start_location": {
-        "file": "tests/contracts/dead_code_test17.scilla",
+        "file": "contracts/dead_code_test17.scilla",
         "line": 10,
         "column": 5
       },
@@ -80,7 +80,7 @@
     {
       "warning_message": "Unused remote load statement to: a1",
       "start_location": {
-        "file": "tests/contracts/dead_code_test17.scilla",
+        "file": "contracts/dead_code_test17.scilla",
         "line": 18,
         "column": 3
       },
@@ -90,7 +90,7 @@
     {
       "warning_message": "Unused remote load statement to: a2",
       "start_location": {
-        "file": "tests/contracts/dead_code_test17.scilla",
+        "file": "contracts/dead_code_test17.scilla",
         "line": 19,
         "column": 3
       },
@@ -100,7 +100,7 @@
     {
       "warning_message": "No transition in contract Dead16 contains an accept statement\n",
       "start_location": {
-        "file": "tests/contracts/dead_code_test17.scilla",
+        "file": "contracts/dead_code_test17.scilla",
         "line": 8,
         "column": 10
       },
