@@ -92,6 +92,10 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "unbox_result3.scilla";
       "unbox_result4.scilla";
       "unbox_result5.scilla";
+      "dead_code_test15.scilla";
+      "dead_code_test16.scilla";
+      "dead_code_test17.scilla";
+      "dead_code_test18.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
       "timestamp.scilla";

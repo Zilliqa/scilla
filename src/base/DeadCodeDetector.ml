@@ -83,6 +83,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   let emp_idset = SCIdentifierSet.empty
   let emp_erset = ERSet.empty
+  let emp_idsmap = Map.empty (module SCIdentifierComp)
 
   (** Warning level for dead code detection *)
   let warning_level_dead_code = 3
@@ -194,9 +195,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   (** Collects a mapping from ADTs to their constructor definitions. *)
   let collect_adts_to_ctrs lentries =
-    List.fold_left lentries
-      ~init:(Map.empty (module SCIdentifierComp))
-      ~f:(fun m lentry ->
+    List.fold_left lentries ~init:emp_idsmap ~f:(fun m lentry ->
         match lentry with
         | LibTyp (id, ctr_defs) ->
             Map.set m ~key:(SCIdentifier.get_id id) ~data:ctr_defs
@@ -531,6 +530,74 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           | CompTrans -> SCIdentifierSet.union param_adts res_param_adts
           | CompProc -> res_param_adts ))
 
+  let merge_id_maps m1 m2 =
+    Map.merge m1 m2 ~f:(fun ~key:_ -> function
+      | `Both (s1, s2) -> Some (Set.union s1 s2) | `Left s | `Right s -> Some s)
+
+  (** Returns a list of fields with the contract address type from
+      [address_params] that are used in [s]. *)
+  let rec get_used_address_fields address_params (s, _annot) =
+    match s with
+    | RemoteLoad (_, addr, field) | RemoteMapGet (_, addr, field, _, _) ->
+        Map.set emp_idsmap ~key:(get_id addr)
+          ~data:(SCIdentifierSet.singleton (get_id field))
+    | MatchStmt (_id, arms) ->
+        List.fold_left arms ~init:emp_idsmap ~f:(fun m (_pattern, stmts) ->
+            List.fold_left stmts ~init:emp_idsmap ~f:(fun m sa ->
+                get_used_address_fields address_params sa |> merge_id_maps m)
+            |> merge_id_maps m)
+    | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
+    | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
+    | CallProc _ | Throw _ | GasStmt _ ->
+        emp_idsmap
+
+  (** Checks for unused fields in contract address types of [comp]'s
+      parameters. *)
+  let check_contract_address_types_in_params comp =
+    let get_addr_fields = function
+      | SType.Address (ContrAddr m) ->
+          List.fold_left (SType.IdLoc_Comp.Map.keys m) ~init:emp_idset
+            ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
+          |> Option.some
+      | _ -> None
+    in
+    let address_params =
+      List.fold_left comp.comp_params ~init:emp_idsmap ~f:(fun m (id, ty) ->
+          get_addr_fields ty
+          |> Option.value_map ~default:m ~f:(fun fields ->
+                 Map.set m ~key:(get_id id) ~data:fields))
+    in
+    if not @@ Map.is_empty address_params then
+      let used_addresses =
+        List.fold_left comp.comp_body ~init:emp_idsmap ~f:(fun m s ->
+            get_used_address_fields address_params s |> merge_id_maps m)
+      in
+      List.iter comp.comp_params ~f:(fun (id, ty) ->
+          let name = get_id id in
+          (Map.find address_params name, Map.find used_addresses name)
+          |> function
+          | Some fields, Some used_fields
+            when not @@ phys_equal (Set.length fields) (Set.length used_fields)
+            -> (
+              match ty with
+              | SType.Address (ContrAddr m) ->
+                  List.iter (SType.IdLoc_Comp.Map.keys m) ~f:(fun id ->
+                      let name = get_id id in
+                      if Set.mem fields name && (not @@ Set.mem used_fields name)
+                      then
+                        warn1
+                          ("Unused field in the contract address type: "
+                         ^ as_error_string id)
+                          warning_level_dead_code
+                          (SType.TIdentifier.get_rep id))
+              | _ -> ())
+          | _ -> ())
+
+  (** Checks for unused fields in contract address types. *)
+  let check_contract_address_types cmod =
+    List.iter cmod.contr.ccomps ~f:(fun c ->
+        check_contract_address_types_in_params c)
+
   (** Checks for dead code in the fields and constraints of a contract
       @return Live variables, ADTs and constructors, including ones found in
               fields and constraints. *)
@@ -676,15 +743,17 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   let dc_cmod (cmod : cmodule) (elibs : libtree list) =
     let fields_state = FieldsState.mk cmod in
     let adts_to_ctrs =
-      Option.value_map cmod.libs
-        ~default:(Map.empty (module SCIdentifierComp))
-        ~f:(fun l -> collect_adts_to_ctrs l.lentries)
+      Option.value_map cmod.libs ~default:emp_idsmap ~f:(fun l ->
+          collect_adts_to_ctrs l.lentries)
     in
 
     (* Check components *)
     let lv_comps, comps_adts, comps_ctrs, comp_param_adts =
       check_comps cmod fields_state
     in
+
+    (* Check for unused fields in contract address types *)
+    check_contract_address_types cmod;
 
     (* Check fields and constraints *)
     let lv_fields, adts_fields, ctrs_fields =

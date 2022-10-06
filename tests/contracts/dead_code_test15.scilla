@@ -1,0 +1,29 @@
+scilla_version 0
+
+(* Checks for unused fields in the contract address types.
+   See: issue #1099 for the reference. *)
+
+library Dead15
+
+contract Dead15()
+
+transition tr1(contract_address: ByStr20 with contract
+    field field1: ByStr20,
+    field field2: Uint128,
+    field unused_field: Map Uint256 ByStr20 end)
+  a <- & contract_address.field1;
+  b <- & contract_address.field2
+end
+
+(* Don't report unused fields. *)
+transition tr2(
+    contract_address_unused: ByStr20 with contract
+      field field1: ByStr20,
+      field field2: Uint128
+    end,
+    contract_address: ByStr20 with contract
+      field field3: Uint64,
+      field field4: Uint64
+    end)
+  a <- & contract_address.field3
+end
