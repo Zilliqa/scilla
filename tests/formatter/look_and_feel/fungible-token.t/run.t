@@ -1,6 +1,10 @@
   $ scilla-fmt fungible-token.scilla
   scilla_version 0
+  (* This contract implements a fungible token interface a la ERC20.*)
   
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   library FungibleToken
   
   let one = Uint128 1
@@ -30,12 +34,16 @@
           end
         end
   
+  (* returns singleton List Message *)
   let one_msg =
     fun (msg : Message) =>
       let nil_msg = Nil {(Message)} in
       Cons {(Message)} msg nil_msg
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract FungibleToken
     (
       owner : ByStr20,
@@ -46,6 +54,7 @@
     )
   
   
+  (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
   field balances : Map ByStr20 Uint128 =
     let m = Emp (ByStr20) (Uint128) in
     builtin put m owner total_tokens
@@ -101,8 +110,10 @@
       can_do = le_int tokens b;
       match can_do with
       | True =>
+        (* subtract tokens from _sender and add it to "to" *)
         new_sender_bal = builtin sub b tokens;
         balances[_sender] := new_sender_bal;
+        (* Adds tokens to "to" address *)
         to_bal <- balances[to];
         new_to_bal =
           match to_bal with
@@ -122,6 +133,7 @@
         msgs = one_msg msg;
         send msgs
       | False =>
+        (* balance not sufficient. *)
         msg =
           {
             _tag : "TransferFailure";
@@ -135,6 +147,7 @@
         send msgs
       end
     | None =>
+      (* no balance record, can't transfer *)
       msg =
         {
           _tag : "TransferFailure";
@@ -151,15 +164,18 @@
   
   transition TransferFrom (from : ByStr20, to : ByStr20, tokens : Uint128)
     bal <- balances[from];
+    (* Check if _sender has been authorized by "from" *)
     sender_allowed_from <- allowed[from][_sender];
     match bal with
     | Some a =>
       match sender_allowed_from with
       | Some b =>
+        (* We can only transfer the minimum of available or authorized tokens *)
         t = min_int a b;
         can_do = le_int tokens t;
         match can_do with
         | True =>
+          (* tokens is what we should subtract from "from" and add to "to" *)
           new_from_bal = builtin sub a tokens;
           balances[from] := new_from_bal;
           to_bal <- balances[to];
@@ -167,8 +183,11 @@
           | Some tb =>
             new_to_bal = builtin add tb tokens;
             balances[to] := new_to_bal
-          | None => balances[to] := tokens
+          | None =>
+            (* "to" has no balance. So just set it to tokens *)
+            balances[to] := tokens
           end;
+          (* reduce "allowed" by "tokens" *)
           new_allowed = builtin sub b tokens;
           allowed[from][_sender] := new_allowed;
           msg =

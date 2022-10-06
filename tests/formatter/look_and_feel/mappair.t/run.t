@@ -69,10 +69,15 @@
   
   transition addNumToList (num : Int64)
     p <- gpair;
+    (* get first of pair = List (Int64) *)
     l1 = fst_f p;
+    (* get second of pair = Option (Bool) *)
     b = snd_f p;
+    (* have fun: flip the boolean *)
     bflip = flip_obool b;
+    (* append num to the list *)
     l2 = Cons {(Int64)} num l1;
+    (* Form updated pair *)
     new_p = Pair {(List Int64) (Option Bool)} l2 bflip;
     gpair := new_p;
     len = let my_list_length = @list_length (Int64) in my_list_length l2;

@@ -1,8 +1,12 @@
   $ scilla-fmt helloWorld.scilla
   scilla_version 0
+  (* HelloWorld contract *)
   
   import ListUtils
   
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   library HelloWorld
   
   let one_msg =
@@ -15,6 +19,9 @@
   let set_hello_code = Int32 2
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract HelloWorld (owner : ByStr20)
   
   

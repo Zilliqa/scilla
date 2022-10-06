@@ -1,5 +1,11 @@
   $ scilla-fmt crowdfunding_proc.scilla
   scilla_version 0
+  (***************************************************)
+  (*                 Scilla version                  *)
+  (***************************************************)
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   
   import BoolUtils
   
@@ -55,18 +61,24 @@
   let reclaimed_code = Int32 9
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract Crowdfunding
     (
+      (*  Parameters *)
       owner : ByStr20,
       max_block : BNum,
       goal : Uint128
     )
   with
+    (* Contract constraint *)
     let zero = Uint128 0 in
     builtin lt zero goal
   =>
   
   
+  (* Mutable fields *)
   field backers : Map ByStr20 Uint128 = Emp (ByStr20) (Uint128)
   
   field funded : Bool = False
@@ -178,6 +190,7 @@
     send msgs
   end
   
+  (* transition ClaimBack *)
   transition ClaimBack ()
     blk <-& BLOCKNUMBER;
     after_deadline = builtin blt max_block blk;
@@ -192,7 +205,9 @@
       | True =>
         res <- backers[_sender];
         match res with
-        | None => ClaimBackFailure cannot_reclaim_code
+        | None =>
+          (* Sender has not donated *)
+          ClaimBackFailure cannot_reclaim_code
         | Some v => PerformClaimBack v
         end
       end

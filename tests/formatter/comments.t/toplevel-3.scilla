@@ -1,0 +1,10 @@
+scilla_version 0
+
+(***************************************************)
+(*             Library definition                  *)
+(***************************************************)
+
+library Toplevel3
+
+contract Toplevel3()
+

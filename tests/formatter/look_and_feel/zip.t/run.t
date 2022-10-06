@@ -45,6 +45,7 @@
                       fun (h : 'A) =>
                         match z with
                         | Pair r b =>
+                          (* Get b's head, pair it with h and add to r. *)
                           let header = @list_head ('B) in
                           let tailer = @list_tail ('B) in
                           let bhead = header b in

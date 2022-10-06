@@ -1,5 +1,8 @@
   $ scilla-fmt zil-game.scilla
   scilla_version 0
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   
   import BoolUtils
   
@@ -42,6 +45,7 @@
           Some {(BNum)} b1
         end
   
+  (* b is within the time window *)
   let can_play =
     fun (tm : Option BNum) =>
       fun (b : BNum) =>
@@ -80,6 +84,7 @@
                   end
                 end
   
+  (* Owner can withdraw balance if deadline has passed *)
   let can_withdraw =
     fun (tm : BNum) =>
       fun (b : BNum) =>
@@ -87,6 +92,7 @@
         let deadline = builtin badd tm window in
         builtin blt deadline b
   
+  (* In the case of equal results, or no results the prise goes to the owner *)
   let determine_winner =
     fun (puzzle : ByStr32) =>
       fun (guess_a : Option ByStr32) =>
@@ -130,6 +136,9 @@
   let cannot_withdraw = Int32 7
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract ZilGame
     (
       owner : ByStr20,
@@ -139,6 +148,7 @@
     )
   
   
+  (* Initial balance is not stated explicitly: it's initialized when creating the contract. *)
   field player_a_hash : Option ByStr32 = None {(ByStr32)}
   
   field player_b_hash : Option ByStr32 = None {(ByStr32)}
@@ -148,6 +158,7 @@
   transition Play (guess : ByStr32)
     tm_opt <- timer;
     b <-& BLOCKNUMBER;
+    (* Check the timer *)
     c = can_play tm_opt b;
     match c with
     | False =>
@@ -215,6 +226,7 @@
   transition ClaimReward (solution : Int128)
     tm_opt <- timer;
     b <-& BLOCKNUMBER;
+    (* Check the timer *)
     ttc = time_to_claim tm_opt b;
     match ttc with
     | False =>

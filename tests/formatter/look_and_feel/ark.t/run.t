@@ -1,5 +1,8 @@
   $ scilla-fmt ark.scilla
   scilla_version 0
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   
   import
     IntUtils
@@ -9,26 +12,38 @@
   
   type Denom =
   | Zil
-  | Token of ByStr20
+  | Token of ByStr20 (* token address / hash *)
   
   type Coins =
-  | Coins of Denom Uint128
+  | Coins of Denom Uint128 (* denom, amount *)
   
   type NFT =
   | NFT of
       (ByStr20 with contract field token_owners : Map Uint256 ByStr20 end) Uint256
   
+  
+  (* token address*)
+  (* token id *)
   type Side =
-  | Buy
+  | (* buying or selling the NFT *)
+  Buy
+  
   | Sell
   
+  (* a partial trade instruction that can be executed later.
+    price, token & fee is provided separately and must be combined
+    to produce a valid full cheque (and cheque hash) *)
   type Cheque =
-  | Cheque of Side BNum Uint128 ByStr33 ByStr64
+  | Cheque of
+      Side BNum Uint128 ByStr33 ByStr64
+        (* trade direction, expiry, nonce, pubkey, signature *)
   
+  (* executing or voiding a cheque *)
   type Action =
   | Execute
   | Void
   
+  (* Global variables *)
   let zero = Uint128 0
   
   let none = None {(ByStr20)}
@@ -53,11 +68,13 @@
   
   let void = Void
   
+  (* Library functions *)
   let one_msg =
     fun (msg : Message) =>
       let nil_msg = Nil {(Message)} in
       Cons {(Message)} msg nil_msg
   
+  (* Error exception *)
   type Error =
   | CodeNotOwner
   | CodeNotPendingOwner
@@ -135,6 +152,9 @@
                   builtin sha256hash p5
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract ARK
     (
       contract_owner : ByStr20,
@@ -143,6 +163,7 @@
     )
   
   
+  (* Mutable fields *)
   field current_owner : Option ByStr20 = Some {(ByStr20)} contract_owner
   
   field pending_owner : Option ByStr20 = none
@@ -154,6 +175,9 @@
   field voided_cheques : Map ByStr33 (Map ByStr32 Bool) =
     Emp (ByStr33) (Map ByStr32 Bool)
   
+  (**************************************)
+  (*             Procedures             *)
+  (**************************************)
   procedure ThrowError (err : Error)
     e = make_error err;
     throw e
@@ -216,6 +240,7 @@
   
   procedure IsValidPrice (price : Coins)
     amount = get_amount price;
+    (* price should be > 0 *)
     is_zero = builtin eq zero amount;
     match is_zero with
     | False =>
@@ -227,6 +252,7 @@
   
   procedure IsValidFee (price : Coins, fee : Uint128)
     amount = get_amount price;
+    (* fee should be < price *)
     is_valid = builtin lt fee amount;
     match is_valid with
     | True =>
@@ -272,15 +298,21 @@
       pubkey : ByStr33,
       signature : ByStr64
     )
+    (* reinteprete the cheque hash bytes as a hex string *)
     hex_hash = builtin to_string cheque_hash;
+    (* prefix it with action text to disambiguate message type *)
     action_prefix = get_action_prefix action;
     action_string = builtin concat action_prefix hex_hash;
+    (* construct signed message header *)
     chain_id_string = builtin to_string chain_id;
     message_header = builtin concat signed_message_prefix chain_id_string;
     message_header = builtin concat message_header signed_message_suffix;
+    (* prefix with generic zilliqa signed message header *)
     message_string = builtin concat message_header action_string;
+    (* hash the message to the signed data *)
     signed_hash = builtin sha256hash message_string;
     signed_data = builtin to_bystr signed_hash;
+    (* validate the signature *)
     valid_sig = builtin schnorr_verify pubkey signed_data signature;
     match valid_sig with
     | True =>
@@ -308,6 +340,7 @@
           _this_address direction token price fee_amount expiry nonce;
       IsNotVoided cheque_hash pubkey;
       IsValidSignature execute cheque_hash pubkey signature;
+      (* consume cheque by voiding it *)
       voided_cheques[pubkey][cheque_hash] := true
     end
   end
@@ -347,6 +380,7 @@
   procedure TransferNFT (token : NFT, from : ByStr20, to : ByStr20)
     match token with
     | NFT token_address token_id =>
+      (* check the from address so that a cheque can't be reused once the token is transferred *)
       maybe_token_owner <-& token_address.token_owners[token_id];
       match maybe_token_owner with
       | Some token_owner =>
@@ -374,6 +408,9 @@
     end
   end
   
+  (***************************************)
+  (*             Transitions             *)
+  (***************************************)
   transition ExecuteTrade
     (
       token : NFT,
@@ -393,12 +430,15 @@
       seller_receive_amount = builtin sub amount fee_amount;
       seller_receive_coins = Coins denom seller_receive_amount;
       fee_receive_coins = Coins denom fee_amount;
+      (* if zil (non-zrc2), do additional validation and accept amount first *)
       match denom with
       | Zil =>
         receiving_from_buyer = builtin eq buyer _sender;
         match receiving_from_buyer with
         | True =>
         | False =>
+          (* if the executor is not the buyer, we cannot receive zil, it must be wrapped for pre-approval *)
+          (* this means that bidders that do not immediately match should always offer in wZIL *)
           err = CodeInvalidPrice;
           ThrowError err
         end;
@@ -406,6 +446,8 @@
         match correct_amount with
         | True =>
         | False =>
+          (* the amount of zils need to match the required amount as specified in the price exactly *)
+          (* otherwise, funds may be stuck and lost forever *)
           err = CodeInvalidPrice;
           ThrowError err
         end;
@@ -447,6 +489,7 @@
     event e
   end
   
+  (* @dev: Sets the token proxy which calls TransferFrom on ZRC-2 tokens to faciliate transfers. Can only be set once by the owner, and is then immutable. *)
   transition SetTokenProxy (address : ByStr20)
     IsOwner _sender;
     t <- token_proxy;
@@ -462,6 +505,9 @@
     end
   end
   
+  (** Ownership lifecycle transitions *)
+  (* @dev: Transfers contract ownership to a new address. The new address must call the AcceptOwnership transition to finalize the transfer. *)
+  (* @param new_owner: Address of the new current_owner.                                                                                    *)
   transition TransferOwnership (new_owner : ByStr20)
     IsOwner _sender;
     o = Some {(ByStr20)} new_owner;
@@ -475,6 +521,7 @@
     event e
   end
   
+  (* @dev: Finalizes transfer of contract ownership. Must be called by the new current_owner. *)
   transition AcceptOwnership ()
     IsPendingOwner _sender;
     previous_current_owner <- current_owner;
@@ -490,6 +537,7 @@
     event e
   end
   
+  (* @dev: Removes the current_owner, meaning that new minters can no longer be added. Must not have a pending owner. *)
   transition RevokeOwnership ()
     IsOwner _sender;
     NoPendingOwner;
@@ -498,11 +546,17 @@
     event e
   end
   
+  (*************************************)
+  (*             Callbacks             *)
+  (*************************************)
+  (* @dev: Handle callback after sending ZRC-1 tokens via TransferFrom *)
   transition TransferFromSuccessCallBack
     (from : ByStr20, recipient : ByStr20, token_id : Uint256)
   
   end
   
+  (* no-op *)
+  (* @dev: Handle callback after sending ZRC-6 tokens via TransferFrom *)
   transition ZRC6_TransferFromCallback
     (from : ByStr20, to : ByStr20, token_id : Uint256)
   

@@ -1,5 +1,8 @@
   $ scilla-fmt auction.scilla
   scilla_version 0
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   
   import BoolUtils
   
@@ -36,14 +39,19 @@
   let auction_end_code = Int32 9
   
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract OpenAuction
     (
+      (*  Parameters *)
       auctionStart : BNum,
       biddingTime : Uint128,
       beneficiary : ByStr20
     )
   
   
+  (* Mutable fields *)
   field ended : Bool = False
   
   field highestBidder : Option ByStr20 = None {(ByStr20)}
@@ -52,6 +60,7 @@
   
   field pendingReturns : Map ByStr20 Uint128 = Emp (ByStr20) (Uint128)
   
+  (* Transition 1: bidding *)
   transition Bid ()
     blk <-& BLOCKNUMBER;
     endtime = builtin badd auctionStart biddingTime;
@@ -85,6 +94,7 @@
         send msgs
       | False =>
         hb <- highestBid;
+        (* Checks if the bid is too low *)
         sufficientBid = builtin lt hb _amount;
         match sufficientBid with
         | False =>
@@ -102,14 +112,18 @@
           hbPrev <- highestBidder;
           match hbPrev with
           | Some prevHighestBidder =>
+            (* There is already a highest bidder *)
             option_pendingReturnsForPrevHB <- pendingReturns[prevHighestBidder];
             getPRForPrevHighestBidder =
               match option_pendingReturnsForPrevHB with
               | Some pendingReturnsForPrevHB =>
+                (* User already has some balance in the pending returns that is not claimed *)
                 builtin add hb pendingReturnsForPrevHB
               | None => hb
               end;
+            (* Prev highest bidder has no pending returns. *)
             pendingReturns[prevHighestBidder] := getPRForPrevHighestBidder;
+            (* Update the highest bidder *)
             bidder = Some {(ByStr20)} _sender;
             highestBidder := bidder;
             highestBid := _amount;
@@ -122,6 +136,7 @@
               };
             event ev
           | None =>
+            (* Process first bid *)
             first_bidder = Some {(ByStr20)} _sender;
             highestBidder := first_bidder;
             highestBid := _amount;
@@ -139,6 +154,7 @@
     end
   end
   
+  (* Transition 2: claiming money back *)
   transition Withdraw ()
     prs <- pendingReturns;
     pr = builtin get prs _sender;
@@ -164,6 +180,7 @@
     end
   end
   
+  (* Transition 3: auction ends *)
   transition AuctionEnd ()
     blk <-& BLOCKNUMBER;
     e <- ended;

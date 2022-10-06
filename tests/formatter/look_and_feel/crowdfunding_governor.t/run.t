@@ -20,6 +20,7 @@
       fun (goal : Uint128) =>
         builtin lt balance goal
   
+  (* Error exceptions *)
   type Error =
   | SenderIsNotContractOwner
   | SenderAlreadyDonated
@@ -53,11 +54,13 @@
       storage : ByStr20 with contract field backers : Map ByStr20 Uint128 end
     )
   with
+    (* these are all the fields of the storage contract *)
     let zero = Uint128 0 in
     builtin lt zero goal
   =>
   
   
+  (* no storage fields! *)
   procedure Throw (error : Error)
     e = make_error error;
     throw e
@@ -69,7 +72,7 @@
     | False =>
       e = SenderIsNotContractOwner;
       Throw e
-    | True =>
+    | True => (* do nothing *)
     end
   end
   
@@ -105,7 +108,7 @@
     | True =>
       e = DeadlineHasPassed;
       Throw e
-    | False =>
+    | False => (* do nothing *)
     end
   end
   
@@ -116,7 +119,7 @@
     | False =>
       e = DeadlineHasNotPassedYet;
       Throw e
-    | True =>
+    | True => (* do nothing *)
     end
   end
   
@@ -127,7 +130,7 @@
     | False =>
       e = TargetIsReached;
       Throw e
-    | True =>
+    | True => (* do nothing *)
     end
   end
   
@@ -138,7 +141,7 @@
     | True =>
       e = TargetIsNotReached;
       Throw e
-    | False =>
+    | False => (* do nothing *)
     end
   end
   
@@ -148,7 +151,7 @@
     | True =>
       e = SenderAlreadyDonated;
       Throw e
-    | False =>
+    | False => (* do nothing *)
     end
   end
   

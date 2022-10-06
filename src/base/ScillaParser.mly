@@ -303,11 +303,11 @@ simple_exp :
 | LET; x = ID;
   t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
-  {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
+  {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos) }
 (* Function *)
 | FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
     { match iwt with
-      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)

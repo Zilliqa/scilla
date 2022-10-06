@@ -18,6 +18,11 @@
   contract Polynetwork (thisChainID : Uint64)
   
   
+  (*
+   * Scilla cross chain tx hash indexed by the automatically increased index.
+   * This map exists for the reason that Poly chain can verify the existence
+   * of cross chain request tx coming from Scilla
+   *)
   field f_zilToPolyTxHashMap : Map Uint256 ByStr32 = Emp (Uint256) (ByStr32)
   
   field f_zilToPolyTxHashIndex : Uint256 = Uint256 0
@@ -34,6 +39,7 @@
     nextbookkeeper_keepers = verifyPubkey pubkeys;
     match nextbookkeeper_keepers with
     | Pair nextBookKeeper keepers =>
+      (* Ensure that Header's nextBookKeeper is same as the one from verifyPubkey *)
       nbk_eq = builtin eq nextBookKeeper h_nextBookkeeper;
       match nbk_eq with
       | True =>
@@ -139,6 +145,15 @@
     end
   end
   
+  (*  @notice              Verify Poly chain header and proof, execute the cross chain tx from Poly chain to Zilliqa
+   *  @param proof         Poly chain tx merkle proof
+   *  @param rawHeader     The header containing crossStateRoot to verify the above tx merkle proof
+   *  @param headerProof   The header merkle proof used to verify rawHeader
+   *  @param curRawHeader  Any header in current epoch consensus of Poly chain
+   *  @param headerSig     The coverted signature veriable for solidity derived from Poly chain consensus nodes' signature
+   *                       used to verify the validity of curRawHeader
+   *  @return              true or false
+   *)
   transition verifyHeaderAndExecuteTx
     (
       proof : Proof,
@@ -200,7 +215,7 @@
                 headerHash = get_header_hash rawHeader;
                 proof_ok = builtin eq headerHash proveValue32;
                 match proof_ok with
-                | True =>
+                | True => (* Do nothing *)
                 | False =>
                   e = { _exception : "Merkle proof invalid" };
                   throw e
@@ -222,7 +237,7 @@
       | False =>
         signed = verifySig rawHeader headerSig curKeepers m;
         match signed with
-        | True =>
+        | True => (* Do nothing *)
         | False =>
           e = { _exception : "Signature verification failed" };
           throw e
@@ -250,6 +265,12 @@
     end
   end
   
+  (*  @notice              change Poly chain consensus book keeper
+   *  @param rawHeader     Poly chain change book keeper block raw header
+   *  @param pubKeyList    Poly chain consensus nodes public key list
+   *  @param sigList       Poly chain consensus nodes signature list
+   *  @return              true or false
+   *)
   transition changeBookKeeper
     (rawHeader : ByStr, pubkeys : List Pubkey, sigList : List Signature)
     header_o = deserialize_Header rawHeader zero_uint32;
@@ -313,6 +334,13 @@
     f_zilToPolyTxHashIndex := newTxHashIndex
   end
   
+  (*  @notice              ERC20 token cross chain to other blockchain.
+   *                       this function push tx event to blockchain
+   *  @param toChainId     Target chain id
+   *  @param toContract    Target smart contract address in target block chain
+   *  @param txData        Transaction data for target chain, include to_address, amount
+   *  @return              true or false
+   *)
   transition crossChain
     (toChainId : Uint64, toContract : ByStr, method : ByStr, txData : ByStr)
     txHashIndex <- f_zilToPolyTxHashIndex;
@@ -326,6 +354,7 @@
     txp =
       TxParam
         paramTxHash crossChainId fromContract toChainId toContract method txData;
+    (* Serialize the TxParam object *)
     empty_bystr = let b = 0x in builtin to_bystr b;
     rawParam = append_TxParam empty_bystr txp;
     rawParamHash = builtin keccak256hash rawParam;
