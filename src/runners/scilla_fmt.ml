@@ -103,7 +103,7 @@ let scilla_source_code_fmt file =
        |> *)
     failwith "Formatting of Scilla library modules is not implemented yet"
   else if check_extension file file_extn_contract then
-    (* contract modules                                   *)
+    (* contract modules *)
     file |> FEParser.parse_cmodule |> unpack_ast_exn
     |> ExtendedSyntax.LocalLiteralTransformer.extend_cmodule (tr ())
     |> Formatter.LocalLiteralSyntax.contract_to_string
