@@ -490,8 +490,11 @@ let contract_tests env =
                 >::: build_contract_tests env "timestamp" succ_code 1 2 [];
                 "chainid"
                 >::: build_contract_tests env "chainid" succ_code 1 1 [];
+                (*
+  See https://github.com/Zilliqa/scilla/issues/1180
                 "replicate"
                 >::: build_contract_tests env "replicate" succ_code 1 1 [];
+*)
                 "ark-store-hashes-in-mutable-maps"
                 >::: build_contract_tests env "ark" succ_code 1 1 [];
               ];
@@ -501,8 +504,11 @@ let contract_tests env =
                 >::: build_contract_tests env "helloWorld" fail_code 5 11 [];
                 "codehash"
                 >::: build_contract_tests env "codehash" fail_code 100 102 [];
+                (*
+  See https://github.com/Zilliqa/scilla/issues/1180
                 "replicate"
                 >::: build_contract_tests env "replicate" fail_code 100 100 [];
+*)
                 "mappair"
                 >::: build_contract_tests env "mappair" fail_code 8 8 [];
                 "mappair"
