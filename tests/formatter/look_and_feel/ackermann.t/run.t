@@ -1,8 +1,10 @@
   $ scilla-fmt ackermann.scilexp
+  (* some helper functions one would hope to find in stdlib *)
   let nat_succ : Nat -> Nat =
     fun (n : Nat) =>
       Succ n
   in
+  (* [nat_iter 'A f n] = f^n -- functional power operator *)
   let nat_iter : forall 'A. ('A -> 'A) -> Nat -> 'A -> 'A =
     tfun 'A =>
       fun (f : 'A -> 'A) =>
@@ -30,6 +32,7 @@
     fun (n : Nat) =>
       iter_nat_nat f n nat_succ
   in
+  (* tests *)
   let uint0 = Uint32 0 in
   let uint1 = Uint32 1 in
   let uint2 = Uint32 2 in

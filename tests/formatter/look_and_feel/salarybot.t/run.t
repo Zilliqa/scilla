@@ -3,6 +3,9 @@
   
   import ListUtils
   
+  (***************************************************)
+  (*               Associated library                *)
+  (***************************************************)
   library SalaryBotLib
   
   let mk_employee_already_exists_event =

@@ -160,8 +160,8 @@ let check_patterns_lmodule e rlibs elibs =
     @@ sprintf "\n[Pattern Check]:\n library module is successfully checked.\n";
   res
 
-let check_sanity m rlibs elibs =
-  let res = SC.contr_sanity m rlibs elibs in
+let check_sanity m call_graph rlibs elibs =
+  let res = SC.contr_sanity call_graph m rlibs elibs in
   if Result.is_ok res then
     plog
     @@ sprintf "\n[Sanity Check]:\n module [%s] is successfully checked.\n"
@@ -349,7 +349,7 @@ let check_cmodule cli =
       if cli.disable_analy_warn then pure ()
       else
         wrap_error_with_gas remaining_gas
-        @@ check_sanity typed_cmod typed_rlibs typed_elibs
+        @@ check_sanity typed_cmod cg typed_rlibs typed_elibs
     in
     let%bind event_info =
       wrap_error_with_gas remaining_gas @@ EI.event_info pm_checked_cmod

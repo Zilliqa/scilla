@@ -324,16 +324,18 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         pure
         @@ ( TypedSyntax.Builtin ((fst b, q_ret_tag), ts, typed_actuals),
              (q_ret_typ, rep) )
-    | Let (i, topt, lhs, rhs) ->
+    | Let (i, topt, (lhs, lhs_rep), rhs) ->
         (* Poor man's error reporting *)
-        let%bind ((_, (ityp, _)) as checked_lhs) = type_expr lhs tenv in
+        let%bind ((_, (ityp, _)) as checked_lhs) =
+          type_expr (lhs, lhs_rep) tenv
+        in
         let%bind actual_typ =
           match topt with
           | Some tannot ->
               let%bind () =
                 fromR_TE
-                @@ assert_type_assignable ~lc:(ER.get_loc rep) ~expected:tannot
-                     ~actual:ityp.tp
+                @@ assert_type_assignable ~lc:(ER.get_loc lhs_rep)
+                     ~expected:tannot ~actual:ityp.tp
               in
               pure (mk_qual_tp tannot)
           | None -> pure ityp

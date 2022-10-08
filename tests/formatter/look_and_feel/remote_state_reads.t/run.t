@@ -3,6 +3,7 @@
   
   library RRLib
   
+  (* Tests various aspects of address types and remote state reads *)
   type AddressADT =
   | Address1 of (ByStr20 with end)
   | Address2 of (ByStr20 with contract field admin : ByStr20 with end end)
@@ -10,8 +11,11 @@
   
   contract RRContract
     (
+      (* Any address in use *)
       cparam1 : ByStr20 with end,
+      (* Any contract address *)
       cparam2 : ByStr20 with contract end,
+      (* Address with various fields *)
       cparam3 :
         ByStr20 with contract
           field admin : ByStr20 with end,
@@ -52,35 +56,49 @@
   
   field remote_reads_test_res_1_1 : Uint128 = Uint128 0
   
+  (* _balance of remote1 *)
   field remote_reads_test_res_2_1 : Uint128 = Uint128 0
   
+  (* _balance of remote2 *)
   field remote_reads_test_res_3_1 : Uint128 = Uint128 0
   
+  (* _balance of remote3 *)
   field remote_reads_test_res_3_3 : Uint32 = Uint32 0
   
+  (* transactionCount of remote3 *)
   field remote_reads_test_res_3_4 : ByStr20 with end = cparam3
   
+  (* admin of remote3 *)
   field remote_reads_test_res_3_5 : Uint128 = Uint128 0
   
+  (* _balance of admin of remote3 *)
   field remote_reads_test_res_3_6 : Map (ByStr20 with end) Bool =
     Emp (ByStr20 with end) (Bool)
   
+  (* owners of remote3 *)
   field remote_reads_test_res_3_7 : Bool = True
   
+  (* exists of owners[key] in remote3 *)
   field remote_reads_test_res_3_8 : Option Bool = let x = True in Some {(Bool)} x
   
+  (* owners[key] in remote3 *)
   field remote_reads_test_res_3_9 : Map Uint32 (Map (ByStr20 with end) Bool) =
     Emp (Uint32) (Map (ByStr20 with end) Bool)
   
+  (* signatures of remote3 *)
   field remote_reads_test_res_3_10 : Bool = False
   
+  (* exists of signatures[key] of remote3 *)
   field remote_reads_test_res_3_11 : Option (Map (ByStr20 with end) Bool) =
     None {(Map (ByStr20 with end) Bool)}
   
+  (* signatures[key] of remote3 *)
   field remote_reads_test_res_3_12 : Bool = False
   
+  (* exists signatures[key1][key2] of remote3 *)
   field remote_reads_test_res_3_13 : Option Bool = None {(Bool)}
   
+  (* signatures[key1][key2] of remote3 *)
   field sender_balance_pre : Uint128 = Uint128 0
   
   field sender_balance_mid : Uint128 = Uint128 0
@@ -89,8 +107,11 @@
   
   transition RemoteReadsTest
     (
+      (* Any address in use *)
       remote1 : ByStr20 with end,
+      (* Any contract address *)
       remote2 : ByStr20 with contract end,
+      (* Address with various fields *)
       remote3 :
         ByStr20 with contract
           field admin : ByStr20 with end,
@@ -130,6 +151,7 @@
     remote_reads_test_res_3_13 := tmp_3_13
   end
   
+  (* Test the dynamic typecheck of ADT values *)
   transition RemoteReadsADTTest
     (
       list1 : List (ByStr20 with end),
@@ -142,6 +164,8 @@
   
   end
   
+  (* Test that outgoing messages and events use ByStr20 for type info, and not the full address type
+     Also test that this is the case for EventInfo *)
   transition OutgoingMsgTest ()
     msg =
       { _tag : ""; _recipient : _sender; _amount : Uint128 0; param : cparam3 };
@@ -153,6 +177,7 @@
     event e2
   end
   
+  (* Test that exceptions use ByStr20 for type info, and not the full address type *)
   transition ExceptionTest ()
     e = { _exception : "TestException"; value : cparam3 };
     throw e
@@ -175,12 +200,15 @@
     assign_test_10[k1][k2] := x
   end
   
+  (* Check that sender balance is deducted on acceptance *)
   transition SenderBalanceTest ()
     pre <-& _sender._balance;
     sender_balance_pre := pre;
+    (* First accept should cause sender balance to decrease *)
     accept;
     mid <-& _sender._balance;
     sender_balance_mid := mid;
+    (* Second accept should make no difference *)
     accept;
     post <-& _sender._balance;
     sender_balance_post := post

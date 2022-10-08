@@ -217,7 +217,6 @@ let parse_cli args ~exe_name =
   let r_type_info = ref false in
   let r_cf = ref false in
   let r_cf_token_fields = ref [] in
-  let r_validate_json = ref true in
   let r_disable_analy_warn = ref false in
   let r_dump_callgraph = ref false in
   let r_dump_callgraph_stdout = ref false in
@@ -276,9 +275,6 @@ let parse_cli args ~exe_name =
               | "verbose" -> GlobalConfig.set_debug_level Debug_Verbose
               | _ -> raise (ErrorUtils.FatalError "Invalid debug log level") ),
         "Set debug logging level" );
-      ( "-disable-validate-json",
-        Arg.Unit (fun () -> r_validate_json := false),
-        "Disable validation of input JSONs" );
       ( "-disable-developer-warnings",
         Arg.Unit (fun () -> r_disable_analy_warn := true),
         "Disable analyses' warnings" );
@@ -319,7 +315,6 @@ let parse_cli args ~exe_name =
   in
   if not @@ List.is_empty !r_cf_token_fields then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
-  GlobalConfig.set_validate_json !r_validate_json;
   {
     input_file = !r_input_file;
     stdlib_dirs = !r_stdlib_dir;

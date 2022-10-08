@@ -25,10 +25,12 @@ open Scilla_base.ScillaUtil.FilePathInfix
 let normalize_json s =
   s |> Yojson.Basic.from_string |> Yojson.Basic.pretty_to_string
 
-(* Helper funcation borrowed from Batteries library *)
+(* Helper function inspired by one from Batteries library  *)
 let stream_to_string fl =
   let buf = Buffer.create 4096 in
-  Stream.iter (Buffer.add_char buf) fl;
+  (* OUnit uses potentially infinite streams and
+     if a stream is finite, it may throw an exception *)
+  (try Seq.iter (Buffer.add_char buf) fl with _exn -> ());
   Buffer.contents buf
 
 type tsuite_env = {

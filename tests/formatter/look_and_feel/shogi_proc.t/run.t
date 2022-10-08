@@ -1,5 +1,7 @@
   $ scilla-fmt shogi_proc.scilla
   scilla_version 0
+  (* Import library rather than use contract library *)
+  (* to test that types are available *)
   
   import
     ShogiLib
@@ -98,6 +100,7 @@
     fun (origin : Square) =>
       fun (direction : Direction) =>
         fun (distance : Uint32) =>
+          (* Convert to nat in order to perform recursion *)
           let distance_as_nat = builtin to_nat distance in
           let init = Nil {(Square)} in
           let folder = @nat_fold (List Square) in
@@ -110,6 +113,7 @@
                   | Nil => origin
                   end
                 in
+                (* Check if we have moved off the board *)
                 let off_the_board =
                   match last_square with
                   | Square row column =>
@@ -124,6 +128,7 @@
                     orb colum_fail row_fail
                   end
                 in
+                (* If we have gone off off the board we don't add to the path *)
                 match off_the_board with
                 | True => acc
                 | False =>
@@ -145,12 +150,14 @@
         fun (player_1_in_turn : Bool) =>
           match player_1_in_turn with
           | True =>
+            (* Attacking northwards *)
             match direction with
             | SouthWest => Nil {(Square)}
             | SouthEast => Nil {(Square)}
             | _ => let one = Uint32 1 in generate_path square direction one
             end
           | False =>
+            (* Attacking southwards *)
             match direction with
             | NorthWest => Nil {(Square)}
             | NorthEast => Nil {(Square)}
@@ -164,6 +171,7 @@
         fun (player_1_in_turn : Bool) =>
           match player_1_in_turn with
           | True =>
+            (* Attacking northwards *)
             match direction with
             | South => Nil {(Square)}
             | East => Nil {(Square)}
@@ -171,6 +179,7 @@
             | _ => let one = Uint32 1 in generate_path square direction one
             end
           | False =>
+            (* Attacking southwards *)
             match direction with
             | North => Nil {(Square)}
             | East => Nil {(Square)}
@@ -183,8 +192,10 @@
     fun (square : Square) =>
       fun (direction : Direction) =>
         fun (player_1_in_turn : Bool) =>
+          (* Knights jump, so path only contains final square *)
           match player_1_in_turn with
           | True =>
+            (* Attacking northwards *)
             let north = North in
             match direction with
             | NorthEast =>
@@ -200,6 +211,7 @@
             | _ => Nil {(Square)}
             end
           | False =>
+            (* Attacking southwards *)
             let south = South in
             match direction with
             | SouthEast =>
@@ -222,11 +234,13 @@
         fun (player_1_in_turn : Bool) =>
           match player_1_in_turn with
           | True =>
+            (* Attacking northwards *)
             match direction with
             | North => let one = Uint32 1 in generate_path square direction one
             | _ => Nil {(Square)}
             end
           | False =>
+            (* Attacking southwards *)
             match direction with
             | South => let one = Uint32 1 in generate_path square direction one
             | _ => Nil {(Square)}
@@ -240,32 +254,40 @@
           fun (player_1_in_turn : Bool) =>
             match player_1_in_turn with
             | True =>
+              (* Attacking northwards *)
               match direction with
               | North => generate_path square direction distance
               | _ => Nil {(Square)}
               end
             | False =>
+              (* Attacking southwards *)
               match direction with
               | South => generate_path square direction distance
               | _ => Nil {(Square)}
               end
             end
   
+  (* Bishops and rooks *)
   let officer_path =
     fun (square : Square) =>
       fun (direction : Direction) =>
         fun (distance : Uint32) =>
           generate_path square direction distance
   
+  (* Generate the path of squares that a piece moves along *)
+  (* The first element of the resulting list of squares is the target square of the move *)
+  (* An empty list indicates an illegal move *)
   let movement_path =
     fun (square : Square) =>
       fun (piece : Piece) =>
         fun (promotion_status : PromotionStatus) =>
           fun (direction : Direction) =>
             fun (distance : Uint32) =>
+              (* Determines whether attacking northwards or southwards *)
               fun (player_1_in_turn : Bool) =>
                 match piece with
                 | King =>
+                  (* Check distance *)
                   let one = Uint32 1 in
                   let distance_is_one = builtin eq one distance in
                   match distance_is_one with
@@ -273,6 +295,7 @@
                   | False => Nil {(Square)}
                   end
                 | GoldGeneral =>
+                  (* Check distance *)
                   let one = Uint32 1 in
                   let distance_is_one = builtin eq one distance in
                   match distance_is_one with
@@ -285,7 +308,9 @@
                   match distance_is_one with
                   | True =>
                     match promotion_status with
-                    | Promoted => gold_path square direction player_1_in_turn
+                    | Promoted =>
+                      (* Promoted to gold general *)
+                      gold_path square direction player_1_in_turn
                     | NotPromoted => silver_path square direction player_1_in_turn
                     end
                   | False => Nil {(Square)}
@@ -293,6 +318,7 @@
                 | Knight =>
                   match promotion_status with
                   | Promoted =>
+                    (* Promoted to gold general *)
                     let one = Uint32 1 in
                     let distance_is_one = builtin eq one distance in
                     match distance_is_one with
@@ -300,6 +326,8 @@
                     | False => Nil {(Square)}
                     end
                   | NotPromoted =>
+                    (* Knights move 2 squares forward and 1 to the side. *)
+                    (* Represented as NorthEast/NorthWest (for player 1) by 2 squares *)
                     let two = Uint32 2 in
                     let distance_is_two = builtin eq two distance in
                     match distance_is_two with
@@ -313,7 +341,9 @@
                   match distance_is_one with
                   | True =>
                     match promotion_status with
-                    | Promoted => gold_path square direction player_1_in_turn
+                    | Promoted =>
+                      (* Promoted to gold general *)
+                      gold_path square direction player_1_in_turn
                     | NotPromoted => pawn_path square direction player_1_in_turn
                     end
                   | False => Nil {(Square)}
@@ -321,6 +351,7 @@
                 | Lance =>
                   match promotion_status with
                   | Promoted =>
+                    (* Promoted to gold general *)
                     let one = Uint32 1 in
                     let distance_is_one = builtin eq one distance in
                     match distance_is_one with
@@ -328,6 +359,7 @@
                     | False => Nil {(Square)}
                     end
                   | NotPromoted =>
+                    (* Lances move any number of squares forward. *)
                     let zero = Uint32 0 in
                     let distance_is_greater_that_zero = builtin lt zero distance
                     in
@@ -344,6 +376,7 @@
                   | NorthEast => officer_path square direction distance
                   | NorthWest => officer_path square direction distance
                   | _ =>
+                    (* Only allowed if bishop is promoted *)
                     match promotion_status with
                     | NotPromoted => Nil {(Square)}
                     | Promoted =>
@@ -362,6 +395,7 @@
                   | East => officer_path square direction distance
                   | North => officer_path square direction distance
                   | _ =>
+                    (* Only allowed if rook is promoted *)
                     match promotion_status with
                     | NotPromoted => Nil {(Square)}
                     | Promoted =>
@@ -382,14 +416,22 @@
           fun (target_row : Uint32) =>
             fun (player_1_in_turn : Bool) =>
               match promote with
-              | False => Some {(PromotionStatus)} promotion_status
+              | False =>
+                (* No attempt made to promote *)
+                Some {(PromotionStatus)} promotion_status
               | True =>
+                (* Attempt to promote *)
                 match promotion_status with
-                | Promoted => None {(PromotionStatus)}
+                | Promoted =>
+                  (* Cannot promote an already promoted piece *)
+                  None {(PromotionStatus)}
                 | NotPromoted =>
+                  (* Check that move happened in opponent territory *)
                   match player_1_in_turn with
                   | True =>
+                    (* Move must occur on row 7 or higher *)
                     let seven = Uint32 7 in
+                    (* Attacking northwards *)
                     let origin_not_in_opponent_territory =
                       builtin lt origin_row seven
                     in
@@ -401,11 +443,15 @@
                         origin_not_in_opponent_territory target_not_in_opponent_territory
                     in
                     match not_in_opponent_territory with
-                    | True => None {(PromotionStatus)}
+                    | True =>
+                      (* Cannot promote piece outside of opponent territory *)
+                      None {(PromotionStatus)}
                     | False => Some {(PromotionStatus)} promoted
                     end
                   | False =>
+                    (* Move must occur on row 3 or lower *)
                     let three = Uint32 3 in
+                    (* Attacking northwards *)
                     let origin_not_in_opponent_territory =
                       builtin lt three origin_row
                     in
@@ -417,7 +463,9 @@
                         origin_not_in_opponent_territory target_not_in_opponent_territory
                     in
                     match not_in_opponent_territory with
-                    | True => None {(PromotionStatus)}
+                    | True =>
+                      (* Cannot promote piece outside of opponent territory *)
+                      None {(PromotionStatus)}
                     | False => Some {(PromotionStatus)} promoted
                     end
                   end
@@ -438,6 +486,7 @@
   
   let internal_error = InternalError
   
+  (* Error events *)
   let mk_error_event =
     fun (err : Error) =>
       let err_code =
@@ -481,12 +530,15 @@
     )
   
   
+  (* Initialize board *)
   field board : Map Uint32 (Map Uint32 SquareContents) =
     initial_board player1 player2
   
   field captured_pieces : Map ByStr20 (Map Uint32 Uint32) =
     init_captured_pieces player1 player2
   
+  (* player1 moves first *)
+  (* player_in_turn = None indicates that game is over *)
   field player_in_turn : Option ByStr20 = Some {(ByStr20)} player1
   
   field winner : Option ByStr20 = None {(ByStr20)}
@@ -518,27 +570,35 @@
   end
   
   procedure PlacePiece (piece : Piece, square : Square)
+    (* Place a captured piece on the board *)
+    (* Check that player has captured piece available *)
     piece_no = piece_to_int piece;
     capture_count <- captured_pieces[_sender][piece_no];
     match capture_count with
-    | None => InternalErrorEvent
+    | None =>
+      (* This should not happen *)
+      InternalErrorEvent
     | Some count =>
       zero = Uint32 0;
       has_pieces = builtin lt zero count;
       match has_pieces with
       | False => IllegalActionEvent
       | True =>
+        (* Check if desired square is available *)
         match square with
         | Square row column =>
           target_square_content <- board[row][column];
           match target_square_content with
           | Some Free =>
+            (* Remove from captured pieces, and place on board *)
             one = Uint32 1;
             new_count = builtin sub count one;
             captured_pieces[_sender][piece_no] := new_count;
             new_contents = Occupied piece not_promoted _sender;
             board[row][column] := new_contents
-          | _ => IllegalActionEvent
+          | _ =>
+            (* Square does not exist on board, or square is occupied *)
+            IllegalActionEvent
           end
         end
       end
@@ -560,9 +620,14 @@
     new_promotion_status_opt =
       perform_promotion promote promotion_status row target_row player_1_moves;
     match new_promotion_status_opt with
-    | None => IllegalActionEvent
+    | None =>
+      (* Illegal promotion *)
+      IllegalActionEvent
     | Some new_promotion_status =>
+      (* Move piece *)
+      (* Source square is no longer occupied *)
       board[row][column] := free;
+      (* Update target square *)
       new_contents_at_target = Occupied piece new_promotion_status current_player;
       board[target_row][target_column] := new_contents_at_target
     end
@@ -578,6 +643,7 @@
     )
     match square with
     | Square row column =>
+      (* Find the contents of the origin square *)
       contents <- board[row][column];
       match contents with
       | Some (Occupied piece promotion_status owner) =>
@@ -592,6 +658,7 @@
           match path with
           | Nil => IllegalActionEvent
           | Cons (Square target_row target_column) intervening_squares =>
+            (* Piece is allowed to move as requested. Check for blocking pieces.  *)
             board_tmp <- board;
             blocked_path =
               let exister = @list_exists (Square) in
@@ -616,23 +683,37 @@
             match blocked_path with
             | True => IllegalActionEvent
             | False =>
+              (* Check contents of target square *)
               contents_at_target <- board[target_row][target_column];
               match contents_at_target with
-              | None => IllegalActionEvent
+              | None =>
+                (* Moving off the board *)
+                IllegalActionEvent
               | Some Free =>
+                (* No piece captured *)
+                (* Check promotion, and move *)
                 PerformMoveAndPromote
                   current_player piece promote promotion_status row column target_row target_column player_1_moves
               | Some (Occupied captured_piece _ captured_owner) =>
+                (* Target square is occupied. Check ownership *)
                 captured_owner_is_current_player =
                   builtin eq captured_owner current_player;
                 match captured_owner_is_current_player with
-                | True => IllegalActionEvent
+                | True =>
+                  (* Target square is blocked *)
+                  IllegalActionEvent
                 | False =>
+                  (* Opponent piece captured. *)
+                  (* Check promotion part of move *)
                   PerformMoveAndPromote
                     current_player piece promote promotion_status row column target_row target_column player_1_moves;
+                  (* Check if captured piece is the king *)
                   match captured_piece with
-                  | King => Winner current_player
+                  | King =>
+                    (* Game is won *)
+                    Winner current_player
                   | _ =>
+                    (* Add captured piece to list of captured pieces *)
                     captured_piece_no = piece_to_int captured_piece;
                     captured_count_opt <-
                       captured_pieces[current_player][captured_piece_no];
@@ -650,11 +731,14 @@
             end
           end
         end
-      | _ => IllegalActionEvent
+      | _ =>
+        (* No piece on the square, or square does not exist *)
+        IllegalActionEvent
       end
     end
   end
   
+  (* Execute Move action by sending message to execute PlayerAction transition *)
   transition MoveAction
     (
       row : Uint32,
@@ -678,12 +762,14 @@
     send msgs
   end
   
+  (* Execute player action *)
   transition PlayerAction (action : Action)
     false = False;
     true = True;
     current_player_opt <- player_in_turn;
     match current_player_opt with
     | None =>
+      (* Game is over *)
       err = game_is_over;
       e = mk_error_event err;
       event e
@@ -696,18 +782,23 @@
         event e
       | True =>
         match action with
-        | Resign => Resign current_player
+        | (* Resign and award game to opponent *)
+        Resign =>
+          Resign current_player
         | Place piece square => PlacePiece piece square
         | Move square direction distance promote =>
           MovePiece current_player square direction distance promote
         end
       end;
+      (* Check if a winner has been found *)
       win <- winner;
       match win with
       | Some player =>
+        (* Game is over. Announce winner *)
         e = mk_winner_event player player1 player2;
         event e
       | None =>
+        (* Set player_in_turn to opposite player *)
         next_player = get_next_player current_player player1 player2;
         next_player_opt = Some {(ByStr20)} next_player;
         player_in_turn := next_player_opt

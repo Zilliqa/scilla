@@ -1,5 +1,6 @@
   $ scilla-fmt ud-registry.scilla
   scilla_version 0
+  (* Give some love to the UD Dev Team Bogdan, Ryan, Don and Ali. *)
   
   import
     BoolUtils

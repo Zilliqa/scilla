@@ -82,10 +82,13 @@
       match args with
       | [ id ] -> Timestamp(id)
       | _ -> raise (SyntaxError ("TIMESTAMP takes a single blocknumber argument", loc)))
+(*
+  See https://github.com/Zilliqa/scilla/issues/1180
     | "REPLICATE_CONTRACT" -> (
       match args with
       | [ addr; iparams ] -> ReplicateContr(addr, iparams)
       | _ -> raise (SyntaxError ("Usage: REPLICATE_CONTRACT(addr, iparams)", loc)))
+*)
     | _ -> raise (SyntaxError ("Unknown blockchain fetch operation " ^ op, loc))
 
 %}
@@ -303,11 +306,11 @@ simple_exp :
 | LET; x = ID;
   t = ioption(type_annot)
   EQ; f = simple_exp; IN; e = exp
-  {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos(f)) }
+  {(Let ( to_loc_id x (toLoc $startpos(x)), t, f, e), toLoc $startpos) }
 (* Function *)
 | FUN; LPAREN; iwt = id_with_typ; RPAREN; ARROW; e = exp
     { match iwt with
-      | (i, t) -> (Fun (i, t, e), toLoc $startpos(e) ) }
+      | (i, t) -> (Fun (i, t, e), toLoc $startpos ) }
 (* Application *)
 | f = sid;
   args = nonempty_list(sident)
@@ -389,7 +392,7 @@ builtin_args :
 | LPAREN; RPAREN { [] }
 
 bcfetch_args :
-| LPAREN; args = separated_list(COMMA, sident); RPAREN { args }
+  | LPAREN; args = separated_nonempty_list(COMMA, sident); RPAREN { args }
 
 exp_term :
 | e = exp; EOF { e }

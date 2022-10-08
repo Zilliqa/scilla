@@ -1,0 +1,62 @@
+scilla_version 0
+
+(* This test checks that we don't generate false positives when calling type
+   functions. *)
+
+library UnboxResult2
+
+let one32 = Uint32 1
+let one64 = Uint64 1
+let none32 =  None {Uint32}
+let none64 =  None {Uint64}
+
+let option_value =
+  tfun 'A =>
+  fun (default: 'A) =>
+  fun (v: Option 'A) =>
+    match v with
+    | Some v => v
+    | None => default
+    end
+let option_uint32 = @option_value Uint32
+let option_uint32_alias = option_uint32
+
+contract UnboxResult2()
+
+field m: Map Uint32 Uint32 = Emp Uint32 Uint32
+field f_default: Uint32 = Uint32 42
+
+procedure call_typefun1(v_opt: Option Uint32)
+  default <- f_default;
+  r1 = option_uint32 default v_opt
+end
+
+procedure call_typefun2(v_opt: Option Uint32)
+  default <- f_default;
+  r1 = option_uint32_alias default v_opt
+end
+
+transition tr1(k: Uint32)
+  v_opt <- m[k]; (* no warning for type functions calls *)
+  default <- f_default;
+  r1 = option_uint32 default v_opt;
+  r2 = option_uint32 default v_opt
+end
+
+transition tr2(k: Uint32)
+  v_opt <- m[k]; (* no warning for indirect type function calls *)
+  call_typefun1 v_opt
+end
+
+transition tr3(k: Uint32)
+  v_opt <- m[k]; (* no warning for indirect type function calls *)
+  call_typefun2 v_opt
+end
+
+transition tr4(k: Uint32, some_opt: Option Uint32)
+  v_opt <- m[k]; (* no warning for indirect type function calls *)
+  match some_opt with
+  | Some v => call_typefun2 v_opt
+  | None =>
+  end
+end

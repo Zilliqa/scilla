@@ -1,0 +1,12 @@
+scilla_version 0
+(* file comment 1 *)
+(* file comment 2 *)
+
+(* file comment 3 *)
+
+(***************************************************)
+(*             Contract definition                 *)
+(***************************************************)
+
+contract Toplevel7()
+

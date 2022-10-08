@@ -1,0 +1,220 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "m", "tag": "(Map NoInfo)" },
+      { "field": "f_default", "tag": "NoInfo" },
+      { "field": "dummy_1", "tag": "NotMoney" },
+      { "field": "dummy_2", "tag": "NotMoney" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "UnboxResult3",
+    "params": [],
+    "fields": [
+      { "vname": "m", "type": "Map (Uint32) (Uint32)", "depth": 1 },
+      { "vname": "f_default", "type": "Uint32", "depth": 0 },
+      { "vname": "dummy_1", "type": "Bool", "depth": 0 },
+      { "vname": "dummy_2", "type": "Bool", "depth": 0 }
+    ],
+    "transitions": [
+      { "vname": "tr1", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr2", "params": [ { "vname": "k", "type": "Uint32" } ] },
+      { "vname": "tr3", "params": [ { "vname": "k", "type": "Uint32" } ] }
+    ],
+    "procedures": [
+      {
+        "vname": "pr_andb",
+        "params": [
+          { "vname": "lhs", "type": "Bool" },
+          { "vname": "rhs", "type": "Bool" }
+        ]
+      }
+    ],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Unused field: f_default",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 18,
+        "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: m",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 27,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: dummy_2",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 29,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: dummy_1",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 28,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 42,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: k",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 33,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused map get statement to: v_opt",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused transition parameter: k",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 26,
+        "column": 16
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused map get statement to: v_opt",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 30,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused bind statement to: r",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 23,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Variable v_opt has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "Variable v_opt has the Option type, but it wasn't unboxed. Probably, you should match it before using it.",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 34,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 2
+    },
+    {
+      "warning_message": "No transition in contract UnboxResult3 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/unbox_result3.scilla",
+        "line": 15,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7994"
+}
+

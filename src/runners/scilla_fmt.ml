@@ -18,6 +18,7 @@
 
 open Core
 open Scilla_base
+open Scilla_format
 open Literal
 open GlobalConfig
 open ErrorUtils
@@ -91,6 +92,9 @@ let scilla_sexp_fmt deannotated human_readable file =
 let scilla_source_code_fmt file =
   let open FilePath in
   let open StdlibTracker in
+  let tr () =
+    ExtendedSyntax.LocalLiteralTransformer.mk (FEParser.get_comments ())
+  in
   if check_extension file file_extn_library then
     (* library modules *)
     (* file
@@ -101,10 +105,12 @@ let scilla_source_code_fmt file =
   else if check_extension file file_extn_contract then
     (* contract modules *)
     file |> FEParser.parse_cmodule |> unpack_ast_exn
+    |> ExtendedSyntax.LocalLiteralTransformer.extend_cmodule (tr ())
     |> Formatter.LocalLiteralSyntax.contract_to_string
   else if check_extension file file_extn_expression then
     (* expressions *)
     file |> FEParser.parse_expr_from_file |> unpack_ast_exn
+    |> ExtendedSyntax.LocalLiteralTransformer.extend_expr (tr ())
     |> Formatter.LocalLiteralSyntax.expr_to_string
   else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)
 

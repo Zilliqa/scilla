@@ -39,8 +39,6 @@ val set_use_json_errors : bool -> unit
 val use_json_errors : unit -> bool
 
 (* Should input JSONs be validated? *)
-val set_validate_json : bool -> unit
-val validate_json : unit -> bool
 val reset : unit -> unit
 
 module StdlibTracker : sig

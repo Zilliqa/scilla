@@ -1,6 +1,9 @@
   $ scilla-fmt chainid.scilla
   scilla_version 0
   
+  (***************************************************)
+  (*             The contract definition             *)
+  (***************************************************)
   contract HelloWorld ()
   
   

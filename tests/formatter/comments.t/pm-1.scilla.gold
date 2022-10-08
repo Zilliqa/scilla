@@ -1,0 +1,72 @@
+scilla_version 0
+
+contract Pm1 ()
+
+
+procedure pr1 (a_opt : Uint32 Option)
+  match a_opt with
+  | Some a =>
+    (* return a *)
+    a
+  | None => (* do nothing *)
+  end
+end
+
+procedure pr2 (a_opt : Uint32 Option)
+  match a_opt with
+  | None => (* do nothing *)
+  | Some a =>
+    (* return a *)
+    a
+  end
+end
+
+procedure pr3 (a_opt : Uint32 Option)
+  match a_opt with
+  | None =>
+  | (* do nothing *)
+  Some
+    a =>
+    (* return a *)
+    a
+  end
+end
+
+procedure pr4 (a_opt : Uint32 Option Option)
+  match a_opt with
+  | Some a =>
+    match a with
+    | Some aa =>
+      (* accept *)
+      accept
+    | None => (* do nothing1 *)
+    end
+  | None => (* do nothing2 *)
+  end
+end
+
+procedure pr5 (a_opt : Uint32 Option Option)
+  match a_opt with
+  | None => (* do nothing2 *)
+  | Some a =>
+    match a with
+    | None => (* do nothing1 *)
+    | Some aa =>
+      (* accept *)
+      accept
+    end
+  end
+end
+
+(* No extra whitespaces when there are no arm comments. *)
+procedure pr6 (a_opt : Uint32 Option Option)
+  match a_opt with
+  | None =>
+  | Some a =>
+    match a with
+    | None =>
+    | Some aa => accept
+    end
+  end
+end
+
