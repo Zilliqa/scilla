@@ -761,9 +761,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           let bind_name = SCIdentifier.get_id bind_id in
           Map.set env ~key:used_ctr
             ~data:(Map.set bind_name_to_idx ~key:bind_name ~data:idx)
-      | _ ->
-          (* TODO: Type aliases (single [Binder] with contract address type). *)
-          env
+      | _ -> env
     in
     let rec aux (used : adts_ty) (s, _ann) =
       match s with
