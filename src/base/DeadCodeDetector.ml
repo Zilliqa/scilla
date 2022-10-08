@@ -552,24 +552,26 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     | CallProc _ | Throw _ | GasStmt _ ->
         emp_idsmap
 
+  (** Returns a set of field names of the contract address type. *)
+  let get_addr_fields addr =
+    List.fold_left (SType.IdLoc_Comp.Map.keys addr) ~init:emp_idset
+      ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
+
   (** Updates a map of identifiers [m] iff [ty] has contract address type.
       [m] has the following structure: [id |-> F] where [F] is a set of field
       names used in the contract address type. *)
   let update_contract_params_map m id ty =
     match ty with
     | SType.Address (ContrAddr addr) ->
-        let data =
-          List.fold_left (SType.IdLoc_Comp.Map.keys addr) ~init:emp_idset
-            ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
-        in
+        let data = get_addr_fields addr in
         Map.set m ~key:(SCIdentifier.get_id id) ~data
     | _ -> m
 
   (** Checks for unused fields in contract address types of [comp]'s
       parameters.
       Returns a set of ids of contract parameters used in this [comp].  *)
-  let check_contract_address_types_in_params contract_params
-      used_contract_params comp =
+  let check_contract_address_types_in_params used_contract_params
+      contract_params comp =
     let address_params =
       List.fold_left comp.comp_params ~init:contract_params
         ~f:(fun m (id, ty) -> update_contract_params_map m id ty)
@@ -613,15 +615,16 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                let data = Map.find_exn used_addresses used_id in
                Map.set used_ids_map ~key:used_id ~data)
 
-  (** Checks for unused fields in contract address types. *)
-  let check_contract_address_types cmod =
+  (** Checks for unused fields in contract address types occurred in contract
+      parameters and parameters of contract's components. *)
+  let check_param_contract_address_types cmod =
     let contract_params =
       List.fold_left cmod.contr.cparams ~init:emp_idsmap ~f:(fun m (id, ty) ->
           update_contract_params_map m id ty)
     in
     let used_contract_params =
       List.fold_left cmod.contr.ccomps ~init:emp_idsmap ~f:(fun used c ->
-          check_contract_address_types_in_params contract_params used c)
+          check_contract_address_types_in_params used contract_params c)
     in
     (* Report unused contract parameters with contract address types. *)
     Map.keys contract_params
@@ -644,6 +647,217 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                (* All the fields of [param] are unused, so we don't report it.
                   It is an unused contract parameter.*)
                ())
+
+  type adts_ty =
+    ( Name.t,
+      (int, SCIdentifierSet.t, Core.Int.comparator_witness) Map_intf.Map.t,
+      SCIdentifierComp.comparator_witness )
+    Map_intf.Map.t
+  (** An information about used fields in ADT constructors that have contract
+      address type: [ctr_name |-> (ctr_arg_pos |-> field_names)] *)
+
+  type env_ty =
+    ( Name.t,
+      (Name.t, int, SCIdentifierComp.comparator_witness) Map_intf.Map.t,
+      SCIdentifierComp.comparator_witness )
+    Map_intf.Map.t
+  (** An environment holds mapping of ADT constructor fields that are bound to
+      variables inside this pattern matching arm in the following format:
+        [ctr_name |-> (bind_name |> ctr_arg_pos)] *)
+
+  (** Returns a mapping of user-defined ADTs that have contract address types
+      as their constructors. *)
+  let collect_contract_address_types_in_adts (cmod : SCSyntax.cmodule) : adts_ty
+      =
+    Option.value_map cmod.libs ~default:emp_idsmap ~f:(fun lib ->
+        List.fold_left lib.lentries ~init:emp_idsmap ~f:(fun m -> function
+          | LibVar _ -> m
+          | LibTyp (_id, ctrs) ->
+              List.fold_left ctrs ~init:m ~f:(fun m ctr ->
+                  let args_map =
+                    List.foldi ctr.c_arg_types
+                      ~init:(Map.empty (module Int))
+                      ~f:
+                        (fun i m -> function
+                          | SType.Address (ContrAddr addr) ->
+                              Map.set m ~key:i ~data:(get_addr_fields addr)
+                          | _ -> m)
+                  in
+                  if Map.is_empty args_map then m
+                  else
+                    Map.set m
+                      ~key:(SCIdentifier.get_id ctr.cname)
+                      ~data:args_map)))
+
+  (** Returns a map of constructors of user-defined ADTs with contract address
+      types used in the [comp]. [used] is an accumulator that holds a used map
+      collected from other components. *)
+  let get_contract_address_types_in_adts (used : adts_ty) (adt_ctrs : adts_ty)
+      comp =
+    (* [env_stack] is used to hold a stack of environments to handle recursive
+       match statements. *)
+    let env_stack = Stack.create () in
+    (* Finds [ctr_name] and [ctr_arg_pos] for the given [bind_name]. *)
+    let env_find_bind bind_name =
+      let env_stack' = Stack.copy env_stack in
+      let find_in_env (env : env_ty) =
+        let rec aux = function
+          | [] -> None
+          | ctr :: ctrs ->
+              let bind_name_to_ctr_arg_pos = Map.find_exn env ctr in
+              if
+                List.mem
+                  (Map.keys bind_name_to_ctr_arg_pos)
+                  bind_name ~equal:SCIdentifier.Name.equal
+              then
+                let ctr_arg_pos =
+                  Map.find_exn bind_name_to_ctr_arg_pos bind_name
+                in
+                Some (ctr, ctr_arg_pos)
+              else aux ctrs
+        in
+        aux @@ Map.keys env
+      in
+      let rec iter_stack = function
+        | Some env ->
+            find_in_env env
+            |> Option.value_map
+                 ~default:(iter_stack @@ Stack.pop env_stack')
+                 ~f:(fun res -> Some res)
+        | None -> None
+      in
+      iter_stack (Stack.pop env_stack')
+    in
+    (* Creates an environment for the given [pattern] that contains
+       constructors occurred in [adt_ctrs]. *)
+    let rec collect_env ?(env = emp_idsmap) ?(idx_stack = Stack.create ())
+        (pat : pattern) : env_ty =
+      match pat with
+      | Constructor (ctr, patterns) ->
+          let ctr_name = SCIdentifier.get_id ctr in
+          if ctr_name |> Map.mem adt_ctrs then (
+            let unreachable = -1 in
+            let ctr_name = SCIdentifier.get_id ctr in
+            let contract_address_poses =
+              Map.find_exn adt_ctrs ctr_name |> Map.keys
+            in
+            Stack.push idx_stack (ctr_name, unreachable);
+            let env' =
+              List.foldi patterns ~init:env ~f:(fun i acc pat ->
+                  if List.mem contract_address_poses i ~equal:phys_equal then (
+                    ignore @@ Stack.pop_exn idx_stack;
+                    Stack.push idx_stack (ctr_name, i);
+                    collect_env ~env:acc ~idx_stack pat)
+                  else acc)
+            in
+            ignore @@ Stack.pop idx_stack;
+            env')
+          else env
+      | Binder bind_id when Stack.top idx_stack |> Option.is_some ->
+          let used_ctr, idx = Stack.top_exn idx_stack in
+          let bind_name_to_idx =
+            Map.find env used_ctr |> Option.value ~default:emp_idsmap
+          in
+          let bind_name = SCIdentifier.get_id bind_id in
+          Map.set env ~key:used_ctr
+            ~data:(Map.set bind_name_to_idx ~key:bind_name ~data:idx)
+      | _ ->
+          (* TODO: Type aliases (single [Binder] with contract address type). *)
+          env
+    in
+    let rec aux (used : adts_ty) (s, _ann) =
+      match s with
+      | MatchStmt (_id, arms) ->
+          List.fold_left arms ~init:used ~f:(fun acc (pattern, stmts) ->
+              let arm_env = collect_env pattern in
+              if Map.is_empty arm_env then acc
+              else (
+                Stack.push env_stack arm_env;
+                let res =
+                  List.fold_left stmts ~init:acc ~f:(fun used' sa ->
+                      aux used' sa)
+                in
+                ignore @@ Stack.pop env_stack;
+                res))
+      | RemoteLoad (_, addr, field) | RemoteMapGet (_, addr, field, _, _) -> (
+          match env_find_bind (SCIdentifier.get_id addr) with
+          | Some (ctr_name, ctr_arg_pos) when Map.mem adt_ctrs ctr_name ->
+              let ctr_arg_pos_to_fields =
+                Map.find used ctr_name
+                |> Option.value ~default:(Map.empty (module Int))
+              in
+              let ctr_arg_pos_to_fields' =
+                let data =
+                  let s =
+                    Map.find ctr_arg_pos_to_fields ctr_arg_pos
+                    |> Option.value ~default:emp_idset
+                  in
+                  SCIdentifier.get_id field |> Set.add s
+                in
+                Map.set ctr_arg_pos_to_fields ~key:ctr_arg_pos ~data
+              in
+              Map.set used ~key:ctr_name ~data:ctr_arg_pos_to_fields'
+          | _ -> used)
+      | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
+      | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
+      | CallProc _ | Throw _ | GasStmt _ ->
+          used
+    in
+    List.fold_left comp.comp_body ~init:used ~f:(fun used s -> aux used s)
+
+  (** Reports unused fields in ADT constructors. *)
+  let report_contract_address_types_in_adts (cmod : SCSyntax.cmodule)
+      (used : adts_ty) (adt_ctrs : adts_ty) =
+    Option.value_map cmod.libs ~default:() ~f:(fun lib ->
+        List.iter lib.lentries ~f:(function
+          | LibVar _ -> ()
+          | LibTyp (_id, ctrs) ->
+              List.iter ctrs ~f:(fun ctr ->
+                  let ctr_name = SCIdentifier.get_id ctr.cname in
+                  if Map.mem adt_ctrs ctr_name && Map.mem used ctr_name then
+                    let ctr_arg_pos_to_fields_all =
+                      Map.find_exn adt_ctrs ctr_name
+                    in
+                    let ctr_arg_pos_to_fields_used =
+                      Map.find_exn used ctr_name
+                    in
+                    (* Likewise, we are are interested only in used constructor
+                       parameters. *)
+                    let ctr_arg_pos_used =
+                      Map.keys ctr_arg_pos_to_fields_used
+                    in
+                    let ctr_arg_pos_to_fields =
+                      Map.filter_keys ctr_arg_pos_to_fields_all
+                        ~f:(fun ctr_arg_pos ->
+                          List.mem ctr_arg_pos_used ctr_arg_pos
+                            ~equal:phys_equal)
+                    in
+                    Map.iter_keys ctr_arg_pos_to_fields ~f:(fun ctr_arg_pos ->
+                        let all_fields =
+                          Map.find_exn ctr_arg_pos_to_fields_all ctr_arg_pos
+                        in
+                        let used_fields =
+                          Map.find_exn ctr_arg_pos_to_fields_used ctr_arg_pos
+                        in
+                        let unused_fields = Set.diff all_fields used_fields in
+                        Set.iter unused_fields ~f:(fun f ->
+                            warn1
+                              ("Unused field in the contract address type: "
+                              ^ SCIdentifier.Name.as_string f)
+                              warning_level_dead_code
+                              (ER.get_loc (SCIdentifier.get_rep ctr.cname)))))))
+
+  (** Checks for unused fields in contract address types occurred in
+      user-defined ADTs. *)
+  let check_adt_contract_address_types cmod =
+    let adt_ctrs = collect_contract_address_types_in_adts cmod in
+    if not @@ Map.is_empty adt_ctrs then
+      let used =
+        List.fold_left cmod.contr.ccomps ~init:emp_idsmap ~f:(fun used c ->
+            get_contract_address_types_in_adts used adt_ctrs c)
+      in
+      if not @@ Map.is_empty used then
+        report_contract_address_types_in_adts cmod used adt_ctrs
 
   (** Checks for dead code in the fields and constraints of a contract
       @return Live variables, ADTs and constructors, including ones found in
@@ -800,7 +1014,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     in
 
     (* Check for unused fields in contract address types *)
-    check_contract_address_types cmod;
+    check_param_contract_address_types cmod;
+    check_adt_contract_address_types cmod;
 
     (* Check fields and constraints *)
     let lv_fields, adts_fields, ctrs_fields =
