@@ -16,6 +16,18 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ## OS-specific setup for building Scilla
 
+<details><summary>vcpkg</summary>
+
+- Clone vcpkg to a separate location:
+
+   ```shell
+   $ git clone https://github.com/Microsoft/vcpkg.git /path/to/vcpkg
+   $ cd /path/to/vcpkg && git checkout 2022.09.27 && ./bootstrap-vcpkg.sh
+   $ cd /path/to/scilla
+   $ export VCPKG_ROOT=/path/to/vcpkg
+   ```
+</details>
+
 <details><summary>openSUSE</summary>
 
 ### openSUSE
