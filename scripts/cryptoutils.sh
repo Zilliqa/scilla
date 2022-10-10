@@ -21,6 +21,11 @@
 # The script builds and installs libff in the
 # _build directory of Scilla root.
 
+if [ -z ${VCPKG_ROOT} ]; then
+  echo -e "\033[1;33mVCPKG_ROOT is not set\033[0m"
+  exit 1
+fi
+
 libCryptoUtilsdir="deps/cryptoutils"
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
@@ -47,7 +52,7 @@ cd src || exit
 
 echo "Installing libCryptoUtils into ${libCryptoUtilsdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCRYPTOUTILS_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCRYPTOUTILS_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 then
     echo "libCryptoUtils: CMake configuration failed"
     exit 1

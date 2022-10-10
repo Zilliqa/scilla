@@ -21,6 +21,11 @@
 # The script builds and installs schnorr in the
 # _build directory of Scilla root.
 
+if [ -z ${VCPKG_ROOT} ]; then
+  echo -e "\033[1;33mVCPKG_ROOT is not set\033[0m"
+  exit 1
+fi
+
 schnorrdir="deps/schnorr"
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
@@ -46,7 +51,7 @@ mkdir -p build install
 cd src || exit
 echo "Installing schnorr into ${schnorrdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DSCHNORR_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DSCHNORR_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 then
     echo "schnorr: CMake configuration failed"
     exit 1
