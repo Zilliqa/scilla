@@ -84,3 +84,7 @@ deps/cryptoutils/install/
 deps/schnorr/build/
 deps/schnorr/install/
 
+# -----------------------------------------------------------------------------
+#  vcpkg build files
+# -----------------------------------------------------------------------------
+vcpkg_installed/
