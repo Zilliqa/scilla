@@ -42,16 +42,17 @@ then
     exit 0
 fi
 
-cp vcpkg.json ${schnorrdir}/src/
-cp vcpkg-configuration.json ${schnorrdir}/src/
-cp -R vcpkg-registry ${schnorrdir}/src/
+ln -s $(pwd)/vcpkg.json ${schnorrdir}/src/vcpkg.json
+ln -s $(pwd)/vcpkg-configuration.json ${schnorrdir}/src/vcpkg-configuration.json
+ln -s $(pwd)/vcpkg-registry ${schnorrdir}/src/vcpkg-registry
 
 cd $schnorrdir || exit
 mkdir -p build install
 cd src || exit
 echo "Installing schnorr into ${schnorrdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DSCHNORR_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+ln -s ../../../vcpkg_installed vcpkg_installed
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DSCHNORR_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 then
     echo "schnorr: CMake configuration failed"
     exit 1

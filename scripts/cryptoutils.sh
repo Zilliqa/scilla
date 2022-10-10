@@ -42,9 +42,9 @@ then
     exit 0
 fi
 
-cp vcpkg.json ${libCryptoUtilsdir}/src/
-cp vcpkg-configuration.json ${libCryptoUtilsdir}/src/
-cp -R vcpkg-registry ${libCryptoUtilsdir}/src/
+ln -s $(pwd)vcpkg.json ${libCryptoUtilsdir}/src/vcpkg.json
+ln -s $(pwd)/vcpkg-configuration.json ${libCryptoUtilsdir}/src/vcpkg-configuration.json
+ln -s $(pwd)/vcpkg-registry ${libCryptoUtilsdir}/src/vcpkg-registry
 
 cd $libCryptoUtilsdir || exit
 mkdir -p build install
@@ -52,7 +52,8 @@ cd src || exit
 
 echo "Installing libCryptoUtils into ${libCryptoUtilsdir}/install"
 cd ../build || exit
-if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCRYPTOUTILS_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+ln -s ../../../vcpkg_installed vcpkg_installed
+if ! cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCRYPTOUTILS_BUILD_ARCHIVE=1 -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
 then
     echo "libCryptoUtils: CMake configuration failed"
     exit 1

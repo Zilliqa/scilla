@@ -1,5 +1,5 @@
 # escape=\
-ARG BASE_IMAGE=zilliqa:v8.3.0-deps
+ARG BASE_IMAGE=zilliqa/zilliqa:v8.3.0-deps
 
 FROM ${BASE_IMAGE}
 
