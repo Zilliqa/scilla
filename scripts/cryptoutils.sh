@@ -42,9 +42,9 @@ then
     exit 0
 fi
 
-ln -s "$(pwd)"/vcpkg.json "${libCryptoUtilsdir}"/src/vcpkg.json
-ln -s "$(pwd)"/vcpkg-configuration.json "${libCryptoUtilsdir}"/src/vcpkg-configuration.json
-ln -s "$(pwd)"/vcpkg-registry "${libCryptoUtilsdir}"/src/vcpkg-registry
+cp "$(pwd)"/vcpkg.json "${libCryptoUtilsdir}"/src/
+cp "$(pwd)"/vcpkg-configuration.json "${libCryptoUtilsdir}"/src/
+cp -R "$(pwd)"/vcpkg-registry "${libCryptoUtilsdir}"/src/
 
 cd $libCryptoUtilsdir || exit
 mkdir -p build install

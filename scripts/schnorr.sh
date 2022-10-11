@@ -42,9 +42,9 @@ then
     exit 0
 fi
 
-ln -s "$(pwd)"/vcpkg.json "${schnorrdir}"/src/vcpkg.json
-ln -s "$(pwd)"/vcpkg-configuration.json "${schnorrdir}"/src/vcpkg-configuration.json
-ln -s "$(pwd)"/vcpkg-registry "${schnorrdir}"/src/vcpkg-registry
+cp "$(pwd)"/vcpkg.json "${schnorrdir}"/src/
+cp "$(pwd)"/vcpkg-configuration.json "${schnorrdir}"/src/
+cp -R "$(pwd)"/vcpkg-registry "${schnorrdir}"/src/
 
 cd $schnorrdir || exit
 mkdir -p build install
