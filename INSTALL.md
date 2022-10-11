@@ -13,9 +13,6 @@ yourself and set `PKG_CONFIG_PATH` environment variable accordingly
 export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
-
-## OS-specific setup for building Scilla
-
 <details><summary>vcpkg</summary>
 
 - Clone vcpkg to a separate location:
@@ -26,8 +23,11 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
    $ cd /path/to/scilla
    $ export VCPKG_ROOT=/path/to/vcpkg
    $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
+   $ export PKG_CONFIG_PATH="$(pwd)/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```
 </details>
+
+## OS-specific setup for building Scilla
 
 <details><summary>openSUSE</summary>
 
