@@ -119,7 +119,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused field in the contract address type: a1_unused2_3",
+      "warning_message": "Unused field in contract address type: a1_unused2_3",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
         "line": 9,
@@ -129,7 +129,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused field in the contract address type: a1_unused1_3",
+      "warning_message": "Unused field in contract address type: a1_unused1_3",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
         "line": 9,
@@ -139,7 +139,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused field in the contract address type: a1_unused_1",
+      "warning_message": "Unused field in contract address type: a1_unused_1",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
         "line": 9,

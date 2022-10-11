@@ -595,7 +595,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                     if Set.mem fields name && (not @@ Set.mem used_fields name)
                     then
                       warn1
-                        ("Unused field in the contract address type: "
+                        ("Unused field in contract address type: "
                        ^ as_error_string id)
                         warning_level_dead_code
                         (SType.TIdentifier.get_rep id))
@@ -639,7 +639,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                      then
                        Set.iter unused_fields ~f:(fun f ->
                            warn1
-                             ("Unused field in the contract address type: "
+                             ("Unused field in contract address type: "
                              ^ SCIdentifier.Name.as_string f)
                              warning_level_dead_code
                              (ER.get_loc (SCIdentifier.get_rep id))))
@@ -840,7 +840,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                         let unused_fields = Set.diff all_fields used_fields in
                         Set.iter unused_fields ~f:(fun f ->
                             warn1
-                              ("Unused field in the contract address type: "
+                              ("Unused field in contract address type: "
                               ^ SCIdentifier.Name.as_string f)
                               warning_level_dead_code
                               (ER.get_loc (SCIdentifier.get_rep ctr.cname)))))))

@@ -87,7 +87,7 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused field in the contract address type: param_unused",
+      "warning_message": "Unused field in contract address type: param_unused",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
         "line": 10,
@@ -97,17 +97,17 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Unused field in the contract address type: field4",
+      "warning_message": "Unused field in contract address type: field4",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 35,
+        "line": 34,
         "column": 13
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Unused field in the contract address type: unused_field",
+      "warning_message": "Unused field in contract address type: unused_field",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
         "line": 22,
@@ -120,7 +120,7 @@
       "warning_message": "Unused transition parameter: contract_address",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 33,
+        "line": 32,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -130,7 +130,7 @@
       "warning_message": "Unused transition parameter: contract_address_unused",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 29,
+        "line": 28,
         "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -140,7 +140,7 @@
       "warning_message": "Unused remote load statement to: a",
       "start_location": {
         "file": "contracts/dead_code_test15.scilla",
-        "line": 37,
+        "line": 36,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

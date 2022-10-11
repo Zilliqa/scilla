@@ -24,7 +24,6 @@ transition tr1(contract_address: ByStr20 with contract
   b <- & contract_address.field2
 end
 
-(* Don't report unused fields. *)
 transition tr2(
     contract_address_unused: ByStr20 with contract
       field field1: ByStr20,
