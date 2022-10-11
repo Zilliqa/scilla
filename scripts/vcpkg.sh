@@ -20,7 +20,7 @@
 # $./scripts/vcpkg.sh
 # The script installs vcpkg in the vcpkg_installed directory of Scilla root.
 
-if [ -z ${VCPKG_ROOT} ]; then
+if [ -z "${VCPKG_ROOT}" ]; then
   echo -e "\033[1;33mVCPKG_ROOT is not set\033[0m"
   exit 1
 fi
@@ -40,7 +40,7 @@ then
 fi
 
 echo "Installing vcpkg"
-if ! $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
+if ! "$VCPKG_ROOT"/vcpkg install --triplet x64-linux-dynamic
 then 
     echo "vcpkg installation failed"
     exit 1
