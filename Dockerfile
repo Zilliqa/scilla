@@ -35,7 +35,8 @@ ENV OCAML_VERSION 4.11.2
 ENV PATH="/root/.local/bin:${PATH}"
 
 # Make sure vcpkg installs brings in the dependencies
-RUN /vcpkg/vcpkg install --triplet=x64-linux-dynamic
+ENV VCPKG_ROOT=/vcpkg
+RUN ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
 
 ENV PKG_CONFIG_PATH="${SCILLA_PATH}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
 
