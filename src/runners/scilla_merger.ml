@@ -19,10 +19,18 @@
 open Core
 open Scilla_base
 open Scilla_merge
+open Scilla_format
 open Merge
 open JSONMerge
 open ErrorUtils
 module MMerger = ScillaMerger (Checker.TCSRep) (Checker.TCERep)
+module ExtSyn = ExtendedSyntax.GlobalLiteralTransformer.ExtSyn
+
+module Trans =
+  ExtendedSyntax.ExtendedScillaSyntaxTransformer
+    (Checker.TCSRep)
+    (Checker.TCERep)
+    (Literal.GlobalLiteral)
 
 module Fmt =
   Formatter.Format (Checker.TCSRep) (Checker.TCERep) (MMerger.PLiteral)
@@ -56,9 +64,10 @@ let merge_contracts files args config =
   |> MMerger.run config
   |> fun (output, warnings) ->
   DebugMessage.perr warnings;
-  Option.value_map output ~default:""
-    ~f:(fun ((cmod : MMerger.PSyntax.cmodule), _rlibs) ->
-      Fmt.contract_to_string cmod)
+  Option.value_map output ~default:"" ~f:(fun (cmod, _rlibs) ->
+      let tr = Trans.mk [] in
+      let ext_cmod = Trans.extend_cmodule tr cmod in
+      Fmt.contract_to_string ext_cmod)
   |> DebugMessage.pout
 
 (** Merges [init.json] files. *)
