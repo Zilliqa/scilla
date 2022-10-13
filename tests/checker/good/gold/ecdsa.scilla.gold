@@ -133,16 +133,6 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
-    },
-    {
-      "warning_message": "No transition in contract Ecdsa contains an accept statement\n",
-      "start_location": {
-        "file": "contracts/ecdsa.scilla",
-        "line": 15,
-        "column": 10
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 1
     }
   ],
   "gas_remaining": "7997"
