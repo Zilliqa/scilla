@@ -704,17 +704,18 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
         let rec aux = function
           | [] -> None
           | ctr :: ctrs ->
-              let bind_name_to_ctr_arg_pos = Map.find_exn env ctr in
-              if
-                List.mem
-                  (Map.keys bind_name_to_ctr_arg_pos)
-                  bind_name ~equal:SCIdentifier.Name.equal
-              then
-                let ctr_arg_pos =
-                  Map.find_exn bind_name_to_ctr_arg_pos bind_name
-                in
-                Some (ctr, ctr_arg_pos)
-              else aux ctrs
+              Map.find env ctr
+              |> Option.value_map ~default:(aux ctrs)
+                   ~f:(fun bind_name_to_ctr_arg_pos ->
+                     if
+                       List.mem
+                         (Map.keys bind_name_to_ctr_arg_pos)
+                         bind_name ~equal:SCIdentifier.Name.equal
+                     then
+                       Map.find bind_name_to_ctr_arg_pos bind_name
+                       |> Option.value_map ~default:(aux ctrs)
+                            ~f:(fun ctr_arg_pos -> Some (ctr, ctr_arg_pos))
+                     else aux ctrs)
         in
         aux @@ Map.keys env
       in
