@@ -809,38 +809,40 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           | LibTyp (_id, ctrs) ->
               List.iter ctrs ~f:(fun ctr ->
                   let ctr_name = SCIdentifier.get_id ctr.cname in
-                  if Map.mem adt_ctrs ctr_name && Map.mem used ctr_name then
-                    let ctr_arg_pos_to_fields_all =
-                      Map.find_exn adt_ctrs ctr_name
-                    in
-                    let ctr_arg_pos_to_fields_used =
-                      Map.find_exn used ctr_name
-                    in
-                    (* Likewise, we are are interested only in used constructor
-                       parameters. *)
-                    let ctr_arg_pos_used =
-                      Map.keys ctr_arg_pos_to_fields_used
-                    in
-                    let ctr_arg_pos_to_fields =
-                      Map.filter_keys ctr_arg_pos_to_fields_all
-                        ~f:(fun ctr_arg_pos ->
-                          List.mem ctr_arg_pos_used ctr_arg_pos
-                            ~equal:phys_equal)
-                    in
-                    Map.iter_keys ctr_arg_pos_to_fields ~f:(fun ctr_arg_pos ->
-                        let all_fields =
-                          Map.find_exn ctr_arg_pos_to_fields_all ctr_arg_pos
-                        in
-                        let used_fields =
-                          Map.find_exn ctr_arg_pos_to_fields_used ctr_arg_pos
-                        in
-                        let unused_fields = Set.diff all_fields used_fields in
-                        Set.iter unused_fields ~f:(fun f ->
-                            warn1
-                              ("Unused field in contract address type: "
-                              ^ SCIdentifier.Name.as_string f)
-                              warning_level_dead_code
-                              (ER.get_loc (SCIdentifier.get_rep ctr.cname)))))))
+                  match
+                    (Map.find adt_ctrs ctr_name, Map.find used ctr_name)
+                  with
+                  | ( Some ctr_arg_pos_to_fields_all,
+                      Some ctr_arg_pos_to_fields_used ) ->
+                      (* Likewise, we are are interested only in used constructor
+                         parameters. *)
+                      let ctr_arg_pos_used =
+                        Map.keys ctr_arg_pos_to_fields_used
+                      in
+                      let ctr_arg_pos_to_fields =
+                        Map.filter_keys ctr_arg_pos_to_fields_all
+                          ~f:(fun ctr_arg_pos ->
+                            List.mem ctr_arg_pos_used ctr_arg_pos
+                              ~equal:phys_equal)
+                      in
+                      Map.iter_keys ctr_arg_pos_to_fields ~f:(fun ctr_arg_pos ->
+                          match
+                            ( Map.find ctr_arg_pos_to_fields_all ctr_arg_pos,
+                              Map.find ctr_arg_pos_to_fields_used ctr_arg_pos )
+                          with
+                          | Some all_fields, Some used_fields ->
+                              let unused_fields =
+                                Set.diff all_fields used_fields
+                              in
+                              Set.iter unused_fields ~f:(fun f ->
+                                  warn1
+                                    ("Unused field in contract address type: "
+                                    ^ SCIdentifier.Name.as_string f)
+                                    warning_level_dead_code
+                                    (ER.get_loc
+                                       (SCIdentifier.get_rep ctr.cname)))
+                          | _ -> ())
+                  | _ -> ())))
 
   (** Checks for unused fields in contract address types occurred in
       user-defined ADTs. *)
