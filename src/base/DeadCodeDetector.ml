@@ -736,24 +736,23 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       match pat with
       | Constructor (ctr, patterns) ->
           let ctr_name = SCIdentifier.get_id ctr in
-          if ctr_name |> Map.mem adt_ctrs then (
-            let unreachable = -1 in
-            let ctr_name = SCIdentifier.get_id ctr in
-            let contract_address_poses =
-              Map.find_exn adt_ctrs ctr_name |> Map.keys
-            in
-            Stack.push idx_stack (ctr_name, unreachable);
-            let env' =
-              List.foldi patterns ~init:env ~f:(fun i acc pat ->
-                  if List.mem contract_address_poses i ~equal:phys_equal then (
-                    ignore @@ Stack.pop_exn idx_stack;
-                    Stack.push idx_stack (ctr_name, i);
-                    collect_env ~env:acc ~idx_stack pat)
-                  else acc)
-            in
-            ignore @@ Stack.pop idx_stack;
-            env')
-          else env
+          Map.find adt_ctrs ctr_name
+          |> Option.value_map ~default:env ~f:(fun pos_to_arg ->
+                 let unreachable = -1 in
+                 let ctr_name = SCIdentifier.get_id ctr in
+                 let contract_address_poses = pos_to_arg |> Map.keys in
+                 Stack.push idx_stack (ctr_name, unreachable);
+                 let env' =
+                   List.foldi patterns ~init:env ~f:(fun i acc pat ->
+                       if List.mem contract_address_poses i ~equal:phys_equal
+                       then (
+                         ignore @@ Stack.pop_exn idx_stack;
+                         Stack.push idx_stack (ctr_name, i);
+                         collect_env ~env:acc ~idx_stack pat)
+                       else acc)
+                 in
+                 ignore @@ Stack.pop idx_stack;
+                 env')
       | Binder bind_id when Stack.top idx_stack |> Option.is_some ->
           let used_ctr, idx = Stack.top_exn idx_stack in
           let bind_name_to_idx =
