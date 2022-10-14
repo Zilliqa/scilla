@@ -605,15 +605,12 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
        in this component. *)
     Map.keys used_addresses
     |> List.fold_left ~init:used_contract_params ~f:(fun used_ids_map used_id ->
+           let used_fields = Map.find_exn used_addresses used_id in
            match Map.find used_ids_map used_id with
            | Some used_fields ->
-               let data =
-                 Map.find_exn used_addresses used_id |> Set.union used_fields
-               in
+               let data = used_fields |> Set.union used_fields in
                Map.set used_ids_map ~key:used_id ~data
-           | None ->
-               let data = Map.find_exn used_addresses used_id in
-               Map.set used_ids_map ~key:used_id ~data)
+           | None -> Map.set used_ids_map ~key:used_id ~data:used_fields)
 
   (** Checks for unused fields in contract address types occurred in contract
       parameters and parameters of contract's components. *)
