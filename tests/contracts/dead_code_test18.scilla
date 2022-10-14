@@ -1,0 +1,58 @@
+scilla_version 0
+
+(* Checks for unused fields in the contract address types used in ADTs.
+   See: issue #1099 for the reference. *)
+
+library Dead18
+
+type A =
+| A1_has_unused of
+    (ByStr20 with contract
+      field a1_unused_1 : ByStr20,
+      field a1_used_1 : Uint128
+    end)
+    Uint256
+    (ByStr20 with contract
+      field a1_unused_2 : ByStr20,
+      field a1_used_2 : Uint128
+    end)
+    (ByStr20 with contract
+      field a1_unused1_3 : Uint128,
+      field a1_used_3 : Uint128,
+      field a1_unused2_3 : Uint128
+    end)
+| A2_all_used of
+    (ByStr20 with contract field a2_1 : Uint128, field a2_2 : Uint128 end)
+| A3_all_unused of
+    (ByStr20 with contract field a3_1 : Uint128, field a3_2 : Uint128 end)
+
+contract Dead18 ()
+
+procedure use_a1 (a1 : A)
+  match a1 with
+  | A1_has_unused a11 num a12_unused a13 =>
+    tmp1 <-& a11.a1_used_1;
+    e = {_eventname : "use_a1"; _tmp1: tmp1};
+    event e;
+    tmp2 <-& a13.a1_used_3;
+    e = {_eventname : "use_a3"; _tmp2: tmp2};
+    event e
+  | _ =>
+  end
+end
+
+procedure use_a2 (a2 : A)
+  match a2 with
+  | A2_all_used a21 =>
+    tmp1 <-& a21.a2_1;
+    tmp2 <-& a21.a2_2;
+    e = {_eventname : "use_a2"; _tmp1: tmp1; _tmp2: tmp2};
+    event e
+  | _ =>
+  end
+end
+
+transition test(a : A)
+  use_a1 a;
+  use_a2 a
+end

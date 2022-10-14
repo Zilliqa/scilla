@@ -1,0 +1,20 @@
+scilla_version 0
+
+(* Checks for unused fields in the contract address types.
+   See: issue #1099 for the reference. *)
+library Dead16
+
+
+contract Dead16
+  (
+    all_used :
+      ByStr20 with contract
+        field param1 : ByStr20,
+        field param2 : ByStr20
+      end
+  )
+
+procedure use_all()
+  a1 <- & all_used.param1;
+  a2 <- & all_used.param2
+end
