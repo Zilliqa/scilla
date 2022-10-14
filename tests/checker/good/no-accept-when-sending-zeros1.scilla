@@ -1,0 +1,35 @@
+scilla_version 0
+
+library NoAcceptWhenSendingZeros1Lib
+
+let zero = Uint128 0
+
+let nil_message = Nil {Message}
+
+let one_msg =
+  fun(msg: Message) =>
+    Cons {Message} msg nil_message
+
+contract NoAcceptWhenSendingZeros1()
+
+transition maybe_donate1(cond : Bool)
+  match cond with
+  | True =>
+      m = { _tag: "foo";
+            _recipient: _sender;
+            _amount: Uint128 0 };
+      msgs = one_msg m;
+      send msgs
+  | False =>
+      m = { _tag: "foo";
+            _recipient: _sender;
+            _amount: zero };
+      msgs = one_msg m;
+      send msgs
+  end
+end
+
+transition foo(cond : Bool)
+  e = { _eventname : "foo" };
+  event e
+end

@@ -23,7 +23,9 @@
 
    Also check for contracts which have no transitions with accept
    statements.  There might be valid reasons for writing such contracts,
-   so again we only generate warnings not errors. *)
+   so again we only generate warnings not errors.
+   An exception to this rule is the case when there are only [send] statements
+   that send zero amount of tokens. *)
 
 open Core
 open Literal
@@ -41,8 +43,17 @@ struct
   module ACLiteral = GlobalLiteral
   module ACType = ACLiteral.LType
   module ACIdentifier = ACType.TIdentifier
+
+  module ACIdentifierComp = struct
+    include ACIdentifier.Name
+    include Comparable.Make (ACIdentifier.Name)
+  end
+
+  module ACIdentifierSet = Set.Make (ACIdentifierComp)
   module ACSyntax = ScillaSyntax (SR) (ER) (ACLiteral)
   open ACSyntax
+
+  let emp_idset = ACIdentifierSet.empty
 
   (* Warning level to use when contract has code paths with potentially
    * no accept statement. *)
@@ -51,6 +62,81 @@ struct
   (* Warning level to use when contract has code paths with potentially
    * multiple accept statements. *)
   let warning_level_duplicate_accepts = 1
+
+  let is_uint128_zero v =
+    Stdint.Uint128.compare Stdint.Uint128.zero v |> phys_equal 0
+
+  (** Collects a set of names of constants that unfold to [Uint128 0]. *)
+  let collect_zero_constants (cmod : cmodule) =
+    Option.value_map cmod.libs ~default:emp_idset ~f:(fun lib ->
+        List.fold_left lib.lentries ~init:emp_idset ~f:(fun s -> function
+          | LibVar (name, _ty, (expr, _annot)) -> (
+              match expr with
+              | Literal (UintLit (Uint128L v)) when is_uint128_zero v ->
+                  ACIdentifier.get_id name |> ACIdentifierSet.add s
+              | _ -> s)
+          | LibTyp _ -> s))
+
+  (** Returns [true] iff the given message payload is a zero constant. *)
+  let is_zero_payload zero_constants = function
+    | MLit (UintLit (Uint128L v)) when is_uint128_zero v -> true
+    | MVar id when ACIdentifier.get_id id |> ACIdentifierSet.mem zero_constants
+      ->
+        true
+    | _ -> false
+
+  (** Collects a list of the [_amount] fields from [Message] definitions. *)
+  let collect_msg_amounts (cmod : cmodule) =
+    let walk_comp (comp : component) =
+      let rec walk_expr (e, _ann) =
+        match e with
+        | Literal _ -> []
+        | Var _id -> []
+        | Let (_id, _ty, lhs, rhs) -> walk_expr lhs @ walk_expr rhs
+        | Message fields ->
+            List.fold_left fields ~init:[] ~f:(fun acc (f, pld) ->
+                if String.equal f "_amount" then acc @ [ pld ] else acc)
+        | Fun (_id, _ty, body) -> walk_expr body
+        | App (_id, _args) -> []
+        | Constr _ -> []
+        | MatchExpr (_id, arms) ->
+            List.fold_left arms ~init:[] ~f:(fun acc (_pattern, ea) ->
+                acc @ walk_expr ea)
+        | Builtin _ -> []
+        | TFun (_id, body) -> walk_expr body
+        | TApp _ -> []
+        | Fixpoint (_id, _ty, ea) -> walk_expr ea
+        | GasExpr (_, ea) -> walk_expr ea
+      in
+      let rec walk_stmt (s, _ann) =
+        match s with
+        | Bind (_id, ea) -> walk_expr ea
+        | MatchStmt (_id, arms) ->
+            List.fold_left arms ~init:[] ~f:(fun acc (_pattern, stmts) ->
+                acc
+                @ List.fold_left stmts ~init:[] ~f:(fun acc s ->
+                      acc @ walk_stmt s))
+        | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
+        | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Iterate _
+        | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
+            []
+      in
+      List.fold_left comp.comp_body ~init:[] ~f:(fun acc s -> acc @ walk_stmt s)
+    in
+    List.fold_left cmod.contr.ccomps ~init:[] ~f:(fun acc c ->
+        acc @ walk_comp c)
+
+  (** Returns true if there are no message definitions in [cmod] or at least one
+      of them has non-zero [_amount]. *)
+  let check_msg_amounts cmod =
+    let amounts = collect_msg_amounts cmod in
+    if not @@ List.is_empty amounts then
+      let zero_amounts =
+        let zero_constants = collect_zero_constants cmod in
+        List.filter amounts ~f:(fun msg -> is_zero_payload zero_constants msg)
+      in
+      not @@ phys_equal (List.length amounts) (List.length zero_amounts)
+    else true (* There are no messages *)
 
   let find_accept_groups (stmts : stmt_annot list) : loc list list =
     let rec walk (seen : loc list list) (stmts : stmt_annot list) :
@@ -91,7 +177,8 @@ struct
     in
     walk [ [] ] stmts
 
-  let check_accepts (contr : contract) =
+  let check_accepts (cmod : cmodule) =
+    let contr = cmod.contr in
     let check_transition_accepts (transition : component) =
       let transition_accept_groups =
         List.map (find_accept_groups transition.comp_body) ~f:List.rev
@@ -122,7 +209,8 @@ struct
       List.concat_map contr.ccomps ~f:check_transition_accepts
     in
 
-    if List.for_all all_accept_groups ~f:List.is_empty then
+    if List.for_all all_accept_groups ~f:List.is_empty && check_msg_amounts cmod
+    then
       warn1
         (sprintf "No transition in contract %s contains an accept statement\n"
            (ACIdentifier.as_error_string contr.cname))
@@ -133,5 +221,5 @@ struct
   (* ******** Interface to Accept ********* *)
   (* ************************************** *)
 
-  let contr_sanity (cmod : cmodule) = check_accepts cmod.contr
+  let contr_sanity (cmod : cmodule) = check_accepts cmod
 end

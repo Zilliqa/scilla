@@ -2,12 +2,18 @@
   "cashflow_tags": { "State variables": [], "ADT constructors": [] },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "HelloWorld",
+    "vname": "NoAcceptWhenSendingZeros1",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "multipleMsgs", "params": [] } ],
+    "transitions": [
+      {
+        "vname": "maybe_donate1",
+        "params": [ { "vname": "cond", "type": "Bool" } ]
+      },
+      { "vname": "foo", "params": [ { "vname": "cond", "type": "Bool" } ] }
+    ],
     "procedures": [],
-    "events": [],
+    "events": [ { "vname": "foo", "params": [] } ],
     "ADTs": [
       {
         "tname": "Option",
@@ -50,36 +56,16 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported library: ListUtils",
+      "warning_message": "Unused transition parameter: cond",
       "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 5,
-        "column": 8
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
-      "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 27,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
-      "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 26,
-        "column": 3
+        "file": "checker/good/no-accept-when-sending-zeros1.scilla",
+        "line": 32,
+        "column": 16
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     }
   ],
-  "gas_remaining": "7918"
+  "gas_remaining": "7999"
 }
 
