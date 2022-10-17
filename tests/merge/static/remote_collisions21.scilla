@@ -1,0 +1,22 @@
+scilla_version 0
+
+library RemoteCollisions21
+
+contract RemoteCollisions21()
+
+field f: Bool = False
+field z: Uint32 = Uint32 0
+
+transition tr(a: ByStr20)
+  a_opt <- & a as ByStr20 with contract
+    field a_f: Bool,
+    field m_f: Map Uint32 Bool
+  end;
+  match a_opt with
+  | Some aa =>
+    f <- & aa.a_f; f <- & aa.a_f;
+    k <- z;
+    f <- & aa.m_f[k]
+  | None =>
+  end
+end

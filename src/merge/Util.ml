@@ -16,22 +16,21 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_test.Util
+open Core
 
-let () =
-  run_tests
-    [
-      (* contract_tests should always be the first to be run. This is required
-         * for us to be able to run _only_ contract_tests from the blockchain for
-         * external IPC server tests. If the order changes, then the test_id of
-         * these tests will change, resulting in the tests not being run.
-         * See the Makefile target "test_extipcserver". *)
-      Testcontracts.contract_tests;
-      Testexps.All.tests;
-      Testtypes.All.tests;
-      Testpm.All.tests;
-      Testchecker.All.tests;
-      Testmerge.All.tests
-      (* TestGasExpr.All.tests;
-         TestGasContracts.All.tests; *);
-    ]
+(** Warning level used for rename conflicts. *)
+let disambiguate_warning_level = 2
+
+(** Generates an unique contract name based on the given [basename].
+    This is required to merge contracts with the same name. *)
+let get_contract_name =
+  let visited_contracts = ref @@ Map.empty (module String) in
+  fun basename ->
+    match Map.find !visited_contracts basename with
+    | Some next_cnt ->
+        visited_contracts :=
+          Map.set !visited_contracts ~key:basename ~data:(next_cnt + 1);
+        Printf.sprintf "%s_%d" basename next_cnt
+    | None ->
+        visited_contracts := Map.set !visited_contracts ~key:basename ~data:0;
+        basename

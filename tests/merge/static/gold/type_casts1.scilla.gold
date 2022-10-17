@@ -1,0 +1,18 @@
+scilla_version 0
+
+import BoolUtils
+
+library TypeCasts1
+
+
+contract TypeCasts1 ()
+
+
+transition typeCasts1_test (addr : ByStr20)
+  contract_address = Some {(ByStr20)} _this_address;
+  match contract_address with
+  | Some _ =>
+  | None =>
+  end
+end
+
