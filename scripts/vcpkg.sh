@@ -25,6 +25,10 @@ if [ -z "${VCPKG_ROOT}" ]; then
   exit 1
 fi
 
+git clone -b 2022.09.27 https://github.com/Microsoft/vcpkg.git
+
+cd ${VCPKG_ROOT} && ../vcpkg/bootstrap-vcpkg.sh
+
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
 if [[ ! -f scilla.opam ]]
 then
