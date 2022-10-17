@@ -92,6 +92,10 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "unbox_result3.scilla";
       "unbox_result4.scilla";
       "unbox_result5.scilla";
+      "dead_code_test15.scilla";
+      "dead_code_test16.scilla";
+      "dead_code_test17.scilla";
+      "dead_code_test18.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
       "timestamp.scilla";
@@ -149,6 +153,8 @@ module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
       "one-accept.scilla";
       "one-transition-accepts.scilla";
       "one-transition-might-accept.scilla";
+      "no-accept-when-sending-zeros1.scilla";
+      "no-accept-when-sending-zeros2.scilla";
       "one-msg2.scilla";
       "one-msg3.scilla";
       "libchain1.scilla";

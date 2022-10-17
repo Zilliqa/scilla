@@ -1,11 +1,19 @@
 {
-  "cashflow_tags": { "State variables": [], "ADT constructors": [] },
+  "cashflow_tags": {
+    "State variables": [ { "field": "all_unused", "tag": "NoInfo" } ],
+    "ADT constructors": []
+  },
   "contract_info": {
     "scilla_major_version": "0",
-    "vname": "HelloWorld",
-    "params": [],
+    "vname": "Dead16",
+    "params": [
+      {
+        "vname": "all_unused",
+        "type": "ByStr20 with contract field param_unused : ByStr20, field param_used : ByStr20 end"
+      }
+    ],
     "fields": [],
-    "transitions": [ { "vname": "multipleMsgs", "params": [] } ],
+    "transitions": [],
     "procedures": [],
     "events": [],
     "ADTs": [
@@ -50,36 +58,26 @@
   },
   "warnings": [
     {
-      "warning_message": "Unused imported library: ListUtils",
+      "warning_message": "Unused contract parameter: all_unused",
       "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 5,
-        "column": 8
+        "file": "contracts/dead_code_test16.scilla",
+        "line": 11,
+        "column": 5
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
     },
     {
-      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
+      "warning_message": "No transition in contract Dead16 contains an accept statement\n",
       "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 27,
-        "column": 3
+        "file": "contracts/dead_code_test16.scilla",
+        "line": 8,
+        "column": 10
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Consider using \"AddFunds\" tag instead of empty tag as suggested by ZRC-5",
-      "start_location": {
-        "file": "contracts/multiple-msgs.scilla",
-        "line": 26,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
+      "warning_id": 1
     }
   ],
-  "gas_remaining": "7918"
+  "gas_remaining": "7999"
 }
 
