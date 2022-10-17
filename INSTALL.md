@@ -4,7 +4,7 @@ The recommended installation process is comprised of two separate steps:
 - installation of system-wide packages using your OS native package manager and
 - installation of OCaml packages using the [opam](https://opam.ocaml.org) package manager.
 
-Please make sure you install opam v2.0 or greater (this can be checked by running `opam --version`).
+Please make sure you install opam v2.1 or greater (this can be checked by running `opam --version`).
 
 Scilla requires OpenSSL 1.1.1 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set `PKG_CONFIG_PATH` environment variable accordingly
