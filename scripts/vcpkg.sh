@@ -25,6 +25,8 @@ if [ -z "${VCPKG_ROOT}" ]; then
   exit 1
 fi
 
+mkdir -pv ${VCPKG_ROOT}
+
 git clone -b 2022.09.27 https://github.com/Microsoft/vcpkg.git
 
 cd ${VCPKG_ROOT} && ../vcpkg/bootstrap-vcpkg.sh
