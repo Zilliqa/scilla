@@ -47,3 +47,22 @@ then
 fi
 
 echo "vcpkg: installation complete"
+
+ARG COMMIT_OR_TAG=
+ARG REPO=https://github.com/Zilliqa/Zilliqa.git
+ARG SOURCE_DIR=/zilliqa
+ARG BUILD_TRIPLET=x64-linux-dynamic
+ARG EXTRA_CMAKE_ARGS=
+
+
+RUN git clone ${REPO} ${SOURCE_DIR}
+RUN git -C ${SOURCE_DIR} checkout master
+WORKDIR ${SOURCE_DIR}
+RUN ${VCPKG_ROOT}/vcpkg install --triplet=${BUILD_TRIPLET}
+WORKDIR /
+RUN rm -rf ${SOURCE_DIR}
+
+
+    $ 
+    $ cd /path/to/zilliqa
+    $ export VCPKG_ROOT=/path/to/vcpkg
