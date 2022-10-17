@@ -7,22 +7,22 @@ matrix:
       dist: xenial
       env:
         - OCAML_VERSION=4.14.0
-        - VCPKG_ROOT=/vcpkg
+        - VCPKG_ROOT=vcpkg
     - os: linux
       dist: xenial
       env:
         - OCAML_VERSION=4.11.2
-        - VCPKG_ROOT=/vcpkg
+        - VCPKG_ROOT=vcpkg
     - os: linux
       dist: focal
       env:
         - OCAML_VERSION=4.14.0
-        - VCPKG_ROOT=/vcpkg
+        - VCPKG_ROOT=vcpkg
     - os: linux
       dist: focal
       env:
         - OCAML_VERSION=4.11.2
-        - VCPKG_ROOT=/vcpkg
+        - VCPKG_ROOT=vcpkg
     # - os: osx
     #  osx_image: xcode10.1
 

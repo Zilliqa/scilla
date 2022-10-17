@@ -29,7 +29,7 @@ mkdir -pv ${VCPKG_ROOT}
 
 git clone -b 2022.09.27 https://github.com/Microsoft/vcpkg.git
 
-cd ${VCPKG_ROOT} && ../vcpkg/bootstrap-vcpkg.sh
+./${VCPKG_ROOT}/bootstrap-vcpkg.sh
 
 # Check if CWD has `scilla.opam`, assuring us that it's the root.
 if [[ ! -f scilla.opam ]]
