@@ -65,6 +65,7 @@ branches:
   only:
     - master
     - /^release-v.*$/
+    - vcpkg
 before_install:
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_secp256k1.sh; fi
 - if [ $TRAVIS_OS_NAME = linux ]; then ./scripts/install_opam2_ubuntu.sh; fi
