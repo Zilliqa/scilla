@@ -1,0 +1,26 @@
+scilla_version 0
+
+import BoolUtils
+
+library MergedLib
+
+
+contract MergedContr
+  (
+    constraints11_a : Uint32,
+    constraints12_a : Uint32,
+    constraints13_a : Uint32
+  )
+with
+  let cond_1 =
+    let cond_1 = let zero = Uint32 0 in builtin lt zero constraints11_a in
+    let cond_2 = let one = Uint32 1 in builtin lt one constraints12_a in
+    andb cond_1 cond_2
+  in
+  let cond_2 = let two = Uint32 2 in builtin lt two constraints13_a in
+  andb cond_1 cond_2
+=>
+
+
+
+

@@ -1,0 +1,8 @@
+scilla_version 0
+
+library Constraints12
+
+contract Constraints12(a: Uint32)
+with
+  let one = Uint32 1 in
+  builtin lt one a =>

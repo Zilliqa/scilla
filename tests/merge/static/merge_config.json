@@ -1,0 +1,31 @@
+{
+  "json_replacements": [
+    {
+      "vname": "_creation_block",
+      "value": "\"1822539\""
+    }
+  ],
+  "replacements": [
+    {
+      "filename": "merge/static/remote_collisions21.scilla",
+      "line": 19,
+      "col": 15,
+      "replacee": "m_f",
+      "replacement": "remoteCollisions22_m_f"
+    },
+    {
+      "filename": "merge/static/remote_collisions21.scilla",
+      "line": 17,
+      "col": 15,
+      "replacee": "a_f",
+      "replacement": "remoteCollisions23_a_f"
+    },
+    {
+      "filename": "merge/static/remote_collisions21.scilla",
+      "line": 17,
+      "col": 30,
+      "replacee": "a_f",
+      "replacement": "remoteCollisions22_a_f"
+    }
+  ]
+}

@@ -764,3 +764,7 @@ end
 module LocalLiteralTransformer =
   ExtendedScillaSyntaxTransformer (ParserUtil.ParserRep) (ParserUtil.ParserRep)
     (Literal.LocalLiteral)
+
+module GlobalLiteralTransformer =
+  ExtendedScillaSyntaxTransformer (ParserUtil.ParserRep) (ParserUtil.ParserRep)
+    (Literal.GlobalLiteral)

@@ -1,0 +1,8 @@
+scilla_version 0
+
+library RemoteCollisions22
+
+contract RemoteCollisions22()
+
+field a_f: Bool = False
+field m_f: Map Uint32 Bool = Emp Uint32 Bool
