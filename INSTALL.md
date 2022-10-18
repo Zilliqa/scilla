@@ -23,7 +23,7 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
    $ cd /path/to/scilla
    $ export VCPKG_ROOT=/path/to/vcpkg
    $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
-   $ export PKG_CONFIG_PATH="$(pwd)/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
+   $ export PKG_CONFIG_PATH="/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```
 </details>
 
