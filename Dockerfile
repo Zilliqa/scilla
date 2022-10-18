@@ -1,13 +1,14 @@
 # escape=\
-ARG BASE_IMAGE=ubuntu:18.04
+ARG BASE_IMAGE=zilliqa/zilliqa:v8.3.0-deps
 
 FROM ${BASE_IMAGE}
 
 ARG MAJOR_VERSION=0
+ARG SCILLA_PATH="/scilla/${MAJOR_VERSION}"
 
-COPY . /scilla/${MAJOR_VERSION}
+COPY . ${SCILLA_PATH}
 
-WORKDIR /scilla/${MAJOR_VERSION}
+WORKDIR ${SCILLA_PATH}
 
 RUN apt-get update \
     && apt-get install -y software-properties-common \
@@ -16,7 +17,6 @@ RUN apt-get update \
     git \
     curl \
     wget \
-    cmake \
     build-essential \
     m4 \
     ocaml \
@@ -24,12 +24,8 @@ RUN apt-get update \
     pkg-config \
     zlib1g-dev \
     libgmp-dev \
-    libffi-dev \
     libssl-dev \
     libsecp256k1-dev \
-    libboost-system-dev \
-    libboost-test-dev \
-    libboost-dev \
     libpcre3-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,8 +34,17 @@ ENV OCAML_VERSION 4.11.2
 # CMake gets installed here
 ENV PATH="/root/.local/bin:${PATH}"
 
-RUN bash scripts/install_cmake_ubuntu.sh \
-    && make opamdep-ci \
+# Make sure vcpkg installs brings in the dependencies
+ENV VCPKG_ROOT=/vcpkg
+RUN ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
+
+ENV PKG_CONFIG_PATH="${SCILLA_PATH}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
+
+RUN apt update -y && make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
-    && eval $(opam env) && \
-    make
+    && eval $(opam env) \
+    && make
+
+RUN mkdir -p _build/default/vcpkg_installed/x64-linux/dynamic/lib/ \
+  && cp vcpkg_installed/x64-linux-dynamic/lib/libffi* _build/default/vcpkg_installed/x64-linux/dynamic/lib/ \
+  && find . -type d -name vcpkg_installed | xargs rm -rf
