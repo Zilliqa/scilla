@@ -264,7 +264,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   (** Returns true iff [name] is the function name on the CG *)
   let is_function (cg : cg) name = find_function cg name |> Option.is_some
 
-  (** Returns names of functions called insisde the body of the caller. *)
+  (** Returns names of functions called inside the body of the caller. *)
   let get_callees (cg : cg) callee =
     find_function cg callee
     |> Option.value_map ~default:[] ~f:(fun n -> Node.succs n)
