@@ -1,0 +1,53 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "is_paused", "tag": "NotMoney" },
+      { "field": "dummy", "tag": "NoInfo" }
+    ],
+    "ADT constructors": []
+  },
+  "warnings": [
+    {
+      "warning_message": "Write only field: dummy",
+      "start_location": {
+        "file": "checker/good/redundant-calls1.scilla",
+        "line": 40,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: is_paused",
+      "start_location": {
+        "file": "checker/good/redundant-calls1.scilla",
+        "line": 29,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Procedure without side effects pure has already been called in all of the callers of pr2. This call can be safely removed.",
+      "start_location": {
+        "file": "checker/good/redundant-calls1.scilla",
+        "line": 38,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract IdempotentCalls1 contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/redundant-calls1.scilla",
+        "line": 5,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

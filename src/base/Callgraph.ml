@@ -74,6 +74,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
     let mk id ty = { id; ty; out_edges = []; in_edges = [] }
 
+    let id n = n.id
+
     let succs node =
       List.fold_left node.out_edges ~init:[] ~f:(fun acc e ->
           acc @ [ Edge.dst e ])
@@ -99,6 +101,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
   let find_node (nodes : Node.t list) name =
     List.find nodes ~f:(fun node -> CGIdentifier.equal node.id name)
+
+  let get_node (cg : cg) name = find_node cg.nodes name
 
   (** Collects names of functions/procedures/transitions defined in the
       contract.

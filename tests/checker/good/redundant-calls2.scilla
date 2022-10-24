@@ -1,28 +1,23 @@
 scilla_version 0
 
-library IdempotentCalls1
+library RedundantCalls1
 
-contract IdempotentCalls1()
+contract RedundantCalls1()
 
 field is_paused: Bool = False
 field dummy: Uint32 = Uint32 1
 
 (* The callgraph for this contract looks like:
-                tr
-                |
-               pr1
-              /   \
-            pure  pr2
+                tr          tr2
+                |            |
+               pr1          pr2
+              /   \          |
+            pure  pr2       pure
                     \
                    pure
 
-  The [pure] procedure is idempotent in all contract calls. So, we could
-  refactor this contract by this way:
-                tr
-                |
-               pr1
-              /   \
-            pure  pr2
+  The checker should not suggest removing [pure] call from [pr2],
+  because [tr2] doesn't call [pure] directly.
 *)
 
 procedure pure()
@@ -45,6 +40,10 @@ procedure pr1(a: Uint32)
   pr2 a
 end
 
-transition tr(a: Uint32)
+transition tr1(a: Uint32)
   pr1 a
+end
+
+transition tr2(a: Uint32)
+  pr2 a
 end
