@@ -1018,7 +1018,7 @@ struct
                            be safely removed."
                           (Name.as_string pure_name) (Name.as_string comp_name))
                        warning_redundant_calls
-                       (SR.get_loc (get_rep comp_id)))
+                       (SR.get_loc (get_rep id)))
         | CallProc _ | Bind _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _
         | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
         | Iterate _ | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
