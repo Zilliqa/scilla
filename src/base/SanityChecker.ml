@@ -1007,7 +1007,10 @@ struct
                      |> Option.value_map ~default:false ~f:(fun call_names ->
                             SCIdentifierSet.mem call_names pure_name)
                    in
-                   if Set.for_all caller_names ~f:calls_pure_name then
+                   if
+                     (not @@ Set.is_empty caller_names)
+                     && Set.for_all caller_names ~f:calls_pure_name
+                   then
                      warn1
                        (Printf.sprintf
                           "Procedure without side effects %s has already been \
