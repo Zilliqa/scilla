@@ -131,11 +131,11 @@ clean:
 	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X)
 # but keeping a local opam switch and other dependencies built.
-	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/** --exclude=\!_esy/**
+	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/** --exclude=\!_esy/** --exclude=\!vcpkg_installed
 
 # Clean up libff installation
 cleanall: clean
-	rm -rf deps/cryptoutils/{build,install} deps/schnorr/{build,install}
+	rm -rf deps/cryptoutils/{build,install} deps/schnorr/{build,install} vcpkg_installed
 
 # Build a standalone scilla docker
 docker:
@@ -168,7 +168,7 @@ dev-deps:
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=ocaml-base-compiler.$(OCAML_VERSION) --yes
 	eval $$(opam env)
-	opam install ./scilla.opam --deps-only --with-test --yes
+	opam install ./scilla.opam --deps-only --with-test --yes --assume-depexts
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes
 
 .PHONY : coverage
@@ -191,7 +191,7 @@ coveralls:
 	BISECT_ENABLE=YES make
 	dune build @install
 	ulimit -n 1024; dune exec -- tests/testsuite.exe
-	bisect-ppx-report coveralls coverage.json --ignore-missing-files --service-name travis-ci --service-job-id ${TRAVIS_JOB_ID}
+	bisect-ppx-report coveralls coverage.json --ignore-missing-files --service-name jenkins --service-job-id ${TRAVIS_JOB_ID}
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
 	-find . -type f -name 'bisect*.coverage' | xargs rm

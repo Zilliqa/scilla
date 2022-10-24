@@ -1,0 +1,184 @@
+{
+  "cashflow_tags": {
+    "State variables": [],
+    "ADT constructors": [
+      {
+        "dead_code_test18.A": [
+          {
+            "constructor": "dead_code_test18.A1_has_unused",
+            "tags": [ "_", "NoInfo", "_", "_" ]
+          }
+        ]
+      }
+    ]
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "Dead18",
+    "params": [],
+    "fields": [],
+    "transitions": [
+      {
+        "vname": "test",
+        "params": [ { "vname": "a", "type": "dead_code_test18.A" } ]
+      }
+    ],
+    "procedures": [
+      {
+        "vname": "use_a1",
+        "params": [ { "vname": "a1", "type": "dead_code_test18.A" } ]
+      },
+      {
+        "vname": "use_a2",
+        "params": [ { "vname": "a2", "type": "dead_code_test18.A" } ]
+      }
+    ],
+    "events": [
+      {
+        "vname": "use_a2",
+        "params": [
+          { "vname": "_tmp1", "type": "Uint128" },
+          { "vname": "_tmp2", "type": "Uint128" }
+        ]
+      },
+      {
+        "vname": "use_a3",
+        "params": [ { "vname": "_tmp2", "type": "Uint128" } ]
+      },
+      {
+        "vname": "use_a1",
+        "params": [ { "vname": "_tmp1", "type": "Uint128" } ]
+      }
+    ],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "dead_code_test18.A",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "dead_code_test18.A1_has_unused",
+            "argtypes": [
+              "ByStr20 with contract field a1_unused_1 : ByStr20, field a1_used_1 : Uint128 end",
+              "Uint256",
+              "ByStr20 with contract field a1_unused_2 : ByStr20, field a1_used_2 : Uint128 end",
+              "ByStr20 with contract field a1_unused1_3 : Uint128, field a1_unused2_3 : Uint128, field a1_used_3 : Uint128 end"
+            ]
+          },
+          {
+            "cname": "dead_code_test18.A2_all_used",
+            "argtypes": [
+              "ByStr20 with contract field a2_1 : Uint128, field a2_2 : Uint128 end"
+            ]
+          },
+          {
+            "cname": "dead_code_test18.A3_all_unused",
+            "argtypes": [
+              "ByStr20 with contract field a3_1 : Uint128, field a3_2 : Uint128 end"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Unused field in contract address type: a1_unused2_3",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 9,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field in contract address type: a1_unused1_3",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 9,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused field in contract address type: a1_unused_1",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 9,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: num",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 33,
+        "column": 23
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused match bound: a12_unused",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 33,
+        "column": 27
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract Dead18 contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 29,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+

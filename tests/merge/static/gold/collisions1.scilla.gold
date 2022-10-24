@@ -1,0 +1,30 @@
+scilla_version 0
+
+import BoolUtils
+
+library MergedLib
+
+
+contract MergedContr ()
+
+
+field collisions11_f : Uint32 = Uint32 0
+
+field collisions12_f : Uint32 = Uint32 0
+
+transition collisions11_tr (a : Uint32)
+  collisions11_proc a
+end
+
+procedure collisions11_proc (a : Uint32)
+  collisions11_f = a
+end
+
+transition collisions12_tr (a : Uint32)
+  collisions12_proc a
+end
+
+procedure collisions12_proc (a : Uint32)
+  collisions12_f = a
+end
+

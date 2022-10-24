@@ -1,0 +1,18 @@
+scilla_version 0
+
+import BoolUtils
+
+library MergedLib
+
+
+contract MergedContr ()
+
+
+procedure sameName1_foo ()
+  accept
+end
+
+procedure sameName1_0_foo ()
+  accept
+end
+

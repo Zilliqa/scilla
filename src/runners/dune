@@ -1,14 +1,14 @@
 (executables
  (names scilla_runner eval_runner type_checker scilla_checker scilla_server
-   disambiguate_state_json scilla_fmt)
+   disambiguate_state_json scilla_fmt scilla_merger)
  (public_names scilla-runner eval-runner type-checker scilla-checker
-   scilla-server disambiguate_state_json scilla-fmt)
+   scilla-server disambiguate_state_json scilla-fmt scilla-merger)
  (package scilla)
  (modules scilla_runner eval_runner type_checker scilla_checker scilla_server
-   disambiguate_state_json scilla_fmt)
+   disambiguate_state_json scilla_fmt scilla_merger)
  (libraries core core_unix.command_unix angstrom yojson cryptokit fileutils
    scilla_base scilla_eval scilla_server_lib scilla_crypto scilla_format
-   cmdliner)
+   scilla_merge cmdliner)
  (modes byte native)
  (preprocess
   (pps ppx_sexp_conv ppx_let ppx_deriving.show bisect_ppx --conditional)))

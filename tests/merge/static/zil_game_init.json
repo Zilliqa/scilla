@@ -1,0 +1,37 @@
+[
+    { 
+        "vname" : "_scilla_version",
+        "type" : "Uint32",
+        "value" : "0"
+    },
+    {
+        "vname" : "owner",
+        "type" : "ByStr20",
+        "value" : "0x1234567890123456789012345678901234567890"
+    },
+    {
+        "vname" : "_this_address",
+        "type" : "ByStr20",
+        "value" : "0xabfeccdc9012345678901234567890f777567890"
+    },
+    {
+        "vname" : "puzzle",
+        "type" : "ByStr32",
+        "value" : "0x123456789012345678901234567890123456789012345678901234567890abcd"
+    },
+    {
+        "vname" : "player_a",
+        "type" : "ByStr20",
+        "value" : "0xabcdeabcde123456789012345678901234567890"
+    },
+    {
+        "vname" : "player_b",
+        "type" :  "ByStr20",
+        "value" :  "0xffcdeabcde123456789012345678901234567890"
+    },
+    {
+        "vname" : "_creation_block",
+        "type" : "BNum",
+        "value" : "100"
+    }
+]

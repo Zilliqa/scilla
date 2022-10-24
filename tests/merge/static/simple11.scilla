@@ -1,0 +1,15 @@
+scilla_version 0
+
+library Simple11
+
+contract Simple11()
+
+field f1_a : Uint32 = Uint32 0
+
+procedure set1_a_proc(a: Uint32)
+  f1_a = a
+end
+
+transition set1_a_tr(a: Uint32)
+  set1_a_proc a
+end

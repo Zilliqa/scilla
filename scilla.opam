@@ -42,6 +42,7 @@ depends: [
   "ppx_sexp_conv" {>= "v0.15.0" & < "v0.16~"}
   "ppx_compare" {>= "v0.15.0" & < "v0.16~"}
   "ppx_deriving_rpc" {>= "6.0.0" & < "10.0~"}
+  "ppx_deriving_yojson" {>= "3.0.0" & < "4.0"}
   "ppx_string_interpolation" {>= "1.0.1" & < "1.1~"}
   "pprint" {= "20220103"}
   "qcheck" {>= "0.19.1" & < "0.20~"}

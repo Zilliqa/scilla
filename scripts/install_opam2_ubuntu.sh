@@ -22,6 +22,6 @@ set -ev
 
 # install opam 2.0 -- the current Ubuntu versions available on Travis CI are v1.x
 # -O option does not exactly work as "save as", but it does the job in this case
-wget https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux -O opam
+wget https://github.com/ocaml/opam/releases/download/2.1.3/opam-2.1.3-x86_64-linux -O opam
 sudo mv ./opam /usr/local/bin/opam
 sudo chmod a+x /usr/local/bin/opam
