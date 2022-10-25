@@ -1013,10 +1013,9 @@ struct
                    then
                      warn1
                        (Printf.sprintf
-                          "Procedure without side effects %s has already been \
-                           called in all of the callers of %s. This call can \
-                           be safely removed."
-                          (Name.as_string pure_name) (Name.as_string comp_name))
+                          "Redundant call to procedure %s. This call can be \
+                           safely removed."
+                          (Name.as_string pure_name))
                        warning_redundant_calls
                        (SR.get_loc (get_rep id)))
         | CallProc _ | Bind _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _

@@ -28,7 +28,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Procedure without side effects pure has already been called in all of the callers of pr2. This call can be safely removed.",
+      "warning_message": "Redundant call to procedure pure. This call can be safely removed.",
       "start_location": {
         "file": "checker/good/redundant-calls1.scilla",
         "line": 38,
