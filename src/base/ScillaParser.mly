@@ -479,11 +479,16 @@ component:
 procedure:
 | PROCEDURE; t = component_id;
   params = component_params;
+  ret = option(return_type);
   ss = component_body;
   { { comp_type = CompProc;
       comp_name = t;
       comp_params = params;
-      comp_body = ss } }
+      comp_body = ss;
+      comp_return = ret } }
+
+return_type:
+| LPAREN; t = type_annot; RPAREN; { t }
 
 transition:
 | TRANSITION; t = component_id;
@@ -492,7 +497,8 @@ transition:
   { { comp_type = CompTrans;
       comp_name = t;
       comp_params = params;
-      comp_body = ss } }
+      comp_body = ss;
+      comp_return = None; } }
 
 component_id:
 | c = CID { to_loc_id c (toLoc $startpos(c)) }

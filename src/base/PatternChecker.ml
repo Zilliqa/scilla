@@ -296,7 +296,7 @@ struct
         pure @@ (checked_s :: checked_stmts)
 
   let pm_check_component t =
-    let { comp_type; comp_name; comp_params; comp_body } = t in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = t in
     let kind = "Error during pattern-match checking of component"
     and inst =
       sprintf "%s %s:\n"
@@ -313,6 +313,7 @@ struct
          CheckedPatternSyntax.comp_name;
          CheckedPatternSyntax.comp_params;
          CheckedPatternSyntax.comp_body = checked_body;
+         CheckedPatternSyntax.comp_return;
        }
 
   let pm_check_libentries lentries =

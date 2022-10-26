@@ -391,6 +391,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     comp_name : SR.rep SIdentifier.t;
     comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
   [@@deriving sexp]
 

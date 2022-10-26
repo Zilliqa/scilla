@@ -251,7 +251,8 @@ struct
         OutputSyntax.LibTyp
           (map_id fe ty_id, List.map ctr_defs ~f:(fun cd -> ctr_def cd ~fe ~fl))
 
-  let component { comp_type; comp_name; comp_params; comp_body } ~fe ~fl ~fs =
+  let component { comp_type; comp_name; comp_params; comp_body; comp_return }
+      ~fe ~fl ~fs =
     OutputSyntax.
       {
         comp_type;
@@ -260,6 +261,7 @@ struct
           List.map comp_params ~f:(fun (param, ty) ->
               (map_id fe param, map_type ty ~fl));
         comp_body = statements_annot comp_body ~fe ~fl ~fs;
+        comp_return;
       }
 
   let contract { cname; cparams; cconstraint; cfields; ccomps } ~fe ~fs ~fl =

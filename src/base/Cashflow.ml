@@ -242,13 +242,16 @@ struct
     (res_s, rep)
 
   let cf_init_tag_component component =
-    let { comp_type; comp_name; comp_params; comp_body } = component in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } =
+      component
+    in
     {
       CFSyntax.comp_type;
       CFSyntax.comp_name;
       CFSyntax.comp_params =
         List.map ~f:(fun (x, t) -> (add_noinfo_to_ident x, t)) comp_params;
       CFSyntax.comp_body = List.map ~f:cf_init_tag_stmt comp_body;
+      CFSyntax.comp_return;
     }
 
   let cf_init_tag_contract contract token_fields =
@@ -2006,7 +2009,7 @@ struct
           new_changes || acc_changes ))
 
   let cf_tag_component t param_env field_env ctr_tag_map =
-    let { comp_type; comp_name; comp_params; comp_body } = t in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = t in
     let empty_local_env = AssocDictionary.make_dict () in
     let implicit_local_env =
       AssocDictionary.insert MessagePayload.amount_label Money
@@ -2041,6 +2044,7 @@ struct
         comp_name;
         comp_params = new_params;
         comp_body = new_comp_body;
+        comp_return;
       },
       new_param_env,
       new_field_env,

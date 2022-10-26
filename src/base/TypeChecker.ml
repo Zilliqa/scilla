@@ -1055,7 +1055,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     pure @@ (new_p, new_stmts)
 
   let type_component env0 tr =
-    let { comp_type; comp_name; comp_params; comp_body } = tr in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = tr in
     let procedures = env0.procedures in
     let component_type_string = component_type_to_string comp_type in
     let param_checker =
@@ -1097,6 +1097,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
            TypedSyntax.comp_name;
            TypedSyntax.comp_params = typed_cparams;
            TypedSyntax.comp_body = typed_stmts;
+           TypedSyntax.comp_return;
          },
          new_proc_signatures )
 

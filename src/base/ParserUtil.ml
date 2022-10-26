@@ -152,6 +152,7 @@ module type Syn = sig
     comp_name : ParserRep.rep SIdentifier.t;
     comp_params : (ParserRep.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
 
   type ctr_def = {
