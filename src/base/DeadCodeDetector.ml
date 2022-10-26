@@ -260,8 +260,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | Bind (_, e) -> report_expr e
       | MatchStmt (_, pslist) -> List.iter pslist ~f:report_unreachable_adapter
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | GasStmt _
-      | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | GasStmt _ | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _
+        ->
           ()
     in
     Option.iter cmod.libs ~f:(fun l ->
@@ -491,7 +492,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               warn "Unused type cast statement to: " x ER.get_loc;
               (ERSet.add lv r, adts, ctrs))
         | SendMsgs v | CreateEvnt v -> (ERSet.add lv v, adts, ctrs)
-        | AcceptPayment | GasStmt _ -> (lv, adts, ctrs))
+        | AcceptPayment | Return _ | GasStmt _ -> (lv, adts, ctrs))
     | _ -> (emp_erset, emp_idset, emp_idset)
 
   (** Checks for unused module's components.
@@ -548,8 +549,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 get_used_address_fields address_params sa |> merge_id_maps m)
             |> merge_id_maps m)
     | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-    | CallProc _ | Throw _ | GasStmt _ ->
+    | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+    | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
         emp_idsmap
 
   (** Returns a set of field names of the contract address type. *)
@@ -794,8 +795,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               Map.set used ~key:ctr_name ~data:ctr_arg_pos_to_fields'
           | _ -> used)
       | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-      | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-      | CallProc _ | Throw _ | GasStmt _ ->
+      | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+      | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
           used
     in
     List.fold_left comp.comp_body ~init:used ~f:(fun used s -> aux used s)

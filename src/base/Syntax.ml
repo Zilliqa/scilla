@@ -360,6 +360,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
         (** [TypeCast(I, A, TY)] represents: [I <- & A as TY] *)
     | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
+    | Return of ER.rep SIdentifier.t
+        (** [Return(A)] is an [return A] statement *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
         (** [Iterate(L, F)] represents calling a procedure for each element of
             the list: [forall L F] *)
@@ -638,6 +640,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error casting `%s` into type `%s`:\n" (as_error_string x)
             (SType.pp_typ_error t)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
+      | Return i ->
+          sprintf "Error in returning value `%s`\n" (as_error_string i)
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
             (as_error_string p) (as_error_string l)

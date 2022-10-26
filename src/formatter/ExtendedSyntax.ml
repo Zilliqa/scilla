@@ -103,7 +103,8 @@ struct
         ER.rep id_ann * (pattern * stmt_annot list * comment_text list) list
     | ReadFromBC of ER.rep id_ann * bcinfo_query
     | TypeCast of ER.rep id_ann * ER.rep id_ann * SType.t
-    | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
+    | AcceptPayment
+    | Return of ER.rep id_ann
     | Iterate of ER.rep id_ann * SR.rep id_ann
     | SendMsgs of ER.rep id_ann
     | CreateEvnt of ER.rep id_ann
@@ -640,6 +641,10 @@ struct
     | Syn.AcceptPayment ->
         let c = comment (SR.get_loc ann) in
         (ExtSyn.AcceptPayment, ann, c)
+    | Syn.Return id ->
+        let c = comment (loc_end_er id) in
+        let id' = extend_er_id tr id in
+        (ExtSyn.Return id', ann, c)
     | Syn.Iterate (l, f) ->
         let c = comment (loc_end_er l) in
         let l' = extend_er_id tr l in

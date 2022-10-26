@@ -475,6 +475,9 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     | ReadFromBC (id, q) ->
         let id' = rename_local_er renames_map id in
         (ReadFromBC (id', q), annot)
+    | Return id ->
+        let id' = rename_local_er renames_map id in
+        (Return id', annot)
     | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
@@ -749,8 +752,8 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         in
         (Bind (id', body), annot)
     | Load _ | Store _ | Bind _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _
-    | Throw _ | GasStmt _ ->
+    | AcceptPayment | Return _ | Iterate _ | SendMsgs _ | CreateEvnt _
+    | CallProc _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
   let localize_comp renames_map comp =

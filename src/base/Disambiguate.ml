@@ -678,6 +678,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.TypeCast (dis_x, dis_r, dis_t), new_var_dict)
         | AcceptPayment -> pure @@ (PostDisSyntax.AcceptPayment, var_dict_acc)
+        | Return i ->
+            let%bind dis_i =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) i
+            in
+            pure @@ (PostDisSyntax.Return dis_i, var_dict_acc)
         | Iterate (l, proc) ->
             let%bind dis_l =
               disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) l

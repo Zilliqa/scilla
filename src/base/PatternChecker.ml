@@ -282,6 +282,7 @@ struct
           | TypeCast (x, r, t) ->
               pure @@ (CheckedPatternSyntax.TypeCast (x, r, t), rep)
           | AcceptPayment -> pure @@ (CheckedPatternSyntax.AcceptPayment, rep)
+          | Return i -> pure @@ (CheckedPatternSyntax.Return i, rep)
           | Iterate (l, p) -> pure @@ (CheckedPatternSyntax.Iterate (l, p), rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)

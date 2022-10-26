@@ -227,6 +227,7 @@ struct
       | TypeCast (x, r, t) ->
           CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment
+      | Return i -> CFSyntax.Return (add_noinfo_to_ident i)
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
       | CallProc (p, args) ->
@@ -1870,6 +1871,20 @@ struct
               || [%equal: ECFR.money_tag] (get_id_tag r) r_tag) )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
+      | Return i ->
+          let i_tag =
+            lub_tags NotMoney (lookup_var_tag2 i local_env param_env)
+          in
+          let new_i = update_id_tag i i_tag in
+          let new_local_env, new_param_env =
+            update_var_tag2 i i_tag local_env param_env
+          in
+          ( Return new_i,
+            new_param_env,
+            field_env,
+            new_local_env,
+            ctr_tag_map,
+            not @@ [%equal: ECFR.money_tag] (get_id_tag i) i_tag )
       | GasStmt g ->
           (GasStmt g, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->

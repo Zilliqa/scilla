@@ -382,8 +382,9 @@ struct
                 | TypeCast (x, _, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
                     pure (get_id x :: acc_stmt_defs)
-                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | GasStmt _
-                | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
+                | Store _ | MapUpdate _ | SendMsgs _ | AcceptPayment | Return _
+                (* the return identifier will be checked at its definition *)
+                | GasStmt _ | CreateEvnt _ | Throw _ | CallProc _ | Iterate _ ->
                     pure acc_stmt_defs
                 | Bind (x, e) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
@@ -480,7 +481,7 @@ struct
                     forallM clauses ~f:(fun (_pat, mbody) -> stmt_iter mbody)
                 | Load _ | RemoteLoad _ | MapGet _ | RemoteMapGet _
                 | ReadFromBC _ | TypeCast _ | Store _ | MapUpdate _ | SendMsgs _
-                | AcceptPayment | GasStmt _ | CreateEvnt _ | Throw _
+                | AcceptPayment | Return _ | GasStmt _ | CreateEvnt _ | Throw _
                 | CallProc _ | Iterate _ ->
                     pure ())
           in
@@ -562,8 +563,8 @@ struct
           else []
       (* We shouldn't handle `forall` here, because it operates only with iterables. *)
       | Iterate _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
-      | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
     let id_is_unboxed unboxed_options id =
@@ -602,7 +603,8 @@ struct
               |> List.append acc)
       | Store _ | MapUpdate _ | CallProc _ | Bind _ | Iterate _ | Load _
       | RemoteLoad _ | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _
-      | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | AcceptPayment | Return _ | SendMsgs _ | CreateEvnt _ | Throw _
+      | GasStmt _ ->
           []
 
     (** Returns a list of variables from [unboxed_options] that are used as
@@ -646,7 +648,7 @@ struct
               |> List.append acc)
       | Store _ | MapUpdate _ | CallProc _ | Iterate _ | Load _ | RemoteLoad _
       | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
-      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | Return _ | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
     (** Returns names of variables that are matched in the expression. *)
@@ -693,8 +695,8 @@ struct
       (* We shouldn't handle `forall` here, because it operates only with iterables. *)
       | Iterate _ -> []
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
-      | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           []
 
     (** Collects function calls that don't call type functions directly or
@@ -806,8 +808,8 @@ struct
       | MapGet (v, _, _, true) | RemoteMapGet (v, _, _, _, true) -> [ v ]
       | MapGet _ | RemoteMapGet _ | Load _ | RemoteLoad _ | Store _ | Bind _
       | MapUpdate _ | MatchStmt _ | ReadFromBC _ | TypeCast _ | AcceptPayment
-      | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _
-        ->
+      | Return _ | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _
+      | GasStmt _ ->
           []
 
     (** Collects different names for the not unboxed option values. *)
@@ -826,8 +828,8 @@ struct
           | _ -> [])
       | MapGet _ | RemoteMapGet _ | Load _ | RemoteLoad _ | Store _
       | MapUpdate _ | MatchStmt _ | ReadFromBC _ | TypeCast _ | AcceptPayment
-      | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _
-        ->
+      | Return _ | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _
+      | GasStmt _ ->
           []
 
     (** Collects not matched local variables returned from map get operations

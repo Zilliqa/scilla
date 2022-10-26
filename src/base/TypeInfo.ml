@@ -125,7 +125,7 @@ struct
                   patternsts @ branchts)
             in
             ots :: List.concat clausets
-        | SendMsgs v | CreateEvnt v -> [ calc_ident_locs v ]
+        | SendMsgs v | CreateEvnt v | Return v -> [ calc_ident_locs v ]
         | ReadFromBC (v, bf) ->
             List.map ~f:calc_ident_locs
               (v

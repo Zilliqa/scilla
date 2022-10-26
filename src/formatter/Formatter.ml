@@ -58,6 +58,7 @@ struct
     let delete_kwd = !^"delete"
     let exists_kwd = !^"exists"
     let accept_kwd = !^"accept"
+    let return_kwd = !^"return"
     let as_kwd = !^"as"
     let send_kwd = !^"send"
     let event_kwd = !^"event"
@@ -423,6 +424,8 @@ struct
           of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^^ as_kwd ^^^ of_type typ
         | Ast.AcceptPayment ->
           accept_kwd
+        | Ast.Return id ->
+          return_kwd ^//^ of_ann_id id
         | Ast.Iterate (arg_list, proc) ->
           (* forall l p *)
           forall_kwd ^//^ of_ann_id arg_list ^//^ of_ann_id proc

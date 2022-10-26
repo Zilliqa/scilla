@@ -134,6 +134,7 @@ module type Syn = sig
     | TypeCast of
         ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t * SType.t
     | AcceptPayment
+    | Return of ParserRep.rep SIdentifier.t
     (* forall l p *)
     | Iterate of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
     | SendMsgs of ParserRep.rep SIdentifier.t

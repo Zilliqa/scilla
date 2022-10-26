@@ -216,6 +216,7 @@ struct
     | TypeCast (id, addr, ty) ->
         OutputSyntax.TypeCast (map_id fe id, map_id fe addr, map_type ty ~fl)
     | AcceptPayment -> OutputSyntax.AcceptPayment
+    | Return i -> OutputSyntax.Return (map_id fe i)
     | Iterate (list, proc) ->
         OutputSyntax.Iterate (map_id fe list, map_id fs proc)
     | SendMsgs id -> OutputSyntax.SendMsgs (map_id fe id)

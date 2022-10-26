@@ -88,6 +88,7 @@ rule read =
   | "event"       { EVENT }
   | "field"       { FIELD }      
   | "accept"      { ACCEPT }      
+  | "return"      { RETURN }      
   | "exists"      { EXISTS }
   | "delete"      { DELETE }
   | "Emp"         { EMP }

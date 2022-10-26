@@ -197,8 +197,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
                   NodeSet.union acc @@ visit_stmt sa)
               |> NodeSet.union acc)
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
-      | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           emp_nodes_set
     in
     List.fold_left comp.comp_body ~init:emp_nodes_set ~f:(fun acc s ->

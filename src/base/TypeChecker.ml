@@ -911,6 +911,25 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.AcceptPayment, rep)
                  checked_stmts
+        | Return i ->
+            let%bind r =
+              fromR_TE
+              @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
+            in
+            let i_type = rr_typ r in
+            (* TODO: Look the return type of the procedure in the env. *)
+            (* let expected = () in                                    *)
+            (* let%bind () =                                           *)
+            (*   fromR_TE                                              *)
+            (*   @@ assert_type_assignable ~expected ~actual:i_type.tp *)
+            (*        ~lc:(ER.get_loc (get_rep i))                     *)
+            (* in                                                      *)
+            let typed_i = add_type_to_ident i i_type in
+            let%bind checked_stmts = type_stmts sts get_loc env in
+            pure
+            @@ add_stmt_to_stmts_env_gas
+                 (TypedSyntax.Return typed_i, rep)
+                 checked_stmts
         | SendMsgs i ->
             let%bind r =
               fromR_TE
