@@ -488,7 +488,7 @@ procedure:
       comp_return = ret } }
 
 return_type:
-| LPAREN; t = type_annot; RPAREN; { t }
+| TARROW; t = typ; { t }
 
 transition:
 | TRANSITION; t = component_id;
