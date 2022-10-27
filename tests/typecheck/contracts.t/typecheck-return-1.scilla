@@ -1,0 +1,15 @@
+scilla_version 0
+
+library TypecheckReturn1
+
+contract TypecheckReturn1()
+
+procedure no_return()
+  a = _creation_block;
+  return a
+end
+
+procedure incorrect_return_type() -> (String)
+  a = _creation_block;
+  return a
+end

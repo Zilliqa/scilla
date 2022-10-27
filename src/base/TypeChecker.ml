@@ -619,7 +619,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   let get_tenv_fields env = env.fields
   let get_tenv_pure env = env.pure
 
-  let rec type_stmts stmts get_loc env =
+  let rec type_stmts comp stmts get_loc env =
     let open Datatypes.DataTypeDictionary in
     match stmts with
     | [] -> pure ([], env)
@@ -635,7 +635,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure [ pure' ] []
-                (type_stmts sts get_loc)
+                (type_stmts comp sts get_loc)
             in
             let typed_x = add_type_to_ident x ident_type in
             let typed_f = add_type_to_ident f ident_type in
@@ -657,7 +657,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure [ pure' ] []
-                (type_stmts sts get_loc)
+                (type_stmts comp sts get_loc)
             in
             let typed_x = add_type_to_ident x ident_type in
             let typed_adr = add_type_to_ident adr adr_type in
@@ -690,7 +690,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        ~actual:(rr_typ rr).tp
                        ~lc:(ER.get_loc (get_rep r))
                 in
-                let%bind checked_stmts = type_stmts sts get_loc env in
+                let%bind checked_stmts = type_stmts comp sts get_loc env in
                 pure @@ (checked_stmts, rr_typ fr, rr_typ rr)
               in
               let typed_f = add_type_to_ident f f_type in
@@ -704,7 +704,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure
                 [ (x, ityp.tp) ]
-                [] (type_stmts sts get_loc)
+                []
+                (type_stmts comp sts get_loc)
             in
             let typed_x = add_type_to_ident x ityp in
             pure
@@ -740,7 +741,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               pure @@ (typed_m, typed_klist, typed_v)
             in
             (* Check rest of the statements. *)
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             (* Update annotations. *)
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -761,7 +762,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure
                 [ (v, v_type') ]
-                [] (type_stmts sts get_loc)
+                []
+                (type_stmts comp sts get_loc)
             in
             (* Update annotations. *)
             pure
@@ -784,7 +786,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure
                 [ (v, v_type') ]
-                [] (type_stmts sts get_loc)
+                []
+                (type_stmts comp sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -838,7 +841,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure
                 [ (x, bt) ]
-                [] (type_stmts sts get_loc)
+                []
+                (type_stmts comp sts get_loc)
             in
             let typed_x = add_type_to_ident x (mk_qual_tp bt) in
             pure
@@ -871,7 +875,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let%bind checked_stmts =
               with_extended_env env get_tenv_pure
                 [ (x, res_typ.tp) ]
-                [] (type_stmts sts get_loc)
+                []
+                (type_stmts comp sts get_loc)
             in
             pure
             @@ add_stmt_to_stmts_env_gas
@@ -895,41 +900,55 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let%bind checked_clauses_rev =
                 foldM clauses ~init:[] ~f:(fun checked_clauses_acc (ptrn, ex) ->
                     let%bind typed_clause =
-                      type_match_stmt_branch env sct ptrn ex get_loc
+                      type_match_stmt_branch comp env sct ptrn ex get_loc
                     in
                     pure @@ (typed_clause :: checked_clauses_acc))
               in
               let checked_clauses = List.rev checked_clauses_rev in
-              let%bind checked_stmts = type_stmts sts get_loc env in
+              let%bind checked_stmts = type_stmts comp sts get_loc env in
               pure
               @@ add_stmt_to_stmts_env_gas
                    (TypedSyntax.MatchStmt (typed_x, checked_clauses), rep)
                    checked_stmts
         | AcceptPayment ->
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.AcceptPayment, rep)
                  checked_stmts
-        | Return i ->
-            let%bind r =
-              fromR_TE
-              @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
-            in
-            let i_type = rr_typ r in
-            (* TODO: Look the return type of the procedure in the env. *)
-            (* let expected = () in                                    *)
-            (* let%bind () =                                           *)
-            (*   fromR_TE                                              *)
-            (*   @@ assert_type_assignable ~expected ~actual:i_type.tp *)
-            (*        ~lc:(ER.get_loc (get_rep i))                     *)
-            (* in                                                      *)
-            let typed_i = add_type_to_ident i i_type in
-            let%bind checked_stmts = type_stmts sts get_loc env in
-            pure
-            @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.Return typed_i, rep)
-                 checked_stmts
+        | Return i -> (
+            match (comp.comp_type, comp.comp_return) with
+            | CompTrans, _ ->
+                fail
+                  (mk_type_error1
+                     ~kind:"Return statements in transition are prohibited"
+                     (SR.get_loc rep))
+            | CompProc, None ->
+                fail
+                  (mk_type_error1
+                     ~kind:
+                       (Printf.sprintf
+                          "Procedure %s cannot return because it doesn't have \
+                           a return type"
+                          (as_error_string comp.comp_name))
+                     (SR.get_loc rep))
+            | CompProc, Some ret ->
+                let%bind r =
+                  fromR_TE
+                  @@ TEnv.resolveT env.pure (get_id i) ~lopt:(Some (get_rep i))
+                in
+                let i_type = rr_typ r in
+                let%bind () =
+                  fromR_TE
+                  @@ assert_type_assignable ~expected:ret ~actual:i_type.tp
+                       ~lc:(ER.get_loc (get_rep i))
+                in
+                let typed_i = add_type_to_ident i i_type in
+                let%bind checked_stmts = type_stmts comp sts get_loc env in
+                pure
+                @@ add_stmt_to_stmts_env_gas
+                     (TypedSyntax.Return typed_i, rep)
+                     checked_stmts)
         | SendMsgs i ->
             let%bind r =
               fromR_TE
@@ -943,7 +962,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    ~lc:(ER.get_loc (get_rep i))
             in
             let typed_i = add_type_to_ident i i_type in
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.SendMsgs typed_i, rep)
@@ -961,7 +980,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                    ~lc:(ER.get_loc (get_rep i))
             in
             let typed_i = add_type_to_ident i i_type in
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CreateEvnt typed_i, rep)
@@ -982,7 +1001,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        ~inst:(as_error_string p)
                        (SR.get_loc (get_rep p)))
             in
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CallProc (p, typed_args), rep)
@@ -1002,7 +1021,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        ~actual:l_type.tp
                        ~lc:(ER.get_loc (get_rep l))
                 in
-                let%bind checked_stmts = type_stmts sts get_loc env in
+                let%bind checked_stmts = type_stmts comp sts get_loc env in
                 pure
                 @@ add_stmt_to_stmts_env_gas
                      (TypedSyntax.Iterate (add_type_to_ident l l_type, p), rep)
@@ -1014,7 +1033,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      ~inst:(as_error_string p)
                      (SR.get_loc (get_rep p))))
         | Throw iopt -> (
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             match iopt with
             | Some i ->
                 (* Same as CreateEvent. *)
@@ -1040,17 +1059,17 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                      (TypedSyntax.Throw None, rep)
                      checked_stmts)
         | GasStmt g ->
-            let%bind checked_stmts = type_stmts sts get_loc env in
+            let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.GasStmt (type_gas_charge g), rep)
                  checked_stmts)
 
-  and type_match_stmt_branch env styp ptrn sts get_loc =
+  and type_match_stmt_branch comp env styp ptrn sts get_loc =
     let%bind new_p, new_typings = assign_types_for_pattern styp ptrn in
     let%bind new_stmts, _ =
       with_extended_env env get_tenv_pure new_typings []
-        (type_stmts sts get_loc)
+        (type_stmts comp sts get_loc)
     in
     pure @@ (new_p, new_stmts)
 
@@ -1081,7 +1100,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
     let append_params = CU.append_implicit_comp_params comp_params in
     let%bind typed_stmts, _ =
       with_extended_env env0 get_tenv_pure append_params []
-        (type_stmts comp_body ER.get_loc)
+        (type_stmts tr comp_body ER.get_loc)
     in
     let new_proc_signatures =
       match comp_type with
