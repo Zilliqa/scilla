@@ -456,13 +456,18 @@ struct
             typed_params)
           rparen
 
-      let of_component Ast.{comp_comments; comp_type; comp_name; comp_params; comp_body} =
+      let of_component Ast.{comp_comments; comp_type; comp_name; comp_params; comp_body; comp_return} =
         let comp_type = !^(Syntax.component_type_to_string comp_type)
         and comp_name = of_ann_id comp_name
         and comp_params = of_parameters comp_params ~sep:(break 1)
         and comp_body = of_stmts comp_body in
-        concat_comments comp_comments ^^
-        group (comp_type ^^^ comp_name ^//^ comp_params) ^^
+        let signature = match comp_return with
+        | None ->
+          (group (comp_type ^^^ comp_name ^//^ comp_params))
+        | Some ty ->
+          (group (comp_type ^^^ comp_name ^//^ comp_params ^//^ arrow ^//^ of_type ty))
+        in
+        concat_comments comp_comments ^^ signature ^^
           indent (hardline ^^ comp_body) ^^ hardline ^^
         end_kwd
 

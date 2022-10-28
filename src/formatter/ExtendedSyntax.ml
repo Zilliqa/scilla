@@ -123,6 +123,7 @@ struct
     comp_name : SR.rep id_ann;
     comp_params : (ER.rep id_ann * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
   [@@deriving sexp]
 
@@ -720,20 +721,24 @@ struct
     in
     (import', import_as')
 
-  let extend_component tr comp =
+  let extend_component tr
+      Syn.{ comp_type; comp_name; comp_params; comp_body; comp_return } =
     let comp_comments =
-      let comp_name_loc = SR.get_loc (SIdentifier.get_rep comp.Syn.comp_name) in
+      let comp_name_loc = SR.get_loc (SIdentifier.get_rep comp_name) in
       collect_comments_above tr comp_name_loc
-    in
-    let comp_type = comp.Syn.comp_type in
-    let comp_name = extend_sr_id tr comp.comp_name in
-    let comp_params =
-      List.map comp.comp_params ~f:(fun (id, ty) -> (extend_er_id tr id, ty))
-    in
-    let comp_body =
-      List.map comp.comp_body ~f:(fun stmt -> extend_stmt tr stmt)
-    in
-    { comp_comments; ExtSyn.comp_type; comp_name; comp_params; comp_body }
+    and comp_name = extend_sr_id tr comp_name
+    and comp_params =
+      List.map comp_params ~f:(fun (id, ty) -> (extend_er_id tr id, ty))
+    and comp_body = List.map comp_body ~f:(fun stmt -> extend_stmt tr stmt) in
+    ExtSyn.
+      {
+        comp_comments;
+        comp_type;
+        comp_name;
+        comp_params;
+        comp_body;
+        comp_return;
+      }
 
   let extend_contract tr (contr : Syn.contract) : ExtSyn.contract =
     let cname = extend_sr_id tr contr.cname in
