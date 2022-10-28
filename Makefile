@@ -49,7 +49,7 @@ parser-messages:
 	mv src/base/NewParserFaults.messages src/base/ParserFaults.messages
 	rm src/base/NewParserFaultsStubs.messages
 
-# Launch utop such that it finds the libraroes.
+# Launch utop such that it finds the libraries.
 utop: release
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
