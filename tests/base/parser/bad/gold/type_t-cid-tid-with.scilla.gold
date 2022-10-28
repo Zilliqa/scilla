@@ -1,8 +1,7 @@
 {
   "errors": [
     {
-      "error_message":
-        "This is an invalid type term, the ADT constructor arguments are incorrect.\n",
+      "error_message": "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-cid-tid-with.scilla",
         "line": 6,
