@@ -14,6 +14,8 @@ field remoteCollisions11_z : Uint32 = Uint32 0
 
 field remoteCollisions12_a_f : Bool = False
 
+field remoteCollisions12_a_f2 : Bool = False
+
 field remoteCollisions12_m_f : Map Uint32 Bool = Emp (Uint32) (Bool)
 
 field remoteCollisions13_a_f : Bool = True
@@ -25,11 +27,12 @@ transition remoteCollisions11_tr (a : ByStr20)
   match a_opt with
   | Some aa =>
     remoteCollisions11_f <- (remoteCollisions12_a_f|remoteCollisions13_a_f);
+    remoteCollisions11_f <- remoteCollisions12_a_f2;
     k <- remoteCollisions11_z;
     remoteCollisions11_f <- (remoteCollisions12_m_f|remoteCollisions13_m_f)[k]
   | None =>
   end
 end
 
-merge/static/remote_collisions11.scilla:19:15: warning: [2] Name collision: Please disambiguate `m_f` in the configuration file
-merge/static/remote_collisions11.scilla:17:15: warning: [2] Name collision: Please disambiguate `a_f` in the configuration file
+merge/static/remote_collisions11.scilla:21:15: warning: [2] Name collision: Please disambiguate `m_f` in the configuration file
+merge/static/remote_collisions11.scilla:18:15: warning: [2] Name collision: Please disambiguate `a_f` in the configuration file
