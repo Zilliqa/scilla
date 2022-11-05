@@ -426,6 +426,11 @@ module Configuration = struct
           fail0 ~kind:"Unrecognized balance literal at sender"
             ~inst:(pp_literal sender_balance_l)
 
+  (** TODO *)
+  let procedure_return st =
+    Printf.printf "Return from %s\n" (List.hd_exn st.procedures |> fun c -> (SIdentifier.Name.as_string (SIdentifier.get_id c.comp_name)));
+    pure @@ st
+
   (* Finds a procedure proc_name, and returns the procedure and the
      list of procedures in scope for that procedure *)
   let lookup_procedure st proc_name =

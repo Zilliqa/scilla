@@ -139,7 +139,10 @@ module type Syn = sig
     | Iterate of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
     | SendMsgs of ParserRep.rep SIdentifier.t
     | CreateEvnt of ParserRep.rep SIdentifier.t
-    | CallProc of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t list
+    | CallProc of
+        ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t list
     | Throw of ParserRep.rep SIdentifier.t option
     | GasStmt of SGasCharge.gas_charge
 

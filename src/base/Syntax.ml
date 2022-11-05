@@ -369,8 +369,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         (** [SendMsgs(MS)] represents sending messages: [send MS] *)
     | CreateEvnt of ER.rep SIdentifier.t
         (** [CreateEvnt(E)] represents emitting an event: [event E] *)
-    | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
-        (** [CallProc(F, [A1, ... An])] is a procedure call: [F A1 ... An] *)
+    | CallProc of
+        ER.rep SIdentifier.t option
+        * SR.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        (** [CallProc(I, P, [A1, ... An])] is a procedure call: [I = P A1 ... An] *)
     | Throw of ER.rep SIdentifier.t option
         (** [Throw(I)] represents: [throw I] *)
     | GasStmt of SGasCharge.gas_charge

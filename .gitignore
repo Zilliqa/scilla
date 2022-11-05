@@ -84,3 +84,5 @@ deps/cryptoutils/install/
 deps/schnorr/build/
 deps/schnorr/install/
 
+vcpkg_installed
+tags

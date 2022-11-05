@@ -470,8 +470,8 @@ let rec stmt_eval conf stmts =
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
           stmt_eval conf' sts
-      | Return _id -> (* TODO *)
-          let%bind conf' = Configuration.accept_incoming conf in
+      | Return _id ->
+          let%bind conf' = Configuration.procedure_return conf in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)
       | SendMsgs ms ->
