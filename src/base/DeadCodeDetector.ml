@@ -437,10 +437,10 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             proc_dict := p :: !proc_dict;
             (ERSet.add lv l, adts, ctrs)
         | Bind (i, e) ->
-            let live_vars_no_i =
-              ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
-            in
             if ERSet.mem lv i then
+              let live_vars_no_i =
+                ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
+              in
               let e_live_vars, adts', ctrs' = expr_iter e in
               ( ERSet.union e_live_vars live_vars_no_i,
                 SCIdentifierSet.union adts' adts,
