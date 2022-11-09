@@ -700,7 +700,14 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) e
             in
             pure @@ (PostDisSyntax.CreateEvnt dis_e, var_dict_acc)
-        | CallProc (proc, args) ->
+        | CallProc (id_opt, proc, args) ->
+            let%bind dis_id_opt =
+              match id_opt with
+              | Some id ->
+                  let%bind dis_id = name_def_as_simple_global id in
+                  pure @@ Some dis_id
+              | None -> pure @@ None
+            in
             (* Only locally defined procedures are allowed *)
             let%bind dis_proc = name_def_as_simple_global proc in
             let%bind dis_args =
@@ -708,7 +715,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 ~f:
                   (disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
-            pure @@ (PostDisSyntax.CallProc (dis_proc, dis_args), var_dict_acc)
+            pure
+            @@ ( PostDisSyntax.CallProc (dis_id_opt, dis_proc, dis_args),
+                 var_dict_acc )
         | Throw xopt ->
             let%bind dis_xopt =
               option_mapM xopt

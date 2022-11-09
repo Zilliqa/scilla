@@ -218,9 +218,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
-        | CallProc (p, args) ->
+        | CallProc (id_opt, p, args) ->
             if is_proc_in_scope (get_id p) then
-              pure @@ RecursionSyntax.CallProc (p, args)
+              pure @@ RecursionSyntax.CallProc (id_opt, p, args)
             else
               fail1 ~kind:"Procedure is not in scope" ~inst:(as_error_string p)
                 (SR.get_loc rep)

@@ -286,8 +286,8 @@ struct
           | Iterate (l, p) -> pure @@ (CheckedPatternSyntax.Iterate (l, p), rep)
           | SendMsgs i -> pure @@ (CheckedPatternSyntax.SendMsgs i, rep)
           | CreateEvnt i -> pure @@ (CheckedPatternSyntax.CreateEvnt i, rep)
-          | CallProc (p, args) ->
-              pure @@ (CheckedPatternSyntax.CallProc (p, args), rep)
+          | CallProc (id_opt, p, args) ->
+              pure @@ (CheckedPatternSyntax.CallProc (id_opt, p, args), rep)
           | Throw i -> pure @@ (CheckedPatternSyntax.Throw i, rep)
           | GasStmt g ->
               pure (CheckedPatternSyntax.GasStmt (pm_check_gas_charge g), rep)

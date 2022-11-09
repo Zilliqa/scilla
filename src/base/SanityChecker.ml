@@ -552,8 +552,8 @@ struct
               List.fold_left stmts ~init:acc ~f:(fun acc s ->
                   used_in_unknown_calls m unboxed_options s |> List.append acc)
               |> List.append acc)
-      | CallProc (id, args) ->
-          if not @@ Map.mem m (get_id id) then
+      | CallProc (_id_opt, proc, args) ->
+          if not @@ Map.mem m (get_id proc) then
             List.fold_left args ~init:[] ~f:(fun acc arg ->
                 List.fold_left unboxed_options ~init:[] ~f:(fun acc opt ->
                     if SCIdentifier.equal arg opt then
@@ -684,7 +684,7 @@ struct
                   collect_matches_in_stmt m sa |> List.append acc)
               |> List.append acc)
           |> List.append [ get_id id ]
-      | CallProc (id, args) -> (
+      | CallProc (_id_opt, id, args) -> (
           match Map.find m (get_id id) with
           | Some arg_matches ->
               List.foldi args ~init:[] ~f:(fun i acc arg ->

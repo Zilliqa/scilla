@@ -653,7 +653,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error in sending messages `%s`:\n" (as_error_string i)
       | CreateEvnt i ->
           sprintf "Error in create event `%s`:\n" (as_error_string i)
-      | CallProc (p, _) ->
+      | CallProc (_, p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->

@@ -221,9 +221,10 @@ struct
         OutputSyntax.Iterate (map_id fe list, map_id fs proc)
     | SendMsgs id -> OutputSyntax.SendMsgs (map_id fe id)
     | CreateEvnt id -> OutputSyntax.CreateEvnt (map_id fe id)
-    | CallProc (proc, args) ->
+    | CallProc (id_opt, proc, args) ->
+        let id = Option.map ~f:(fun id -> map_id fe id) id_opt in
         OutputSyntax.CallProc
-          (map_id fs proc, List.map args ~f:(fun a -> map_id fe a))
+          (id, map_id fs proc, List.map args ~f:(fun a -> map_id fe a))
     | Throw oid ->
         OutputSyntax.Throw (Option.map oid ~f:(fun id -> map_id fe id))
     | GasStmt gc -> OutputSyntax.GasStmt (gas_charge gc)

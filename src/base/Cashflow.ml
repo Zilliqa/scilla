@@ -230,8 +230,9 @@ struct
       | Return i -> CFSyntax.Return (add_noinfo_to_ident i)
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
-      | CallProc (p, args) ->
-          CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
+      | CallProc (id_opt, p, args) ->
+          let id = Option.map id_opt ~f:(fun id -> add_noinfo_to_ident id) in
+          CFSyntax.CallProc (id, p, List.map args ~f:add_noinfo_to_ident)
       | Iterate (l, p) -> CFSyntax.Iterate (add_noinfo_to_ident l, p)
       | Throw xopt -> (
           match xopt with
@@ -1914,7 +1915,8 @@ struct
             new_local_env,
             ctr_tag_map,
             not @@ [%equal: ECFR.money_tag] (get_id_tag e) e_tag )
-      | CallProc (p, args) ->
+      | CallProc (id_opt, p, args) ->
+          (* TODO: How does procedure call affects cash flow? *)
           let new_args =
             List.map args ~f:(fun arg ->
                 update_id_tag arg (lookup_var_tag2 arg local_env param_env))
@@ -1931,7 +1933,7 @@ struct
             | Ok res -> res
             | Unequal_lengths -> false
           in
-          ( CallProc (p, new_args),
+          ( CallProc (id_opt, p, new_args),
             param_env,
             field_env,
             local_env,

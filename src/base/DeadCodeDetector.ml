@@ -430,9 +430,17 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             match topt with
             | Some x -> (ERSet.add lv x, adts, ctrs)
             | None -> (lv, adts, ctrs))
-        | CallProc (p, al) ->
+        | CallProc (id_opt, p, al) ->
             proc_dict := p :: !proc_dict;
-            (ERSet.of_list al |> ERSet.union lv, adts, ctrs)
+            let lv' =
+              match id_opt with
+              | Some id when ERSet.mem lv id -> ERSet.add lv id
+              | Some id ->
+                  warn "Unused local binding: " id ER.get_loc;
+                  ERSet.add lv id
+              | None -> lv
+            in
+            (ERSet.of_list al |> ERSet.union lv', adts, ctrs)
         | Iterate (l, p) ->
             proc_dict := p :: !proc_dict;
             (ERSet.add lv l, adts, ctrs)

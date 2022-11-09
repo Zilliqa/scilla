@@ -555,7 +555,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   type stmt_tenv = {
     pure : TEnv.t;
     fields : TEnv.t;
-    procedures : (TCName.t * TCType.t list) list;
+    procedures : (TCName.t * (TCType.t list * TCType.t option)) list;
   }
 
   let lookup_proc env pname =
@@ -985,26 +985,42 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CreateEvnt typed_i, rep)
                  checked_stmts
-        | CallProc (p, args) ->
-            let%bind typed_args =
-              let%bind targs, typed_actuals = type_actuals env.pure args in
+        | CallProc (id_opt, p, args) ->
+            let%bind arg_typs, ret_ty_opt =
               match lookup_proc env p with
-              | Some arg_typs ->
-                  let%bind _ =
-                    fromR_TE
-                    @@ proc_type_applies arg_typs targs ~lc:(SR.get_loc rep)
-                  in
-                  pure typed_actuals
+              | Some (arg_typs, ret_ty_opt) -> pure (arg_typs, ret_ty_opt)
               | None ->
                   fail
                     (mk_type_error1 ~kind:"Procedure not found"
                        ~inst:(as_error_string p)
                        (SR.get_loc (get_rep p)))
             in
+            let%bind typed_id_opt =
+              match id_opt with
+              | None -> pure @@ None
+              | Some id -> (
+                  match ret_ty_opt with
+                  | Some ret_ty ->
+                      pure @@ Some (add_type_to_ident id (mk_qual_tp ret_ty))
+                  | None ->
+                      fail
+                        (mk_type_error1
+                           ~kind:"Return type for procedure not found"
+                           ~inst:(as_error_string p)
+                           (SR.get_loc (get_rep p))))
+            in
+            let%bind typed_args =
+              let%bind targs, typed_actuals = type_actuals env.pure args in
+              let%bind _ =
+                fromR_TE
+                @@ proc_type_applies arg_typs targs ~lc:(SR.get_loc rep)
+              in
+              pure typed_actuals
+            in
             let%bind checked_stmts = type_stmts comp sts get_loc env in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.CallProc (p, typed_args), rep)
+                 (TypedSyntax.CallProc (typed_id_opt, p, typed_args), rep)
                  checked_stmts
         | Iterate (l, p) -> (
             let%bind lt =
@@ -1013,7 +1029,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             let l_type = rr_typ lt in
             match lookup_proc env p with
-            | Some [ arg_typ ] ->
+            | Some ([ arg_typ ], _) ->
                 let%bind () =
                   fromR_TE
                   (* The procedure accepts an element of l. *)
@@ -1108,7 +1124,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompProc ->
           let proc_sig = List.map comp_params ~f:snd in
           List.Assoc.add procedures ~equal:[%equal: TCName.t] (get_id comp_name)
-            proc_sig
+            (proc_sig, comp_return)
     in
     pure
     @@ ( {

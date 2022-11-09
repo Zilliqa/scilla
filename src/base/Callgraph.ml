@@ -186,8 +186,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
     let rec visit_stmt (s, _annot) =
       match s with
       | Bind (_id, ea) -> collect_funcalls ea collected_nodes
-      | CallProc (id, _) | Iterate (_, id) -> (
-          find_node collected_nodes id |> function
+      | CallProc (_, proc, _) | Iterate (_, proc) -> (
+          find_node collected_nodes proc |> function
           | Some n -> NodeSet.singleton n
           | None -> emp_nodes_set)
       | MatchStmt (_id, arms) ->

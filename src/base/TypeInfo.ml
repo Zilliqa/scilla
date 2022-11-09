@@ -136,7 +136,10 @@ struct
               | ReplicateContr (addr, iparams) -> [ addr; iparams ]))
         | TypeCast (v, r, _) -> [ calc_ident_locs v; calc_ident_locs r ]
         | AcceptPayment | GasStmt _ -> []
-        | CallProc (_, il) -> List.map il ~f:calc_ident_locs
+        | CallProc (id_opt, _, il) ->
+            Option.value_map id_opt ~default:[] ~f:(fun id ->
+                [ calc_ident_locs id ])
+            @ List.map il ~f:calc_ident_locs
         | Iterate (l, _) -> [ calc_ident_locs l ]
         | Throw iopt -> (
             match iopt with Some i -> [ calc_ident_locs i ] | None -> []))
