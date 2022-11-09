@@ -140,7 +140,7 @@ module type Syn = sig
     | SendMsgs of ParserRep.rep SIdentifier.t
     | CreateEvnt of ParserRep.rep SIdentifier.t
     | CallProc of
-        ParserRep.rep SIdentifier.t
+        ParserRep.rep SIdentifier.t option
         * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t list
     | Throw of ParserRep.rep SIdentifier.t option

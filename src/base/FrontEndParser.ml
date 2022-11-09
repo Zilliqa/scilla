@@ -32,9 +32,55 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   module Lexer = ScillaLexer.MkLexer (FESyntax)
   module MInter = Parser.MenhirInterpreter
   module FEPType = FESyntax.SType
+  module FEPIdentifier = FEPType.TIdentifier
+
+  module FEPIdentifierComp = struct
+    include FEPIdentifier.Name
+    include Comparable.Make (FEPIdentifier.Name)
+  end
+
+  module FEPIdentifierSet = Set.Make (FEPIdentifierComp)
+
+  let emp_idset = FEPIdentifierSet.empty
 
   (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
   let fail_err msg lexbuf = fail1 ~kind:msg ?inst:None (toLoc lexbuf.lex_curr_p)
+
+  (** Disambiguates calls of procedures without values and pure function calls.
+      They have the same syntax: [id = foo param1 param2]. Therefore, the
+      parser doesn't know what is actually is called and saves such cases as
+      [Bind(id, App(...))]. This step finishes parsing and places
+      [CallProc(Some(id), ...)] statements when the contract contains a
+      procedure [id]. *)
+  let disambiguate_calls cmod =
+    let open FESyntax in
+    let procedures_with_return =
+      List.fold_left cmod.contr.ccomps ~init:emp_idset ~f:(fun s comp ->
+          if Option.is_some comp.comp_return then
+            FEPIdentifierSet.add s (FEPIdentifier.get_id comp.comp_name)
+          else s)
+    in
+    let disambiguate_stmt (stmt, annot) =
+      match stmt with
+      | Bind (id, (App (f, args), _))
+        when Set.mem procedures_with_return (FEPIdentifier.get_id f) ->
+          (CallProc (Some id, f, args), annot)
+      | _ -> (stmt, annot)
+    in
+    let contr' =
+      {
+        cmod.contr with
+        ccomps =
+          List.map cmod.contr.ccomps ~f:(fun comp ->
+              {
+                comp with
+                comp_body =
+                  List.map comp.comp_body ~f:(fun stmt ->
+                      disambiguate_stmt stmt);
+              });
+      }
+    in
+    { cmod with contr = contr' }
 
   let parse_lexbuf checkpoint_starter lexbuf filename =
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
@@ -86,6 +132,11 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
 
   let parse_expr_from_stdin () = parse_stdin Parser.Incremental.exp_term
   let parse_lmodule filename = parse_file Parser.Incremental.lmodule filename
-  let parse_cmodule filename = parse_file Parser.Incremental.cmodule filename
+
+  let parse_cmodule filename =
+    let open Result.Let_syntax in
+    let%bind cmod = parse_file Parser.Incremental.cmodule filename in
+    pure @@ disambiguate_calls cmod
+
   let get_comments () = Lexer.get_comments ()
 end
