@@ -189,12 +189,12 @@ module MakeStateService () = struct
               ?inst:None)
 
   (* Common function for external state lookup.
-     * If the caddr+fname+keys combination exists:
+     * If the caddr+fname+mutable_field+keys combination exists:
      *     If ~ignoreval is true: (None, Some type) is returned
      *     if ~ignoreval is false: (Some val, Some type) is returned
      * Else: (None, None) is returned
   *)
-  let external_fetch ~caddr ~fname ~keys ~ignoreval =
+  let external_fetch ~caddr ~fname ~(mutable_field:bool) ~keys ~ignoreval =
     let%bind sm, _fields, estates, _bcinfo = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with

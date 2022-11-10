@@ -469,7 +469,7 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let address_field_type loc f t =
+  let address_field_type loc f t _is_mutable =
     let preknown_field_type =
       if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
         Some ContractUtil.balance_type

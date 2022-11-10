@@ -372,11 +372,11 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.load conf r in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
-      | RemoteLoad (x, adr, r) -> (
+      | RemoteLoad (x, adr, r, is_mutable) -> (
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l = Configuration.remote_load conf s' r in
+              let%bind l = Configuration.remote_load conf s' r is_mutable in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ ->
@@ -410,7 +410,7 @@ let rec stmt_eval conf stmts =
           let%bind l = Configuration.map_get conf m klist' fetchval in
           let conf' = Configuration.bind conf (get_id x) l in
           stmt_eval conf' sts
-      | RemoteMapGet (x, adr, m, klist, fetchval) -> (
+      | RemoteMapGet (x, adr, m, is_mutable, klist, fetchval) -> (
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX abystr when Bystrx.width abystr = Type.address_length ->
@@ -418,7 +418,7 @@ let rec stmt_eval conf stmts =
                 mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
               in
               let%bind l =
-                Configuration.remote_map_get abystr m klist' fetchval
+                Configuration.remote_map_get abystr m is_mutable klist' fetchval
               in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts

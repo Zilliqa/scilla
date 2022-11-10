@@ -187,7 +187,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
     | (s, srep) :: rem_stmts ->
         let%bind s' =
           match s with
-          | Load (x, _) | RemoteLoad (x, _, _) ->
+          | Load (x, _) | RemoteLoad (x, _, _, _) ->
               let g =
                 GasStmt
                   (GasGasCharge.SumOf
@@ -219,7 +219,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
                 | None -> n
               in
               pure @@ [ (GasStmt g, srep); (s, srep) ]
-          | MapGet (x, _, klist, _) | RemoteMapGet (x, _, _, klist, _) ->
+          | MapGet (x, _, klist, _) | RemoteMapGet (x, _, _, _, klist, _) ->
               let n = GasGasCharge.StaticCost (List.length klist) in
               let g =
                 GasGasCharge.SumOf

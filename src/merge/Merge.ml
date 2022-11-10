@@ -449,20 +449,20 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let m' = rename_local_er renames_map m in
         let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
         (MapGet (v', m', keys', exists), annot)
-    | RemoteMapGet (v, adr, m, keys, exists) ->
+    | RemoteMapGet (v, adr, m, is_mutable, keys, exists) ->
         (* Map will be replaced to the local one in the Remote pass. *)
         let v' = rename_local_er renames_map v in
         let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
-        (RemoteMapGet (v', adr, m, keys', exists), annot)
+        (RemoteMapGet (v', adr, m, is_mutable, keys', exists), annot)
     | Load (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in
         (Load (lhs', rhs'), annot)
-    | RemoteLoad (lhs, adr, rhs) ->
+    | RemoteLoad (lhs, adr, rhs, is_mutable) ->
         (* Address will be replaced in the Remote pass. *)
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in
-        (RemoteLoad (lhs', adr, rhs'), annot)
+        (RemoteLoad (lhs', adr, rhs', is_mutable), annot)
     | Store (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in
@@ -716,12 +716,32 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
 
   let rec localize_stmt renames_map (stmt, annot) =
     match stmt with
-    | RemoteLoad (l, _, v) ->
+    | RemoteLoad (l, _, v, is_mutable) ->
         let v' = remote_rename_er renames_map v in
-        (Load (l, v'), annot)
-    | RemoteMapGet (l, _, m, keys, exists) ->
+        if is_mutable then
+          (Load (l, v'), annot)
+        else
+          (* Immutable fields exist in the same namespace as local variables *)
+          (Bind (l, (Var v', PIdentifier.get_rep v')), annot)
+    | RemoteMapGet (l, _, m, is_mutable, keys, exists) ->
         let m' = remote_rename_er renames_map m in
-        (MapGet (l, m', keys, exists), annot)
+        if is_mutable then
+          (MapGet (l, m', keys, exists), annot)
+        else
+          (* Immutable fields exist in the same namespace as local variables. 
+             Build a series of get operations. Wrap in let expressions to avoid name clashes. *)
+          let access_exp_opt =
+            List.fold_right keys ~init:None ~f:(fun key acc ->
+                let get_exp = (Builtin ((Builtin_get, PIdentifier.get_rep key), [], [m ; key]), PIdentifier.get_rep key) in
+                match acc with
+                | None -> Some get_exp
+                | Some exp -> Some (Let (m, None, get_exp, exp), PIdentifier.get_rep key))
+          in
+          let access_exp =
+            Option.value_or_thunk access_exp_opt
+              ~default:(fun () -> raise (ErrorUtils.mk_internal_error ~kind:"Missing keys in remote map get" ?inst:None))
+          in
+          (Bind (l, access_exp), annot)
     | MatchStmt (id, arms) ->
         let arms' =
           List.map arms ~f:(fun (pat, stmts) ->

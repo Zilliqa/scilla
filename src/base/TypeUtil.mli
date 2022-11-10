@@ -148,7 +148,7 @@ module TypeUtilities : sig
   val map_depth : TUType.t -> int
 
   val address_field_type :
-    loc -> 'a TUIdentifier.t -> TUType.t -> (TUType.t, scilla_error list) result
+    loc -> 'a TUIdentifier.t -> TUType.t -> bool -> (TUType.t, scilla_error list) result
 
   (****************************************************************)
   (*             Utility function for matching types              *)

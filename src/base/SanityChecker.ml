@@ -375,9 +375,9 @@ struct
             foldM stmts ~init:stmt_defs ~f:(fun acc_stmt_defs (s, _) ->
                 match s with
                 | Load (x, _)
-                | RemoteLoad (x, _, _)
+                | RemoteLoad (x, _, _, _)
                 | MapGet (x, _, _, _)
-                | RemoteMapGet (x, _, _, _, _)
+                | RemoteMapGet (x, _, _, _, _, _)
                 | ReadFromBC (x, _)
                 | TypeCast (x, _, _) ->
                     check_warn_redef cparams cfields pnames stmt_defs x;
@@ -803,7 +803,7 @@ struct
 
     let collect_variables_from_map_get (s, _annot) =
       match s with
-      | MapGet (v, _, _, true) | RemoteMapGet (v, _, _, _, true) -> [ v ]
+      | MapGet (v, _, _, true) | RemoteMapGet (v, _, _, _, _, true) -> [ v ]
       | MapGet _ | RemoteMapGet _ | Load _ | RemoteLoad _ | Store _ | Bind _
       | MapUpdate _ | MatchStmt _ | ReadFromBC _ | TypeCast _ | AcceptPayment
       | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _

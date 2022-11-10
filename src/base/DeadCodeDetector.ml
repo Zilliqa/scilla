@@ -370,7 +370,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused load statement to: " x ER.get_loc;
               (lv, adts, ctrs))
-        | RemoteLoad (x, addr, m) ->
+        | RemoteLoad (x, addr, m, _is_mutable) ->
             FieldsState.mark_field_read fs m;
             (* m is a field, thus we don't track its liveness *)
             if ERSet.mem lv x then
@@ -401,7 +401,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused map get statement to: " x ER.get_loc;
               (lv, adts, ctrs))
-        | RemoteMapGet (x, addr, i, il, _) ->
+        | RemoteMapGet (x, addr, i, _is_mutable, il, _) ->
             (* i is a field, thus we don't track its liveness *)
             FieldsState.mark_field_read fs i;
             if ERSet.mem lv x then
@@ -539,7 +539,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       [address_params] that are used in [s]. *)
   let rec get_used_address_fields address_params (s, _annot) =
     match s with
-    | RemoteLoad (_, addr, field) | RemoteMapGet (_, addr, field, _, _) ->
+    | RemoteLoad (_, addr, field, _) | RemoteMapGet (_, addr, field, _, _, _) ->
         Map.set emp_idsmap ~key:(get_id addr)
           ~data:(SCIdentifierSet.singleton (get_id field))
     | MatchStmt (_id, arms) ->
@@ -774,7 +774,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 in
                 ignore @@ Stack.pop env_stack;
                 res))
-      | RemoteLoad (_, addr, field) | RemoteMapGet (_, addr, field, _, _) -> (
+      | RemoteLoad (_, addr, field, _) | RemoteMapGet (_, addr, field, _, _, _) -> (
           match env_find_bind (SCIdentifier.get_id addr) with
           | Some (ctr_name, ctr_arg_pos) when Map.mem adt_ctrs ctr_name ->
               let ctr_arg_pos_to_fields =

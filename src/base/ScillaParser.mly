@@ -437,17 +437,17 @@ stmt:
 
 remote_fetch_stmt:
 | l = ID; FETCH; AND; adr = ID; PERIOD; r = sident
-  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, true), toLoc $startpos }
 | (* Reading _sender._balance or _origin._balance *)
   l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
-  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true), toLoc $startpos }
 | (* Adding this production in preparation for remote reads of contract parameters *)
   _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
   { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
 | l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true, keys, true), toLoc $startpos }
 | l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true, keys, false), toLoc $startpos }
 | (* Adding this production in preparation for address type casts *)
   l = ID; FETCH; AND; adr = sident; AS; t = address_typ
   { TypeCast(to_loc_id l (toLoc $startpos(l)), adr, t), toLoc $startpos }
