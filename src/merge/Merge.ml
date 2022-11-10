@@ -416,10 +416,13 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     | Bind (id, expr) ->
         let id' = rename_local_er renames_map id in
         (Bind (id', rename_expr renames_map expr), annot)
-    | CallProc (id, args) ->
-        let id' = rename_local_sr renames_map id in
+    | CallProc (id_opt, proc, args) ->
+        let id_opt' =
+          Option.map id_opt ~f:(fun id -> rename_local_er renames_map id)
+        in
+        let proc' = rename_local_sr renames_map proc in
         let args' = List.map args ~f:(fun a -> rename_local_er renames_map a) in
-        (CallProc (id', args'), annot)
+        (CallProc (id_opt', proc', args'), annot)
     | Iterate (list, id) ->
         let id' = rename_local_sr renames_map id in
         let list' = rename_local_er renames_map list in

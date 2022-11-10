@@ -108,7 +108,7 @@ struct
     | Iterate of ER.rep id_ann * SR.rep id_ann
     | SendMsgs of ER.rep id_ann
     | CreateEvnt of ER.rep id_ann
-    | CallProc of SR.rep id_ann * ER.rep id_ann list
+    | CallProc of ER.rep id_ann option * SR.rep id_ann * ER.rep id_ann list
     | Throw of ER.rep id_ann option
     | GasStmt of SGasCharge.gas_charge
   [@@deriving sexp]
@@ -659,11 +659,12 @@ struct
         let c = comment (loc_end_er id) in
         let id' = extend_er_id tr id in
         (ExtSyn.CreateEvnt id', ann, c)
-    | Syn.CallProc (id, args) ->
-        let c = comment (loc_end_sr id) in
-        let id' = extend_sr_id tr id in
+    | Syn.CallProc (id_opt, proc, args) ->
+        let id_opt' = Option.map id_opt ~f:(fun id -> extend_er_id tr id) in
+        let c = comment (loc_end_sr proc) in
+        let proc' = extend_sr_id tr proc in
         let args' = List.map args ~f:(fun arg -> extend_er_id tr arg) in
-        (ExtSyn.CallProc (id', args'), ann, c)
+        (ExtSyn.CallProc (id_opt', proc', args'), ann, c)
     | Syn.Throw id_opt -> (
         match id_opt with
         | Some id ->

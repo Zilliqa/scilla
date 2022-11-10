@@ -433,9 +433,14 @@ struct
           send_kwd ^//^ of_ann_id msgs
         | Ast.CreateEvnt events ->
           event_kwd ^//^ of_ann_id events
-        | Ast.CallProc (proc, args) ->
-          if List.is_empty args then of_ann_id proc
-          else of_ann_id proc ^//^ of_ann_ids args
+        | Ast.CallProc (id_opt, proc, args) ->
+          let call =
+            if List.is_empty args then of_ann_id proc
+            else of_ann_id proc ^//^ of_ann_ids args
+          in
+          (match id_opt with
+           | None -> call
+           | Some id -> of_ann_id id ^^^ equals ^//^ call)
         | Ast.Throw oexc ->
           (match oexc with
            | None -> throw_kwd

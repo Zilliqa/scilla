@@ -484,7 +484,8 @@ let rec stmt_eval conf stmts =
           in
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
-      | CallProc (p, actuals) ->
+      | CallProc (_id_opt, p, actuals) ->
+          (* TODO *)
           (* Resolve the actuals *)
           let%bind args =
             mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
