@@ -46,12 +46,14 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
   (* TODO: Use DebugMessage perr/pout instead of fprintf. *)
   let fail_err msg lexbuf = fail1 ~kind:msg ?inst:None (toLoc lexbuf.lex_curr_p)
 
-  (** Disambiguates calls of procedures without values and pure function calls.
-      They have the same syntax: [id = foo param1 param2]. Therefore, the
-      parser doesn't know what is actually is called and saves such cases as
-      [Bind(id, App(...))]. This step finishes parsing and places
-      [CallProc(Some(id), ...)] statements when the contract contains a
-      procedure [id]. *)
+  (** Disambiguates calls of procedures without values and pure function calls
+      and variables.
+      They have the same syntax: [id = proc param1 param2] or [id = proc].
+      Therefore, the parser doesn't know what is actually is called and saves
+      such cases as [Bind(id, App(proc, [param1, param2]))] or
+      [Bind(id, Var(proc)].
+      This function finishes parsing and places [CallProc(Some(id), ...)]
+      statements when the contract contains a procedure [id]. *)
   let disambiguate_calls cmod =
     let open FESyntax in
     let procedures_with_return =
@@ -65,6 +67,9 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
       | Bind (id, (App (f, args), _))
         when Set.mem procedures_with_return (FEPIdentifier.get_id f) ->
           (CallProc (Some id, f, args), annot)
+      | Bind (id, (Var f, _))
+        when Set.mem procedures_with_return (FEPIdentifier.get_id f) ->
+          (CallProc (Some id, f, []), annot)
       | _ -> (stmt, annot)
     in
     let contr' =
