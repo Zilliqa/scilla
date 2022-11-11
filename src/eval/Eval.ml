@@ -470,8 +470,9 @@ let rec stmt_eval conf stmts =
       | AcceptPayment ->
           let%bind conf' = Configuration.accept_incoming conf in
           stmt_eval conf' sts
-      | Return _id ->
-          let%bind conf' = Configuration.procedure_return conf in
+      | Return id ->
+          let%bind id_resolved = fromR @@ Configuration.lookup conf id in
+          let conf' = { conf with return_value = Some id_resolved } in
           stmt_eval conf' sts
       (* Caution emitting messages does not change balance immediately! *)
       | SendMsgs ms ->
@@ -484,8 +485,7 @@ let rec stmt_eval conf stmts =
           in
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
-      | CallProc (_id_opt, p, actuals) ->
-          (* TODO *)
+      | CallProc (id_opt, p, actuals) ->
           (* Resolve the actuals *)
           let%bind args =
             mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
@@ -493,6 +493,12 @@ let rec stmt_eval conf stmts =
           let%bind proc, p_rest = Configuration.lookup_procedure conf p in
           (* Apply procedure. No gas charged for the application *)
           let%bind conf' = try_apply_as_procedure conf proc p_rest args in
+          (* Bind the return of [p] if it returns. *)
+          let%bind conf' =
+            match id_opt with
+            | Some id -> Configuration.procedure_return conf' id
+            | None -> pure @@ conf'
+          in
           stmt_eval conf' sts
       | Iterate (l, p) ->
           let%bind l_actual = fromR @@ Env.lookup conf.env l in
@@ -939,6 +945,7 @@ let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
       incoming_funds;
       procedures;
       component_stack = [ tname ];
+      return_value = None;
       emitted = [];
       events = [];
     }
