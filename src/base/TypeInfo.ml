@@ -112,7 +112,7 @@ struct
         | MapGet (x, m, il, _) ->
             [ calc_ident_locs x; calc_ident_locs m ]
             @ List.map il ~f:calc_ident_locs
-        | RemoteMapGet (x, adr, m, is_mutable, il, _) ->
+        | RemoteMapGet (x, adr, m, _is_mutable, il, _) ->
             [ calc_ident_locs x; calc_ident_locs adr; calc_ident_locs m ]
             @ List.map il ~f:calc_ident_locs
         | MatchStmt (o, clauses) ->

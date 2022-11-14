@@ -459,10 +459,9 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let rhs' = rename_local_er renames_map rhs in
         (Load (lhs', rhs'), annot)
     | RemoteLoad (lhs, adr, rhs, is_mutable) ->
-        (* Address will be replaced in the Remote pass. *)
+        (* The Remote pass will remove address and rename [rhs]. *)
         let lhs' = rename_local_er renames_map lhs in
-        let rhs' = rename_local_er renames_map rhs in
-        (RemoteLoad (lhs', adr, rhs', is_mutable), annot)
+        (RemoteLoad (lhs', adr, rhs, is_mutable), annot)
     | Store (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in

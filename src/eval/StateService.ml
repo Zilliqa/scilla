@@ -194,7 +194,7 @@ module MakeStateService () = struct
      *     if ~ignoreval is false: (Some val, Some type) is returned
      * Else: (None, None) is returned
   *)
-  let external_fetch ~caddr ~fname ~(mutable_field:bool) ~keys ~ignoreval =
+  let external_fetch ~caddr ~fname ~(_mutable_field:bool) ~keys ~ignoreval =
     let%bind sm, _fields, estates, _bcinfo = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with

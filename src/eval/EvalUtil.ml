@@ -194,7 +194,7 @@ module Configuration = struct
   let remote_load st caddr k mutable_field =
     let%bind fval =
       fromR
-      @@ StateService.external_fetch ~caddr ~fname:k ~mutable_field ~keys:[] ~ignoreval:false
+      @@ StateService.external_fetch ~caddr ~fname:k ~_mutable_field:mutable_field ~keys:[] ~ignoreval:false
     in
     match fval with
     | Some v, _ ->
@@ -230,7 +230,7 @@ module Configuration = struct
   let remote_field_type caddr k mutable_field =
     let%bind fval =
       fromR
-      @@ StateService.external_fetch ~caddr ~fname:k ~mutable_field ~keys:[] ~ignoreval:true
+      @@ StateService.external_fetch ~caddr ~fname:k ~_mutable_field:mutable_field ~keys:[] ~ignoreval:true
     in
     match fval with
     | _, Some ty -> pure ty
@@ -286,7 +286,7 @@ module Configuration = struct
       in
       let%bind vopt, _ =
         fromR
-        @@ StateService.external_fetch ~caddr ~fname:m ~mutable_field ~keys ~ignoreval:false
+        @@ StateService.external_fetch ~caddr ~fname:m ~_mutable_field:mutable_field ~keys ~ignoreval:false
       in
       (* Need to wrap the result in a Scilla Option. *)
       match vopt with
@@ -295,7 +295,7 @@ module Configuration = struct
     else
       let%bind _, topt =
         fromR
-        @@ StateService.external_fetch ~caddr ~fname:m ~mutable_field ~keys ~ignoreval:true
+        @@ StateService.external_fetch ~caddr ~fname:m ~_mutable_field:mutable_field ~keys ~ignoreval:true
       in
       pure @@ EvalLiteral.build_bool_lit (Option.is_some topt)
 
@@ -555,7 +555,7 @@ module EvalTypecheck = struct
   let is_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id this_address_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~mutable_field:false ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:false ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -563,7 +563,7 @@ module EvalTypecheck = struct
   let is_library_or_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id codehash_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~mutable_field:false ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:false ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -578,11 +578,11 @@ module EvalTypecheck = struct
     let balance_id = EvalIdentifier.mk_loc_id balance_label in
     let nonce_id = EvalIdentifier.mk_loc_id nonce_label in
     let%bind balance_lit, _ =
-      StateService.external_fetch ~caddr ~fname:balance_id ~mutable_field:false ~keys:[]
+      StateService.external_fetch ~caddr ~fname:balance_id ~_mutable_field:false ~keys:[]
         ~ignoreval:false
     in
     let%bind nonce_lit, _ =
-      StateService.external_fetch ~caddr ~fname:nonce_id ~mutable_field:false ~keys:[]
+      StateService.external_fetch ~caddr ~fname:nonce_id ~_mutable_field:false ~keys:[]
         ~ignoreval:false
     in
     match (balance_lit, nonce_lit) with
@@ -604,7 +604,7 @@ module EvalTypecheck = struct
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
     allM fts ~f:(fun (f, t) ->
         let%bind res =
-          StateService.external_fetch ~caddr ~fname:f ~mutable_field:true ~keys:[] ~ignoreval:true
+          StateService.external_fetch ~caddr ~fname:f ~_mutable_field:true ~keys:[] ~ignoreval:true
         in
         match res with
         | _, Some ext_typ ->

@@ -5,4 +5,5 @@ library RemoteCollisions12
 contract RemoteCollisions12()
 
 field a_f: Bool = False
+field a_f2: Bool = False
 field m_f: Map Uint32 Bool = Emp Uint32 Bool
