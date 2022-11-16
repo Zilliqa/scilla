@@ -441,13 +441,19 @@ remote_fetch_stmt:
 | (* Reading _sender._balance or _origin._balance *)
   l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
   { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true), toLoc $startpos }
-| (* Adding this production in preparation for remote reads of contract parameters *)
-  _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
-  { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
+| (* Reading immutable fields *)
+  l = ID; FETCH; AND; adr = ID; PERIOD; LPAREN; r = sident; RPAREN; keys = list(map_access)
+  {
+    match keys with
+    | [] -> RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, false), toLoc $startpos
+    | _  -> RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, false, keys, true), toLoc $startpos
+  }
 | l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true, keys, true), toLoc $startpos }
 | l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), true, keys, false), toLoc $startpos }
+| l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; LPAREN; r = ID; RPAREN; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), false, keys, false), toLoc $startpos }
 | (* Adding this production in preparation for address type casts *)
   l = ID; FETCH; AND; adr = sident; AS; t = address_typ
   { TypeCast(to_loc_id l (toLoc $startpos(l)), adr, t), toLoc $startpos }
