@@ -449,19 +449,19 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let m' = rename_local_er renames_map m in
         let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
         (MapGet (v', m', keys', exists), annot)
-    | RemoteMapGet (v, adr, m, is_mutable, keys, exists) ->
+    | RemoteMapGet (v, adr, m, mutability, keys, exists) ->
         (* Map will be replaced to the local one in the Remote pass. *)
         let v' = rename_local_er renames_map v in
         let keys' = List.map keys ~f:(fun k -> rename_local_er renames_map k) in
-        (RemoteMapGet (v', adr, m, is_mutable, keys', exists), annot)
+        (RemoteMapGet (v', adr, m, mutability, keys', exists), annot)
     | Load (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in
         (Load (lhs', rhs'), annot)
-    | RemoteLoad (lhs, adr, rhs, is_mutable) ->
+    | RemoteLoad (lhs, adr, rhs, mutability) ->
         (* The Remote pass will remove address and rename [rhs]. *)
         let lhs' = rename_local_er renames_map lhs in
-        (RemoteLoad (lhs', adr, rhs, is_mutable), annot)
+        (RemoteLoad (lhs', adr, rhs, mutability), annot)
     | Store (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in
@@ -715,16 +715,16 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
 
   let rec localize_stmt renames_map (stmt, annot) =
     match stmt with
-    | RemoteLoad (l, _, v, is_mutable) ->
+    | RemoteLoad (l, _, v, mutability) ->
         let v' = remote_rename_er renames_map v in
-        if is_mutable then
+        if is_mutable mutability then
           (Load (l, v'), annot)
         else
           (* Immutable fields exist in the same namespace as local variables *)
           (Bind (l, (Var v', PIdentifier.get_rep v')), annot)
-    | RemoteMapGet (l, _, m, is_mutable, keys, exists) ->
+    | RemoteMapGet (l, _, m, mutability, keys, exists) ->
         let m' = remote_rename_er renames_map m in
-        if is_mutable then
+        if is_mutable mutability then
           (MapGet (l, m', keys, exists), annot)
         else
           (* Immutable fields exist in the same namespace as local variables. 

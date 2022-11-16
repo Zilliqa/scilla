@@ -643,7 +643,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.Load (typed_x, typed_f), rep)
                  checked_stmts
-        | RemoteLoad (x, adr, f, is_mutable) ->
+        | RemoteLoad (x, adr, f, mutability) ->
             let lc = get_rep adr in
             let%bind pure', adr_type, ident_type =
               let%bind adr_typ =
@@ -651,7 +651,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind fr =
                 fromR_TE
-                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp is_mutable
+                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp (is_mutable mutability)
               in
               pure @@ ((x, fr), rr_typ adr_typ, mk_qual_tp fr)
             in
@@ -664,7 +664,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             let typed_f = add_type_to_ident f ident_type in
             pure
             @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.RemoteLoad (typed_x, typed_adr, typed_f, is_mutable), rep)
+                 (TypedSyntax.RemoteLoad (typed_x, typed_adr, typed_f, mutability), rep)
                  checked_stmts
         | Store (f, r) ->
             if List.mem ~equal:[%equal: TCName.t] no_store_fields (get_id f)
@@ -769,10 +769,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                  ( TypedSyntax.MapGet (typed_v, typed_m, typed_klist, valfetch),
                    rep )
                  checked_stmts
-        | RemoteMapGet (v, adr, m, is_mutable, klist, valfetch) ->
+        | RemoteMapGet (v, adr, m, mutability, klist, valfetch) ->
             let%bind typed_adr, typed_m, typed_klist, v_type =
               let%bind typed_adr, typed_m, typed_klist, v_type =
-                type_remote_map_access env adr m is_mutable klist
+                type_remote_map_access env adr m (is_mutable mutability) klist
               in
               pure @@ (typed_adr, typed_m, typed_klist, v_type)
             in
@@ -789,7 +789,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             pure
             @@ add_stmt_to_stmts_env_gas
                  ( TypedSyntax.RemoteMapGet
-                     (typed_v, typed_adr, typed_m, is_mutable, typed_klist, valfetch),
+                     (typed_v, typed_adr, typed_m, mutability, typed_klist, valfetch),
                    rep )
                  checked_stmts
         | ReadFromBC (x, bf) ->

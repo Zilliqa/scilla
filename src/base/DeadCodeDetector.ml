@@ -370,7 +370,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused load statement to: " x ER.get_loc;
               (lv, adts, ctrs))
-        | RemoteLoad (x, addr, m, _is_mutable) ->
+        | RemoteLoad (x, addr, m, _mutability) ->
             FieldsState.mark_field_read fs m;
             (* m is a field, thus we don't track its liveness *)
             if ERSet.mem lv x then
@@ -401,7 +401,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused map get statement to: " x ER.get_loc;
               (lv, adts, ctrs))
-        | RemoteMapGet (x, addr, i, _is_mutable, il, _) ->
+        | RemoteMapGet (x, addr, i, _mutability, il, _) ->
             (* i is a field, thus we don't track its liveness *)
             FieldsState.mark_field_read fs i;
             if ERSet.mem lv x then

@@ -180,8 +180,8 @@ struct
   let rec statement stmt ~fe ~fl ~fs =
     match stmt with
     | Load (id, field) -> OutputSyntax.Load (map_id fe id, map_id fe field)
-    | RemoteLoad (id, addr, field, is_mutable) ->
-        OutputSyntax.RemoteLoad (map_id fe id, map_id fe addr, map_id fe field, is_mutable)
+    | RemoteLoad (id, addr, field, mutability) ->
+        OutputSyntax.RemoteLoad (map_id fe id, map_id fe addr, map_id fe field, mutability)
     | Store (field, value) ->
         OutputSyntax.Store (map_id fe field, map_id fe value)
     | Bind (id, e) -> OutputSyntax.Bind (map_id fe id, expr_annot e ~fe ~fl ~fs)
@@ -196,12 +196,12 @@ struct
             map_id fe map,
             List.map keys ~f:(fun k -> map_id fe k),
             mode )
-    | RemoteMapGet (value, addr, map, is_mutable, keys, mode) ->
+    | RemoteMapGet (value, addr, map, mutability, keys, mode) ->
         OutputSyntax.RemoteMapGet
           ( map_id fe value,
             map_id fe addr,
             map_id fe map,
-            is_mutable,
+            mutability,
             List.map keys ~f:(fun k -> map_id fe k),
             mode )
     | MatchStmt (matchee, branches) ->

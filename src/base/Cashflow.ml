@@ -187,12 +187,12 @@ struct
       match s with
       | Load (x, y) ->
           CFSyntax.Load (add_noinfo_to_ident x, add_noinfo_to_ident y)
-      | RemoteLoad (x, adr, y, is_mutable) ->
+      | RemoteLoad (x, adr, y, mutability) ->
           CFSyntax.RemoteLoad
             ( add_noinfo_to_ident x,
               add_noinfo_to_ident adr,
               add_noinfo_to_ident y,
-              is_mutable)
+              mutability)
       | Store (x, y) ->
           CFSyntax.Store (add_noinfo_to_ident x, add_noinfo_to_ident y)
       | Bind (x, e) -> CFSyntax.Bind (add_noinfo_to_ident x, cf_init_tag_expr e)
@@ -209,12 +209,12 @@ struct
               add_noinfo_to_ident m,
               List.map ~f:add_noinfo_to_ident ks,
               retrieve )
-      | RemoteMapGet (x, adr, m, is_mutable, ks, retrieve) ->
+      | RemoteMapGet (x, adr, m, mutability, ks, retrieve) ->
           CFSyntax.RemoteMapGet
             ( add_noinfo_to_ident x,
               add_noinfo_to_ident adr,
               add_noinfo_to_ident m,
-              is_mutable,
+              mutability,
               List.map ~f:add_noinfo_to_ident ks,
               retrieve )
       | MatchStmt (x, pss) ->
@@ -1626,13 +1626,13 @@ struct
             (not @@ [%equal: ECFR.money_tag] (get_id_tag new_x) (get_id_tag x))
             || not
                @@ [%equal: ECFR.money_tag] (get_id_tag new_f) (get_id_tag f) )
-      | RemoteLoad (x, adr, f, is_mutable) ->
+      | RemoteLoad (x, adr, f, mutability) ->
           (* TODO - see Load case for inspiration *)
           (* x is no longer in scope, so remove from local_env *)
           let new_local_env =
             AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
-          ( RemoteLoad (x, adr, f, is_mutable),
+          ( RemoteLoad (x, adr, f, mutability),
             param_env,
             field_env,
             new_local_env,
@@ -1764,13 +1764,13 @@ struct
             (not @@ [%equal: ECFR.money_tag] (get_id_tag x) new_x_tag)
             || (not @@ [%equal: ECFR.money_tag] (get_id_tag m) m_tag)
             || (not @@ [%equal: _] new_ks ks) )
-      | RemoteMapGet (x, adr, m, is_mutable, ks, fetch) ->
+      | RemoteMapGet (x, adr, m, mutability, ks, fetch) ->
           (* TODO - see MapGet case for inspiration *)
           (* x is no longer in scope, so remove from local_env *)
           let new_local_env =
             AssocDictionary.remove (CFIdentifier.as_string x) local_env
           in
-          ( RemoteMapGet (x, adr, m, is_mutable, ks, fetch),
+          ( RemoteMapGet (x, adr, m, mutability, ks, fetch),
             param_env,
             field_env,
             new_local_env,

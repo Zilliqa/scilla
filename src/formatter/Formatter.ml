@@ -360,8 +360,8 @@ struct
       | GasExpr _ -> failwith "Gas annotations cannot appear in user contracts's expressions"
       ) |> wrap_comments comments
 
-      let of_map_access map immutable_remote_field keys =
-        let map = if immutable_remote_field then lparen ^^ of_ann_id map ^^ rparen else of_ann_id map
+      let of_map_access map mutable_remote_field keys =
+        let map = if mutable_remote_field then of_ann_id map else lparen ^^ of_ann_id map ^^ rparen
         and keys = concat_map (fun k -> brackets @@ of_ann_id k) keys in
         map ^^ keys
 
@@ -369,8 +369,8 @@ struct
         (match stmt with
         | Ast.Load (id, field) ->
           of_ann_id id ^^^ rev_arrow ^//^ of_ann_id field
-        | Ast.RemoteLoad (id, addr, field, is_mutable) ->
-            if is_mutable then
+        | Ast.RemoteLoad (id, addr, field, mutability) ->
+            if Syntax.is_mutable mutability then
               of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_ann_id field
             else 
               of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ lparen ^^ of_ann_id field ^^ rparen
@@ -381,25 +381,25 @@ struct
         | Ast.MapUpdate (map, keys, mode) ->
           (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
           (match mode with
-           | Some value -> of_map_access map false keys ^^^ assign ^//^ of_ann_id value
-           | None -> delete_kwd ^^^ of_map_access map false keys)
+           | Some value -> of_map_access map true keys ^^^ assign ^//^ of_ann_id value
+           | None -> delete_kwd ^^^ of_map_access map true keys)
         | Ast.MapGet (id, map, keys, mode) ->
           (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
           (* If the bool is set, then we interpret this as value retrieve,
             otherwise as an "exists" query. *)
            if mode then
-            of_ann_id id ^^^ rev_arrow ^//^ of_map_access map false keys
+            of_ann_id id ^^^ rev_arrow ^//^ of_map_access map true keys
            else
-            of_ann_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map false keys
-        | Ast.RemoteMapGet (id, addr, map, is_mutable, keys, mode) ->
+            of_ann_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map true keys
+        | Ast.RemoteMapGet (id, addr, map, mutability, keys, mode) ->
           (* v <-& adr.(m)[k1][k2][...] OR b <-& exists adr.(m)[k1][k2][...] OR
              v <-& adr.m[k1][k2][...] OR b <-& exists adr.m[k1][k2][...] *)
           (* If mode is set, then we interpret this as value retrieve,
              otherwise as an "exists" query. *)
             if mode then
-              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map (not is_mutable) keys
+              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
             else
-              of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map (not is_mutable) keys
+              of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
         | Ast.MatchStmt (id, branches) ->
           match_kwd ^^^ of_ann_id id ^^^ with_kwd ^/^
           separate_map hardline

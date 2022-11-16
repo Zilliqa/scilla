@@ -88,7 +88,7 @@ struct
 
   and stmt =
     | Load of ER.rep id_ann * ER.rep id_ann
-    | RemoteLoad of ER.rep id_ann * ER.rep id_ann * ER.rep id_ann * bool
+    | RemoteLoad of ER.rep id_ann * ER.rep id_ann * ER.rep id_ann * Syntax.field_mutability
     | Store of ER.rep id_ann * ER.rep id_ann
     | Bind of ER.rep id_ann * expr_annot
     | MapUpdate of ER.rep id_ann * ER.rep id_ann list * ER.rep id_ann option
@@ -97,7 +97,7 @@ struct
         ER.rep id_ann
         * ER.rep id_ann
         * ER.rep id_ann
-        * bool
+        * Syntax.field_mutability
         * ER.rep id_ann list
         * bool
     | MatchStmt of
@@ -568,7 +568,7 @@ struct
         let lhs' = extend_er_id tr lhs in
         let rhs' = extend_er_id tr rhs in
         (ExtSyn.Load (lhs', rhs'), ann, c)
-    | Syn.RemoteLoad (lhs, addr, rhs, is_mutable) ->
+    | Syn.RemoteLoad (lhs, addr, rhs, mutability) ->
         let c = comment (loc_end_er lhs) in
         let lhs' =
           extend_er_id tr lhs ~rep_end:(Some (SIdentifier.get_rep addr))
@@ -577,7 +577,7 @@ struct
           extend_er_id tr addr ~rep_end:(Some (SIdentifier.get_rep rhs))
         in
         let rhs' = extend_er_id tr rhs in
-        (ExtSyn.RemoteLoad (lhs', addr', rhs', is_mutable), ann, c)
+        (ExtSyn.RemoteLoad (lhs', addr', rhs', mutability), ann, c)
     | Syn.Store (lhs, rhs) ->
         let c = comment (loc_end_er lhs) in
         let lhs' = extend_er_id tr lhs in
@@ -603,13 +603,13 @@ struct
         let m' = extend_er_id tr m in
         let keys' = List.map keys ~f:(fun k -> extend_er_id tr k) in
         (ExtSyn.MapGet (v', m', keys', retrieve), ann, c)
-    | Syn.RemoteMapGet (v, addr, m, is_mutable, keys, retrieve) ->
+    | Syn.RemoteMapGet (v, addr, m, mutability, keys, retrieve) ->
         let c = comment (loc_end_er v) in
         let v' = extend_er_id tr v in
         let addr' = extend_er_id tr addr in
         let m' = extend_er_id tr m in
         let keys' = List.map keys ~f:(fun k -> extend_er_id tr k) in
-        (ExtSyn.RemoteMapGet (v', addr', m', is_mutable, keys', retrieve), ann, c)
+        (ExtSyn.RemoteMapGet (v', addr', m', mutability, keys', retrieve), ann, c)
     | Syn.MatchStmt (id, arms) ->
         let c = comment (loc_end_er id) in
         let id' = extend_er_id tr id in
