@@ -1916,7 +1916,8 @@ struct
             ctr_tag_map,
             not @@ [%equal: ECFR.money_tag] (get_id_tag e) e_tag )
       | CallProc (id_opt, p, args) ->
-          (* TODO: How does procedure call affects cash flow? *)
+          (* TODO: Bindings from procedure calls are not taken into account in
+                   the cash flow analysis. *)
           let new_args =
             List.map args ~f:(fun arg ->
                 update_id_tag arg (lookup_var_tag2 arg local_env param_env))
