@@ -309,6 +309,7 @@ let check_cmodule cli =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
+    let cmod = FEParser.disambiguate_calls cmod in
     (* Import whatever libs we want. *)
     let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
