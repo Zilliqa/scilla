@@ -63,10 +63,10 @@ module CG = ScillaCallgraph (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
-  let cmod = FEParser.parse_file syn ctr in
-  if Result.is_ok cmod then
+  let ast = FEParser.parse_file syn ctr in
+  if Result.is_ok ast then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
-  cmod
+  ast
 
 (* Change local names to global names *)
 let disambiguate_lmod lmod elibs names_and_addresses this_address =
