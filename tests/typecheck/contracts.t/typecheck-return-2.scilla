@@ -1,0 +1,17 @@
+scilla_version 0
+
+library TypecheckReturn2
+
+contract TypecheckReturn2()
+
+field l : List Uint128 = Nil {Uint128}
+
+procedure p(f1: Uint128) -> BNum
+  a = _creation_block;
+  return a
+end
+
+transition p_call()
+  l <- l;
+  forall l p
+end

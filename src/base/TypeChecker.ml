@@ -1037,7 +1037,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             in
             let l_type = rr_typ lt in
             match lookup_proc env p with
-            | Some ([ arg_typ ], _) ->
+            | Some ([ arg_typ ], ret) when Option.is_none ret ->
                 let%bind () =
                   fromR_TE
                   (* The procedure accepts an element of l. *)
@@ -1050,6 +1050,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 @@ add_stmt_to_stmts_env_gas
                      (TypedSyntax.Iterate (add_type_to_ident l l_type, p), rep)
                      checked_stmts
+            | Some (_, ret) when Option.is_some ret ->
+                fail
+                  (mk_type_error1
+                     ~kind:
+                       "Procedure with return type cannot be used in forall \
+                        statement"
+                     ~inst:(as_error_string p)
+                     (SR.get_loc (get_rep p)))
             | _ ->
                 fail
                   (mk_type_error1
