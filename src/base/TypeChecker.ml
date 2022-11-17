@@ -995,20 +995,6 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        ~inst:(as_error_string p)
                        (SR.get_loc (get_rep p)))
             in
-            let%bind typed_id_opt =
-              match id_opt with
-              | None -> pure @@ None
-              | Some id -> (
-                  match ret_ty_opt with
-                  | Some ret_ty ->
-                      pure @@ Some (add_type_to_ident id (mk_qual_tp ret_ty))
-                  | None ->
-                      fail
-                        (mk_type_error1
-                           ~kind:"Return type for procedure not found"
-                           ~inst:(as_error_string p)
-                           (SR.get_loc (get_rep p))))
-            in
             let%bind typed_args =
               let%bind targs, typed_actuals = type_actuals env.pure args in
               let%bind _ =
@@ -1017,7 +1003,29 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               pure typed_actuals
             in
-            let%bind checked_stmts = type_stmts comp sts get_loc env in
+            let%bind typed_id_opt, checked_stmts =
+              match id_opt with
+              | None ->
+                  let%bind checked_stmts = type_stmts comp sts get_loc env in
+                  pure @@ (None, checked_stmts)
+              | Some id -> (
+                  match ret_ty_opt with
+                  | Some ret_ty ->
+                      let typed_id = add_type_to_ident id (mk_qual_tp ret_ty) in
+                      let%bind checked_stmts =
+                        with_extended_env env get_tenv_pure
+                          [ (id, ret_ty) ]
+                          []
+                          (type_stmts comp sts get_loc)
+                      in
+                      pure @@ (Some typed_id, checked_stmts)
+                  | None ->
+                      fail
+                        (mk_type_error1
+                           ~kind:"Return type for procedure not found"
+                           ~inst:(as_error_string p)
+                           (SR.get_loc (get_rep p))))
+            in
             pure
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CallProc (typed_id_opt, p, typed_args), rep)
