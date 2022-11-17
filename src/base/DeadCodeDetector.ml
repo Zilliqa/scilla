@@ -499,8 +499,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused type cast statement to: " x ER.get_loc;
               (ERSet.add lv r, adts, ctrs))
-        | SendMsgs v | CreateEvnt v -> (ERSet.add lv v, adts, ctrs)
-        | AcceptPayment | Return _ | GasStmt _ -> (lv, adts, ctrs))
+        | SendMsgs v | CreateEvnt v | Return v -> (ERSet.add lv v, adts, ctrs)
+        | AcceptPayment | GasStmt _ -> (lv, adts, ctrs))
     | _ -> (emp_erset, emp_idset, emp_idset)
 
   (** Checks for unused module's components.
