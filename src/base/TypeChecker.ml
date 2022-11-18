@@ -651,7 +651,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind fr =
                 fromR_TE
-                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp (is_mutable mutability)
+                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp (Type.is_mutable mutability)
               in
               pure @@ ((x, fr), rr_typ adr_typ, mk_qual_tp fr)
             in
@@ -772,7 +772,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | RemoteMapGet (v, adr, m, mutability, klist, valfetch) ->
             let%bind typed_adr, typed_m, typed_klist, v_type =
               let%bind typed_adr, typed_m, typed_klist, v_type =
-                type_remote_map_access env adr m (is_mutable mutability) klist
+                type_remote_map_access env adr m (Type.is_mutable mutability) klist
               in
               pure @@ (typed_adr, typed_m, typed_klist, v_type)
             in

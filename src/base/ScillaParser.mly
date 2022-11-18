@@ -253,7 +253,7 @@ address_typ :
       then
         (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
         let fs' = List.fold_left (fun acc (id, t) -> 
-          SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
+          SType.IdLoc_Comp.Map.set acc ~key:(id, Mutable) ~data:t) SType.IdLoc_Comp.Map.empty fs
         in
         Address (ContrAddr fs')
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }

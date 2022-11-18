@@ -86,13 +86,32 @@ module PrimType = struct
     | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 end
 
-module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
-  type t = loc TIdentifier.t
+(*******************************************************)
+(*         Field mutability (for remote reads)         *)
+(*******************************************************)
 
-  let compare (a : t) (b : t) = TIdentifier.compare a b
-  let equal (a : t) (b : t) = TIdentifier.equal a b
-  let sexp_of_t = TIdentifier.sexp_of_t (fun l -> sexp_of_loc l)
-  let t_of_sexp = TIdentifier.t_of_sexp (fun s -> loc_of_sexp s)
+type field_mutability = Mutable | Immutable [@@deriving sexp]
+
+let is_mutable = function
+  | Mutable -> true
+  | Immutable -> false
+
+module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
+  (* (x, true)  = x is mutable   *
+   * (x, false) = x is immutable *)
+  type t = loc TIdentifier.t * field_mutability [@@deriving sexp]
+
+  let compare ((a, am) : t) ((b, bm) : t) =
+    match am, bm with
+    | Immutable, Mutable -> -1
+    | Mutable, Immutable -> 1
+    | _ -> TIdentifier.compare a b
+  let equal ((a, am) : t) ((b, bm) : t) =
+    match am, bm with
+    | Immutable, Mutable
+    | Mutable, Immutable -> false
+    | _ -> TIdentifier.equal a b
+
 end
 
 module IdLoc_Comp (TIdentifier : ScillaIdentifier) = struct
@@ -245,16 +264,22 @@ module MkType (I : ScillaIdentifier) = struct
       | Address CodeAddr -> "ByStr20 with _codehash end"
       | Address LibAddr -> "ByStr20 with library end"
       | Address (ContrAddr fts) ->
-          let elems =
-            List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
-                sprintf "field %s : %s"
-                  (if is_error then TIdentifier.as_error_string f
-                  else TIdentifier.as_string f)
-                  (recurser t))
-            |> String.concat ~sep:", "
+          let mutables, immutables =
+            List.partition_map (IdLoc_Comp.Map.to_alist fts) ~f:(fun ((f, mutability), t) ->
+                let f_t_str = sprintf "%s : %s"
+                    (if is_error then TIdentifier.as_error_string f
+                     else TIdentifier.as_string f)
+                    (recurser t)
+                in
+                if is_mutable mutability then
+                  Second (sprintf "field %s" f_t_str)
+                else
+                  First f_t_str)
           in
-          sprintf "ByStr20 with contract %s%send" elems
-            (if IdLoc_Comp.Map.is_empty fts then "" else " ")
+          let immutables_string = if List.is_empty immutables then "" else sprintf " (%s)" (String.concat ~sep:", " immutables) in
+          let mutables_string = if List.is_empty mutables then "" else sprintf " %s" (String.concat ~sep:", " mutables) in
+          sprintf "ByStr20 with contract%s%s end" immutables_string mutables_string
+
     and with_paren t =
       match t with
       | FunType _ | PolyFun _ -> sprintf "(%s)" (recurser t)

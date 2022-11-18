@@ -77,7 +77,7 @@ struct
     | AnyAddr | CodeAddr | LibAddr -> kind
     | ContrAddr fields_map ->
         let mapped_keys =
-          IdLoc_Comp.Map.map_keys_exn fields_map ~f:(fun f -> map_id fl f)
+          IdLoc_Comp.Map.map_keys_exn fields_map ~f:(fun (f, mutability) -> (map_id fl f, mutability))
         in
         let mapped_values =
           IdLoc_Comp.Map.map mapped_keys ~f:(fun ty -> map_type ty ~fl)

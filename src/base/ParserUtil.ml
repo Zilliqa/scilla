@@ -107,7 +107,7 @@ module type Syn = sig
         ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t
-        * field_mutability
+        * Type.field_mutability
     | Store of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
     | Bind of ParserRep.rep SIdentifier.t * expr_annot
     (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
@@ -127,7 +127,7 @@ module type Syn = sig
         ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t
         * ParserRep.rep SIdentifier.t
-        * field_mutability
+        * Type.field_mutability
         * ParserRep.rep SIdentifier.t list
         * bool
     | MatchStmt of

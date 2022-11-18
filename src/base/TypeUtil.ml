@@ -492,7 +492,7 @@ module TypeUtilities = struct
         pure @@ Option.value_exn preknown_field_type
     | Address (ContrAddr fts) -> (
         let loc_removed =
-          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
+          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun ((f, _mut), t) ->
               (get_id f, t))
         in
         match
