@@ -16,3 +16,5 @@ Formatter.ml: of_map_access and of_stmt assumes x <-& addr.(v) syntax, which may
 Remember to test merge and formatter tools, as well as dead code detector.
 
 SyntaxAnnotMapper.ml: addr_kind needs to be checked for correctness. My guess is that map_id needs to take mutability into account.
+
+TODO.txt: Remove file from repo once finished.
