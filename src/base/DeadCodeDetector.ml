@@ -555,7 +555,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   (** Returns a set of field names of the contract address type. *)
   let get_addr_fields addr =
     List.fold_left (SType.IdLoc_Comp.Map.keys addr) ~init:emp_idset
-      ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
+      ~f:(fun s (id, _mutability) -> SCIdentifierSet.add s (get_id id))
 
   (** Updates a map of identifiers [m] iff [ty] has contract address type.
       [m] has the following structure: [id |-> F] where [F] is a set of field
@@ -590,7 +590,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           -> (
             match ty with
             | SType.Address (ContrAddr m) ->
-                List.iter (SType.IdLoc_Comp.Map.keys m) ~f:(fun id ->
+                List.iter (SType.IdLoc_Comp.Map.keys m) ~f:(fun (id, _mutability) ->
                     let name = get_id id in
                     if Set.mem fields name && (not @@ Set.mem used_fields name)
                     then

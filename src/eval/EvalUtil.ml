@@ -602,9 +602,9 @@ module EvalTypecheck = struct
 
   let typecheck_remote_fields ~caddr fts =
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-    allM fts ~f:(fun (f, t) ->
+    allM fts ~f:(fun ((f, mutability), t) ->
         let%bind res =
-          StateService.external_fetch ~caddr ~fname:f ~_mutable_field:true ~keys:[] ~ignoreval:true
+          StateService.external_fetch ~caddr ~fname:f ~_mutable_field:(Type.is_mutable mutability) ~keys:[] ~ignoreval:true
         in
         match res with
         | _, Some ext_typ ->
