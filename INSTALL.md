@@ -20,11 +20,30 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```shell
    $ git clone https://github.com/Microsoft/vcpkg.git /path/to/vcpkg
    $ cd /path/to/vcpkg && git checkout 2022.09.27 && ./bootstrap-vcpkg.sh
-   $ cd /path/to/scilla
+   ```
+
+- Set the following environment variables:
+
+   ```shell
    $ export VCPKG_ROOT=/path/to/vcpkg
-   $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
    $ export PKG_CONFIG_PATH="/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```
+
+When building Scilla on Ubuntu systems the relevant vcpkg files are
+automatically installed in the directory
+/path/to/scilla/vcpkg_installed. For other operating systems the vcpkg
+files must be generated manually before building Scilla by running the command
+
+  ```shell
+  $ cd /path/to/scilla & path/to/vcpkg/vcpkg install --triplet <OS and architecture specific package>
+  ```
+
+Please see the vcpkg documentation at
+
+https://vcpkg.io/en/docs/README.html
+
+for more information.
+
 </details>
 
 ## OS-specific setup for building Scilla
@@ -110,6 +129,25 @@ ulimit -n 1024
 ```
 
 After you have proceeded with installation if an error with regards to `version` file during `make` occurs, see [here](https://github.com/Zilliqa/scilla/wiki/macOS-troubleshooting) for the solution.
+
+<summary>vcpkg</summary>
+
+The command for vcpkg installation depends on the underlying chipset.
+
+For ARM-based architectures use 
+
+  ```shell
+  $ cd /path/to/scilla & path/to/vcpkg/vcpkg install --triplet arm64-osx-dynamic
+  ```
+
+For Intel-based architectures use
+
+  ```shell
+  $ cd /path/to/scilla & path/to/vcpkg/vcpkg install --triplet x64-osx-dynamic
+  ```
+
+Please note that building Scilla using vcpkg on MacOS is still experimental.
+
 
 </details>
 
