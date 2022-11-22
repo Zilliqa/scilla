@@ -1022,7 +1022,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   | None ->
                       fail
                         (mk_type_error1
-                           ~kind:"Return type for procedure not found"
+                           ~kind:"Procedure does not return a value"
                            ~inst:(as_error_string p)
                            (SR.get_loc (get_rep p))))
             in
