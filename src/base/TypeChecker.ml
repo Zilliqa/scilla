@@ -1114,6 +1114,21 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | CompTrans -> is_legal_transition_parameter_type
       | CompProc -> is_legal_procedure_parameter_type
     in
+    (* Procedure return type has the same restrictions as parameters. *)
+    let%bind comp_return =
+      match comp_return with
+      | Some ret_ty ->
+          if param_checker ret_ty then pure @@ Some ret_ty
+          else
+            fail
+              (mk_type_error1
+                 ~kind:
+                   (sprintf "Type cannot be used as %s return value"
+                      component_type_string)
+                 ~inst:(pp_typ_error ret_ty)
+                 (SR.get_loc (get_rep comp_name)))
+      | None -> pure @@ None
+    in
     let%bind typed_cparams =
       mapM
         ~f:(fun (param, t) ->
