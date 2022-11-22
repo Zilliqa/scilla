@@ -1054,8 +1054,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                 fail
                   (mk_type_error1
                      ~kind:
-                       "Procedure with return type cannot be used in forall \
-                        statement"
+                       "Procedures with a return type cannot be used in forall \
+                        statements"
                      ~inst:(as_error_string p)
                      (SR.get_loc (get_rep p)))
             | _ ->
