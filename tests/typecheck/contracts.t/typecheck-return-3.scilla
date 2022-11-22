@@ -1,8 +1,8 @@
 scilla_version 0
 
-library TypecheckReturn1
+library TypecheckReturn3
 
-contract TypecheckReturn1()
+contract TypecheckReturn3()
 field f_m: Map Uint32 (Option Uint32) = Emp Uint32 (Option Uint32)
 
 procedure cannot_return_map() -> (Map String String)
