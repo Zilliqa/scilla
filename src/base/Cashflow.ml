@@ -1876,9 +1876,7 @@ struct
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
       | Return i ->
-          let i_tag =
-            lub_tags NotMoney (lookup_var_tag2 i local_env param_env)
-          in
+          let i_tag = lub_tags NoInfo (lookup_var_tag2 i local_env param_env) in
           let new_i = update_id_tag i i_tag in
           let new_local_env, new_param_env =
             update_var_tag2 i i_tag local_env param_env
