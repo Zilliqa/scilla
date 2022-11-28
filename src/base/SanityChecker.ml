@@ -922,11 +922,7 @@ struct
             (* Return statement must be in every arm *)
             let%bind _ =
               mapM arms ~f:(fun (_, arm_stmts) ->
-                  let arm_has_return =
-                    List.find arm_stmts ~f:(fun arm_stmt ->
-                        find_return arm_stmt)
-                    |> Option.is_some
-                  in
+                  let%bind arm_has_return = check_return arm_stmts in
                   if not @@ arm_has_return then
                     fail1
                       ~kind:

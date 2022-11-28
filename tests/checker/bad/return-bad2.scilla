@@ -1,8 +1,9 @@
 scilla_version 0
 
+(* Some of match statement's arms don't return while other return *)
+
 contract ReturnBad2()
 
-(* Some of match statement's arms don't return while other return *)
 procedure match_no_ret(a: Bool) -> BNum
   match a with
   | True =>
@@ -10,7 +11,7 @@ procedure match_no_ret(a: Bool) -> BNum
     return ret
   | False =>
     ret = _creation_block
-    (* Error: no return  *)
+    (* Error: no return                    *)
   end
 end
 procedure match_no_ret_fixed(a: Bool) -> BNum
@@ -20,6 +21,6 @@ procedure match_no_ret_fixed(a: Bool) -> BNum
     return ret
   | False =>
     ret = _creation_block;
-    return ret (* OK *)
+    return ret (* OK                       *)
   end
 end
