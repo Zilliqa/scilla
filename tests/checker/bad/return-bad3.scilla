@@ -1,0 +1,14 @@
+scilla_version 0
+
+contract ReturnBad3()
+
+(* Dead code after the return statement is forbidden *)
+procedure dead_code() -> BNum
+  ret = _creation_block;
+  return ret;
+ dead = _creation_block (* Error *)
+end
+procedure dead_code_fixed() -> BNum
+  ret = _creation_block;
+  return ret
+end

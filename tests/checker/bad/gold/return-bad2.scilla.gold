@@ -1,0 +1,26 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Every arm of the match statement must return because one of arms returns",
+      "start_location": {
+        "file": "checker/bad/return-bad2.scilla",
+        "line": 7,
+        "column": 9
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message": "No transition in contract ReturnBad2 contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/return-bad2.scilla",
+        "line": 3,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

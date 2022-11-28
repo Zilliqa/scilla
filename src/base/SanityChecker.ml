@@ -877,6 +877,84 @@ struct
       pure ()
   end
 
+  (* ****************************************************** *)
+  (* ******** Check the usage of return statements ******** *)
+  (* ****************************************************** *)
+
+  module CheckReturns = struct
+    (** Forbids dead code after return statements and cases when a procedure
+        with return type doesn't return.
+        Returns [true] iff there is a [return] statement among [stmts]. *)
+    let rec check_return stmts =
+      (* Returns true iff there is a return statement in the given statement,
+         including its nesting statements. *)
+      let rec find_return (s, _annot) =
+        match s with
+        | Return _ -> true
+        | MatchStmt (_, arms) ->
+            List.find arms ~f:(fun (_, arm_stmts) ->
+                List.find arm_stmts ~f:(fun arm_stmt -> find_return arm_stmt)
+                |> Option.is_some)
+            |> Option.is_some
+        | _ -> false
+      in
+      match stmts with
+      | [] -> pure @@ false
+      | [ (Return _, _) ] -> pure @@ true
+      | (Return id, _) :: ss when not @@ List.is_empty ss ->
+          fail1 ~kind:"Found unreachable code after the return statement"
+            (ER.get_loc (get_rep id))
+      | (MatchStmt (id, arms), _) :: ss ->
+          let match_annot = List.hd_exn stmts in
+          let arms_have_return = find_return match_annot in
+          if arms_have_return then
+            (* Dead code after returning matches is forbidden *)
+            let%bind () =
+              if not @@ List.is_empty ss then
+                let _, annot = match_annot in
+                fail1
+                  ~kind:
+                    "Found unreachable code after the match statement whose \
+                     arms return"
+                  (SR.get_loc annot)
+              else pure @@ ()
+            in
+            (* Return statement must be in every arm *)
+            let%bind _ =
+              mapM arms ~f:(fun (_, arm_stmts) ->
+                  let arm_has_return =
+                    List.find arm_stmts ~f:(fun arm_stmt ->
+                        find_return arm_stmt)
+                    |> Option.is_some
+                  in
+                  if not @@ arm_has_return then
+                    fail1
+                      ~kind:
+                        "Every arm of the match statement must return because \
+                         one of arms returns"
+                      (ER.get_loc (get_rep id))
+                  else pure @@ ())
+            in
+            pure @@ true
+          else pure @@ false
+      | _ :: ss -> check_return ss
+
+    let run (cmod : cmodule) =
+      let%bind _ =
+        mapM cmod.contr.ccomps ~f:(fun c ->
+            match c.comp_type with
+            | CompProc when Option.is_some c.comp_return ->
+                let%bind found_return = check_return c.comp_body in
+                if not @@ found_return then
+                  fail1 ~kind:"Procedure with return value doesn't return"
+                    ~inst:(as_error_string c.comp_name)
+                    (SR.get_loc (get_rep c.comp_name))
+                else pure ()
+            | _ -> pure ())
+      in
+      pure ()
+  end
+
   (* ************************************** *)
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
@@ -890,6 +968,7 @@ struct
     let%bind () = CheckHashingBuiltinsUsage.in_libentries rlibs in
     let%bind () = CheckHashingBuiltinsUsage.in_cmod cmod in
     let%bind () = CheckUnboxing.run cmod cg rlibs in
+    let%bind () = CheckReturns.run cmod in
     DCD.dc_cmod cmod elibs;
     pure ()
 
