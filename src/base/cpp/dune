@@ -11,13 +11,14 @@
   (names c_schnorr c_snark)
   ;;; -lstdc++ is not portable, it can be e.g. -lc++
   (flags
-   -std=c++20
+   -std=c++17
    -fPIC
    (:include c_flags.sexp))
   (include_dirs %{project_root}/vcpkg_installed/x64-linux-dynamic/include))
+ ;; See config/discover.ml for how we pass in the path to the dynamic linker
+ ;; so it can find Schnorr & CryptoUtils below.
  (c_library_flags
   -lstdc++
-  ;-L/absolute/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib
   -lSchnorr
   -lCryptoUtils
   (:include c_library_flags.sexp))
