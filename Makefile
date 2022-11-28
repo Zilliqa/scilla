@@ -24,6 +24,9 @@ default: release
 release:
 	./scripts/build_deps.sh
 	dune build --profile release @install
+	chmod u+w _build/default/src/runners/*.exe
+	patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" _build/default/src/runners/*.exe
+	chmod u-w _build/default/src/runners/*.exe
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
@@ -31,12 +34,18 @@ slim:
 	./scripts/build_deps.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
+	chmod u+w _build/default/src/runners/*.exe
+	patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" _build/default/src/runners/*.exe
+	chmod u-w _build/default/src/runners/*.exe
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
 	./scripts/build_deps.sh
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
+	chmod u+w _build/default/src/runners/*.exe
+	patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" _build/default/src/runners/*.exe
+	chmod u-w _build/default/src/runners/*.exe
 	@test -L bin || ln -s _build/install/default/bin .
 	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
