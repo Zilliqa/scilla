@@ -23,8 +23,8 @@ extern "C" {
 bool alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result)
 {
   try {
-    bytes pairs_b(pairs->data, pairs->data + pairs->len);
-    bytes result_b = alt_bn128_pairing_product(pairs_b);
+    zbytes pairs_b(pairs->data, pairs->data + pairs->len);
+    zbytes result_b = alt_bn128_pairing_product(pairs_b);
     std::copy(result_b.begin(), result_b.end(), result->data);
     return true;
   } catch (...) {
@@ -35,9 +35,9 @@ bool alt_bn128_pairing_product_Z(const RawBytes_Z* pairs, RawBytes_Z *result)
 bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* result)
 {
   try {
-    bytes p1_b(p1->data, p1->data + p1->len);
-    bytes s_b(s->data, s->data + s->len);
-    bytes result_b = alt_bn128_G1_mul(p1_b, s_b);
+    zbytes p1_b(p1->data, p1->data + p1->len);
+    zbytes s_b(s->data, s->data + s->len);
+    zbytes result_b = alt_bn128_G1_mul(p1_b, s_b);
     std::copy(result_b.begin(), result_b.end(), result->data);
     return true;
   } catch (...) {
@@ -48,9 +48,9 @@ bool alt_bn128_G1_mul_Z(const RawBytes_Z* p1, const RawBytes_Z* s, RawBytes_Z* r
 bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* result)
 {
   try {
-    bytes p1_b(p1->data, p1->data + p1->len);
-    bytes p2_b(p2->data, p2->data + p2->len);
-    bytes result_b = alt_bn128_G1_add(p1_b, p2_b);
+    zbytes p1_b(p1->data, p1->data + p1->len);
+    zbytes p2_b(p2->data, p2->data + p2->len);
+    zbytes result_b = alt_bn128_G1_add(p1_b, p2_b);
     std::copy(result_b.begin(), result_b.end(), result->data);
     return true;
   } catch (...) {
@@ -60,8 +60,8 @@ bool alt_bn128_G1_add_Z(const RawBytes_Z* p1, const RawBytes_Z* p2, RawBytes_Z* 
 
 bool alt_bn128_G1_neg_Z(const RawBytes_Z* p1, RawBytes_Z* result) {
   try {
-    bytes p1_b(p1->data, p1->data + p1->len);
-    bytes result_b = alt_bn128_G1_neg(p1_b);
+    zbytes p1_b(p1->data, p1->data + p1->len);
+    zbytes result_b = alt_bn128_G1_neg(p1_b);
     std::copy(result_b.begin(), result_b.end(), result->data);
     return true;
   } catch (...) {
