@@ -1,8 +1,9 @@
 scilla_version 0
 
+(* Dead code after the return statement is forbidden *)
+
 contract ReturnBad3()
 
-(* Dead code after the return statement is forbidden *)
 procedure dead_code() -> BNum
   ret = _creation_block;
   return ret;

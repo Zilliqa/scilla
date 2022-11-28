@@ -11,7 +11,7 @@ procedure match_no_ret(a: Bool) -> BNum
     return ret
   | False =>
     ret = _creation_block
-    (* Error: no return                    *)
+    (* Error: no return *)
   end
 end
 procedure match_no_ret_fixed(a: Bool) -> BNum
@@ -21,6 +21,6 @@ procedure match_no_ret_fixed(a: Bool) -> BNum
     return ret
   | False =>
     ret = _creation_block;
-    return ret (* OK                       *)
+    return ret (* OK *)
   end
 end

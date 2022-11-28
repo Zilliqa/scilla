@@ -4,18 +4,18 @@
     {
       "error_message": "Found unreachable code after the return statement",
       "start_location": {
-        "file": "checker/bad/return-bad3.scilla",
-        "line": 9,
-        "column": 10
+        "file": "checker/bad/return-bad6.scilla",
+        "line": 19,
+        "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
   ],
   "warnings": [
     {
-      "warning_message": "No transition in contract ReturnBad3 contains an accept statement\n",
+      "warning_message": "No transition in contract ReturnBad6 contains an accept statement\n",
       "start_location": {
-        "file": "checker/bad/return-bad3.scilla",
+        "file": "checker/bad/return-bad6.scilla",
         "line": 5,
         "column": 10
       },
