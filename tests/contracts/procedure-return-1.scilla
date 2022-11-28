@@ -2,23 +2,38 @@ scilla_version 0
 
 library Return1
 
-let one = Uint32 1
+let one = Int32 1
 
 contract Return1()
 
-field f : Uint32 = Uint32 0
+field f : Int32 = Int32 0
 
-procedure return_one() -> Uint32
+procedure return_one() -> Int32
   a = one;
   return a
 end
 
-procedure id(x: Uint32) -> Uint32
+procedure forbid_negative_f()
+  f <- f;
+  one = return_one;
+  zero = builtin sub one one;
+  is_neg = builtin lt f zero;
+  match is_neg with
+  | True =>
+    e = { _exception : "Negative f" };
+    throw e
+  | False =>
+  end
+end
+
+procedure id(x: Int32) -> Int32
+  forbid_negative_f;
   return x
 end
 
-procedure add(lhs: Uint32, rhs: Uint32) -> Uint32
-  s = builtin add lhs rhs;
+procedure add(lhs: Int32, rhs: Int32) -> Int32
+  lhs_ = id lhs;
+  s = builtin add lhs_ rhs;
   return s
 end
 
@@ -29,3 +44,4 @@ transition f_add_one()
   sum_id = id sum;
   f := sum
 end
+
