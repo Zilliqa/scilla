@@ -24,6 +24,7 @@ default: release
 release:
 	./scripts/build_deps.sh
 	dune build --profile release @install
+	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
@@ -31,12 +32,14 @@ slim:
 	./scripts/build_deps.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
+	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
 	./scripts/build_deps.sh
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
+	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
 	@test -L bin || ln -s _build/install/default/bin .
 	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
@@ -68,9 +71,13 @@ install : release
 
 # This is different from the target "test" which runs on dev builds.
 test_install : install
-	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
-	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune build --profile release tests/polynomials/testsuite_polynomials.exe
+	dune build --profile release tests/base/testsuite_base.exe
+	dune build --profile release tests/testsuite.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
 
 uninstall : release
 	dune uninstall
@@ -89,36 +96,52 @@ debug :
 
 testbase: dev
   # This effectively adds all the runners into PATH variable
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
+	dune build --profile dev tests/base/testsuite_base.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
 
 goldbase: dev
-	ulimit -n 4096; dune exec tests/base/testsuite_base.exe -- -update-gold true
+	dune build --profile dev tests/base/testsuite_base.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
 
 # Run all tests for all packages in the repo: scilla-base, polynomials, scilla
 test: dev
-	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
-	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune build --profile dev tests/polynomials/testsuite_polynomials.exe
+	dune build --profile dev tests/base/testsuite_base.exe
+	dune build --profile dev tests/testsuite.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
 	dune runtest --force
 
 gold: dev
-	ulimit -n 4096; dune exec -- tests/base/testsuite_base.exe -update-gold true
-	ulimit -n 4096; dune exec -- tests/testsuite.exe -update-gold true
+	dune build --profile dev tests/base/testsuite_base.exe
+	dune build --profile dev tests/testsuite.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
+	ulimit -n 4096; dune exec --no-build -- tests/testsuite.exe -update-gold true
 	dune promote
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
-	dune exec -- tests/testsuite.exe -print-diff true -runner sequential \
+	dune build --profile dev tests/testsuite.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # Run tests in server-mode
 test_server: dev
 	dune build src/runners/scilla_server.exe
+	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	dune build --profile dev tests/testsuite.exe
+	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
 	./_build/default/src/runners/scilla_server.exe &
-	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
   -server true \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
