@@ -6,27 +6,9 @@
     "openssl",
     "protobuf",
     "python3",
-    "snappy",
     "boost",
-    "mongo-c-driver",
-    "mongo-cxx-driver",
-    "websocketpp",
-    "gtest",
-    "miniupnpc",
-    "libevent",
-    {
-      "name": "leveldb",
-      "default-features": false,
-      "features": [
-        "crc32c",
-        "snappy"
-      ]
-    },
     "curl",
-    "libmicrohttpd",
     "libffi",
-    "g3log",
-    "g3sinks",
     "schnorr",
     "cryptoutils"
   ],
@@ -45,32 +27,12 @@
       "version": "3.9.1"
     },
     {
-      "name": "libmicrohttpd",
-      "version-string": "0.9.63#8"
-    },
-    {
-      "name": "g3log",
-      "version-string": "1.3.4#4"
-    },
-    {
       "name": "schnorr",
       "version": "8.2.0"
     },
     {
-      "name": "g3log",
-      "version": "1.3.4#4"
-    },
-    {
-      "name": "g3sinks",
-      "version": "2.0.1"
-    },
-    {
       "name": "cryptoutils",
       "version": "8.3.0#1"
-    },
-    {
-      "name": "websocketpp",
-      "version": "0.8.2#3"
     }
   ]
 }
