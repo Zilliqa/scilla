@@ -272,9 +272,9 @@ module MkType (I : ScillaIdentifier) = struct
                     (recurser t)
                 in
                 if is_mutable mutability then
-                  Second (sprintf "field %s" f_t_str)
+                  First (sprintf "field %s" f_t_str)
                 else
-                  First f_t_str)
+                  Second f_t_str)
           in
           let immutables_string = if List.is_empty immutables then "" else sprintf " (%s)" (String.concat ~sep:", " immutables) in
           let mutables_string = if List.is_empty mutables then "" else sprintf " %s" (String.concat ~sep:", " mutables) in
