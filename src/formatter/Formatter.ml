@@ -62,6 +62,8 @@ struct
     let send_kwd = !^"send"
     let event_kwd = !^"event"
     let throw_kwd = !^"throw"
+    let address_type_kwd = !^"ByStr20 with"
+    let codehash_kwd = !^"_codehash"
     let contract_kwd = !^"contract"
     let field_kwd = !^"field"
     let of_kwd = !^"of"
@@ -164,43 +166,40 @@ struct
       parens_if (p > 0) @@
       match kind with
       (* Any address in use *)
-      | AnyAddr -> !^"ByStr20 with end"
+      | AnyAddr -> address_type_kwd ^/^ end_kwd
       (* Address containing a library *)
-      | LibAddr -> !^"ByStr20 with library end"
+      | LibAddr -> address_type_kwd ^/^ library_kwd ^/^ end_kwd
       (* Address containing a library or contract *)
-      | CodeAddr -> !^"ByStr20 with _codehash end"
+      | CodeAddr -> address_type_kwd ^/^ codehash_kwd ^/^ end_kwd
       (* Address containing a contract *)
       | ContrAddr fields_map ->
           let alist = Ast.SType.IdLoc_Comp.Map.to_alist fields_map in
-          if List.is_empty alist then !^"ByStr20 with contract end"
-          else 
-            let mutables, immutables = List.partition_map alist ~f:(fun ((f, mutability), t) ->
-                if Type.is_mutable mutability then
-                  First (f, t)
-                else
-                  Second (f, t))
-            in
-            let immutable_fields =
-              if List.is_empty immutables then
-                !^""
+          let mutables, immutables = List.partition_map alist ~f:(fun ((f, mutability), t) ->
+              if Type.is_mutable mutability then
+                First (f, t)
               else
-                lparen ^/^
-                separate_map
-                  (comma ^^ break 1)
-                  (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty))
-                  immutables ^/^
-                rparen
-            in
-            let mutable_fields =
-              separate_map
+                Second (f, t))
+          in
+          if List.is_empty immutables && List.is_empty mutables then
+            address_type_kwd ^^ !^" " ^^ contract_kwd ^^ !^" " ^^ end_kwd
+          else if List.is_empty mutables then
+            address_type_kwd ^^ !^" " ^^ contract_kwd ^/^ lparen ^/^ (separate_map comma (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty)) immutables) ^/^ rparen ^^ !^" " ^^ end_kwd
+          else if List.is_empty immutables then
+            surround indentation 1
+              (address_type_kwd ^^ !^" " ^^ contract_kwd)
+              (separate_map
                 (comma ^^ break 1)
                 (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
-                mutables
-            in
-              surround indentation 1
-                (!^"ByStr20 with contract" ^/^ immutable_fields)
-                mutable_fields
-                end_kwd
+                mutables)
+              end_kwd
+          else (* Both mutables and immutables *)
+            surround indentation 1
+              (address_type_kwd ^^ !^" " ^^ contract_kwd ^/^ lparen ^/^ (separate_map comma (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty)) immutables) ^/^ rparen)
+              (separate_map
+                (comma ^^ break 1)
+                (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
+                mutables)
+              end_kwd
 
     (* whitespace-separated non-primitive types need to be parenthesized *)
     let of_types typs ~sep =
