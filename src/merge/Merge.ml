@@ -717,14 +717,14 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     match stmt with
     | RemoteLoad (l, _, v, mutability) ->
         let v' = remote_rename_er renames_map v in
-        if Type.is_mutable mutability then
+        if is_mutable mutability then
           (Load (l, v'), annot)
         else
           (* Immutable fields exist in the same namespace as local variables *)
           (Bind (l, (Var v', PIdentifier.get_rep v')), annot)
     | RemoteMapGet (l, _, m, mutability, keys, exists) ->
         let m' = remote_rename_er renames_map m in
-        if Type.is_mutable mutability then
+        if is_mutable mutability then
           (MapGet (l, m', keys, exists), annot)
         else
           (* Immutable fields exist in the same namespace as local variables. 

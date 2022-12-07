@@ -86,32 +86,11 @@ module PrimType = struct
     | Bystrx_typ b -> "ByStr" ^ Int.to_string b
 end
 
-(*******************************************************)
-(*         Field mutability (for remote reads)         *)
-(*******************************************************)
-
-type field_mutability = Mutable | Immutable [@@deriving sexp]
-
-let is_mutable = function
-  | Mutable -> true
-  | Immutable -> false
-
 module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
-  (* (x, true)  = x is mutable   *
-   * (x, false) = x is immutable *)
-  type t = loc TIdentifier.t * field_mutability [@@deriving sexp]
+  type t = loc TIdentifier.t [@@deriving sexp]
 
-  let compare ((a, am) : t) ((b, bm) : t) =
-    match am, bm with
-    | Immutable, Mutable -> -1
-    | Mutable, Immutable -> 1
-    | _ -> TIdentifier.compare a b
-  let equal ((a, am) : t) ((b, bm) : t) =
-    match am, bm with
-    | Immutable, Mutable
-    | Mutable, Immutable -> false
-    | _ -> TIdentifier.equal a b
-
+  let compare (a : t) (b : t) = TIdentifier.compare a b
+  let equal (a : t) (b : t) = TIdentifier.equal a b
 end
 
 module IdLoc_Comp (TIdentifier : ScillaIdentifier) = struct
@@ -142,8 +121,8 @@ module type ScillaType = sig
     | CodeAddr
     (* Address containing a library. *)
     | LibAddr
-    (* Address containing a contract. *)
-    | ContrAddr of 'a IdLoc_Comp.Map.t
+    (* Address containing a contract - immutable and mutable fields. *)
+    | ContrAddr of 'a IdLoc_Comp.Map.t * 'a IdLoc_Comp.Map.t
   [@@deriving sexp]
 
   type t =
@@ -230,8 +209,8 @@ module MkType (I : ScillaIdentifier) = struct
     | CodeAddr
     (* Address containing a library. *)
     | LibAddr
-    (* Address containing a contract. *)
-    | ContrAddr of 'a IdLoc_Comp.Map.t
+    (* Address containing a contract - immutable and mutable fields. *)
+    | ContrAddr of 'a IdLoc_Comp.Map.t * 'a IdLoc_Comp.Map.t
   [@@deriving sexp]
 
   type t =
@@ -263,22 +242,19 @@ module MkType (I : ScillaIdentifier) = struct
       | Address AnyAddr -> "ByStr20 with end"
       | Address CodeAddr -> "ByStr20 with _codehash end"
       | Address LibAddr -> "ByStr20 with library end"
-      | Address (ContrAddr fts) ->
-          let mutables, immutables =
-            List.partition_map (IdLoc_Comp.Map.to_alist fts) ~f:(fun ((f, mutability), t) ->
-                let f_t_str = sprintf "%s : %s"
-                    (if is_error then TIdentifier.as_error_string f
-                     else TIdentifier.as_string f)
-                    (recurser t)
-                in
-                if is_mutable mutability then
-                  Second (sprintf "field %s" f_t_str)
-                else
-                  First f_t_str)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let f_t_strs fts = List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
+              sprintf "%s : %s"
+                (if is_error then TIdentifier.as_error_string f
+                 else TIdentifier.as_string f)
+                (recurser t))
           in
-          let immutables_string = if List.is_empty immutables then "" else sprintf " (%s)" (String.concat ~sep:", " immutables) in
-          let mutables_string = if List.is_empty mutables then "" else sprintf " %s" (String.concat ~sep:", " mutables) in
-          sprintf "ByStr20 with contract%s%s end" immutables_string mutables_string
+          let immutables_str =
+            if IdLoc_Comp.Map.is_empty im_fts then ""
+            else sprintf " (%s)" (String.concat ~sep:", " (f_t_strs im_fts)) in
+          let mutables_str = if IdLoc_Comp.Map.is_empty m_fts then ""
+            else String.concat ~sep:"," (List.map (f_t_strs m_fts) ~f:(fun f_t_str -> sprintf " field %s" f_t_str)) in
+          sprintf "ByStr20 with contract%s%s end" immutables_str mutables_str
 
     and with_paren t =
       match t with
@@ -310,9 +286,10 @@ module MkType (I : ScillaIdentifier) = struct
           let acc' = go bt acc in
           rem acc' arg
       | Address AnyAddr | Address LibAddr | Address CodeAddr -> acc
-      | Address (ContrAddr fts) ->
-          IdLoc_Comp.Map.fold fts ~init:acc ~f:(fun ~key:_ ~data acc ->
-              go data acc)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let mapper ~key:_ ~data acc = go data acc in
+          let immuts_acc = IdLoc_Comp.Map.fold im_fts ~init:acc ~f:mapper in
+          IdLoc_Comp.Map.fold m_fts ~init:immuts_acc ~f:mapper
     in
     go tp []
 
@@ -346,9 +323,11 @@ module MkType (I : ScillaIdentifier) = struct
         if String.(tvar = arg) then tm
         else PolyFun (arg, subst_type_in_type tvar tp t)
     | Address AnyAddr | Address LibAddr | Address CodeAddr -> tm
-    | Address (ContrAddr fts) ->
+    | Address (ContrAddr (im_fts, m_fts)) ->
         Address
-          (ContrAddr (IdLoc_Comp.Map.map fts ~f:(subst_type_in_type tvar tp)))
+          (ContrAddr
+             (IdLoc_Comp.Map.map im_fts ~f:(subst_type_in_type tvar tp),
+              IdLoc_Comp.Map.map m_fts ~f:(subst_type_in_type tvar tp)))
 
   (* note: this is sequential substitution of multiple variables,
             _not_ simultaneous substitution *)
@@ -372,9 +351,11 @@ module MkType (I : ScillaIdentifier) = struct
           let bt2 = recursor bt1 (update_taken arg' taken) in
           PolyFun (arg', bt2)
       | Address AnyAddr | Address LibAddr | Address CodeAddr -> t
-      | Address (ContrAddr fts) ->
+      | Address (ContrAddr (im_fts, m_fts)) ->
           Address
-            (ContrAddr (IdLoc_Comp.Map.map fts ~f:(fun t -> recursor t taken)))
+            (ContrAddr
+               (IdLoc_Comp.Map.map im_fts ~f:(fun t -> recursor t taken),
+                IdLoc_Comp.Map.map m_fts ~f:(fun t -> recursor t taken)))
     in
     recursor
 
@@ -406,8 +387,9 @@ module MkType (I : ScillaIdentifier) = struct
       | Address LibAddr, Address LibAddr
       | Address CodeAddr, Address CodeAddr ->
           true
-      | Address (ContrAddr fts1), Address (ContrAddr fts2) ->
-          IdLoc_Comp.Map.equal equiv fts1 fts2
+      | Address (ContrAddr (im_fts1, m_fts1)), Address (ContrAddr (im_fts2, m_fts2)) ->
+          IdLoc_Comp.Map.equal equiv im_fts1 im_fts2 &&
+          IdLoc_Comp.Map.equal equiv m_fts1 m_fts2
       | _ -> false
     in
     equiv t1 t2
@@ -432,16 +414,22 @@ module MkType (I : ScillaIdentifier) = struct
       | Address CodeAddr, Address (ContrAddr _) ->
           (* Any address containing code, library or contract is a code address. *)
           true
-      | Address (ContrAddr tfts), Address (ContrAddr ffts) ->
-          (* Check that tfts is a subset of ffts, and that types are assignable/equivalent. *)
-          IdLoc_Comp.Map.for_alli tfts ~f:(fun ~key:tf ~data:tft ->
-              match IdLoc_Comp.Map.find ffts tf with
-              | None ->
-                  (* to field does not appear in from type *)
-                  false
-              | Some fft ->
-                  (* Matching field name. Types must be assignable. *)
-                  assignable tft fft)
+      | Address (ContrAddr (to_im_fts, to_m_fts)), Address (ContrAddr (fr_im_fts, fr_m_fts)) ->
+          (* Check that 
+             - to_im_fts is a subset of fr_im_fts, 
+             - to_m_fts is a subset of fr_m_fts, and that 
+             - all common fields have assignable/equivalent types. *)
+          let map_checker tfts ffts = 
+            IdLoc_Comp.Map.for_alli tfts ~f:(fun ~key:tf ~data:tft ->
+                match IdLoc_Comp.Map.find ffts tf with
+                | None ->
+                    (* to field does not appear in from type *)
+                    false
+                | Some fft ->
+                    (* Matching field name. Types must be assignable. *)
+                    assignable tft fft)
+          in
+          map_checker to_im_fts fr_im_fts && map_checker to_m_fts fr_m_fts
       | PrimType (Bystrx_typ len), Address _ when len = address_length ->
           (* Any address is assignable to ByStr20. *)
           true

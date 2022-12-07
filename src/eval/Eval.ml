@@ -376,7 +376,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l = Configuration.remote_load conf s' r (Type.is_mutable mutability) in
+              let%bind l = Configuration.remote_load conf s' r (is_mutable mutability) in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ ->
@@ -418,7 +418,7 @@ let rec stmt_eval conf stmts =
                 mapM ~f:(fun k -> fromR @@ Configuration.lookup conf k) klist
               in
               let%bind l =
-                Configuration.remote_map_get abystr m (Type.is_mutable mutability) klist' fetchval
+                Configuration.remote_map_get abystr m (is_mutable mutability) klist' fetchval
               in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts

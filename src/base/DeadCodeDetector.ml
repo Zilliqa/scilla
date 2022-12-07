@@ -555,15 +555,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   (** Returns a set of field names of the contract address type. *)
   let get_addr_fields addr =
     List.fold_left (SType.IdLoc_Comp.Map.keys addr) ~init:emp_idset
-      ~f:(fun s (id, _mutability) -> SCIdentifierSet.add s (get_id id))
+      ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
 
   (** Updates a map of identifiers [m] iff [ty] has contract address type.
       [m] has the following structure: [id |-> F] where [F] is a set of field
       names used in the contract address type. *)
   let update_contract_params_map m id ty =
     match ty with
-    | SType.Address (ContrAddr addr) ->
-        let data = get_addr_fields addr in
+    | SType.Address (ContrAddr (_im_addr, m_addr)) ->
+        let data = get_addr_fields m_addr in
         Map.set m ~key:(SCIdentifier.get_id id) ~data
     | _ -> m
 
@@ -589,8 +589,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
           when not @@ phys_equal (Set.length fields) (Set.length used_fields)
           -> (
             match ty with
-            | SType.Address (ContrAddr m) ->
-                List.iter (SType.IdLoc_Comp.Map.keys m) ~f:(fun (id, _mutability) ->
+            | SType.Address (ContrAddr (_ims, ms)) ->
+                List.iter (SType.IdLoc_Comp.Map.keys ms) ~f:(fun id ->
                     let name = get_id id in
                     if Set.mem fields name && (not @@ Set.mem used_fields name)
                     then
@@ -676,8 +676,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                       ~init:(Map.empty (module Int))
                       ~f:
                         (fun i m -> function
-                          | SType.Address (ContrAddr addr) ->
-                              Map.set m ~key:i ~data:(get_addr_fields addr)
+                          | SType.Address (ContrAddr (_im_addr, m_addr)) ->
+                              Map.set m ~key:i ~data:(get_addr_fields m_addr)
                           | _ -> m)
                   in
                   if Map.is_empty args_map then m

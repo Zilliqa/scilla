@@ -75,14 +75,10 @@ struct
     let open MType in
     match kind with
     | AnyAddr | CodeAddr | LibAddr -> kind
-    | ContrAddr fields_map ->
-        let mapped_keys =
-          IdLoc_Comp.Map.map_keys_exn fields_map ~f:(fun (f, mutability) -> (map_id fl f, mutability))
-        in
-        let mapped_values =
-          IdLoc_Comp.Map.map mapped_keys ~f:(fun ty -> map_type ty ~fl)
-        in
-        ContrAddr mapped_values
+    | ContrAddr (im_fields_map, m_fields_map) ->
+        let key_mapper fields_map = IdLoc_Comp.Map.map_keys_exn fields_map ~f:(map_id fl) in
+        let value_mapper fields_map = IdLoc_Comp.Map.map (key_mapper fields_map) ~f:(fun ty -> map_type ty ~fl) in
+        ContrAddr (value_mapper im_fields_map, value_mapper m_fields_map)
 
   let literal lit ~fl =
     let rec walk lit =

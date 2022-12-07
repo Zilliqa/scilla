@@ -206,6 +206,16 @@ let component_type_to_string ctp =
   match ctp with CompTrans -> "transition" | CompProc -> "procedure"
 
 (*******************************************************)
+(*         Field mutability (for remote reads)         *)
+(*******************************************************)
+
+type field_mutability = Mutable | Immutable [@@deriving sexp]
+
+let is_mutable = function
+  | Mutable -> true
+  | Immutable -> false
+
+(*******************************************************)
 (*                   Annotations                       *)
 (*******************************************************)
 
@@ -317,7 +327,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | Load of ER.rep SIdentifier.t * ER.rep SIdentifier.t
         (** [Load(I1, I2)] represents: [I1 <- I2] *)
     | RemoteLoad of
-        ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t * Type.field_mutability
+        ER.rep SIdentifier.t * ER.rep SIdentifier.t * ER.rep SIdentifier.t * field_mutability
         (** [RemoteLoad(I1, I2, I3, Mutable)] represents: [I1 <- & I2.I3] (reading a contract state field)
           * [RemoteLoad(I1, I2, I3, Immutable)] represents: [I1 <- & I2.(I3)] (reading a contract parameter) *)
     | Store of ER.rep SIdentifier.t * ER.rep SIdentifier.t
@@ -343,7 +353,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
         * ER.rep SIdentifier.t
-        * Type.field_mutability
+        * field_mutability
         * ER.rep SIdentifier.t list
         * bool
         (** [RemoteMapGet(V, Adr, M, IsMutable, [K1; ...; Kn], Retrieve)] represents:
@@ -608,7 +618,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
             (as_error_string f) (as_error_string x) phase
       | RemoteLoad (x, adr, f, mutability) ->
           sprintf "Type error in reading value of `%s.%s%s%s` into `%s`:\n %s"
-            (as_error_string adr) (if Type.is_mutable mutability then "" else "(") (as_error_string f) (if Type.is_mutable mutability then "" else ")") (as_error_string x) phase
+            (as_error_string adr) (if is_mutable mutability then "" else "(") (as_error_string f) (if is_mutable mutability then "" else ")") (as_error_string x) phase
       | Store (f, r) ->
           sprintf "Type error in storing value of `%s` into the field `%s`:\n"
             (as_error_string r) (as_error_string f)
@@ -622,9 +632,9 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           ^ "\n"
       | RemoteMapGet (_, adr, m, mutability, keys, _) ->
           sprintf "Type error in getting map value %s.%s%s%s" (as_error_string adr)
-            (if Type.is_mutable mutability then "" else "(")
+            (if is_mutable mutability then "" else "(")
             (as_error_string m)
-            (if Type.is_mutable mutability then "" else ")")
+            (if is_mutable mutability then "" else ")")
           ^ List.fold keys ~init:"" ~f:(fun acc k ->
                 acc ^ "[" ^ as_error_string k ^ "]")
           ^ "\n"

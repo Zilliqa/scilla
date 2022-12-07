@@ -66,6 +66,8 @@ struct
     let field_kwd = !^"field"
     let of_kwd = !^"of"
     let type_kwd = !^"type"
+    let address_type_kwd = !^"ByStr20 with"
+    let codehash_kwd = !^"_codehash"
     let import_kwd = !^"import"
     let library_kwd = !^"library"
     let scilla_version_kwd = !^"scilla_version"
@@ -164,42 +166,37 @@ struct
       parens_if (p > 0) @@
       match kind with
       (* Any address in use *)
-      | AnyAddr -> !^"ByStr20 with end"
+      | AnyAddr -> address_type_kwd ^//^ end_kwd
       (* Address containing a library *)
-      | LibAddr -> !^"ByStr20 with library end"
+      | LibAddr -> address_type_kwd ^//^ library_kwd ^//^ end_kwd
       (* Address containing a library or contract *)
-      | CodeAddr -> !^"ByStr20 with _codehash end"
+      | CodeAddr -> address_type_kwd ^//^ codehash_kwd ^//^ end_kwd
       (* Address containing a contract *)
-      | ContrAddr fields_map ->
-          let alist = Ast.SType.IdLoc_Comp.Map.to_alist fields_map in
-          if List.is_empty alist then !^"ByStr20 with contract end"
-          else 
-            let mutables, immutables = List.partition_map alist ~f:(fun ((f, mutability), t) ->
-                if Type.is_mutable mutability then
-                  First (f, t)
-                else
-                  Second (f, t))
-            in
-            let immutable_fields =
-              if List.is_empty immutables then
-                !^""
-              else
-                lparen ^/^
-                separate_map
-                  (comma ^^ break 1)
-                  (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty))
-                  immutables ^/^
-                rparen
-            in
-            let mutable_fields =
-              separate_map
-                (comma ^^ break 1)
-                (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
-                mutables
-            in
+      | ContrAddr (im_fields_map, m_fields_map) ->
+          let im_fields = 
+            separate_map
+              (comma ^^ break 1)
+              (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty))
+              (Ast.SType.IdLoc_Comp.Map.to_alist im_fields_map)
+          in
+          let m_fields =
+            separate_map
+              (comma ^^ break 1)
+              (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
+              (Ast.SType.IdLoc_Comp.Map.to_alist m_fields_map)
+          in
+          match Ast.SType.IdLoc_Comp.Map.is_empty im_fields_map, Ast.SType.IdLoc_Comp.Map.is_empty m_fields_map with
+          | true, true -> address_type_kwd ^//^ contract_kwd ^//^ end_kwd
+          | false, true  -> address_type_kwd ^//^ contract_kwd ^//^ (parens im_fields) ^//^ end_kwd
+          | true, false ->
               surround indentation 1
-                (!^"ByStr20 with contract" ^/^ immutable_fields)
-                mutable_fields
+                (address_type_kwd ^//^ contract_kwd)
+                m_fields
+                end_kwd
+          | false, false ->
+              surround indentation 1
+                (address_type_kwd ^//^ contract_kwd ^//^ (parens im_fields))
+                m_fields
                 end_kwd
 
     (* whitespace-separated non-primitive types need to be parenthesized *)
@@ -387,7 +384,7 @@ struct
         | Ast.Load (id, field) ->
           of_ann_id id ^^^ rev_arrow ^//^ of_ann_id field
         | Ast.RemoteLoad (id, addr, field, mutability) ->
-            if Type.is_mutable mutability then
+            if Syntax.is_mutable mutability then
               of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_ann_id field
             else 
               of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ lparen ^^ of_ann_id field ^^ rparen
@@ -414,9 +411,9 @@ struct
           (* If mode is set, then we interpret this as value retrieve,
              otherwise as an "exists" query. *)
             if mode then
-              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map (Type.is_mutable mutability) keys
+              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
             else
-              of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map (Type.is_mutable mutability) keys
+              of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
         | Ast.MatchStmt (id, branches) ->
           match_kwd ^^^ of_ann_id id ^^^ with_kwd ^/^
           separate_map hardline

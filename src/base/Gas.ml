@@ -54,9 +54,9 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
       match t with
       | Address t' -> (
           match t' with
-          | ContrAddr fts ->
+          | ContrAddr (im_fts, m_fts) ->
               (* look up _this_address and every listed field *)
-              1 + IdLoc_Comp.Map.length fts
+              1 + IdLoc_Comp.Map.length im_fts + IdLoc_Comp.Map.length m_fts
           | LibAddr | CodeAddr | AnyAddr -> 0)
       | _ -> 0
     in

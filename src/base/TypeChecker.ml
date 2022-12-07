@@ -151,9 +151,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
       | Address AnyAddr | Address CodeAddr | Address LibAddr -> 1
-      | Address (ContrAddr fts) ->
-          IdLoc_Comp.Map.fold fts ~init:1 ~f:(fun ~key:_ ~data:t acc ->
-              acc + type_size t)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let mapper ~key:_ ~data:t acc = acc + type_size t in
+          let im_acc = IdLoc_Comp.Map.fold im_fts ~init:1 ~f:mapper in
+          IdLoc_Comp.Map.fold m_fts ~init:im_acc ~f:mapper
     in
 
     let subst_type_cost tvar tm tp_size =
@@ -167,10 +168,10 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
         | Address AnyAddr | Address LibAddr | Address CodeAddr -> 1
-        | Address (ContrAddr fts) ->
+        | Address (ContrAddr (im_fts, m_fts)) ->
+            let mapper fts = IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc -> acc + cost t) in
             max 1
-              (IdLoc_Comp.Map.fold fts ~init:0 ~f:(fun ~key:_ ~data:t acc ->
-                   acc + cost t))
+              (mapper im_fts + mapper m_fts)
       in
       cost tm
     in
@@ -202,14 +203,16 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
         | Address AnyAddr | Address LibAddr | Address CodeAddr -> pure t
-        | Address (ContrAddr fts) ->
-            let%bind fts_res =
+        | Address (ContrAddr (im_fts, m_fts)) ->
+            let fts_mapper fts = 
               foldM (IdLoc_Comp.Map.to_alist fts) ~init:IdLoc_Comp.Map.empty
                 ~f:(fun acc (key, t) ->
-                  let%bind dis_t = recurser t in
-                  pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
+                    let%bind dis_t = recurser t in
+                    pure @@ IdLoc_Comp.Map.set acc ~key ~data:dis_t)
             in
-            pure (Address (ContrAddr fts_res))
+            let%bind im_fts_res = fts_mapper im_fts in
+            let%bind m_fts_res = fts_mapper m_fts in
+            pure (Address (ContrAddr (im_fts_res, m_fts_res)))
       in
       checkwrap_op thunk gas_cost (GasError, out_of_gas_err)
     in
@@ -651,7 +654,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               in
               let%bind fr =
                 fromR_TE
-                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp (Type.is_mutable mutability)
+                @@ address_field_type (ER.get_loc lc) f (rr_typ adr_typ).tp (is_mutable mutability)
               in
               pure @@ ((x, fr), rr_typ adr_typ, mk_qual_tp fr)
             in
@@ -772,7 +775,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | RemoteMapGet (v, adr, m, mutability, klist, valfetch) ->
             let%bind typed_adr, typed_m, typed_klist, v_type =
               let%bind typed_adr, typed_m, typed_klist, v_type =
-                type_remote_map_access env adr m (Type.is_mutable mutability) klist
+                type_remote_map_access env adr m (is_mutable mutability) klist
               in
               pure @@ (typed_adr, typed_m, typed_klist, v_type)
             in
@@ -814,7 +817,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                   match%bind type_actuals env.pure [ addr; iparams ] with
                   | [ targ_addr; targ_iparams ], [ addr'; iparams' ] ->
                       let contr_typ =
-                        address_typ (ContrAddr IdLoc_Comp.Map.empty)
+                        address_typ (ContrAddr (IdLoc_Comp.Map.empty, IdLoc_Comp.Map.empty))
                       in
                       let%bind () =
                         fromR_TE

@@ -88,7 +88,7 @@ struct
 
   and stmt =
     | Load of ER.rep id_ann * ER.rep id_ann
-    | RemoteLoad of ER.rep id_ann * ER.rep id_ann * ER.rep id_ann * Type.field_mutability
+    | RemoteLoad of ER.rep id_ann * ER.rep id_ann * ER.rep id_ann * Syntax.field_mutability
     | Store of ER.rep id_ann * ER.rep id_ann
     | Bind of ER.rep id_ann * expr_annot
     | MapUpdate of ER.rep id_ann * ER.rep id_ann list * ER.rep id_ann option
@@ -97,7 +97,7 @@ struct
         ER.rep id_ann
         * ER.rep id_ann
         * ER.rep id_ann
-        * Type.field_mutability
+        * Syntax.field_mutability
         * ER.rep id_ann list
         * bool
     | MatchStmt of

@@ -600,16 +600,21 @@ module EvalTypecheck = struct
       pure contract_addr
     else pure true
 
-  let typecheck_remote_fields ~caddr fts =
+  let typecheck_remote_fields ~caddr im_fts m_fts =
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-    allM fts ~f:(fun ((f, mutability), t) ->
-        let%bind res =
-          StateService.external_fetch ~caddr ~fname:f ~_mutable_field:(Type.is_mutable mutability) ~keys:[] ~ignoreval:true
-        in
-        match res with
-        | _, Some ext_typ ->
-            pure @@ EvalType.type_assignable ~expected:t ~actual:ext_typ
-        | _, None -> pure false)
+    let checker fts mutables = 
+      allM fts ~f:(fun (f, t) ->
+          let%bind res =
+            StateService.external_fetch ~caddr ~fname:f ~_mutable_field:mutables ~keys:[] ~ignoreval:true
+          in
+          match res with
+          | _, Some ext_typ ->
+              pure @@ EvalType.type_assignable ~expected:t ~actual:ext_typ
+          | _, None -> pure false)
+    in
+    let%bind im_ok = checker im_fts false in
+    let%bind m_ok = checker m_fts true in
+    pure (im_ok && m_ok)
 
   type evalTCResult =
     | AddressNotInUse
@@ -629,14 +634,15 @@ module EvalTypecheck = struct
     | CodeAddr ->
         let%bind in_use = is_library_or_contract_addr ~caddr in
         if not in_use then pure NeitherCodeAtAddress else pure Success
-    | ContrAddr fts ->
+    | ContrAddr (im_fts, m_fts) ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in
         if not contract_addr then pure NoContractAtAddress
         else
           let%bind fts_ok =
             typecheck_remote_fields ~caddr
-              (EvalType.IdLoc_Comp.Map.to_alist fts)
+              (EvalType.IdLoc_Comp.Map.to_alist im_fts)
+              (EvalType.IdLoc_Comp.Map.to_alist m_fts)
           in
           if not fts_ok then pure FieldTypeMismatch else pure Success
 

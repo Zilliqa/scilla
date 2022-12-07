@@ -73,8 +73,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
       | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
-      | Address (ContrAddr fts) ->
-          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let%bind () = forallM (IdLoc_Comp.Map.to_alist im_fts) ~f:(fun (_, t) -> walk t) in
+          forallM (IdLoc_Comp.Map.to_alist m_fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 
@@ -299,8 +300,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           fail1 ~kind:"Type variables not allowed in type definitions"
             ?inst:None error_loc
       | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
-      | Address (ContrAddr fts) ->
-          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let%bind () = forallM (IdLoc_Comp.Map.to_alist im_fts) ~f:(fun (_, t) -> walk t) in
+          forallM (IdLoc_Comp.Map.to_alist m_fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 
