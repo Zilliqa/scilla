@@ -1,0 +1,11 @@
+scilla_version 0
+
+library ReturnGood1
+
+contract ReturnGood1 ()
+
+procedure test
+  (x : ByStr20 with contract field x : Uint128, field y : Bool end)
+    -> ByStr20 with contract field x : Uint128 end
+  _return := x
+end
