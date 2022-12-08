@@ -154,7 +154,6 @@
 %token SEND
 %token EVENT
 %token ACCEPT
-%token RETURN
 %token MAP
 %token DELETE
 %token EXISTS
@@ -427,7 +426,12 @@ stmt:
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate( to_loc_id l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
-| RETURN; i = sid;        { (Return (ParserIdentifier.mk_id i (toLoc $startpos(i))), toLoc $startpos) }
+| kw = SPID; ASSIGN; i = sid {
+  if String.equal kw "_return" then
+    (Return (ParserIdentifier.mk_id i (toLoc $startpos(kw))), toLoc $startpos)
+  else
+    raise (SyntaxError (Printf.sprintf "Illegal assignment to %s" kw, toLoc $startpos(kw)))
+  }
 | SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | THROW; mopt = option(sid); { Throw (Core.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }

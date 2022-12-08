@@ -9,15 +9,15 @@
   
   procedure no_return ()
     a = _creation_block;
-    return a
+    _return := a
   end
 
   procedure incorrect_return_type () -> String
     a = _creation_block;
-    return a
+    _return := a
   end
 
   procedure return_1 () -> BNum
     a = _creation_block;
-    return a
+    _return := a
   end

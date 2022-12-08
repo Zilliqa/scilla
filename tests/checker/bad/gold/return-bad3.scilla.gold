@@ -6,7 +6,7 @@
       "start_location": {
         "file": "checker/bad/return-bad3.scilla",
         "line": 9,
-        "column": 10
+        "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }

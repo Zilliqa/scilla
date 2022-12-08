@@ -10,16 +10,16 @@ field f : Uint32 = Uint32 0
 
 procedure return_one() -> Uint32
   a = one;
-  return a
+  _return := a
 end
 
 procedure id(x: Uint32) -> Uint32
-  return x
+  _return := x
 end
 
 procedure add(lhs: Uint32, rhs: Uint32) -> Uint32
   s = builtin add lhs rhs;
-  return s
+  _return := s
 end
 
 transition f_add_one()

@@ -9,5 +9,5 @@ procedure no_return() -> BNum
 end
 procedure no_return_fixed() -> BNum
   ret = _creation_block;
-  return ret (* OK *)
+  _return := ret (* OK *)
 end

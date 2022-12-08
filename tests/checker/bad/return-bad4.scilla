@@ -7,10 +7,10 @@ procedure dead_code_match (a : Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     ret = _creation_block;
-    return ret
+    _return := ret
   end;
   dead = _creation_block (* Error *)
 end
@@ -18,10 +18,10 @@ procedure dead_code_match_fixed (a : Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     ret = _creation_block;
-    return ret
+    _return := ret
   end
 end
 

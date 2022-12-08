@@ -6,11 +6,11 @@ contract Dead8 ()
 
 procedure pr1() -> Bool
   res = True;
-  return res
+  _return := res
 end
 
 procedure pr2(a: Bool) -> Bool
-  return a
+  _return := a
 end
 
 transition test_dead_variable1()

@@ -8,15 +8,15 @@ procedure dead_code_in_match(a: Bool, b: Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     match b with
     | True =>
       ret = _creation_block;
-      return ret
+      _return := ret
     | False =>
       ret = _creation_block;
-      return ret;
+      _return := ret;
       dead = _creation_block (* Error *)
     end
   end
@@ -25,15 +25,15 @@ procedure dead_code_in_match_fixed(a: Bool, b: Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     match b with
     | True =>
       ret = _creation_block;
-      return ret
+      _return := ret
     | False =>
       ret = _creation_block;
-      return ret
+      _return := ret
       (* Fixed *)
     end
   end

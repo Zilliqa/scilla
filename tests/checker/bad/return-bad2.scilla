@@ -8,7 +8,7 @@ procedure match_no_ret(a: Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     ret = _creation_block
     (* Error: no return *)
@@ -18,9 +18,9 @@ procedure match_no_ret_fixed(a: Bool) -> BNum
   match a with
   | True =>
     ret = _creation_block;
-    return ret
+    _return := ret
   | False =>
     ret = _creation_block;
-    return ret (* OK *)
+    _return := ret (* OK *)
   end
 end
