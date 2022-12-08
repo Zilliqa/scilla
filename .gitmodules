@@ -1,6 +1,0 @@
-[submodule "deps/schnorr/src"]
-	path = deps/schnorr/src
-	url = https://github.com/Zilliqa/schnorr
-[submodule "deps/cryptoutils/src"]
-	path = deps/cryptoutils/src
-	url = https://github.com/Zilliqa/cryptoutils

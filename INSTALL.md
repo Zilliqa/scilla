@@ -4,7 +4,7 @@ The recommended installation process is comprised of two separate steps:
 - installation of system-wide packages using your OS native package manager and
 - installation of OCaml packages using the [opam](https://opam.ocaml.org) package manager.
 
-Please make sure you install opam v2.0 or greater (this can be checked by running `opam --version`).
+Please make sure you install opam v2.1 or greater (this can be checked by running `opam --version`).
 
 Scilla requires OpenSSL 1.1.1 and if your platform does not have packages for this, you may need to build OpenSSL
 yourself and set `PKG_CONFIG_PATH` environment variable accordingly
@@ -13,6 +13,19 @@ yourself and set `PKG_CONFIG_PATH` environment variable accordingly
 export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 ```
 
+<details><summary>vcpkg</summary>
+
+- Clone vcpkg to a separate location:
+
+   ```shell
+   $ git clone https://github.com/Microsoft/vcpkg.git /path/to/vcpkg
+   $ cd /path/to/vcpkg && git checkout 2022.09.27 && ./bootstrap-vcpkg.sh
+   $ cd /path/to/scilla
+   $ export VCPKG_ROOT=/path/to/vcpkg
+   $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
+   $ export PKG_CONFIG_PATH="/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
+   ```
+</details>
 
 ## OS-specific setup for building Scilla
 
@@ -64,7 +77,7 @@ Required Ubuntu packages can be installed as below:
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf patchelf
 ```
 
 On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
