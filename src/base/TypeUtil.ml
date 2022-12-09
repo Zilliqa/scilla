@@ -498,17 +498,8 @@ module TypeUtilities = struct
       when Option.is_some preknown_field_type ->
         pure @@ Option.value_exn preknown_field_type
     | Address (ContrAddr (im_fts, m_fts)) -> (
-        let loc_remover fts = 
-          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
-              (get_id f, t))
-        in
-        let loc_removed_fts = 
-          if is_mutable then loc_remover m_fts
-          else loc_remover im_fts
-        in
-        match
-          List.Assoc.find loc_removed_fts (get_id f) ~equal:[%equal: TUName.t]
-        with
+        let fts = if is_mutable then m_fts else im_fts in
+        match IdLoc_Comp.Map.find fts (mk_id (get_id f) dummy_loc) with
         | Some ft -> pure ft
         | None -> not_declared ())
     | _ ->
