@@ -4,7 +4,7 @@ scilla_version 0
 
 contract ReturnBad2()
 
-procedure match_no_ret(a: Bool) -> BNum
+procedure match_no_ret(a: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;
@@ -14,7 +14,7 @@ procedure match_no_ret(a: Bool) -> BNum
     (* Error: no return *)
   end
 end
-procedure match_no_ret_fixed(a: Bool) -> BNum
+procedure match_no_ret_fixed(a: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;

@@ -4,7 +4,7 @@ scilla_version 0
 
 contract ReturnBad6()
 
-procedure dead_code_in_match(a: Bool, b: Bool) -> BNum
+procedure dead_code_in_match(a: Bool, b: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;
@@ -21,7 +21,7 @@ procedure dead_code_in_match(a: Bool, b: Bool) -> BNum
     end
   end
 end
-procedure dead_code_in_match_fixed(a: Bool, b: Bool) -> BNum
+procedure dead_code_in_match_fixed(a: Bool, b: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;

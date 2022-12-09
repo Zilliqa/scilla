@@ -6,6 +6,6 @@ contract ReturnBad7 ()
 
 procedure test
   (x : ByStr20 with contract field x : Uint128 end)
-    -> ByStr20 with contract field x : Uint128, field y : Bool end
+    : ByStr20 with contract field x : Uint128, field y : Bool end
   _return := x
 end

@@ -3,11 +3,11 @@ scilla_version 0
 contract ReturnBad1()
 
 (* Procedure doesn't return *)
-procedure no_return() -> BNum
+procedure no_return() : BNum
   ret = _creation_block
   (* Error: no return *)
 end
-procedure no_return_fixed() -> BNum
+procedure no_return_fixed() : BNum
   ret = _creation_block;
   _return := ret (* OK *)
 end

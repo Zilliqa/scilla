@@ -4,12 +4,12 @@ library Dead8
 
 contract Dead8 ()
 
-procedure pr1() -> Bool
+procedure pr1() : Bool
   res = True;
   _return := res
 end
 
-procedure pr2(a: Bool) -> Bool
+procedure pr2(a: Bool) : Bool
   _return := a
 end
 

@@ -496,7 +496,7 @@ procedure:
       comp_return = ret } }
 
 return_type:
-| TARROW; t = typ; { t }
+| COLON; t = typ; { t }
 
 transition:
 | TRANSITION; t = component_id;

@@ -2,7 +2,7 @@ scilla_version 0
 
 contract ReturnBad5()
 
-procedure nested_match_no_ret(a: Bool, b: Bool) -> BNum
+procedure nested_match_no_ret(a: Bool, b: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;
@@ -18,7 +18,7 @@ procedure nested_match_no_ret(a: Bool, b: Bool) -> BNum
     end
   end
 end
-procedure nested_match_no_ret_fixed(a: Bool, b: Bool) -> BNum
+procedure nested_match_no_ret_fixed(a: Bool, b: Bool) : BNum
   match a with
   | True =>
     ret = _creation_block;

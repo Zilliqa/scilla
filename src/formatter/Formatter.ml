@@ -469,7 +469,7 @@ struct
         | None ->
           (group (comp_type ^^^ comp_name ^//^ comp_params))
         | Some ty ->
-          (group (comp_type ^^^ comp_name ^//^ comp_params ^//^ arrow ^//^ of_type ty))
+          (group (comp_type ^^^ comp_name ^//^ comp_params ^//^ colon ^//^ of_type ty))
         in
         concat_comments comp_comments ^^ signature ^^
           indent (hardline ^^ comp_body) ^^ hardline ^^

@@ -4,12 +4,12 @@ scilla_version 0
 
 contract ReturnBad3()
 
-procedure dead_code() -> BNum
+procedure dead_code() : BNum
   ret = _creation_block;
   _return := ret;
  dead = _creation_block (* Error *)
 end
-procedure dead_code_fixed() -> BNum
+procedure dead_code_fixed() : BNum
   ret = _creation_block;
   _return := ret
 end

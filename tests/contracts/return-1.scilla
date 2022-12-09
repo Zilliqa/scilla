@@ -8,7 +8,7 @@ contract Return1()
 
 field f : Int32 = Int32 0
 
-procedure return_one() -> Int32
+procedure return_one() : Int32
   a = one;
   _return := a
 end
@@ -26,12 +26,12 @@ procedure forbid_negative_f()
   end
 end
 
-procedure id(x: Int32) -> Int32
+procedure id(x: Int32) : Int32
   forbid_negative_f;
   _return := x
 end
 
-procedure add(lhs: Int32, rhs: Int32) -> Int32
+procedure add(lhs: Int32, rhs: Int32) : Int32
   lhs_ = id lhs;
   s = builtin add lhs_ rhs;
   _return := s

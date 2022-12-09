@@ -8,16 +8,16 @@ contract Return1()
 
 field f : Uint32 = Uint32 0
 
-procedure return_one() -> Uint32
+procedure return_one() : Uint32
   a = one;
   _return := a
 end
 
-procedure id(x: Uint32) -> Uint32
+procedure id(x: Uint32) : Uint32
   _return := x
 end
 
-procedure add(lhs: Uint32, rhs: Uint32) -> Uint32
+procedure add(lhs: Uint32, rhs: Uint32) : Uint32
   s = builtin add lhs rhs;
   _return := s
 end
