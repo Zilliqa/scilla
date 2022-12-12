@@ -3,7 +3,7 @@
     {
       "error_message": "Syntax error: Duplicate field name b in address type",
       "start_location": {
-        "file": "base/parser/bad/duplicate_field.scilla",
+        "file": "base/parser/bad/address_duplicate_field.scilla",
         "line": 8,
         "column": 7
       },

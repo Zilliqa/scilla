@@ -34,6 +34,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
 
   let tests =
     [
+      "address_duplicate_field.scilla";
+      "address_spid_as_field.scilla";
       "bad_cast_2.scilla";
       "bad_cast_3.scilla";
       "bad_map_key_2.scilla";
@@ -69,6 +71,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "lmodule-import-cid-as-cid-with.scilla";
       "lmodule-import-cid-as-with.scilla";
       "lmodule-import-cid-with.scilla";
+      "remote_read_namespace.scilla";
       "stmts_t-accept-with.scilla";
       "stmts_t-cid-with.scilla";
       "stmts_t-delete-id-with.scilla";
@@ -136,9 +139,6 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "type_t-map-with.scilla";
       "type_t-tid-arrow-tid-with.scilla";
       "type_t-tid-arrow-with.scilla";
-      "address_spid_as_field.scilla";
-      "remote_read_namespace.scilla";
-      "duplicate_field.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 1
