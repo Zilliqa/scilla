@@ -1,0 +1,15 @@
+scilla_version 0
+
+contract DuplicateField ()
+
+procedure test
+  (
+    a :
+      ByStr20 with contract
+        field a : ByStr20 with end,
+        field b : Map (ByStr20 with end) Bool,
+        field b : Map (ByStr20 with end) Bool
+      end
+  )
+
+end
