@@ -39,6 +39,13 @@ then
     exit 0
 fi
 
+# If not on a linux 64-bit system, exit early.
+if ! uname -a | grep "Linux" | grep "x86_64"
+then
+    echo "Found non-Linux 64-bit system. Please run 'vcpkg install' manually."
+    exit 1
+fi
+
 echo "Installing vcpkg"
 if ! "$VCPKG_ROOT"/vcpkg install --triplet x64-linux-dynamic
 then 
