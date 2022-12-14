@@ -22,7 +22,6 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
    $ cd /path/to/vcpkg && git checkout 2022.09.27 && ./bootstrap-vcpkg.sh
    $ cd /path/to/scilla
    $ export VCPKG_ROOT=/path/to/vcpkg
-   $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
    $ export PKG_CONFIG_PATH="/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```
 </details>

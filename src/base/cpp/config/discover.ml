@@ -1,5 +1,4 @@
 open List
-
 module C = Configurator.V1
 
 let () =
@@ -25,20 +24,22 @@ let () =
         else []
       in
 
-      (* 
-         Find the absolute path to vcpkg's library.
-         Unfortunately, %{project_root} in the dune file always returns a relative path and in order
-         for -L to work properly, we need to give an absolute path.
-         The 'pwd' below returns a sub-directory of the _build directory so currently, we rely
-         on the 'realpath' utility & and the build directory location.
+      (*
+          Find the absolute path to vcpkg's library.
+          Unfortunately, %{project_root} in the dune file always returns a relative path and in order
+          for -L to work properly, we need to give an absolute path.
+          The 'pwd' below returns a sub-directory of the _build directory so currently, we rely
+          on the 'realpath' utility & and the build directory location.
       *)
       let ic = Unix.open_process_in "pwd" in
-      let cmd = "realpath " ^ input_line ic ^ "/../../../../../vcpkg_installed/x64-linux-dynamic/lib" in
+      let cmd =
+        "realpath " ^ input_line ic
+        ^ "/../../../../../vcpkg_installed/x64-linux-dynamic/lib"
+      in
       let ic = Unix.open_process_in cmd in
       let vcpkg_lib_dir = input_line ic in
-      let clib_flags = List.append conf.libs [ "-L" ^ vcpkg_lib_dir ]
+      let clib_flags = List.append conf.libs [ "-L" ^ vcpkg_lib_dir ] in
 
-      in
       C.Flags.write_sexp "c_flags.sexp" conf.cflags;
       C.Flags.write_sexp "c_library_flags.sexp" clib_flags;
       C.Flags.write_sexp "library_flags.sexp" lflags)

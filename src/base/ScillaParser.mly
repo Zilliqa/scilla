@@ -252,7 +252,11 @@ address_typ :
     { if d = "ByStr20"
       then
         let fs' = List.fold_left (fun acc (id, t) -> 
-          SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
+                                   match SType.IdLoc_Comp.Map.add acc ~key:id ~data:t with
+                                   | `Ok new_map -> new_map
+                                   | `Duplicate ->
+                                      raise (SyntaxError (Printf.sprintf "Duplicate field name %s in address type" (ParserIdentifier.as_string id), toLoc $startpos(d))))
+                                 SType.IdLoc_Comp.Map.empty fs
         in
         Address (ContrAddr (SType.IdLoc_Comp.Map.empty, fs'))
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
