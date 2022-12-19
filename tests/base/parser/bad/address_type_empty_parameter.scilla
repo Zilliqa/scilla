@@ -1,0 +1,8 @@
+scilla_version 0
+
+contract T ()
+
+ (* When using () in an address type, must include at least one contract parameter *)
+transition F (z : ByStr20 with contract () end)
+  y <-& x._balance
+end

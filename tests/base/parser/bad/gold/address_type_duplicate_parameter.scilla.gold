@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "error_message":
+        "Syntax error: Duplicate contract parameter name x in address type",
+      "start_location": {
+        "file": "base/parser/bad/address_type_duplicate_parameter.scilla",
+        "line": 6,
+        "column": 55
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

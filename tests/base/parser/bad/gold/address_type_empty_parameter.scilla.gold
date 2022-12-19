@@ -1,0 +1,14 @@
+{
+  "errors": [
+    {
+      "error_message": "Ends in an error in state: 29.\n",
+      "start_location": {
+        "file": "base/parser/bad/address_type_empty_parameter.scilla",
+        "line": 6,
+        "column": 43
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

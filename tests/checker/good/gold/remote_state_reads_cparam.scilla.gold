@@ -1,0 +1,346 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "cparam1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_2", "tag": "(AddressADT )" },
+      { "field": "remote_reads_test_res_3_2", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_3_3", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_4_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_4_2", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_5_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_5_3", "tag": "(Option NoInfo)" },
+      { "field": "remote_reads_test_res_5_5", "tag": "(Option NoInfo)" },
+      { "field": "remote_reads_test_res_6_1", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_6_2", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_7_3", "tag": "(Option NotMoney)" },
+      { "field": "remote_reads_test_res_7_6", "tag": "(Option NotMoney)" }
+    ],
+    "ADT constructors": []
+  },
+  "contract_info": {
+    "scilla_major_version": "0",
+    "vname": "RRCPContract",
+    "params": [ { "vname": "cparam1", "type": "ByStr20 with end" } ],
+    "fields": [
+      { "vname": "remote_reads_test_res_1", "type": "Uint128", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_2",
+        "type": "remote_state_reads_cparam.AddressADT",
+        "depth": 0
+      },
+      { "vname": "remote_reads_test_res_3_2", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_3_3", "type": "Uint64", "depth": 0 },
+      { "vname": "remote_reads_test_res_4_1", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_4_2", "type": "String", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_5_1",
+        "type": "Map (Uint128) (Bool)",
+        "depth": 1
+      },
+      {
+        "vname": "remote_reads_test_res_5_3",
+        "type": "Option (Bool)",
+        "depth": 0
+      },
+      {
+        "vname": "remote_reads_test_res_5_5",
+        "type": "Option (Option (Bool))",
+        "depth": 0
+      },
+      { "vname": "remote_reads_test_res_6_1", "type": "Uint128", "depth": 0 },
+      { "vname": "remote_reads_test_res_6_2", "type": "Uint64", "depth": 0 },
+      {
+        "vname": "remote_reads_test_res_7_3",
+        "type": "Option (Bool)",
+        "depth": 0
+      },
+      {
+        "vname": "remote_reads_test_res_7_6",
+        "type": "Option (Bool)",
+        "depth": 0
+      }
+    ],
+    "transitions": [
+      {
+        "vname": "RemoteReadContractParameterTest1",
+        "params": [
+          {
+            "vname": "remote1",
+            "type": "ByStr20 with contract (x : Uint128) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest2",
+        "params": [
+          {
+            "vname": "remote2",
+            "type":
+              "ByStr20 with contract (x : remote_state_reads_cparam.AddressADT) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest3",
+        "params": [
+          {
+            "vname": "remote3",
+            "type":
+              "ByStr20 with contract (x : ByStr20 with contract (x : Uint128) field y : Uint64 end) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest4",
+        "params": [
+          {
+            "vname": "remote4",
+            "type": "ByStr20 with contract (x : Uint128, y : String) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest5",
+        "params": [
+          {
+            "vname": "remote5",
+            "type": "ByStr20 with contract (x : Map (Uint128) (Bool)) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest6",
+        "params": [
+          {
+            "vname": "remote6",
+            "type":
+              "ByStr20 with contract (x : Uint128) field x : Uint64 end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadContractParameterTest7",
+        "params": [
+          {
+            "vname": "remote7",
+            "type":
+              "ByStr20 with contract (x : Uint128, y : Uint64) field x : Uint128, field y : Uint64 end"
+          }
+        ]
+      }
+    ],
+    "procedures": [],
+    "events": [],
+    "ADTs": [
+      {
+        "tname": "Option",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Some", "argtypes": [ "'A" ] },
+          { "cname": "None", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "remote_state_reads_cparam.AddressADT",
+        "tparams": [],
+        "tmap": [
+          {
+            "cname": "remote_state_reads_cparam.Address1",
+            "argtypes": [ "ByStr20 with end" ]
+          },
+          {
+            "cname": "remote_state_reads_cparam.Address2",
+            "argtypes": [
+              "ByStr20 with contract (param : ByStr20 with contract (x : Uint128) end) field admin : ByStr20 with end end"
+            ]
+          }
+        ]
+      },
+      {
+        "tname": "Bool",
+        "tparams": [],
+        "tmap": [
+          { "cname": "True", "argtypes": [] },
+          { "cname": "False", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Nat",
+        "tparams": [],
+        "tmap": [
+          { "cname": "Zero", "argtypes": [] },
+          { "cname": "Succ", "argtypes": [ "Nat" ] }
+        ]
+      },
+      {
+        "tname": "List",
+        "tparams": [ "'A" ],
+        "tmap": [
+          { "cname": "Cons", "argtypes": [ "'A", "List ('A)" ] },
+          { "cname": "Nil", "argtypes": [] }
+        ]
+      },
+      {
+        "tname": "Pair",
+        "tparams": [ "'A", "'B" ],
+        "tmap": [ { "cname": "Pair", "argtypes": [ "'A", "'B" ] } ]
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "warning_message": "Write only field: remote_reads_test_res_7_6",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 93,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_7_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 89,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_6_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 80,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_6_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 78,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_5_5",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 71,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_5_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 68,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_5_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 64,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_4_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 57,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_4_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 56,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 48,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_3_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 46,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 38,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 31,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused ADT constructor: Address2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 8,
+        "column": 1
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message":
+        "No transition in contract RRCPContract contains an accept statement\n",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 10,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
