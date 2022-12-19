@@ -460,8 +460,7 @@ remote_fetch_stmt:
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Mutable, keys, false), toLoc $startpos }
 | l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; LPAREN; r = ID; RPAREN; keys = nonempty_list(map_access)
   { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Immutable, keys, false), toLoc $startpos }
-| (* Adding this production in preparation for address type casts *)
-  l = ID; FETCH; AND; adr = sident; AS; t = address_typ
+| l = ID; FETCH; AND; adr = sident; AS; t = address_typ
   { TypeCast(to_loc_id l (toLoc $startpos(l)), adr, t), toLoc $startpos }
 
 stmt_pm_clause:
