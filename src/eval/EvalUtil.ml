@@ -397,7 +397,7 @@ module Configuration = struct
       (* Check that sender balance is sufficient *)
       let%bind sender_addr = lookup_sender_addr st in
       let%bind sender_balance_l =
-        remote_load st sender_addr (mk_loc_id balance_label) false
+        remote_load st sender_addr (mk_loc_id balance_label) true
       in
       let incoming' = st.incoming_funds in
       match sender_balance_l with
@@ -555,7 +555,7 @@ module EvalTypecheck = struct
   let is_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id this_address_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:false ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:true ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -563,7 +563,7 @@ module EvalTypecheck = struct
   let is_library_or_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id codehash_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:false ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~_mutable_field:true ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -578,11 +578,11 @@ module EvalTypecheck = struct
     let balance_id = EvalIdentifier.mk_loc_id balance_label in
     let nonce_id = EvalIdentifier.mk_loc_id nonce_label in
     let%bind balance_lit, _ =
-      StateService.external_fetch ~caddr ~fname:balance_id ~_mutable_field:false ~keys:[]
+      StateService.external_fetch ~caddr ~fname:balance_id ~_mutable_field:true ~keys:[]
         ~ignoreval:false
     in
     let%bind nonce_lit, _ =
-      StateService.external_fetch ~caddr ~fname:nonce_id ~_mutable_field:false ~keys:[]
+      StateService.external_fetch ~caddr ~fname:nonce_id ~_mutable_field:true ~keys:[]
         ~ignoreval:false
     in
     match (balance_lit, nonce_lit) with
