@@ -36,6 +36,7 @@ open SSIdentifier
 
 type ss_field = {
   fname : SSName.t;
+  f_is_mutable : bool;
   ftyp : SSType.t;
   fval : SSLiteral.t option; (* We may or may not have the value in memory. *)
 }
@@ -69,25 +70,26 @@ module MakeStateService () = struct
     | Uninitialized -> fail0 ~kind:"StateService: Uninitialized" ?inst:None
     | SS (sm, fields, estates, bcinfo) -> pure (sm, fields, estates, bcinfo)
 
-  let field_type fields fname =
+  let field_type fields fname is_mutable =
     match
-      List.find fields ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+      List.find fields ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname) && ([%equal:bool] z.f_is_mutable is_mutable))
     with
     | Some f -> pure @@ f.ftyp
     | None ->
         fail1
           ~kind:
-            (sprintf "StateService: Unable to determine the type of field %s."
+            (sprintf "StateService: Unable to determine the type of %s %s."
+               (if is_mutable then "field" else "contract parameter")
                (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
 
-  let fetch_local ~fname ~keys fields =
+  let fetch_local ~fname ~is_mutable ~keys fields =
     let s = fields in
     match
-      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname) && ([%equal:bool] z.f_is_mutable is_mutable))
     with
-    | Some { fname = _; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
+    | Some { fname = _; f_is_mutable = _ ; ftyp = MapType _; fval = Some (Map ((kt, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let%bind ret_val_type =
           SSTypeUtil.map_access_type (MapType (kt, vt)) (List.length keys)
@@ -139,11 +141,12 @@ module MakeStateService () = struct
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
-    | Some { fname = _; ftyp = _; fval = Some l } -> pure @@ Some l
+    | Some { fname = _; f_is_mutable = _ ; ftyp = _; fval = Some l } -> pure @@ Some l
     | _ ->
         fail1
           ~kind:
-            (sprintf "StateService: field \"%s\" not found.\n"
+            (sprintf "StateService: %s \"%s\" not found.\n"
+               (if is_mutable then "field" else "contract parameter")
                (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
@@ -152,7 +155,7 @@ module MakeStateService () = struct
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr -> (
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
         if not @@ List.is_empty keys then pure @@ res
         else
@@ -165,7 +168,7 @@ module MakeStateService () = struct
                 ?inst:None
                 (ER.get_loc (get_rep fname))
           | Some _res' -> pure @@ res)
-    | Local -> fetch_local ~fname ~keys fields
+    | Local -> fetch_local ~fname ~is_mutable:true ~keys fields
 
   let fetch_bcinfo ~query_name ~query_args =
     let%bind sm, _fields, _estates, bcinfo = assert_init () in
@@ -194,12 +197,12 @@ module MakeStateService () = struct
      *     if ~ignoreval is false: (Some val, Some type) is returned
      * Else: (None, None) is returned
   *)
-  let external_fetch ~caddr ~fname ~(_mutable_field:bool) ~keys ~ignoreval =
+  let external_fetch ~caddr ~fname ~is_mutable ~keys ~ignoreval =
     let%bind sm, _fields, estates, _bcinfo = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
     | IPC socket_addr ->
-        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~keys
+        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~_is_mutable:is_mutable ~keys
           ~ignoreval
     | Local -> (
         match
@@ -211,12 +214,12 @@ module MakeStateService () = struct
         | Some fields -> (
             match
               List.find_map fields ~f:(fun field ->
-                  if SSName.equal field.fname (get_id fname) then
+                  if SSName.equal field.fname (get_id fname) && ([%equal:bool] field.f_is_mutable is_mutable) then
                     Some field.ftyp
                   else None)
             with
             | Some stored_tp ->
-                let%bind res = fetch_local ~fname ~keys fields in
+                let%bind res = fetch_local ~fname ~is_mutable ~keys fields in
                 pure (res, Option.map res ~f:(fun _ -> stored_tp))
             | None -> pure (None, None))
         | None -> pure (None, None))
@@ -224,9 +227,9 @@ module MakeStateService () = struct
   let update_local ~fname ~keys vopt fields =
     let s = fields in
     match
-      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
+      List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname) && z.f_is_mutable)
     with
-    | Some { fname = _; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
+    | Some { fname = _; f_is_mutable = true ; ftyp = _; fval = Some (Map ((_, vt), mlit)) }
       when not @@ List.is_empty keys ->
         let rec recurser mlit' klist' vt' =
           match klist' with
@@ -289,14 +292,14 @@ module MakeStateService () = struct
                 (ER.get_loc (get_rep fname))
         in
         recurser mlit keys vt
-    | Some { fname = f; ftyp = t; fval = Some _ } -> (
+    | Some { fname = f; f_is_mutable = true; ftyp = t; fval = Some _ } -> (
         match vopt with
         | Some fval' ->
             let fields' =
               List.filter fields ~f:(fun f ->
-                  not ([%equal: SSName.t] f.fname (get_id fname)))
+                  not ([%equal: SSName.t] f.fname (get_id fname) && f.f_is_mutable))
             in
-            pure ({ fname = f; ftyp = t; fval = Some fval' } :: fields')
+            pure ({ fname = f; f_is_mutable = true; ftyp = t; fval = Some fval' } :: fields')
         | None ->
             fail1
               ~kind:
@@ -317,7 +320,7 @@ module MakeStateService () = struct
     let%bind sm, fields, estates, bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
     | Local ->
         let%bind fields' = update_local ~fname ~keys (Some value) fields in
@@ -325,15 +328,15 @@ module MakeStateService () = struct
         pure ()
 
   (* Is a key in a map. keys must be non-empty. *)
-  let is_member ~fname ~keys =
+  let is_member ~fname ~is_mutable ~keys =
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
-        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
+        let%bind tp = field_type fields fname is_mutable in
+        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~_is_mutable:is_mutable ~keys ~tp in
         pure @@ res
     | Local ->
-        let%bind v = fetch_local ~fname ~keys fields in
+        let%bind v = fetch_local ~fname ~is_mutable ~keys fields in
         pure @@ Option.is_some v
 
   (* Remove a key from a map. keys must be non-empty. *)
@@ -341,7 +344,7 @@ module MakeStateService () = struct
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         StateIPCClient.remove ~socket_addr ~fname ~keys ~tp
     | Local ->
         let%bind _ = update_local ~fname ~keys None fields in
@@ -358,21 +361,23 @@ module MakeStateService () = struct
             | None ->
                 fail0
                   ~kind:
-                    (sprintf "StateService: Field %s's value is not known"
+                    (sprintf "StateService: %s %s's value is not known"
+                       (if f.f_is_mutable then "Field" else "Contract parameter")
                        (SSName.as_error_string f.fname))
                   ?inst:None
-            | Some l -> pure (f.fname, f.ftyp, l))
+            | Some l -> pure (f.fname, f.f_is_mutable, f.ftyp, l))
     | SS (IPC _, fl, _estates, _bcstate) ->
         let%bind sl =
           mapM fl ~f:(fun f ->
               let%bind vopt = fetch ~fname:(mk_loc_id f.fname) ~keys:[] in
               match vopt with
-              | Some v -> pure (f.fname, f.ftyp, v)
+              | Some v -> pure (f.fname, f.f_is_mutable, f.ftyp, v)
               | None ->
                   fail0
                     ~kind:
                       (sprintf
-                         "StateService: Field %s's value not found on server"
+                         "StateService: %s %s's value not found on server"
+                         (if f.f_is_mutable then "Field" else "Contract parameter")
                          (SSName.as_error_string f.fname))
                     ?inst:None)
         in

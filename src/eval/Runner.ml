@@ -518,7 +518,7 @@ let run_with_args args =
                   let fields =
                     List.filter_map cstate'.fields ~f:(fun (s, t) ->
                         if [%equal: RunnerName.t] s balance_label then None
-                        else Some { fname = s; ftyp = t; fval = None })
+                        else Some { fname = s; f_is_mutable = true; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
                   let () =
@@ -602,7 +602,7 @@ let run_with_args args =
                       List.filter_map cstate.fields ~f:(fun (s, t) ->
                           let open StateService in
                           if [%equal: RunnerName.t] s balance_label then None
-                          else Some { fname = s; ftyp = t; fval = None })
+                          else Some { fname = s; f_is_mutable = true; ftyp = t; fval = None })
                     in
                     let () =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
@@ -654,14 +654,14 @@ let run_with_args args =
                     let fields =
                       List.map field_vals ~f:(fun (s, t, l) ->
                           let open StateService in
-                          { fname = s; ftyp = t; fval = Some l })
+                          { fname = s; f_is_mutable = true; ftyp = t; fval = Some l })
                     in
                     let ext_states =
                       let open StateService in
                       List.map ext_states ~f:(fun (addr, fields) ->
                           let fields' =
                             List.map fields ~f:(fun (n, t, l) ->
-                                { fname = n; ftyp = t; fval = Some l })
+                                { fname = n; f_is_mutable = true (* TODO: handle immutables *); ftyp = t; fval = Some l })
                           in
                           { caddr = addr; cstate = fields' })
                     in
