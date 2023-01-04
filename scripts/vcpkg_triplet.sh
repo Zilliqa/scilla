@@ -16,34 +16,24 @@
 ##  You should have received a copy of the GNU General Public License along with
 ##  scilla.  If not, see <http://www.gnu.org/licenses/>.
 
-# This script is expected to be executed from Scilla root
-# $./scripts/vcpkg.sh
-# The script installs vcpkg in the vcpkg_installed directory of Scilla root.
+# Determine vcpkg os and arch triplet
+OS="unknown"
+ARCH="$(uname -m)"
 
-if [ -z "${VCPKG_ROOT}" ]; then
-  echo -e "\033[1;33mVCPKG_ROOT is not set\033[0m"
-  exit 1
-fi
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     OS=linux;;
+    Darwin*)    OS=osx;;
+    *)          echo "Unknown machine ${unameOut}"
+esac
 
-# Check if CWD has `scilla.opam`, assuring us that it's the root.
-if [[ ! -f scilla.opam ]]
-then
-   echo "Please run this script from Scilla root"
-   exit 1
-fi
+unameOut="$(uname -m)"
+case "${unameOut}" in
+    arm*)       ARCH=arm64;;
+    x86_64*)    ARCH=x64;;
+    *)          echo "Unknown machine ${unameOut}"
+esac
 
-# If already installed, exit early.
-if [[ -d vcpkg_installed ]]
-then
-    echo "Found vcpkg_installed, not installing again"
-    exit 0
-fi
+VCPKG_TRIPLET=${ARCH}-${OS}-dynamic
+echo ${VCPKG_TRIPLET}
 
-echo "Installing vcpkg"
-if ! "$VCPKG_ROOT"/vcpkg install --triplet "$(scripts/vcpkg_triplet.sh)"
-then 
-    echo "vcpkg installation failed"
-    exit 1
-fi
-
-echo "vcpkg: installation complete"
