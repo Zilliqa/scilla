@@ -251,9 +251,12 @@ address_typ :
 | d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
       then
-        (* Add _this_address : ByStr20 to field list. This ensures the type is treated as a contract address *)
         let fs' = List.fold_left (fun acc (id, t) -> 
-          SType.IdLoc_Comp.Map.set acc ~key:id ~data:t) SType.IdLoc_Comp.Map.empty fs
+                                   match SType.IdLoc_Comp.Map.add acc ~key:id ~data:t with
+                                   | `Ok new_map -> new_map
+                                   | `Duplicate ->
+                                      raise (SyntaxError (Printf.sprintf "Duplicate field name %s in address type" (ParserIdentifier.as_string id), toLoc $startpos(d))))
+                                 SType.IdLoc_Comp.Map.empty fs
         in
         Address (ContrAddr fs')
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
