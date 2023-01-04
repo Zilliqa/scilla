@@ -30,70 +30,82 @@ module type QualifiedName = sig
   val as_error_string : t -> string
   val parse_simple_name : string -> t
   val parse_qualified_name : string -> string -> t
+
+  include Comparable.S with type t := t
 end
 
 (* Localised names within a contract.
    Name qualifiers refer to the contract's import namespaces.
    Fields, parameters, variables and type variables are never qualified. *)
 module LocalName = struct
-  type t =
-    (* A SimpleLocal is a name that is either defined within the module, or
-       defined in an external library imported without a namespace, i.e.
-       "import X" *)
-    | SimpleLocal of string
-    (* A QualifiedLocal is a name that is defined in an external library imported
-       with a namespace, i.e., "import X as Y".
-       The first string is the namespace "Y".
-       The second string is the externally defined name. *)
-    | QualifiedLocal of string * string
-  [@@deriving sexp, equal, compare]
+  module T = struct
+    type t =
+      (* A SimpleLocal is a name that is either defined within the module, or
+         defined in an external library imported without a namespace, i.e.
+         "import X" *)
+      | SimpleLocal of string
+      (* A QualifiedLocal is a name that is defined in an external library imported
+         with a namespace, i.e., "import X as Y".
+         The first string is the namespace "Y".
+         The second string is the externally defined name. *)
+      | QualifiedLocal of string * string
+    [@@deriving sexp, equal, compare]
 
-  let as_string = function
-    | SimpleLocal n -> n
-    | QualifiedLocal (ns, n) -> flatten_name ns n
+    let as_string = function
+      | SimpleLocal n -> n
+      | QualifiedLocal (ns, n) -> flatten_name ns n
 
-  let as_error_string = as_string
-  let parse_simple_name n = SimpleLocal n
-  let parse_qualified_name ns n = QualifiedLocal (ns, n)
+    let as_error_string = as_string
+    let parse_simple_name n = SimpleLocal n
+    let parse_qualified_name ns n = QualifiedLocal (ns, n)
+  end
+
+  include T
+  include Comparable.Make (T)
 end
 
 (* Global, canonical names.
    Name qualifiers refer to the defining library's address.
    Fields, parameters, variables and type variables are never qualified. *)
 module GlobalName = struct
-  type t_name =
-    (* A SimpleGlobal is a name defined in the impure part of a contract:
-       - Local variables
-       - Transition and procedure parameters
-       - Fields and contract parameters
-       SimpleGlobals are not exposed to the outside world. *)
-    | SimpleGlobal of string (* name *)
-    (* A QualifiedGlobal is name that is defined in the library part of a contract,
-       or in an imported library:
-       - Library variables
-       - User-defined types
-       - User-defined type constructors
-       These names may or may not be exposed to the outside world.
-       The first string is the address of the defining library.
-       The second string is the simple name. *)
-    | QualifiedGlobal of string * string (* address and name *)
-  [@@deriving sexp, equal, compare]
+  module T = struct
+    type t_name =
+      (* A SimpleGlobal is a name defined in the impure part of a contract:
+         - Local variables
+         - Transition and procedure parameters
+         - Fields and contract parameters
+         SimpleGlobals are not exposed to the outside world. *)
+      | SimpleGlobal of string (* name *)
+      (* A QualifiedGlobal is name that is defined in the library part of a contract,
+         or in an imported library:
+         - Library variables
+         - User-defined types
+         - User-defined type constructors
+         These names may or may not be exposed to the outside world.
+         The first string is the address of the defining library.
+         The second string is the simple name. *)
+      | QualifiedGlobal of string * string (* address and name *)
+    [@@deriving sexp, equal, compare]
 
-  (* The type t contains a t_name as described above, and a user-readable string for error reporting. *)
-  type t = t_name * string (* error string *) [@@deriving sexp, compare]
+    (* The type t contains a t_name as described above, and a user-readable string for error reporting. *)
+    type t = t_name * string (* error string *) [@@deriving sexp, compare]
 
-  (* Do not use derived equality, because the error string of imported names
-     will be different from the error string where the name is used *)
-  let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
-  let compare ((an, _) : t) ((bn, _) : t) : int = [%compare: t_name] an bn
+    (* Do not use derived equality, because the error string of imported names
+       will be different from the error string where the name is used *)
+    let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
+    let compare ((an, _) : t) ((bn, _) : t) : int = [%compare: t_name] an bn
 
-  let as_string = function
-    | SimpleGlobal n, _ -> n
-    | QualifiedGlobal (ns, n), _ -> flatten_name ns n
+    let as_string = function
+      | SimpleGlobal n, _ -> n
+      | QualifiedGlobal (ns, n), _ -> flatten_name ns n
 
-  let as_error_string = function _, s -> s
-  let parse_simple_name n = (SimpleGlobal n, n)
-  let parse_qualified_name ns n = (QualifiedGlobal (ns, n), flatten_name ns n)
+    let as_error_string = function _, s -> s
+    let parse_simple_name n = (SimpleGlobal n, n)
+    let parse_qualified_name ns n = (QualifiedGlobal (ns, n), flatten_name ns n)
+  end
+
+  include T
+  include Comparable.Make (T)
 end
 
 module type ScillaIdentifier = sig
