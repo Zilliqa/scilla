@@ -492,14 +492,9 @@ struct
   (* ************************************************** *)
 
   module CheckUnboxing = struct
-    module SCIdentifierComp = struct
-      include SCIdentifier.Name
-      include Comparable.Make (SCIdentifier.Name)
-    end
+    module SCIdentifierSet = Set.Make (SCIdentifier.Name)
 
-    module SCIdentifierSet = Set.Make (SCIdentifierComp)
-
-    let emp_ids_map = Map.empty (module SCIdentifierComp)
+    let emp_ids_map = Map.empty (module SCIdentifier.Name)
     let emp_ids_set = SCIdentifierSet.empty
 
     let is_option_name id =
@@ -792,8 +787,8 @@ struct
       in
       collect_function_calls cg
       |> List.fold_left
-           ~init:(Map.empty (module SCIdentifierComp))
-           ~f:(fun m (fun_name : SCIdentifierComp.t) ->
+           ~init:(Map.empty (module SCIdentifier.Name))
+           ~f:(fun m (fun_name : SCIdentifier.Name.t) ->
              match handle_lentries lentries m fun_name with
              | Some arg_matches -> Map.set m ~key:fun_name ~data:arg_matches
              | None -> (
