@@ -87,13 +87,13 @@ module GlobalName = struct
       | QualifiedGlobal of string * string (* address and name *)
     [@@deriving sexp, equal, compare]
 
-    (* The type t contains a t_name as described above, and a user-readable string for error reporting. *)
-    type t = t_name * string (* error string *) [@@deriving sexp, compare]
-
-    (* Do not use derived equality, because the error string of imported names
-       will be different from the error string where the name is used *)
-    let equal ((an, _) : t) ((bn, _) : t) : bool = [%equal: t_name] an bn
-    let compare ((an, _) : t) ((bn, _) : t) : int = [%compare: t_name] an bn
+    type t = t_name * (string[@compare.ignore] [@equal.ignore])
+    [@@deriving sexp, compare, equal]
+    (** The type [t] contains a [t_name] as described above, and a
+        user-readable string for error reporting. The error string is not used
+        in derived equality and comparison operations, because the error string
+        of imported names will be different from the error string where the
+        name is used. *)
 
     let as_string = function
       | SimpleGlobal n, _ -> n
