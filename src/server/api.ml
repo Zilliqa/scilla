@@ -87,4 +87,11 @@ module API (R : RPC) = struct
     declare "disambiguate"
       [ "Disambiguate Scilla names" ]
       (disambiguator_argv @-> returning disambiguator_return disambiguator_error)
+
+  let version_return = Param.mk Rpc.Types.string
+  let version_error = RPCError.err
+
+  let version =
+    declare "version" [ "Get Scilla version" ]
+      (noargs @@ returning version_return version_error)
 end
