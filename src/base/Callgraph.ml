@@ -73,7 +73,6 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
     [@@deriving sexp]
 
     let mk id ty = { id; ty; out_edges = []; in_edges = [] }
-
     let id n = n.id
 
     let succs node =
