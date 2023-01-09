@@ -6,14 +6,21 @@ vcpkg_from_github(
     HEAD_REF master
 )
 
-vcpkg_cmake_configure(
-    SOURCE_PATH ${SOURCE_PATH}
-    OPTIONS
-      -DCMAKE_CXX_FLAGS=-Wno-dev
-      -DCMAKE_C_FLAGS=-Wno-dev
-)
+if (UNIX AND NOT APPLE)
+  vcpkg_cmake_configure(
+      SOURCE_PATH ${SOURCE_PATH}
+      OPTIONS
+        -DCMAKE_CXX_FLAGS=-Wno-dev
+        -DCMAKE_C_FLAGS=-Wno-dev
+  )
+else()
+  vcpkg_cmake_configure(
+      SOURCE_PATH ${SOURCE_PATH}
+  )
+endif()
 
 vcpkg_cmake_install()
 
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 

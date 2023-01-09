@@ -61,15 +61,10 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     include Comparable.Make (T)
   end
 
-  module PIdentifierComp = struct
-    include PIdentifier.Name
-    include Comparable.Make (PIdentifier.Name)
-  end
-
-  module PIdentifierSet = Set.Make (PIdentifierComp)
+  module PIdentifierSet = Set.Make (PIdentifier.Name)
   open PSyntax
 
-  let emp_ids_map = Map.empty (module PIdentifierComp)
+  let emp_ids_map = Map.empty (module PIdentifier.Name)
 
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
@@ -137,7 +132,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
          name)
       Util.disambiguate_warning_level (Lazy.force loc);
     Set.to_list candidates
-    |> List.sort ~compare:PIdentifierComp.compare
+    |> List.sort ~compare:PIdentifier.Name.compare
     |> List.fold_left ~init:[] ~f:(fun acc l ->
            acc @ [ PIdentifier.Name.as_string l ])
     |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
@@ -459,10 +454,9 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let rhs' = rename_local_er renames_map rhs in
         (Load (lhs', rhs'), annot)
     | RemoteLoad (lhs, adr, rhs) ->
-        (* Address will be replaced in the Remote pass. *)
+        (* The Remote pass will remove address and rename [rhs]. *)
         let lhs' = rename_local_er renames_map lhs in
-        let rhs' = rename_local_er renames_map rhs in
-        (RemoteLoad (lhs', adr, rhs'), annot)
+        (RemoteLoad (lhs', adr, rhs), annot)
     | Store (lhs, rhs) ->
         let lhs' = rename_local_er renames_map lhs in
         let rhs' = rename_local_er renames_map rhs in

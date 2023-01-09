@@ -1,8 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 ##  This file is part of scilla.
 ##
-##  Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
+##  Copyright (c) 2022 - present Zilliqa Research Pvt. Ltd.
 ##  
 ##  scilla is free software: you can redistribute it and/or modify it under the
 ##  terms of the GNU General Public License as published by the Free Software
@@ -16,15 +16,24 @@
 ##  You should have received a copy of the GNU General Public License along with
 ##  scilla.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -d ~/openssl/install ]
-then
-    echo "OpenSSL already installed, exiting"
-    exit 0
-fi
+# Determine vcpkg os and arch triplet
+OS="unknown"
+ARCH="$(uname -m)"
 
-git clone https://github.com/openssl/openssl.git ~/openssl/src
-cd ~/openssl/src || exit
-git checkout tags/OpenSSL_1_1_1
-./config --prefix="${HOME}"/openssl/install --openssldir="${HOME}"/openssl/ssl
-make -j4
-make install
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     OS=linux;;
+    Darwin*)    OS=osx;;
+    *)          echo "Unknown machine ${unameOut}"
+esac
+
+unameOut="$(uname -m)"
+case "${unameOut}" in
+    arm*)       ARCH=arm64;;
+    x86_64*)    ARCH=x64;;
+    *)          echo "Unknown machine ${unameOut}"
+esac
+
+VCPKG_TRIPLET=${ARCH}-${OS}-dynamic
+echo ${VCPKG_TRIPLET}
+

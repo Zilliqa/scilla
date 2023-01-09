@@ -22,8 +22,7 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
    $ cd /path/to/vcpkg && git checkout 2022.09.27 && ./bootstrap-vcpkg.sh
    $ cd /path/to/scilla
    $ export VCPKG_ROOT=/path/to/vcpkg
-   $ $VCPKG_ROOT/vcpkg install --triplet x64-linux-dynamic
-   $ export PKG_CONFIG_PATH="/path/to/scilla/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig:$PKG_CONFIG_PATH"
+   $ export PKG_CONFIG_PATH="$(pwd)/vcpkg_installed/$(scripts/vcpkg_triplet.sh)/lib/pkgconfig:$PKG_CONFIG_PATH"
    ```
 </details>
 
@@ -77,7 +76,7 @@ Required Ubuntu packages can be installed as below:
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf patchelf
 ```
 
 On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.

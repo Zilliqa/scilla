@@ -6,6 +6,7 @@ OCAML_VERSION_RECOMMENDED=4.11.2
 OCAMLFORMAT_VERSION=0.22.4
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
+VCPKG_BASE=${PWD}/vcpkg_installed/$(shell scripts/vcpkg_triplet.sh)
 
 # Dependencies useful for developing Scilla
 OPAM_DEV_DEPS := \
@@ -13,6 +14,19 @@ merlin \
 ocamlformat.$(OCAMLFORMAT_VERSION) \
 ocp-indent \
 utop
+
+# Determine the rpath patch tool based on the OS
+OS_NAME := $(shell uname -s)
+ifeq ($(OS_NAME),Linux)
+	RPATH_CMD := patchelf --set-rpath
+endif
+ifeq ($(OS_NAME),Darwin)
+	RPATH_CMD := install_name_tool -add_rpath
+endif
+
+define patch_rpath
+	find _build/default/$(1) -type f -name '*.exe' -exec chmod u+w \{} \; -exec $(RPATH_CMD) "$(VCPKG_BASE)/lib" \{} \; -exec chmod u+w \{} \;
+endef
 
 .PHONY: default release utop dev clean docker zilliqa-docker
 
@@ -24,6 +38,7 @@ default: release
 release:
 	./scripts/build_deps.sh
 	dune build --profile release @install
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
@@ -31,12 +46,14 @@ slim:
 	./scripts/build_deps.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
 	./scripts/build_deps.sh
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
@@ -68,9 +85,13 @@ install : release
 
 # This is different from the target "test" which runs on dev builds.
 test_install : install
-	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
-	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune build --profile release tests/polynomials/testsuite_polynomials.exe
+	dune build --profile release tests/base/testsuite_base.exe
+	dune build --profile release tests/testsuite.exe
+	$(call patch_rpath,tests)
+	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
 
 uninstall : release
 	dune uninstall
@@ -89,36 +110,52 @@ debug :
 
 testbase: dev
   # This effectively adds all the runners into PATH variable
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
+	dune build --profile dev tests/base/testsuite_base.exe
+	$(call patch_rpath,tests)
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
 
 goldbase: dev
-	ulimit -n 4096; dune exec tests/base/testsuite_base.exe -- -update-gold true
+	dune build --profile dev tests/base/testsuite_base.exe
+	$(call patch_rpath,tests)
+	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
 
 # Run all tests for all packages in the repo: scilla-base, polynomials, scilla
 test: dev
-	ulimit -n 1024; dune exec -- tests/polynomials/testsuite_polynomials.exe
-	ulimit -n 1024; dune exec -- tests/base/testsuite_base.exe -print-diff true
-	ulimit -n 1024; dune exec -- tests/testsuite.exe -print-diff true
+	dune build --profile dev tests/polynomials/testsuite_polynomials.exe
+	dune build --profile dev tests/base/testsuite_base.exe
+	dune build --profile dev tests/testsuite.exe
+	$(call patch_rpath,tests)
+	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
+	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
+	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
 	dune runtest --force
 
 gold: dev
-	ulimit -n 4096; dune exec -- tests/base/testsuite_base.exe -update-gold true
-	ulimit -n 4096; dune exec -- tests/testsuite.exe -update-gold true
+	dune build --profile dev tests/base/testsuite_base.exe
+	dune build --profile dev tests/testsuite.exe
+	$(call patch_rpath,tests)
+	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
+	ulimit -n 4096; dune exec --no-build -- tests/testsuite.exe -update-gold true
 	dune promote
 
 # This must be run only if there is an external IPC server available
 # that can handle access requests. It is important to use the sequential runner here as we
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
-	dune exec -- tests/testsuite.exe -print-diff true -runner sequential \
+	dune build --profile dev tests/testsuite.exe
+	$(call patch_rpath,tests)
+	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
 # Run tests in server-mode
 test_server: dev
 	dune build src/runners/scilla_server.exe
+	$(call patch_rpath,src/runners)
+	dune build --profile dev tests/testsuite.exe
+	$(call patch_rpath,tests)
 	./_build/default/src/runners/scilla_server.exe &
-	dune exec tests/testsuite.exe -- -print-diff true -runner sequential \
+	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
   -server true \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
 
