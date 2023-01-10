@@ -1,0 +1,35 @@
+scilla_version 0
+
+library RedundantCalls3
+
+contract RedundantCalls3()
+
+field is_paused: Bool = False
+field dummy: Uint32 = Uint32 1
+
+(* The callgraph for this contract looks like:
+                tr     pr1
+                |       |
+               pure    pure
+
+   The checker should not support removal of the [pure] call in [pr], because
+   nobody calls it. *)
+
+procedure pure()
+  paused <- is_paused;
+  match paused with
+  | False =>
+  | True =>
+    exn = { _exception : "Error"};
+    throw exn
+  end
+end
+
+procedure pr1(a: Uint32)
+  pure;
+  dummy := a
+end
+
+transition tr(a: Uint32)
+  pure
+end
