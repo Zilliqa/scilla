@@ -2,7 +2,7 @@
   "gas_remaining": "8000",
   "errors": [
     {
-      "error_message": "Every arm of the match statement must return because one of arms returns",
+      "error_message": "Every arm of the match statement must return because one of the arms returns",
       "start_location": {
         "file": "checker/bad/return-bad2.scilla",
         "line": 8,

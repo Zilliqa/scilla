@@ -927,7 +927,7 @@ struct
                     fail1
                       ~kind:
                         "Every arm of the match statement must return because \
-                         one of arms returns"
+                         one of the arms returns"
                       (ER.get_loc (get_rep id))
                   else pure @@ ())
             in
