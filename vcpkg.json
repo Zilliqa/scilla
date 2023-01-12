@@ -23,10 +23,6 @@
       "version-string": "1.1.1n"
     },
     {
-      "name": "protobuf",
-      "version": "3.9.1"
-    },
-    {
       "name": "schnorr",
       "version": "8.2.0"
     },
