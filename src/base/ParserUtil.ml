@@ -26,7 +26,7 @@ open GasCharge
 (*******************************************************)
 
 module ParserRep = struct
-  type rep = loc [@@deriving sexp]
+  type rep = loc [@@deriving sexp, to_yojson]
 
   let dummy_rep = dummy_loc
   let get_loc l = l

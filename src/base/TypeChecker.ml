@@ -36,7 +36,7 @@ open TCType
 (*******************************************************)
 
 module TypecheckerERep (R : Rep) = struct
-  type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp]
+  type rep = PlainTypes.t inferred_type * R.rep [@@deriving sexp, to_yojson]
 
   let dummy_rep = (PlainTypes.mk_qualified_type Unit, R.dummy_rep)
   let get_loc r = match r with _, rr -> R.get_loc rr

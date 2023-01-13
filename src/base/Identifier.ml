@@ -22,7 +22,7 @@ open ErrorUtils
 let flatten_name ns n = ns ^ "." ^ n
 
 module type QualifiedName = sig
-  type t [@@deriving sexp, equal, compare]
+  type t [@@deriving sexp, to_yojson, equal, compare]
 
   val as_string : t -> string
 
@@ -49,7 +49,7 @@ module LocalName = struct
          The first string is the namespace "Y".
          The second string is the externally defined name. *)
       | QualifiedLocal of string * string
-    [@@deriving sexp, equal, compare]
+    [@@deriving sexp, to_yojson, equal, compare]
 
     let as_string = function
       | SimpleLocal n -> n
@@ -85,10 +85,10 @@ module GlobalName = struct
          The first string is the address of the defining library.
          The second string is the simple name. *)
       | QualifiedGlobal of string * string (* address and name *)
-    [@@deriving sexp, equal, compare]
+    [@@deriving sexp, to_yojson, equal, compare]
 
     type t = t_name * (string[@compare.ignore] [@equal.ignore])
-    [@@deriving sexp, compare, equal]
+    [@@deriving sexp, to_yojson, compare, equal]
     (** The type [t] contains a [t_name] as described above, and a
         user-readable string for error reporting. The error string is not used
         in derived equality and comparison operations, because the error string
@@ -111,7 +111,7 @@ end
 module type ScillaIdentifier = sig
   module Name : QualifiedName
 
-  type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp]
+  type 'rep t = private Ident of Name.t * 'rep [@@deriving sexp, to_yojson]
 
   val mk_loc_id : Name.t -> loc t
   val mk_id : Name.t -> 'a -> 'a t
@@ -130,7 +130,7 @@ end
 module MkIdentifier (Name : QualifiedName) = struct
   module Name = Name
 
-  type 'rep t = Ident of Name.t * 'rep [@@deriving sexp]
+  type 'rep t = Ident of Name.t * 'rep [@@deriving sexp, to_yojson]
 
   let mk_id i r = Ident (i, r)
   let mk_loc_id i = mk_id i dummy_loc

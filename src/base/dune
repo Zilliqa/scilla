@@ -24,6 +24,6 @@
    polynomials cryptokit secp256k1 bitstring yojson fileutils scilla_crypto
    menhirLib ocamlgraph)
  (preprocess
-  (pps ppx_sexp_conv ppx_let ppx_deriving.show ppx_compare bisect_ppx
+  (pps ppx_sexp_conv ppx_deriving_yojson ppx_let ppx_deriving.show ppx_compare bisect_ppx
     --conditional))
  (synopsis "Scilla workbench implementation."))

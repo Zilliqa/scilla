@@ -37,7 +37,7 @@ module CashflowRep (R : Rep) = struct
         CFName.t
         * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
-  [@@deriving sexp, equal]
+  [@@deriving sexp, to_yojson, equal]
 
   let rec money_tag_to_string tag =
     match tag with
@@ -48,7 +48,7 @@ module CashflowRep (R : Rep) = struct
     | Map t -> "(Map " ^ money_tag_to_string t ^ ")"
     | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
 
-  type rep = money_tag * R.rep [@@deriving sexp]
+  type rep = money_tag * R.rep [@@deriving sexp, to_yojson]
 
   let get_loc r = match r with _, rr -> R.get_loc rr
   let dummy_rep = (NoInfo, R.dummy_rep)

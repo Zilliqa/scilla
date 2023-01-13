@@ -25,12 +25,12 @@ open Identifier
 (* Poor man's dependent type for int > 0.
  * https://stackoverflow.com/a/55364673/2128804 *)
 module PositiveInt : sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, to_yojson]
 
   val create : int -> (t, scilla_error list) result
   val get : t -> int
 end = struct
-  type t = int [@@deriving sexp]
+  type t = int [@@deriving sexp, to_yojson]
 
   let create i =
     if i > 0 then pure i
@@ -92,7 +92,7 @@ module ScillaGasCharge (N : QualifiedName) = struct
     | DivCeil of gas_charge * PositiveInt.t
     (* LogOf(I) = int (log(float(I) + 1.0)) + 1 *)
     | LogOf of gas_charge
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   let rec replace_variable_name ~f = function
     | StaticCost _ as g -> g
