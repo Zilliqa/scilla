@@ -706,7 +706,10 @@ let run_with_args args =
                           gas
                 in
 
-                let osj = output_state_json cstate'.balance field_vals in
+                let osj =
+                  (* get_full_state contains both mutables and immutables, so filter out the immutables *)
+                   List.filter_map field_vals ~f:(fun (f, m, t, v) -> if m then Some (f, t, v) else None) |> 
+                   output_state_json cstate'.balance in
                 let omj = output_message_json gas mlist in
                 let oej = output_event_json elist in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in

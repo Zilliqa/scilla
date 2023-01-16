@@ -112,6 +112,7 @@ let fetch ~fname =
   let q =
     {
       name = fname;
+      is_mutable = true;
       mapdepth = TypeUtilities.map_depth tp;
       indices = [];
       ignoreval = false;
@@ -140,6 +141,7 @@ let update ~fname ~value =
   let q =
     {
       name = fname;
+      is_mutable = true;
       mapdepth = TypeUtilities.map_depth tp;
       indices = [];
       ignoreval = false;
@@ -151,12 +153,13 @@ let update ~fname ~value =
   @@ IPCClient.update_state_value (binary_rpc ~sock_addr) q' value'
 
 (* Update full state variable (of another contract) to server (no indexing). *)
-let update_ext ~caddr ~fname ~value ~tp =
+let update_ext ~caddr ~fname ~is_mutable ~value ~tp =
   let open Ipcmessage_types in
   let sock_addr, _ = assert_init () in
   let q =
     {
       name = fname;
+      is_mutable;
       mapdepth = TypeUtilities.map_depth tp;
       indices = [];
       ignoreval = false;

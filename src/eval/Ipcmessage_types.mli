@@ -24,6 +24,7 @@ and proto_scilla_val = Bval of bytes | Mval of proto_scilla_val_map
 
 type proto_scilla_query = {
   name : string;
+  is_mutable : bool;
   mapdepth : int;
   indices : bytes list;
   ignoreval : bool;
@@ -40,6 +41,7 @@ val default_proto_scilla_val : unit -> proto_scilla_val
 
 val default_proto_scilla_query :
   ?name:string ->
+  ?is_mutable:bool ->
   ?mapdepth:int ->
   ?indices:bytes list ->
   ?ignoreval:bool ->

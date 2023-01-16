@@ -202,7 +202,7 @@ module MakeStateService () = struct
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
     | IPC socket_addr ->
-        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~_is_mutable:is_mutable ~keys
+        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~is_mutable ~keys
           ~ignoreval
     | Local -> (
         match
@@ -333,7 +333,7 @@ module MakeStateService () = struct
     match sm with
     | IPC socket_addr ->
         let%bind tp = field_type fields fname is_mutable in
-        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~_is_mutable:is_mutable ~keys ~tp in
+        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~is_mutable ~keys ~tp in
         pure @@ res
     | Local ->
         let%bind v = fetch_local ~fname ~is_mutable ~keys fields in

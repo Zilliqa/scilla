@@ -28,13 +28,14 @@ let default_proto_scilla_val_map_mutable () : proto_scilla_val_map_mutable =
 
 type proto_scilla_query_mutable = {
   mutable name : string;
+  mutable is_mutable : bool;
   mutable mapdepth : int;
   mutable indices : bytes list;
   mutable ignoreval : bool;
 }
 
 let default_proto_scilla_query_mutable () : proto_scilla_query_mutable =
-  { name = ""; mapdepth = 0; indices = []; ignoreval = false }
+  { name = ""; is_mutable = true; mapdepth = 0; indices = []; ignoreval = false }
 
 let rec decode_proto_scilla_val_map d =
   let v = default_proto_scilla_val_map_mutable () in
@@ -101,6 +102,7 @@ let rec decode_proto_scilla_query d =
   done;
   ({
      Ipcmessage_types.name = v.name;
+     Ipcmessage_types.is_mutable = v.is_mutable;
      Ipcmessage_types.mapdepth = v.mapdepth;
      Ipcmessage_types.indices = v.indices;
      Ipcmessage_types.ignoreval = v.ignoreval;

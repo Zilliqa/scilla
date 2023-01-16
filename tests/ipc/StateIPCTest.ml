@@ -269,7 +269,7 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path
   (* Update the server (via the test client) with the state values we want. *)
   List.iter state ~f:(fun (addr_opt, (fname, tp, value)) ->
       match addr_opt with
-      | Some caddr -> StateIPCTestClient.update_ext ~caddr ~fname ~value ~tp
+      | Some caddr -> StateIPCTestClient.update_ext ~caddr ~fname ~is_mutable:true ~value ~tp
       | None ->
           if String.(fname <> CUName.as_string balance_label) then
             StateIPCTestClient.update ~fname ~value);
