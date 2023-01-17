@@ -63,6 +63,10 @@ struct
   (* Warning level to use when warning about not unboxed value from map get. *)
   let warning_level_not_unboxed = 2
 
+  (* Warning level to use warning about multiple procedure calls that have the
+     same effect as one call. *)
+  let warning_redundant_calls = 3
+
   (* ************************************** *)
   (* ******** Basic Sanity Checker ******** *)
   (* ************************************** *)
@@ -492,14 +496,9 @@ struct
   (* ************************************************** *)
 
   module CheckUnboxing = struct
-    module SCIdentifierComp = struct
-      include SCIdentifier.Name
-      include Comparable.Make (SCIdentifier.Name)
-    end
+    module SCIdentifierSet = Set.Make (SCIdentifier.Name)
 
-    module SCIdentifierSet = Set.Make (SCIdentifierComp)
-
-    let emp_ids_map = Map.empty (module SCIdentifierComp)
+    let emp_ids_map = Map.empty (module SCIdentifier.Name)
     let emp_ids_set = SCIdentifierSet.empty
 
     let is_option_name id =
@@ -792,8 +791,8 @@ struct
       in
       collect_function_calls cg
       |> List.fold_left
-           ~init:(Map.empty (module SCIdentifierComp))
-           ~f:(fun m (fun_name : SCIdentifierComp.t) ->
+           ~init:(Map.empty (module SCIdentifier.Name))
+           ~f:(fun m (fun_name : SCIdentifier.Name.t) ->
              match handle_lentries lentries m fun_name with
              | Some arg_matches -> Map.set m ~key:fun_name ~data:arg_matches
              | None -> (
@@ -875,6 +874,164 @@ struct
       pure ()
   end
 
+  (* ******************************************************************** *)
+  (* *** Check if multiple procedure have the same effect as one call *** *)
+  (* ******************************************************************** *)
+
+  module CheckRedundantCalls = struct
+    module SCIdentifierComp = struct
+      include SCIdentifier.Name
+      include Comparable.Make (SCIdentifier.Name)
+    end
+
+    module SCIdentifierSet = Set.Make (SCIdentifierComp)
+
+    let emp_ids_map = Map.empty (module SCIdentifierComp)
+    let emp_ids_set = SCIdentifierSet.empty
+
+    (** Collects names of procedures that:
+        * don't have any parameters
+        * don't modify contract fields
+        * don't send messages
+        * don't emit events
+        * don't read non-persistent blockchain information
+        * don't call impure procedures directly or indirectly *)
+    let collect_pure_procedures (cmod : cmodule) (cg : CG.cg) =
+      let contract_fields =
+        List.fold_left cmod.contr.cfields ~init:emp_ids_set
+          ~f:(fun s (name, _, _) ->
+            SCIdentifier.get_id name |> SCIdentifierSet.add s)
+      in
+
+      (* Check if statements in the [proc] procedure modify the state of the
+         contract. [impure_procedures] is a set of names of known impure
+         procedures collected from the previous iterations. *)
+      let modifies_state impure_procedures proc =
+        let rec stmt_modifies (s, _ann) =
+          match s with
+          | MatchStmt (_id, arms) ->
+              List.find arms ~f:(fun (_pattern, stmts) ->
+                  List.find stmts ~f:stmt_modifies |> Option.is_some)
+              |> Option.is_some
+          | Store (id, _) | MapUpdate (id, _, _) ->
+              SCIdentifier.get_id id |> Set.mem contract_fields
+          | CallProc (id, _) ->
+              SCIdentifier.get_id id |> Set.mem impure_procedures
+          | SendMsgs _ | CreateEvnt _
+          | ReadFromBC (_, (CurBlockNum | Timestamp _ | ReplicateContr _)) ->
+              true
+          | ReadFromBC (_, ChainID)
+          | Bind _ | Load _ | RemoteLoad _ | MapGet _ | RemoteMapGet _
+          | TypeCast _ | AcceptPayment | Iterate _ | Throw _ | GasStmt _ ->
+              false
+        in
+        List.exists proc.comp_body ~f:stmt_modifies
+      in
+      (* Collect procedure definitions in DFS order on the callgraph. *)
+      let procedures =
+        CG.fold_over_nodes_dfs cg ~init:[] ~f:(fun acc n ->
+            match n.ty with
+            | Proc -> acc @ [ get_id n.id ]
+            | TFun | TFunAlias | Trans | Fun | FunAlias -> acc)
+        |> List.map ~f:(fun proc_name ->
+               List.find_exn cmod.contr.ccomps ~f:(fun comp ->
+                   SCIdentifier.get_id comp.comp_name
+                   |> SCIdentifier.Name.equal proc_name))
+      in
+      List.fold_left procedures ~init:(emp_ids_set, emp_ids_set)
+        ~f:(fun (impure_procedures, s) comp ->
+          let comp_name = SIdentifier.get_id comp.comp_name in
+          if not @@ modifies_state impure_procedures comp then
+            if List.is_empty comp.comp_params then
+              (impure_procedures, comp_name |> SCIdentifierSet.add s)
+            else (impure_procedures, s)
+          else (comp_name |> SCIdentifierSet.add impure_procedures, s))
+      |> fun (_impure_procedures, pure_procedures) -> pure_procedures
+
+    (** Collects a map of direct calls for procedures (
+        [procedure_name |-> set_of_callers]) and a map of calls inside each
+        component ([caller |-> set_of_calls]). *)
+    let collect_calls cg =
+      let procedures, calls =
+        CG.fold_over_nodes_dfs cg ~init:([], emp_ids_map)
+          ~f:(fun (procedures, m) node ->
+            let save_callees m =
+              let data =
+                CG.Node.succs node
+                |> List.fold_left ~init:emp_ids_set ~f:(fun s succ_node ->
+                       CG.Node.id succ_node |> get_id |> SCIdentifierSet.add s)
+              in
+              Map.set m ~data ~key:(node.id |> get_id)
+            in
+            match node.ty with
+            | Proc -> (procedures @ [ get_id node.id ], save_callees m)
+            | Trans -> (procedures, save_callees m)
+            | TFun | TFunAlias | Fun | FunAlias -> (procedures, m))
+      in
+      let procedure_callers =
+        List.fold_left procedures ~init:emp_ids_map ~f:(fun m proc_name ->
+            let data =
+              Map.fold calls ~init:emp_ids_set
+                ~f:(fun ~key:callee_name ~data:calls s ->
+                  if Set.mem calls proc_name then
+                    SCIdentifierSet.add s callee_name
+                  else s)
+            in
+            Map.set m ~key:proc_name ~data)
+      in
+      (procedure_callers, calls)
+
+    (** Reports if a component calls a pure procedure which has already been
+        called in all of its callers. *)
+    let report_redundant_calls cmod callers calls pure_procedures =
+      let is_pure id =
+        SCIdentifier.get_id id |> SCIdentifierSet.mem pure_procedures
+      in
+      let rec report_in_stmt comp_id (s, _ann) =
+        match s with
+        | MatchStmt (_id, arms) ->
+            List.iter arms ~f:(fun (_pattern, stmts) ->
+                List.iter stmts ~f:(fun sa -> report_in_stmt comp_id sa))
+        | CallProc (id, _params) when is_pure id ->
+            let pure_name = SCIdentifier.get_id id in
+            let comp_name = get_id comp_id in
+            Map.find callers comp_name
+            |> Option.value_map ~default:() ~f:(fun caller_names ->
+                   let calls_pure_name caller =
+                     Map.find calls caller
+                     |> Option.value_map ~default:false ~f:(fun call_names ->
+                            SCIdentifierSet.mem call_names pure_name)
+                   in
+                   if
+                     (not @@ Set.is_empty caller_names)
+                     && Set.for_all caller_names ~f:calls_pure_name
+                   then
+                     warn1
+                       (Printf.sprintf
+                          "Redundant call to procedure %s. This call can be \
+                           safely removed."
+                          (Name.as_string pure_name))
+                       warning_redundant_calls
+                       (SR.get_loc (get_rep id)))
+        | CallProc _ | Bind _ | Load _ | RemoteLoad _ | Store _ | MapUpdate _
+        | MapGet _ | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment
+        | Iterate _ | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
+            ()
+      in
+      List.iter cmod.contr.ccomps ~f:(fun comp ->
+          match comp.comp_type with
+          | CompProc ->
+              List.iter comp.comp_body ~f:(fun stmt ->
+                  report_in_stmt comp.comp_name stmt)
+          | CompTrans -> ())
+
+    let run (cmod : cmodule) (cg : CG.cg) (_rlibs : lib_entry list) =
+      let pure_procedures = collect_pure_procedures cmod cg in
+      let callers, callees = collect_calls cg in
+      report_redundant_calls cmod callers callees pure_procedures;
+      pure ()
+  end
+
   (* ************************************** *)
   (* ******** Interface to Checker ******** *)
   (* ************************************** *)
@@ -888,6 +1045,7 @@ struct
     let%bind () = CheckHashingBuiltinsUsage.in_libentries rlibs in
     let%bind () = CheckHashingBuiltinsUsage.in_cmod cmod in
     let%bind () = CheckUnboxing.run cmod cg rlibs in
+    let%bind () = CheckRedundantCalls.run cmod cg rlibs in
     DCD.dc_cmod cmod elibs;
     pure ()
 

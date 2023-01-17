@@ -1,6 +1,6 @@
 # escape=\
 
-ARG ZILLIQA_VERSION=v8.4.0
+ARG ZILLIQA_VERSION=v0.0.0
 FROM zilliqa/zilliqa-deps:${ZILLIQA_VERSION} AS builder
 
 # Manually input tag or commit, can be overwritten by docker build-args
