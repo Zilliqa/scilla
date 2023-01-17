@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-OCAML_VERSION_RECOMMENDED=4.11.2
+OCAML_VERSION_RECOMMENDED=4.12.0
 # In case of upgrading ocamlformat version:
 # package.json also needs updating
 OCAMLFORMAT_VERSION=0.22.4
