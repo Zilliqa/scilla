@@ -1123,7 +1123,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             fail
               (mk_type_error1
                  ~kind:
-                   (sprintf "Type cannot be used as %s return value"
+                   (sprintf "Type %s is not a legal return type"
                       component_type_string)
                  ~inst:(pp_typ_error ret_ty)
                  (SR.get_loc (get_rep comp_name)))
