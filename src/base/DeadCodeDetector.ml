@@ -55,27 +55,22 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCType = SCLiteral.LType
   module SCIdentifier = SCType.TIdentifier
 
-  module SCIdentifierComp = struct
-    include SCIdentifier.Name
-    include Comparable.Make (SCIdentifier.Name)
-  end
-
+  (** [ERComp] is used to compare identifiers keeping their positions in
+      order to generate errors in the checker. *)
   module ERComp = struct
     module T = struct
       include ER
 
       type t = rep SCIdentifier.t [@@deriving sexp]
 
-      let compare (a : t) (b : t) =
-        SCIdentifier.Name.compare (SCIdentifier.get_id a)
-          (SCIdentifier.get_id b)
+      let compare = SCIdentifier.compare
     end
 
     include T
     include Comparable.Make (T)
   end
 
-  module SCIdentifierSet = Set.Make (SCIdentifierComp)
+  module SCIdentifierSet = Set.Make (SCIdentifier.Name)
   module ERSet = Set.Make (ERComp)
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
@@ -84,7 +79,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   let emp_idset = SCIdentifierSet.empty
   let emp_erset = ERSet.empty
-  let emp_idsmap = Map.empty (module SCIdentifierComp)
+  let emp_idsmap = Map.empty (module SCIdentifier.Name)
 
   (** Warning level for dead code detection *)
   let warning_level_dead_code = 3
@@ -657,15 +652,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   type adts_ty =
     ( Name.t,
       (int, SCIdentifierSet.t, Core.Int.comparator_witness) Map_intf.Map.t,
-      SCIdentifierComp.comparator_witness )
+      SCIdentifier.Name.comparator_witness )
     Map_intf.Map.t
   (** An information about used fields in ADT constructors that have contract
       address type: [ctr_name |-> (ctr_arg_pos |-> field_names)] *)
 
   type env_ty =
     ( Name.t,
-      (Name.t, int, SCIdentifierComp.comparator_witness) Map_intf.Map.t,
-      SCIdentifierComp.comparator_witness )
+      (Name.t, int, SCIdentifier.Name.comparator_witness) Map_intf.Map.t,
+      SCIdentifier.Name.comparator_witness )
     Map_intf.Map.t
   (** An environment holds mapping of ADT constructor fields that are bound to
       variables inside this pattern matching arm in the following format:

@@ -43,13 +43,7 @@ struct
   module ACLiteral = GlobalLiteral
   module ACType = ACLiteral.LType
   module ACIdentifier = ACType.TIdentifier
-
-  module ACIdentifierComp = struct
-    include ACIdentifier.Name
-    include Comparable.Make (ACIdentifier.Name)
-  end
-
-  module ACIdentifierSet = Set.Make (ACIdentifierComp)
+  module ACIdentifierSet = Set.Make (ACIdentifier.Name)
   module ACSyntax = ScillaSyntax (SR) (ER) (ACLiteral)
   open ACSyntax
 

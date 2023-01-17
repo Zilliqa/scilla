@@ -1,0 +1,50 @@
+scilla_version 0
+
+library RedundantCalls1
+
+contract RedundantCalls1()
+
+field is_paused: Bool = False
+field dummy: Uint32 = Uint32 1
+
+(* The callgraph for this contract looks like:
+                tr
+                |
+               pr1
+              /   \
+            pure  pr2
+                    \
+                   pure
+
+  The [pure] procedure is idempotent in all contract calls. So, we could
+  refactor this contract by this way:
+                tr
+                |
+               pr1
+              /   \
+            pure  pr2
+*)
+
+procedure pure()
+  paused <- is_paused;
+  match paused with
+  | False =>
+  | True =>
+    exn = { _exception : "Error"};
+    throw exn
+  end
+end
+
+procedure pr2(a: Uint32)
+  pure;
+  dummy := a
+end
+
+procedure pr1(a: Uint32)
+  pure;
+  pr2 a
+end
+
+transition tr(a: Uint32)
+  pr1 a
+end

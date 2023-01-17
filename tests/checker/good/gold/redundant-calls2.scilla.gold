@@ -1,0 +1,43 @@
+{
+  "cashflow_tags": {
+    "State variables": [
+      { "field": "is_paused", "tag": "NotMoney" },
+      { "field": "dummy", "tag": "NoInfo" }
+    ],
+    "ADT constructors": []
+  },
+  "warnings": [
+    {
+      "warning_message": "Write only field: dummy",
+      "start_location": {
+        "file": "checker/good/redundant-calls2.scilla",
+        "line": 35,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Read only field, consider making it a contract parameter: is_paused",
+      "start_location": {
+        "file": "checker/good/redundant-calls2.scilla",
+        "line": 24,
+        "column": 13
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "No transition in contract RedundantCalls1 contains an accept statement\n",
+      "start_location": {
+        "file": "checker/good/redundant-calls2.scilla",
+        "line": 5,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ],
+  "gas_remaining": "7999"
+}
+
