@@ -1,9 +1,9 @@
   $ scilla-fmt return.scilla
   scilla_version 0
-
+  
   library Return
-
-
+  
+  
   contract Return ()
   
   
@@ -11,13 +11,14 @@
     a = _creation_block;
     _return := a
   end
-
-  procedure incorrect_return_type () -> String
+  
+  procedure incorrect_return_type () : String
     a = _creation_block;
     _return := a
   end
-
-  procedure return_1 () -> BNum
+  
+  procedure return_1 () : BNum
     a = _creation_block;
     _return := a
   end
+  
