@@ -154,10 +154,12 @@ test_server: dev
 	$(call patch_rpath,src/runners)
 	dune build --profile dev tests/testsuite.exe
 	$(call patch_rpath,tests)
-	./_build/default/src/runners/scilla_server.exe &
+	killall -r "scilla_server.exe" || true
+	_build/default/src/runners/scilla_server.exe -daemonise -logs /tmp/scilla-server
 	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
   -server true \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
+	killall -r "scilla_server.exe" || true
 
 # === TESTS (end) =============================================================
 
