@@ -2,7 +2,7 @@
  (name scilla_server_lib)
  (public_name scilla.server_lib)
  (wrapped true)
- (libraries core threads unix rresult rpclib rpclib.json rpclib.cmdliner
+ (libraries core core_unix.daemon threads unix rresult rpclib rpclib.json rpclib.cmdliner
    scilla_base scilla_eval)
  (modes byte native)
  (preprocess
