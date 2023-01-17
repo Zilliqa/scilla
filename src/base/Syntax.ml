@@ -361,6 +361,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
         (** [TypeCast(I, A, TY)] represents: [I <- & A as TY] *)
     | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
+    | Return of ER.rep SIdentifier.t
+        (** [Return(A)] is an [return A] statement *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
         (** [Iterate(L, F)] represents calling a procedure for each element of
             the list: [forall L F] *)
@@ -368,8 +370,11 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         (** [SendMsgs(MS)] represents sending messages: [send MS] *)
     | CreateEvnt of ER.rep SIdentifier.t
         (** [CreateEvnt(E)] represents emitting an event: [event E] *)
-    | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
-        (** [CallProc(F, [A1, ... An])] is a procedure call: [F A1 ... An] *)
+    | CallProc of
+        ER.rep SIdentifier.t option
+        * SR.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        (** [CallProc(I, P, [A1, ... An])] is a procedure call: [I = P A1 ... An] *)
     | Throw of ER.rep SIdentifier.t option
         (** [Throw(I)] represents: [throw I] *)
     | GasStmt of SGasCharge.gas_charge
@@ -390,6 +395,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     comp_name : SR.rep SIdentifier.t;
     comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
   [@@deriving sexp, to_yojson]
 
@@ -639,6 +645,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error casting `%s` into type `%s`:\n" (as_error_string x)
             (SType.pp_typ_error t)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
+      | Return i ->
+          sprintf "Error in returning value `%s`\n" (as_error_string i)
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
             (as_error_string p) (as_error_string l)
@@ -646,7 +654,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error in sending messages `%s`:\n" (as_error_string i)
       | CreateEvnt i ->
           sprintf "Error in create event `%s`:\n" (as_error_string i)
-      | CallProc (p, _) ->
+      | CallProc (_, p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->

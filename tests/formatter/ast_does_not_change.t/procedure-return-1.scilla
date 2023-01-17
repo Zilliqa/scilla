@@ -1,0 +1,31 @@
+scilla_version 0
+
+library Return1
+
+let one = Uint32 1
+
+contract Return1()
+
+field f : Uint32 = Uint32 0
+
+procedure return_one() : Uint32
+  a = one;
+  _return := a
+end
+
+procedure id(x: Uint32) : Uint32
+  _return := x
+end
+
+procedure add(lhs: Uint32, rhs: Uint32) : Uint32
+  s = builtin add lhs rhs;
+  _return := s
+end
+
+transition f_add_one()
+  one = return_one;
+  f_cur <- f;
+  sum = add f_cur one;
+  sum_id = id sum;
+  f := sum
+end

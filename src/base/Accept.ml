@@ -111,8 +111,9 @@ struct
                 @ List.fold_left stmts ~init:[] ~f:(fun acc s ->
                       acc @ walk_stmt s))
         | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-        | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Iterate _
-        | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
+        | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+        | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _ | Throw _
+        | GasStmt _ ->
             []
       in
       List.fold_left comp.comp_body ~init:[] ~f:(fun acc s -> acc @ walk_stmt s)

@@ -134,11 +134,15 @@ module type Syn = sig
     | TypeCast of
         ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t * SType.t
     | AcceptPayment
+    | Return of ParserRep.rep SIdentifier.t
     (* forall l p *)
     | Iterate of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t
     | SendMsgs of ParserRep.rep SIdentifier.t
     | CreateEvnt of ParserRep.rep SIdentifier.t
-    | CallProc of ParserRep.rep SIdentifier.t * ParserRep.rep SIdentifier.t list
+    | CallProc of
+        ParserRep.rep SIdentifier.t option
+        * ParserRep.rep SIdentifier.t
+        * ParserRep.rep SIdentifier.t list
     | Throw of ParserRep.rep SIdentifier.t option
     | GasStmt of SGasCharge.gas_charge
 
@@ -151,6 +155,7 @@ module type Syn = sig
     comp_name : ParserRep.rep SIdentifier.t;
     comp_params : (ParserRep.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
 
   type ctr_def = {

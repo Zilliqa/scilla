@@ -30,9 +30,13 @@ let cmd =
         flag "-num-pending"
           (optional_with_default Server.num_pending int)
           ~doc:"NUM_PENDING Maximum number of pending requests"
+      and daemonise = flag "-daemonise" no_arg ~doc:"Run Scilla in background"
+      and logs_path =
+        flag "-logs" (optional string)
+          ~doc:"PATH Path to save logs in daemon mode"
       in
       fun () ->
         Server.start ~server_implementation:Server.default_server_implementation
-          ~sock_path ~num_pending)
+          ~sock_path ~num_pending ~daemonise ~logs_path)
 
 let () = Command_unix.run cmd

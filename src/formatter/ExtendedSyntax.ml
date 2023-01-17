@@ -103,11 +103,12 @@ struct
         ER.rep id_ann * (pattern * stmt_annot list * comment_text list) list
     | ReadFromBC of ER.rep id_ann * bcinfo_query
     | TypeCast of ER.rep id_ann * ER.rep id_ann * SType.t
-    | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
+    | AcceptPayment
+    | Return of ER.rep id_ann
     | Iterate of ER.rep id_ann * SR.rep id_ann
     | SendMsgs of ER.rep id_ann
     | CreateEvnt of ER.rep id_ann
-    | CallProc of SR.rep id_ann * ER.rep id_ann list
+    | CallProc of ER.rep id_ann option * SR.rep id_ann * ER.rep id_ann list
     | Throw of ER.rep id_ann option
     | GasStmt of SGasCharge.gas_charge
   [@@deriving sexp]
@@ -122,6 +123,7 @@ struct
     comp_name : SR.rep id_ann;
     comp_params : (ER.rep id_ann * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
   [@@deriving sexp]
 
@@ -640,6 +642,10 @@ struct
     | Syn.AcceptPayment ->
         let c = comment (SR.get_loc ann) in
         (ExtSyn.AcceptPayment, ann, c)
+    | Syn.Return id ->
+        let c = comment (loc_end_er id) in
+        let id' = extend_er_id tr id in
+        (ExtSyn.Return id', ann, c)
     | Syn.Iterate (l, f) ->
         let c = comment (loc_end_er l) in
         let l' = extend_er_id tr l in
@@ -653,11 +659,12 @@ struct
         let c = comment (loc_end_er id) in
         let id' = extend_er_id tr id in
         (ExtSyn.CreateEvnt id', ann, c)
-    | Syn.CallProc (id, args) ->
-        let c = comment (loc_end_sr id) in
-        let id' = extend_sr_id tr id in
+    | Syn.CallProc (id_opt, proc, args) ->
+        let id_opt' = Option.map id_opt ~f:(fun id -> extend_er_id tr id) in
+        let c = comment (loc_end_sr proc) in
+        let proc' = extend_sr_id tr proc in
         let args' = List.map args ~f:(fun arg -> extend_er_id tr arg) in
-        (ExtSyn.CallProc (id', args'), ann, c)
+        (ExtSyn.CallProc (id_opt', proc', args'), ann, c)
     | Syn.Throw id_opt -> (
         match id_opt with
         | Some id ->
@@ -715,20 +722,24 @@ struct
     in
     (import', import_as')
 
-  let extend_component tr comp =
+  let extend_component tr
+      Syn.{ comp_type; comp_name; comp_params; comp_body; comp_return } =
     let comp_comments =
-      let comp_name_loc = SR.get_loc (SIdentifier.get_rep comp.Syn.comp_name) in
+      let comp_name_loc = SR.get_loc (SIdentifier.get_rep comp_name) in
       collect_comments_above tr comp_name_loc
-    in
-    let comp_type = comp.Syn.comp_type in
-    let comp_name = extend_sr_id tr comp.comp_name in
-    let comp_params =
-      List.map comp.comp_params ~f:(fun (id, ty) -> (extend_er_id tr id, ty))
-    in
-    let comp_body =
-      List.map comp.comp_body ~f:(fun stmt -> extend_stmt tr stmt)
-    in
-    { comp_comments; ExtSyn.comp_type; comp_name; comp_params; comp_body }
+    and comp_name = extend_sr_id tr comp_name
+    and comp_params =
+      List.map comp_params ~f:(fun (id, ty) -> (extend_er_id tr id, ty))
+    and comp_body = List.map comp_body ~f:(fun stmt -> extend_stmt tr stmt) in
+    ExtSyn.
+      {
+        comp_comments;
+        comp_type;
+        comp_name;
+        comp_params;
+        comp_body;
+        comp_return;
+      }
 
   let extend_contract tr (contr : Syn.contract) : ExtSyn.contract =
     let cname = extend_sr_id tr contr.cname in
