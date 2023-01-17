@@ -1,8 +1,7 @@
 {
   "errors": [
     {
-      "error_message":
-        "This map type likely has an invalid map value type.\n",
+      "error_message": "Ends in an error in state: 36.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-map-cid-underscore.scilla",
         "line": 7,

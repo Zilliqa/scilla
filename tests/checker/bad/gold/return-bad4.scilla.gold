@@ -1,0 +1,26 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Found unreachable code after the match statement whose arms return",
+      "start_location": {
+        "file": "checker/bad/return-bad4.scilla",
+        "line": 7,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message": "No transition in contract ReturnBad4 contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/return-bad4.scilla",
+        "line": 3,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

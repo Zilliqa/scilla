@@ -255,8 +255,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | Bind (_, e) -> report_expr e
       | MatchStmt (_, pslist) -> List.iter pslist ~f:report_unreachable_adapter
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | GasStmt _
-      | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | GasStmt _ | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _
+        ->
           ()
     in
     Option.iter cmod.libs ~f:(fun l ->
@@ -424,17 +425,25 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             match topt with
             | Some x -> (ERSet.add lv x, adts, ctrs)
             | None -> (lv, adts, ctrs))
-        | CallProc (p, al) ->
+        | CallProc (id_opt, p, al) ->
             proc_dict := p :: !proc_dict;
-            (ERSet.of_list al |> ERSet.union lv, adts, ctrs)
+            let lv' =
+              match id_opt with
+              | Some id when ERSet.mem lv id -> ERSet.add lv id
+              | Some id ->
+                  warn "Unused local binding: " id ER.get_loc;
+                  ERSet.add lv id
+              | None -> lv
+            in
+            (ERSet.of_list al |> ERSet.union lv', adts, ctrs)
         | Iterate (l, p) ->
             proc_dict := p :: !proc_dict;
             (ERSet.add lv l, adts, ctrs)
         | Bind (i, e) ->
-            let live_vars_no_i =
-              ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
-            in
             if ERSet.mem lv i then
+              let live_vars_no_i =
+                ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
+              in
               let e_live_vars, adts', ctrs' = expr_iter e in
               ( ERSet.union e_live_vars live_vars_no_i,
                 SCIdentifierSet.union adts' adts,
@@ -485,7 +494,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused type cast statement to: " x ER.get_loc;
               (ERSet.add lv r, adts, ctrs))
-        | SendMsgs v | CreateEvnt v -> (ERSet.add lv v, adts, ctrs)
+        | SendMsgs v | CreateEvnt v | Return v -> (ERSet.add lv v, adts, ctrs)
         | AcceptPayment | GasStmt _ -> (lv, adts, ctrs))
     | _ -> (emp_erset, emp_idset, emp_idset)
 
@@ -543,8 +552,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 get_used_address_fields address_params sa |> merge_id_maps m)
             |> merge_id_maps m)
     | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-    | CallProc _ | Throw _ | GasStmt _ ->
+    | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+    | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
         emp_idsmap
 
   (** Returns a set of field names of the contract address type. *)
@@ -789,8 +798,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               Map.set used ~key:ctr_name ~data:ctr_arg_pos_to_fields'
           | _ -> used)
       | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-      | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-      | CallProc _ | Throw _ | GasStmt _ ->
+      | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+      | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
           used
     in
     List.fold_left comp.comp_body ~init:used ~f:(fun used s -> aux used s)

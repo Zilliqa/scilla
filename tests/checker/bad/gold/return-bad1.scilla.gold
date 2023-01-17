@@ -1,0 +1,26 @@
+{
+  "gas_remaining": "8000",
+  "errors": [
+    {
+      "error_message": "Procedure with return value doesn't return: no_return",
+      "start_location": {
+        "file": "checker/bad/return-bad1.scilla",
+        "line": 6,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": [
+    {
+      "warning_message": "No transition in contract ReturnBad1 contains an accept statement\n",
+      "start_location": {
+        "file": "checker/bad/return-bad1.scilla",
+        "line": 3,
+        "column": 10
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
+    }
+  ]
+}

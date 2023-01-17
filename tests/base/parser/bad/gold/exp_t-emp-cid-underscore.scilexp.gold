@@ -1,8 +1,7 @@
 {
   "errors": [
     {
-      "error_message":
-        "This map type likely has an invalid map value type.\n",
+      "error_message": "Ends in an error in state: 147.\n",
       "start_location": {
         "file": "base/parser/bad/exps/exp_t-emp-cid-underscore.scilexp",
         "line": 1,

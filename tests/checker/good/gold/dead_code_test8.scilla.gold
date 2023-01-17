@@ -5,8 +5,15 @@
     "vname": "Dead8",
     "params": [],
     "fields": [],
-    "transitions": [ { "vname": "Foo", "params": [] } ],
-    "procedures": [],
+    "transitions": [
+      { "vname": "test_dead_variable1", "params": [] },
+      { "vname": "test_dead_variable2", "params": [] },
+      { "vname": "test_dead_variable3", "params": [] }
+    ],
+    "procedures": [
+      { "vname": "pr1", "params": [] },
+      { "vname": "pr2", "params": [ { "vname": "a", "type": "Bool" } ] }
+    ],
     "events": [],
     "ADTs": [
       {
@@ -50,10 +57,30 @@
   },
   "warnings": [
     {
+      "warning_message": "Unused local binding: dead",
+      "start_location": {
+        "file": "contracts/dead_code_test8.scilla",
+        "line": 27,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Unused local binding: dead",
+      "start_location": {
+        "file": "contracts/dead_code_test8.scilla",
+        "line": 22,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused bind statement to: dead",
       "start_location": {
         "file": "contracts/dead_code_test8.scilla",
-        "line": 9,
+        "line": 18,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

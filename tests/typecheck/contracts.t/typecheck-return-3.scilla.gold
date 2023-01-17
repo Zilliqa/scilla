@@ -1,0 +1,4 @@
+
+tests/typecheck/contracts.t/typecheck-return-3.scilla:8:11: error: Type cannot be used as procedure return value: Map (String) (String)
+
+Gas remaining: 8000
