@@ -26,13 +26,13 @@ open PrettyPrinters
 module FEParser = FrontEndParser.ScillaFrontEndParser (LocalLiteral)
 
 type file_name = string
-type output_format = Source_code | Sexpression
+type output_format = Source_code | Sexpression | Json
 
 let unpack_ast_exn = function Ok res -> res | Error e -> fatal_error e
 
 (* Deannotate AST to dump S-expressions without location information *)
 module DeannotRep = struct
-  type rep = unit [@@deriving sexp]
+  type rep = unit [@@deriving sexp, to_yojson]
 
   let dummy_rep = ()
   let get_loc _ = dummy_loc
@@ -59,6 +59,32 @@ let deannotate_expression e =
 
 let deannotate_contract_module cmod =
   Deannot.cmodule cmod ~fe:(fun _ -> ()) ~fl:dummy_loc ~fs:(fun _ -> ())
+
+let scilla_json_fmt deannotated human_readable file =
+  let open FilePath in
+  let open StdlibTracker in
+  let yojson_to_string json =
+    if human_readable then Yojson.Safe.pretty_to_string json
+    else Yojson.Safe.to_string json
+  in
+  if check_extension file file_extn_library then
+    (* library modules *)
+    failwith "Formatting of Scilla library modules is not implemented yet"
+  else if check_extension file file_extn_contract then
+    (* contract modules *)
+    let ast = file |> FEParser.parse_cmodule |> unpack_ast_exn in
+    if deannotated then
+      ast |> deannotate_contract_module |> Deannot.cmodule_to_yojson
+      |> yojson_to_string
+    else ast |> FEParser.FESyntax.cmodule_to_yojson |> yojson_to_string
+  else if check_extension file file_extn_expression then
+    (* expressions *)
+    let ast = file |> FEParser.parse_expr_from_file |> unpack_ast_exn in
+    if deannotated then
+      ast |> deannotate_expression |> Deannot.expr_annot_to_yojson
+      |> yojson_to_string
+    else ast |> FEParser.FESyntax.expr_annot_to_yojson |> yojson_to_string
+  else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)
 
 let scilla_sexp_fmt deannotated human_readable file =
   let open FilePath in
@@ -124,6 +150,7 @@ let scilla_fmt output_format deannotated human_readable files =
           match output_format with
           | Source_code -> scilla_source_code_fmt file
           | Sexpression -> scilla_sexp_fmt deannotated human_readable file
+          | Json -> scilla_json_fmt deannotated human_readable file
         in
         print_endline result_string;
         `Ok ()
@@ -132,8 +159,15 @@ let scilla_fmt output_format deannotated human_readable files =
 open Cmdliner
 
 let output_format =
-  let doc = "Dump Scilla source code as an S-expression." in
-  Arg.(value & vflag Source_code [ (Sexpression, info [ "sexp"; "s" ] ~doc) ])
+  Arg.(
+    value
+    & vflag Source_code
+        [
+          ( Sexpression,
+            info [ "sexp"; "s" ]
+              ~doc:"Dump Scilla source code as an S-expression." );
+          (Json, info [ "json"; "j" ] ~doc:"Dump Scilla source code as JSON.");
+        ])
 
 let deannotated =
   let doc =
