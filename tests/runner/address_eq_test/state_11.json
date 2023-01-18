@@ -86,6 +86,7 @@
     "value": [
         {
             "address": "0x4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "42" },

@@ -42,10 +42,10 @@ open JSONType
 open JSONLiteral
 
 type json_parsed_field =
-  (* A field belonging to this contract. *)
+  (* A field (mutable or immutable) belonging to this contract. *)
   | ThisContr of string * JSONType.t * JSONLiteral.t
   (* External contracts and their fields. *)
-  | ExtrContrs of (Bystrx.t * (string * JSONType.t * JSONLiteral.t) list) list
+  | ExtrContrs of (Bystrx.t * (string * field_mutability * JSONType.t * JSONLiteral.t) list) list
 
 (****************************************************************)
 (*                    Exception wrappers                        *)
@@ -246,37 +246,42 @@ and json_to_lit_exn t v =
       in
       raise (exn ())
 
-let rec jobj_to_statevar json =
-  let n = member_exn "vname" json |> to_string_exn in
-  let v = member_exn "value" json in
-  if String.equal n "_external" then
-    (* We have a list of external addresses, each with their own fields. *)
-    let exts = v |> to_list_exn in
-    let exts' =
-      List.fold exts ~init:[] ~f:(fun acc ext ->
-          let addr =
-            member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
-          in
-          let state = member_exn "state" ext |> to_list_exn in
-          let state' =
-            List.map state ~f:(fun s ->
-                match jobj_to_statevar s with
-                | ThisContr (n, t, l) -> (n, t, l)
-                | _ ->
-                    raise
-                    @@ mk_invalid_json
-                         ~kind:
-                           "External contract fields cannot contain other \
-                            external fields"
-                         ?inst:None)
-          in
-          (addr, state') :: acc)
-    in
-    ExtrContrs exts'
-  else
-    let tstring = member_exn "type" json |> to_string_exn in
-    let t = parse_typ_exn tstring in
-    ThisContr (n, t, json_to_lit_exn t v)
+let jobj_to_statevar json =
+  let rec recurser json =
+    let n = member_exn "vname" json |> to_string_exn in
+    let v = member_exn "value" json in
+    if String.equal n "_external" then
+      (* We have a list of external addresses, each with their own fields. *)
+      let exts = v |> to_list_exn in
+      let exts' =
+        List.fold exts ~init:[] ~f:(fun acc ext ->
+            let addr =
+              member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
+            in
+            let cparams = member_exn "cparams" ext |> to_list_exn in
+            let cparams' = List.map cparams ~f:(recurser_mapper Immutable) in
+            let state = member_exn "state" ext |> to_list_exn in
+            let all_fields = List.rev_map_append state cparams' ~f:(recurser_mapper Mutable)
+            in
+            (addr, all_fields) :: acc)
+      in
+      ExtrContrs exts'
+    else
+      let tstring = member_exn "type" json |> to_string_exn in
+      let t = parse_typ_exn tstring in
+      ThisContr (n, t, json_to_lit_exn t v)
+  and recurser_mapper mutability json =
+    match recurser json with
+    | ThisContr (n, t, l) -> (n, mutability, t, l)
+    | _ ->
+        raise
+        @@ mk_invalid_json
+          ~kind:
+            "External contract fields cannot contain other \
+             external fields"
+          ?inst:None
+  in
+  recurser json
 
 (****************************************************************)
 (*                    JSON printing                             *)

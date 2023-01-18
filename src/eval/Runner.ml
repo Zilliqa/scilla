@@ -108,20 +108,21 @@ let check_after_step res gas_limit =
         ^ sprintf "Emitted events:\n%s\n\n" (pp_literal_list events));
       ((cstate, outs, events, accepted_b), remaining_gas)
 
-let map_json_input_strings_to_names map =
-  List.map map ~f:(fun (x, t, l) ->
-      match String.split x ~on:'.' with
-      | [ simple_name ] -> (RunnerName.parse_simple_name simple_name, t, l)
-      | _ -> raise (mk_invalid_json ~kind:"invalid name in json input" ~inst:x))
-
+let map_input_string_to_name x =
+  match String.split x ~on:'.' with
+  | [ simple_name ] -> RunnerName.parse_simple_name simple_name
+  | _ -> raise (mk_invalid_json ~kind:"invalid name in json input" ~inst:x)
+  
 (* Parse the input state json and extract out _balance separately *)
 let input_state_json filename =
   let open JSON.ContractState in
   let states_str, estates_str = get_json_data filename in
-  let states = map_json_input_strings_to_names states_str in
+  let states =
+    List.map states_str ~f:(fun (x, t, l) -> (map_input_string_to_name x, t, l))
+  in
   let estates =
     List.map estates_str ~f:(fun (addr, states_str) ->
-        (addr, map_json_input_strings_to_names states_str))
+        (addr, List.map states_str ~f:(fun (x, m, t, l) -> (map_input_string_to_name x, m, t, l))))
   in
   let bal_lit =
     match
@@ -236,7 +237,7 @@ let validate_get_init_json init_file gas_remaining source_ver =
   in
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
   let initargs =
-    map_json_input_strings_to_names initargs_str
+    List.map initargs_str ~f:(fun (x, t, l) -> (map_input_string_to_name x, t, l))
     |> List.map ~f:(fun (n, t, l) ->
            let () = assert_no_address_type_in_type t gas_remaining in
            let () = assert_no_address_type_in_literal l gas_remaining in
@@ -660,8 +661,8 @@ let run_with_args args =
                       let open StateService in
                       List.map ext_states ~f:(fun (addr, fields) ->
                           let fields' =
-                            List.map fields ~f:(fun (n, t, l) ->
-                                { fname = n; f_is_mutable = true (* TODO: handle immutables *); ftyp = t; fval = Some l })
+                            List.map fields ~f:(fun (n, m, t, l) ->
+                                { fname = n; f_is_mutable = is_mutable m; ftyp = t; fval = Some l })
                           in
                           { caddr = addr; cstate = fields' })
                     in

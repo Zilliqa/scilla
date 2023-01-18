@@ -139,6 +139,7 @@
     "value": [
         {
             "address": "0xabfeccdc9012345678901234567890f777564323",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "42" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" },
@@ -155,6 +156,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564324",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "64" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" },
@@ -171,6 +173,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564325",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "31" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564325" },
@@ -198,6 +201,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564326",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "128" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564326" },

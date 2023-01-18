@@ -12,6 +12,7 @@
     "value": [
         {
             "address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "242" }
             ]
