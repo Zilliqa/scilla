@@ -22,3 +22,4 @@ val rpc : sock_path:string -> Rpc.call -> Rpc.response
 val run : sock_path:string -> Api.args_t -> Rpc.response
 val check : sock_path:string -> Api.args_t -> Rpc.response
 val disambiguate : sock_path:string -> Api.args_t -> Rpc.response
+val version : sock_path:string -> Rpc.response

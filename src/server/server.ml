@@ -42,6 +42,11 @@ let mk_handler callback args =
   with FatalError msg ->
     IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
 
+let mk_handler_no_args callback () =
+  try IDL.ErrM.return @@ callback ()
+  with FatalError msg ->
+    IDL.ErrM.return_err RPCError.{ code = 0; message = msg }
+
 (* Request handler. *)
 let handler rpc conn =
   let ic = Core_unix.in_channel_of_descr conn in
@@ -96,10 +101,15 @@ let default_server_implementation () =
   let disambiguator args =
     Disambiguator.run args ~exe_name:"scilla-disambiguator"
   in
+  let version () =
+    let major, minor, patch = Syntax.scilla_version in
+    Printf.sprintf "{ \"scilla_version\": \"%d.%d.%d\" }" major minor patch
+  in
   (* Handlers *)
   Server.runner @@ mk_handler runner;
   Server.checker @@ mk_handler (Checker.run ~exe_name:"scilla-checker");
   Server.disambiguator @@ mk_handler disambiguator;
+  Server.version @@ mk_handler_no_args version;
   Server.implementation
 
 let start ?(server_implementation = default_server_implementation)
