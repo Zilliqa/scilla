@@ -519,7 +519,7 @@ let run_with_args args =
                   let fields =
                     List.filter_map cstate'.fields ~f:(fun (s, t) ->
                         if [%equal: RunnerName.t] s balance_label then None
-                        else Some { fname = s; f_is_mutable = true; ftyp = t; fval = None })
+                        else Some { fname = s; ftyp = t; fval = None })
                   in
                   let sm = IPC args.ipc_address in
                   let () =
@@ -603,7 +603,7 @@ let run_with_args args =
                       List.filter_map cstate.fields ~f:(fun (s, t) ->
                           let open StateService in
                           if [%equal: RunnerName.t] s balance_label then None
-                          else Some { fname = s; f_is_mutable = true; ftyp = t; fval = None })
+                          else Some { fname = s; ftyp = t; fval = None })
                     in
                     let () =
                       StateService.initialize ~sm:(IPC args.ipc_address) ~fields
@@ -655,16 +655,18 @@ let run_with_args args =
                     let fields =
                       List.map field_vals ~f:(fun (s, t, l) ->
                           let open StateService in
-                          { fname = s; f_is_mutable = true; ftyp = t; fval = Some l })
+                          { fname = s; ftyp = t; fval = Some l })
                     in
                     let ext_states =
                       let open StateService in
                       List.map ext_states ~f:(fun (addr, fields) ->
-                          let fields' =
-                            List.map fields ~f:(fun (n, m, t, l) ->
-                                { fname = n; f_is_mutable = is_mutable m; ftyp = t; fval = Some l })
+                          let cparams', fields' =
+                            List.partition_map fields ~f:(fun (n, m, t, l) ->
+                                if is_mutable m then
+                                  Second { fname = n; ftyp = t; fval = Some l }
+                                else First { fname = n; ftyp = t; fval = Some l })
                           in
-                          { caddr = addr; cstate = fields' })
+                          { caddr = addr; cparams = cparams'; cstate = fields' })
                     in
                     let () =
                       StateService.initialize ~sm:Local ~fields ~ext_states
@@ -707,10 +709,7 @@ let run_with_args args =
                           gas
                 in
 
-                let osj =
-                  (* get_full_state contains both mutables and immutables, so filter out the immutables *)
-                   List.filter_map field_vals ~f:(fun (f, m, t, v) -> if m then Some (f, t, v) else None) |> 
-                   output_state_json cstate'.balance in
+                let osj = output_state_json cstate'.balance field_vals in
                 let omj = output_message_json gas mlist in
                 let oej = output_event_json elist in
                 let gas' = Gas.finalize_remaining_gas args.gas_limit gas in

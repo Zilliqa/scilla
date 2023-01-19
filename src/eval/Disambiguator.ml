@@ -928,7 +928,7 @@ let run_with_args args =
               (* Use the provided state json. *)
               (* We control the state files, so we can assume the type info is correct *)
               parse_json args.input_state this_address |>
-              List.map ~f:(fun (n, t, v) -> (n, true, t, v))
+              List.map ~f:(fun (n, t, v) -> (n, t, v))
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
@@ -990,7 +990,7 @@ let run_with_args args =
               let outputfields =
                 List.map state ~f:(fun (n, tp, v) ->
                     let open StateService in
-                    { fname = n; f_is_mutable = true; ftyp = tp; fval = Some v })
+                    { fname = n; ftyp = tp; fval = Some v })
               in
               (* Initialise with the final values, then update, then finalise. *)
               (* ~ext_states not initialised, since they are not supported anyway *)
@@ -1029,7 +1029,7 @@ let run_with_args args =
       (* state_to_json maps name * literal to a vname * type * value json, which is
          the format for both init and state jsons *)
       ( JSON.ContractState.state_to_json init,
-        JSON.ContractState.state_to_json (List.filter_map ~f:(fun (f, m, t, v) -> if m then Some (f, t, v) else None) state))
+        JSON.ContractState.state_to_json state)
 
 let output_to_string = Yojson.Basic.pretty_to_string
 
