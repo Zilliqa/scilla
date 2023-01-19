@@ -85,9 +85,9 @@ type builtin =
   | Builtin_to_uint128
   | Builtin_to_nat
   | Builtin_schnorr_get_address
-[@@deriving sexp, equal]
+[@@deriving sexp, to_yojson, equal]
 
-type 'rep builtin_annot = builtin * 'rep [@@deriving sexp]
+type 'rep builtin_annot = builtin * 'rep [@@deriving sexp, to_yojson]
 
 let pp_builtin b =
   match b with
@@ -200,7 +200,7 @@ let parse_builtin s loc =
 (*               Types of components                   *)
 (*******************************************************)
 
-type component_type = CompTrans | CompProc [@@deriving sexp]
+type component_type = CompTrans | CompProc [@@deriving sexp, to_yojson]
 
 let component_type_to_string ctp =
   match ctp with CompTrans -> "transition" | CompProc -> "procedure"
@@ -221,6 +221,7 @@ module type Rep = sig
   val string_rep : rep
   val rep_of_sexp : Sexp.t -> rep
   val sexp_of_rep : rep -> Sexp.t
+  val rep_to_yojson : rep -> Yojson.Safe.t
 
   (* TODO, Issue #179: These functions are only used in TypeCache.ml.
      See if they can be eliminated somehow *)
@@ -243,15 +244,15 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
   (*******************************************************)
 
   type payload = MLit of SLiteral.t | MVar of ER.rep SIdentifier.t
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type pattern =
     | Wildcard
     | Binder of ER.rep SIdentifier.t
     | Constructor of SR.rep SIdentifier.t * pattern list
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
-  type expr_annot = expr * ER.rep
+  type expr_annot = expr * ER.rep [@@deriving to_yojson]
 
   and expr =
     | Literal of SLiteral.t  (** Literals such as [False] or ["foo"] *)
@@ -287,7 +288,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | GasExpr of SGasCharge.gas_charge * expr_annot
         (** [GasExpr(G, E)] represents gas charge for the expression [E].
           These nodes are added in AST transformations and not exposed to the user at the level of source code. *)
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   let expr_rep erep = snd erep
 
@@ -309,7 +310,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | Timestamp of ER.rep SIdentifier.t
     (* REPLICATE_CONTRACT(addr, init_params) *)
     | ReplicateContr of (ER.rep SIdentifier.t * ER.rep SIdentifier.t)
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type stmt_annot = stmt * SR.rep
 
@@ -360,6 +361,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     | TypeCast of ER.rep SIdentifier.t * ER.rep SIdentifier.t * SType.t
         (** [TypeCast(I, A, TY)] represents: [I <- & A as TY] *)
     | AcceptPayment  (** [AcceptPayment] is an [accept] statement. *)
+    | Return of ER.rep SIdentifier.t
+        (** [Return(A)] is an [return A] statement *)
     | Iterate of ER.rep SIdentifier.t * SR.rep SIdentifier.t
         (** [Iterate(L, F)] represents calling a procedure for each element of
             the list: [forall L F] *)
@@ -367,13 +370,16 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         (** [SendMsgs(MS)] represents sending messages: [send MS] *)
     | CreateEvnt of ER.rep SIdentifier.t
         (** [CreateEvnt(E)] represents emitting an event: [event E] *)
-    | CallProc of SR.rep SIdentifier.t * ER.rep SIdentifier.t list
-        (** [CallProc(F, [A1, ... An])] is a procedure call: [F A1 ... An] *)
+    | CallProc of
+        ER.rep SIdentifier.t option
+        * SR.rep SIdentifier.t
+        * ER.rep SIdentifier.t list
+        (** [CallProc(I, P, [A1, ... An])] is a procedure call: [I = P A1 ... An] *)
     | Throw of ER.rep SIdentifier.t option
         (** [Throw(I)] represents: [throw I] *)
     | GasStmt of SGasCharge.gas_charge
         (** [GasStmt(GC)] is added in AST transformations. *)
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   let stmt_rep srep = snd srep
   let stmt_loc s = SR.get_loc (stmt_rep s)
@@ -389,19 +395,20 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     comp_name : SR.rep SIdentifier.t;
     comp_params : (ER.rep SIdentifier.t * SType.t) list;
     comp_body : stmt_annot list;
+    comp_return : SType.t option;
   }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type ctr_def = { cname : ER.rep SIdentifier.t; c_arg_types : SType.t list }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type lib_entry =
     | LibVar of ER.rep SIdentifier.t * SType.t option * expr_annot
     | LibTyp of ER.rep SIdentifier.t * ctr_def list
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type library = { lname : SR.rep SIdentifier.t; lentries : lib_entry list }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   type contract = {
     cname : SR.rep SIdentifier.t;
@@ -410,7 +417,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     cfields : (ER.rep SIdentifier.t * SType.t * expr_annot) list;
     ccomps : component list;
   }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   (* Contract module: libary + contract definiton *)
   type cmodule = {
@@ -422,7 +429,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     contr : contract;
   }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   (* Library module *)
   type lmodule = {
@@ -432,7 +439,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
     elibs : (SR.rep SIdentifier.t * SR.rep SIdentifier.t option) list;
     libs : library; (* lib functions defined in the module *)
   }
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   (* A tree of libraries linked to their dependents *)
   type libtree = {
@@ -638,6 +645,8 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error casting `%s` into type `%s`:\n" (as_error_string x)
             (SType.pp_typ_error t)
       | AcceptPayment -> sprintf "Error in accepting payment\n"
+      | Return i ->
+          sprintf "Error in returning value `%s`\n" (as_error_string i)
       | Iterate (l, p) ->
           sprintf "Error iterating `%s` over elements in list `%s`:\n"
             (as_error_string p) (as_error_string l)
@@ -645,7 +654,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
           sprintf "Error in sending messages `%s`:\n" (as_error_string i)
       | CreateEvnt i ->
           sprintf "Error in create event `%s`:\n" (as_error_string i)
-      | CallProc (p, _) ->
+      | CallProc (_, p, _) ->
           sprintf "Error in call of procedure '%s':\n" (as_error_string p)
       | GasStmt _ -> "Error in type checking gas charge. This shouldn't happen."
       | Throw i ->

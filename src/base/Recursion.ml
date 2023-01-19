@@ -214,12 +214,13 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.ReadFromBC (x, recursion_bcinfo f)
         | TypeCast (x, r, t) -> pure @@ RecursionSyntax.TypeCast (x, r, t)
         | AcceptPayment -> pure @@ RecursionSyntax.AcceptPayment
+        | Return i -> pure @@ RecursionSyntax.Return i
         | Iterate (l, p) -> pure @@ RecursionSyntax.Iterate (l, p)
         | SendMsgs msg -> pure @@ RecursionSyntax.SendMsgs msg
         | CreateEvnt evnt -> pure @@ RecursionSyntax.CreateEvnt evnt
-        | CallProc (p, args) ->
+        | CallProc (id_opt, p, args) ->
             if is_proc_in_scope (get_id p) then
-              pure @@ RecursionSyntax.CallProc (p, args)
+              pure @@ RecursionSyntax.CallProc (id_opt, p, args)
             else
               fail1 ~kind:"Procedure is not in scope" ~inst:(as_error_string p)
                 (SR.get_loc rep)
@@ -231,7 +232,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
     walk srep
 
   let recursion_component is_proc_in_scope comp =
-    let { comp_type; comp_name; comp_params; comp_body } = comp in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = comp in
     let%bind () = forallM ~f:(fun (_, t) -> recursion_typ t) comp_params in
     let%bind recursion_comp_body =
       mapM ~f:(fun s -> recursion_stmt is_proc_in_scope s) comp_body
@@ -242,6 +243,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
          RecursionSyntax.comp_name;
          RecursionSyntax.comp_params;
          RecursionSyntax.comp_body = recursion_comp_body;
+         RecursionSyntax.comp_return;
        }
 
   let recursion_contract c =

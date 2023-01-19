@@ -26,7 +26,7 @@ type loc = {
   (* line number *)
   cnum : int; (* column number *)
 }
-[@@deriving sexp, equal, compare]
+[@@deriving sexp, to_yojson, equal, compare]
 
 let toLoc (p : Lexing.position) : loc =
   {

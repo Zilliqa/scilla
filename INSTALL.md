@@ -174,7 +174,7 @@ Disabling sandboxing is required since [WSL does not support Sandboxing](https:/
 To disable sandboxing, simply run:
 
 ```shell
-opam init --disable-sandboxing --compiler=ocaml-base-compiler.4.11.2 --yes
+opam init --disable-sandboxing --compiler=ocaml-base-compiler.4.12.0 --yes
 ```
 
 7. Set up current shell to work with opam
@@ -194,7 +194,7 @@ opam install ./scilla.opam --deps-only --with-test
 then
 
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.11.2
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.12.0
 ```
 
 9. Build and install
@@ -242,7 +242,7 @@ The binaries (`eval-runner`, `scilla-checker`, `scilla-runner` & `type-checker`)
 
 #### Initialize opam
 ```shell
-opam init --compiler=ocaml-base-compiler.4.11.2 --yes
+opam init --compiler=ocaml-base-compiler.4.12.0 --yes
 ```
 Note: the initializer will change your shell configuration to setup the environment opam needs to work.
 You can remove `--yes` from the above command to manually control that process.
@@ -301,7 +301,7 @@ This is like a standard opam switch but instead of `$HOME/.opam`, it will reside
 This lets us to avoid dependency conflict and changing our switches back and forth when working on different projects.
 To create a local opam switch and install all the Scilla dependencies, `cd` into project root and execute:
 ```shell
-opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.11.2
+opam switch create ./ --deps-only --with-test --yes ocaml-base-compiler.4.12.0
 ```
 Now, whenever you are inside the project directory, opam will prefer the local switch to any globally installed switches,
 unless being told explicitly which one to use.
@@ -322,7 +322,7 @@ git clean -dfX --exclude=\!_opam/**
 
 Instead of local switches, you can install a global switch called `scilla` on your system as follows
 ```shell
-opam switch create scilla ocaml-base-compiler.4.11.2
+opam switch create scilla ocaml-base-compiler.4.12.0
 ```
 
 Now you will need to install scilla's dependencies with the following command:

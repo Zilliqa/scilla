@@ -1,0 +1,14 @@
+scilla_version 0
+
+library TypecheckReturn4
+
+contract TypecheckReturn4()
+
+procedure cannot_be_used_in_forall() -> BNum
+  r = _creation_block;
+  return r
+end
+
+transition foo(l: List BNum)
+  forall l cannot_be_used_in_forall
+end

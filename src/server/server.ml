@@ -91,6 +91,7 @@ let rec serve rpc ~socket =
 
 let sock_path = "/tmp/scilla-server.sock"
 let num_pending = 5
+let daemonise = false
 
 let default_server_implementation () =
   let runner args =
@@ -112,9 +113,25 @@ let default_server_implementation () =
   Server.implementation
 
 let start ?(server_implementation = default_server_implementation)
-    ?(sock_path = sock_path) ?(num_pending = num_pending) =
+    ?(sock_path = sock_path) ?(num_pending = num_pending)
+    ?(daemonise = daemonise) ?(logs_path = None) =
   pout "Starting Scilla server...\n";
   Out_channel.flush stdout;
+
+  (* Fork the process and run the child in background if needed. *)
+  (if daemonise then
+   let parent_cwd = Sys_unix.getcwd () in
+   match logs_path with
+   | Some path ->
+       let stdout_log = path ^ ".out" and stderr_log = path ^ ".err" in
+       pout
+         (Printf.sprintf "Logs will be written in %s and %s\n" stdout_log
+            stderr_log);
+       Out_channel.flush stdout;
+       Daemon.daemonize ~cd:parent_cwd
+         ~redirect_stdout:(`File_append stdout_log)
+         ~redirect_stderr:(`File_append stderr_log) ()
+   | None -> Daemon.daemonize ~cd:parent_cwd ());
 
   (* Generate the "rpc" function from the implementation,
      that given an [Rpc.call], calls the implementation of that RPC method and

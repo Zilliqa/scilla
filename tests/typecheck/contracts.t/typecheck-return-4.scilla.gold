@@ -1,0 +1,4 @@
+
+tests/typecheck/contracts.t/typecheck-return-4.scilla:13:12: error: Procedures with a return type cannot be used in forall statements: cannot_be_used_in_forall
+
+Gas remaining: 8000

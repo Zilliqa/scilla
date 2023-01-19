@@ -1,0 +1,5 @@
+
+tests/typecheck/contracts.t/typecheck-return-1.scilla:9:3: error: Procedure no_return cannot return because it doesn't have a return type
+tests/typecheck/contracts.t/typecheck-return-1.scilla:14:10: error: Type unassignable: String expected, but BNum provided
+
+Gas remaining: 8000

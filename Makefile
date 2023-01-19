@@ -1,6 +1,6 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-OCAML_VERSION_RECOMMENDED=4.11.2
+OCAML_VERSION_RECOMMENDED=4.12.0
 # In case of upgrading ocamlformat version:
 # package.json also needs updating
 OCAMLFORMAT_VERSION=0.22.4
@@ -66,7 +66,7 @@ parser-messages:
 	mv src/base/NewParserFaults.messages src/base/ParserFaults.messages
 	rm src/base/NewParserFaultsStubs.messages
 
-# Launch utop such that it finds the libraroes.
+# Launch utop such that it finds the libraries.
 utop: release
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
@@ -154,10 +154,12 @@ test_server: dev
 	$(call patch_rpath,src/runners)
 	dune build --profile dev tests/testsuite.exe
 	$(call patch_rpath,tests)
-	./_build/default/src/runners/scilla_server.exe &
+	killall -r "scilla_server.exe" || true
+	_build/default/src/runners/scilla_server.exe -daemonise -logs /tmp/scilla-server
 	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
   -server true \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
+	killall -r "scilla_server.exe" || true
 
 # === TESTS (end) =============================================================
 
