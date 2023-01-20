@@ -42,7 +42,7 @@ open JSONType
 open JSONLiteral
 
 type json_parsed_field =
-  (* A field (mutable or immutable) belonging to this contract. *)
+  (* A mutable field belonging to this contract. *)
   | ThisContr of string * JSONType.t * JSONLiteral.t
   (* External contracts and their fields. *)
   | ExtrContrs of (Bystrx.t * (string * field_mutability * JSONType.t * JSONLiteral.t) list) list
