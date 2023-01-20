@@ -254,7 +254,7 @@ let jobj_to_statevar json =
       (* We have a list of external addresses, each with their own fields. *)
       let exts = v |> to_list_exn in
       let exts' =
-        List.fold exts ~init:[] ~f:(fun acc ext ->
+        List.map exts ~f:(fun ext ->
             let addr =
               member_exn "address" ext |> to_string_exn |> Bystrx.parse_hex
             in
@@ -263,7 +263,7 @@ let jobj_to_statevar json =
             let state = member_exn "state" ext |> to_list_exn in
             let all_fields = List.rev_map_append state cparams' ~f:(recurser_mapper Mutable)
             in
-            (addr, all_fields) :: acc)
+            (addr, all_fields))
       in
       ExtrContrs exts'
     else
