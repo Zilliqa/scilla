@@ -1,0 +1,42 @@
+{
+  "gas_remaining": "7967",
+  "errors": [
+    {
+      "error_message": "Exception thrown: (Message [(_exception : (String \"Error\")) ; (code : (Int32 -1))])",
+      "start_location": {
+        "file": "tests/contracts/exception-position.scilla",
+        "line": 9,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from CheckExn",
+      "start_location": {
+        "file": "tests/contracts/exception-position.scilla",
+        "line": 7,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from CheckNestedExn",
+      "start_location": {
+        "file": "tests/contracts/exception-position.scilla",
+        "line": 16,
+        "column": 11
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from Test",
+      "start_location": {
+        "file": "tests/contracts/exception-position.scilla",
+        "line": 20,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

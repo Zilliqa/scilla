@@ -554,9 +554,15 @@ and try_apply_as_procedure conf proc proc_rest actuals =
   let%bind amount_value =
     fromR @@ Configuration.lookup conf (mk_loc_id amount)
   in
+  let component_stack' = conf.component_stack in
   let%bind proc_conf =
     Configuration.bind_all
-      { conf with env = conf.init_env; procedures = proc_rest }
+      {
+        conf with
+        env = conf.init_env;
+        procedures = proc_rest;
+        component_stack = proc.comp_name :: conf.component_stack;
+      }
       (origin :: sender :: amount
       :: List.map proc.comp_params ~f:(fun id_typ -> get_id (fst id_typ)))
       (origin_value :: sender_value :: amount_value :: actuals)
@@ -568,7 +574,7 @@ and try_apply_as_procedure conf proc proc_rest actuals =
       conf' with
       env = conf.env;
       procedures = conf.procedures;
-      component_stack = proc.comp_name :: conf.component_stack;
+      component_stack = component_stack';
     }
 
 (*******************************************************)
