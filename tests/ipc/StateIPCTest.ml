@@ -93,38 +93,47 @@ let rec pb_to_json pb =
   | Ipcmessage_types.Bval s -> json_from_string (Bytes.to_string s)
 
 (* Parse a state JSON file into (fname, ftyp, fval) where fval is protobuf encoded. *)
+type json_parsed_field =
+  (* A field mutable belonging to this contract. *)
+  | ThisContr of string * IPCTestType.t * Ipcmessage_types.proto_scilla_val
+  (* External contracts and their mutable or immutable fields. *)
+  | ExtrContrs of (string * (string * bool * IPCTestType.t * Ipcmessage_types.proto_scilla_val) list) list
+
 let json_file_to_state path =
-  let j = json_from_file path in
+  let j = json_from_file path |> json_to_list in
 
-  let rec jlist_to_states js =
-    List.map js ~f:(fun sv ->
-        let fname = json_member "vname" sv |> json_to_string in
-        let jval = json_member "value" sv in
-        if String.equal fname "_external" then
-          let exts = json_to_list jval in
-          let addr_states =
-            List.map exts ~f:(fun addr_states ->
-                let addr =
-                  json_member "address" addr_states |> json_to_string
-                in
-                let state = json_member "state" addr_states |> json_to_list in
-                let state' = jlist_to_states state in
-                List.map state' ~f:(function
-                  | [ (None, s) ] -> (Some addr, s)
-                  | _ ->
-                      assert_failure
-                        "External state cannot contain nested external states"))
-          in
-          List.concat addr_states
-        else
-          let ftyp =
-            json_member "type" sv |> json_to_string |> parse_typ_wrapper
-          in
-          let fval = json_to_pb ftyp jval in
-          [ (None, (fname, ftyp, fval)) ])
+  let rec recurser js =
+    let fname = json_member "vname" js |> json_to_string in
+    let jval = json_member "value" js in
+    if String.equal fname "_external" then
+      let exts = json_to_list jval in
+      let addr_states =
+        List.map exts ~f:(fun addr_states ->
+            let addr =
+              json_member "address" addr_states |> json_to_string
+            in
+            let cparams = json_member "cparams" addr_states |> json_to_list in
+            let cparams' = List.map cparams ~f:(recurser_mapper false) in
+            let state = json_member "state" addr_states |> json_to_list in
+            let all_fields = List.rev_map_append state cparams' ~f:(recurser_mapper true) in
+            (addr, all_fields))
+      in
+      ExtrContrs addr_states
+    else 
+      let ftyp =
+        json_member "type" js |> json_to_string |> parse_typ_wrapper
+      in
+      let fval = json_to_pb ftyp jval in
+      ThisContr (fname, ftyp, fval)
+  and recurser_mapper is_mutable json =
+    match recurser json with
+    | ThisContr (n, t, l) -> (n, is_mutable, t, l)
+    | _ ->
+        assert_failure
+          "External state cannot contain nested external states"
   in
-  List.concat @@ jlist_to_states (json_to_list j)
-
+  List.map j ~f:recurser
+      
 let state_to_json s =
   let open IPCTestType in
   `List
@@ -249,11 +258,10 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path
   if start_mock_server then StateIPCTestServer.start_server ~sock_addr;
 
   let fields =
-    List.filter_map state ~f:(fun (addr_opt, (s, t, _)) ->
-        if
-          Option.is_some addr_opt || String.(s = CUName.as_string balance_label)
-        then None
-        else Some (s, t))
+    List.filter_map state ~f:(function
+        | ThisContr (s, t, _) when not String.(s = CUName.as_string balance_label) ->
+            Some (s, t)
+        | _ -> None)
   in
   let () = StateIPCTestClient.initialize ~fields ~sock_addr in
 
@@ -267,19 +275,22 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path
     bcinfo;
 
   (* Update the server (via the test client) with the state values we want. *)
-  List.iter state ~f:(fun (addr_opt, (fname, tp, value)) ->
-      match addr_opt with
-      | Some caddr -> StateIPCTestClient.update_ext ~caddr ~fname ~is_mutable:true ~value ~tp
-      | None ->
-          if String.(fname <> CUName.as_string balance_label) then
-            StateIPCTestClient.update ~fname ~value);
+  List.iter state ~f:(function
+      | ThisContr (fname, _tp, value) when String.(fname <> CUName.as_string balance_label) -> 
+          StateIPCTestClient.update ~fname ~value
+      | ExtrContrs extrs ->
+          List.iter extrs ~f:(fun (caddr, fields) ->
+              List.iter fields ~f:(function
+                  | (fname, is_mutable, tp, value) ->
+                      StateIPCTestClient.update_ext ~caddr ~fname ~is_mutable ~value ~tp))
+      | _ -> ());
   (* Find the balance from state and return it. *)
   match
-    List.find state ~f:(fun (addr_opt, (fname, _, _)) ->
-        Option.is_none addr_opt
-        && String.(fname = CUName.as_string balance_label))
+    List.find state ~f:(function
+        | ThisContr (fname, _, _) when String.(fname = CUName.as_string balance_label) -> true
+        | _ -> false)
   with
-  | Some (_, (_, _, balpb)) -> (
+  | Some (ThisContr (_, _, balpb)) -> (
       match balpb with
       | Ipcmessage_types.Bval bal ->
           json_from_string (Bytes.to_string bal) |> json_to_string
@@ -288,7 +299,7 @@ let setup_and_initialize ~start_mock_server ~sock_addr ~state_json_path
             ("Incorrect type of "
             ^ CUName.as_error_string balance_label
             ^ " in state.json"))
-  | None ->
+  | _ ->
       assert_failure
         ("Unable to find "
         ^ CUName.as_error_string balance_label
