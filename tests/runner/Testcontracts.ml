@@ -523,6 +523,9 @@ let contract_tests env =
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
                        [];
+                "exception-position"
+                >::: build_contract_tests env "exception-position" fail_code 1 1
+                       [];
                 "UintParam"
                 >::: build_contract_tests env "UintParam" fail_code 1 3 [];
                 "shogi"

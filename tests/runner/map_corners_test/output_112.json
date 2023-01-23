@@ -2,12 +2,20 @@
   "gas_remaining": "7961",
   "errors": [
     {
-      "error_message":
-        "Exception thrown: (Message [(_exception : (String \"Test failed as expected\")) ; (test_name : (String \"f3\"))])",
+      "error_message": "Exception thrown: (Message [(_exception : (String \"Test failed as expected\")) ; (test_name : (String \"f3\"))])",
       "start_location": {
         "file": "tests/contracts/map_corners_test.scilla",
         "line": 38,
         "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from expected_fail",
+      "start_location": {
+        "file": "tests/contracts/map_corners_test.scilla",
+        "line": 36,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
