@@ -129,14 +129,18 @@ module type ScillaType = sig
   [@@deriving sexp]
 
   type t =
-    | PrimType of PrimType.t
-    | MapType of t * t
+    | PrimType of PrimType.t  (** [PrimType(T)] represents a primary type *)
+    | MapType of t * t  (** [MapType(K, V)] is a mapping type: [K |-> V] *)
     | FunType of t * t
+        (** [FunType(Ty1, Ty2)] is a function type: [Ty1 => Ty2]  *)
     | ADT of loc TIdentifier.t * t list
-    | TypeVar of string
+        (** [ADT(N, Args)] represents ADT type [N] with type parameters [Args] *)
+    | TypeVar of string  (** [TypeVar(T)] is a type variable *)
     | PolyFun of string * t
-    | Unit
-    | Address of t addr_kind
+        (** [PolyFun('A, T)] represents a polymorphic function type where
+          ['A] is a type parameter. For example: [forall 'A. List 'a -> List 'A] *)
+    | Unit  (** [Unit] is a unit type *)
+    | Address of t addr_kind  (** [Address(A)] represents address *)
   [@@deriving sexp, to_yojson]
 
   val pp_typ : t -> string
