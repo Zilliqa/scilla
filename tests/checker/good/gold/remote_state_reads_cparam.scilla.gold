@@ -15,9 +15,9 @@
       { "field": "remote_reads_test_res_6_2", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_7_3", "tag": "(Option NotMoney)" },
       { "field": "remote_reads_test_res_7_6", "tag": "(Option NotMoney)" },
-      { "field": "remote_read_remote_read_res_1", "tag": "NoInfo" },
-      { "field": "remote_read_remote_read_res_2", "tag": "(Option NoInfo)" },
-      { "field": "remote_read_remote_read_res_3", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_8", "tag": "NoInfo" },
+      { "field": "remote_reads_test_res_9", "tag": "(Option NoInfo)" },
+      { "field": "remote_reads_test_res_10", "tag": "NoInfo" },
       { "field": "address_type_erasure_test_res_1", "tag": "(Map NoInfo)" }
     ],
     "ADT constructors": []
@@ -69,21 +69,13 @@
         "type": "Option (Bool)",
         "depth": 0
       },
+      { "vname": "remote_reads_test_res_8", "type": "Uint128", "depth": 0 },
       {
-        "vname": "remote_read_remote_read_res_1",
-        "type": "Uint128",
-        "depth": 0
-      },
-      {
-        "vname": "remote_read_remote_read_res_2",
+        "vname": "remote_reads_test_res_9",
         "type": "Option (Uint128)",
         "depth": 0
       },
-      {
-        "vname": "remote_read_remote_read_res_3",
-        "type": "ByStr20",
-        "depth": 0
-      },
+      { "vname": "remote_reads_test_res_10", "type": "ByStr20", "depth": 0 },
       {
         "vname": "address_type_erasure_test_res_1",
         "type": "Map (Uint128) (ByStr20 with end)",
@@ -159,7 +151,7 @@
         ]
       },
       {
-        "vname": "RemoteReadsOfRemoteRead",
+        "vname": "RemoteReadContractParameterTest8",
         "params": [
           {
             "vname": "remote",
@@ -169,7 +161,7 @@
         ]
       },
       {
-        "vname": "RemoteReadsOfRemoteMap",
+        "vname": "RemoteReadContractParameterTest9",
         "params": [
           {
             "vname": "remote",
@@ -178,7 +170,7 @@
           }
         ]
       },
-      { "vname": "RemoteReadsContractParam", "params": [] },
+      { "vname": "RemoteReadContractParameterTest10", "params": [] },
       { "vname": "AddressTypeErasureTest1", "params": [] },
       { "vname": "AddressTypeErasureTest2", "params": [] }
     ],
@@ -241,6 +233,26 @@
     ]
   },
   "warnings": [
+    {
+      "warning_message": "Write only field: remote_reads_test_res_9",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 116,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_reads_test_res_8",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 107,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
     {
       "warning_message": "Write only field: remote_reads_test_res_7_6",
       "start_location": {
@@ -362,17 +374,7 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Write only field: remote_reads_test_res_1",
-      "start_location": {
-        "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 37,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Write only field: remote_read_remote_read_res_3",
+      "warning_message": "Write only field: remote_reads_test_res_10",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
         "line": 121,
@@ -382,20 +384,10 @@
       "warning_id": 3
     },
     {
-      "warning_message": "Write only field: remote_read_remote_read_res_2",
+      "warning_message": "Write only field: remote_reads_test_res_1",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 116,
-        "column": 3
-      },
-      "end_location": { "file": "", "line": 0, "column": 0 },
-      "warning_id": 3
-    },
-    {
-      "warning_message": "Write only field: remote_read_remote_read_res_1",
-      "start_location": {
-        "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 107,
+        "line": 37,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
