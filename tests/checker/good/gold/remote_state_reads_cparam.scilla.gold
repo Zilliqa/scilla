@@ -14,14 +14,23 @@
       { "field": "remote_reads_test_res_6_1", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_6_2", "tag": "NoInfo" },
       { "field": "remote_reads_test_res_7_3", "tag": "(Option NotMoney)" },
-      { "field": "remote_reads_test_res_7_6", "tag": "(Option NotMoney)" }
+      { "field": "remote_reads_test_res_7_6", "tag": "(Option NotMoney)" },
+      { "field": "remote_read_remote_read_res_1", "tag": "NoInfo" },
+      { "field": "remote_read_remote_read_res_2", "tag": "(Option NoInfo)" },
+      { "field": "remote_read_remote_read_res_3", "tag": "NoInfo" },
+      { "field": "address_type_erasure_test_res_1", "tag": "(Map NoInfo)" }
     ],
     "ADT constructors": []
   },
   "contract_info": {
     "scilla_major_version": "0",
     "vname": "RRCPContract",
-    "params": [ { "vname": "cparam1", "type": "ByStr20 with end" } ],
+    "params": [
+      {
+        "vname": "cparam1",
+        "type": "ByStr20 with contract (admin : ByStr20) end"
+      }
+    ],
     "fields": [
       { "vname": "remote_reads_test_res_1", "type": "Uint128", "depth": 0 },
       {
@@ -59,6 +68,26 @@
         "vname": "remote_reads_test_res_7_6",
         "type": "Option (Bool)",
         "depth": 0
+      },
+      {
+        "vname": "remote_read_remote_read_res_1",
+        "type": "Uint128",
+        "depth": 0
+      },
+      {
+        "vname": "remote_read_remote_read_res_2",
+        "type": "Option (Uint128)",
+        "depth": 0
+      },
+      {
+        "vname": "remote_read_remote_read_res_3",
+        "type": "ByStr20",
+        "depth": 0
+      },
+      {
+        "vname": "address_type_erasure_test_res_1",
+        "type": "Map (Uint128) (ByStr20 with end)",
+        "depth": 1
       }
     ],
     "transitions": [
@@ -128,7 +157,30 @@
               "ByStr20 with contract (x : Uint128, y : Uint64) field x : Uint128, field y : Uint64 end"
           }
         ]
-      }
+      },
+      {
+        "vname": "RemoteReadsOfRemoteRead",
+        "params": [
+          {
+            "vname": "remote",
+            "type":
+              "ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Uint128) end) end) end"
+          }
+        ]
+      },
+      {
+        "vname": "RemoteReadsOfRemoteMap",
+        "params": [
+          {
+            "vname": "remote",
+            "type":
+              "ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Map (Uint128) (Uint128)) end) end) end"
+          }
+        ]
+      },
+      { "vname": "RemoteReadsContractParam", "params": [] },
+      { "vname": "AddressTypeErasureTest1", "params": [] },
+      { "vname": "AddressTypeErasureTest2", "params": [] }
     ],
     "procedures": [],
     "events": [],
@@ -193,7 +245,7 @@
       "warning_message": "Write only field: remote_reads_test_res_7_6",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 93,
+        "line": 99,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -203,7 +255,7 @@
       "warning_message": "Write only field: remote_reads_test_res_7_3",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 89,
+        "line": 95,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -213,7 +265,7 @@
       "warning_message": "Write only field: remote_reads_test_res_6_2",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 80,
+        "line": 86,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -223,7 +275,7 @@
       "warning_message": "Write only field: remote_reads_test_res_6_1",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 78,
+        "line": 84,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -233,7 +285,7 @@
       "warning_message": "Write only field: remote_reads_test_res_5_5",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 71,
+        "line": 77,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -243,7 +295,7 @@
       "warning_message": "Write only field: remote_reads_test_res_5_3",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 68,
+        "line": 74,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -253,7 +305,7 @@
       "warning_message": "Write only field: remote_reads_test_res_5_1",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 64,
+        "line": 70,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -263,7 +315,7 @@
       "warning_message": "Write only field: remote_reads_test_res_4_2",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 57,
+        "line": 63,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -273,7 +325,7 @@
       "warning_message": "Write only field: remote_reads_test_res_4_1",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 56,
+        "line": 62,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -283,7 +335,7 @@
       "warning_message": "Write only field: remote_reads_test_res_3_3",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 48,
+        "line": 54,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -293,7 +345,7 @@
       "warning_message": "Write only field: remote_reads_test_res_3_2",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 46,
+        "line": 52,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -303,7 +355,7 @@
       "warning_message": "Write only field: remote_reads_test_res_2",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 38,
+        "line": 44,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -313,7 +365,37 @@
       "warning_message": "Write only field: remote_reads_test_res_1",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 31,
+        "line": 37,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_read_remote_read_res_3",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 121,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_read_remote_read_res_2",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 116,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
+      "warning_message": "Write only field: remote_read_remote_read_res_1",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 107,
         "column": 3
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -328,6 +410,16 @@
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
       "warning_id": 3
+    },
+    {
+      "warning_message": "Consider using in-place Map access",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 131,
+        "column": 14
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 1
     },
     {
       "warning_message":

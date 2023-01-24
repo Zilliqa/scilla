@@ -8,7 +8,7 @@ type AddressADT =
 | Address2 of ByStr20 with contract (param : ByStr20 with contract (x : Uint128) end) field admin : ByStr20 with end end
 
 contract RRCPContract (
-  cparam1: ByStr20 with end)
+  cparam1: ByStr20 with contract (admin : ByStr20) end)
 
 field remote_reads_test_res_1 : Uint128 = Uint128 0  (* (x) of remote1 *)
 field remote_reads_test_res_2 : AddressADT = Address1 cparam1  (* (x) of remote2 *)
@@ -23,6 +23,12 @@ field remote_reads_test_res_6_1 : Uint128 = Uint128 0  (* (x) of remote6 *)
 field remote_reads_test_res_6_2 : Uint64 = Uint64 0  (* x of remote6 *)
 field remote_reads_test_res_7_3 : Option Bool = None { Bool } (* (x) = x in remote7 *)
 field remote_reads_test_res_7_6 : Option Bool = None { Bool } (* (y) = y in remote7 *)
+field remote_read_remote_read_res_1 : Uint128 = Uint128 0 (* remote.(admin).(f).(g) *)
+field remote_read_remote_read_res_2 : Option Uint128 = None {Uint128} (* remote.(admin).(f).(g)[0] *)
+field remote_read_remote_read_res_3 : ByStr20 = _this_address (* cparam1.(admin) *)
+field address_type_erasure_test_res_1 : Map Uint128 (ByStr20 with end) = Emp Uint128 (ByStr20 with end) (* field[0] := cparam1 *)
+
+
 
 transition RemoteReadContractParameterTest1(
   remote1: ByStr20 with contract (x : Uint128) end
@@ -91,5 +97,39 @@ transition RemoteReadContractParameterTest7(
   tmp_7_5 <-& remote7.y;
   tmp_7_6 = let res = builtin eq tmp_7_4 tmp_7_5 in Some { Bool } res;
   remote_reads_test_res_7_6 := tmp_7_6
+end
+
+transition RemoteReadsOfRemoteRead(
+  remote: ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Uint128) end) end) end)
+  ad <-& remote.(admin);
+  this_f <-& ad.(f);
+  this_g <-& this_f.(g);
+  remote_read_remote_read_res_1 := this_g
+end
+
+transition RemoteReadsOfRemoteMap(
+  remote: ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Map Uint128 Uint128) end) end) end)
+  ad <-& remote.(admin);
+  this_f <-& ad.(f);
+  remote_key = Uint128 0;
+  this_g <-& this_f.(g)[remote_key];
+  remote_read_remote_read_res_2 := this_g
+end
+
+transition RemoteReadsContractParam()
+  ad <-& cparam1.(admin);
+  remote_read_remote_read_res_3 := ad
+end
+
+transition AddressTypeErasureTest1()
+  zero = Uint128 0;
+  address_type_erasure_test_res_1[zero] := cparam1
+end
+
+transition AddressTypeErasureTest2()
+  zero = Uint128 0;
+  emp_map <- address_type_erasure_test_res_1;
+  new_map = builtin put emp_map zero cparam1;
+  address_type_erasure_test_res_1 := new_map
 end
 

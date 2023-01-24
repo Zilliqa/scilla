@@ -460,6 +460,12 @@ let contract_tests env =
                 "remote_state_reads"
                 >: build_contract_init_test env succ_code "remote_state_reads"
                      "init_balance_and_nonce" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads_cparam"
+                >: build_contract_init_test env succ_code "remote_state_reads_cparam"
+                     "init" ~is_library:false ~ipc_mode:true;
+                "remote_state_reads_cparam"
+                >: build_contract_init_test env succ_code "remote_state_reads_cparam"
+                     "init_extra_cparam" ~is_library:false ~ipc_mode:true;
                 "address_eq_test"
                 >::: build_contract_tests ~pplit:false env "address_eq_test"
                        succ_code 1 11 [];
@@ -570,6 +576,13 @@ let contract_tests env =
                 "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" fail_code 101
                        131 [];
+                "remote_state_reads_cparam"
+                >: build_contract_init_test env fail_code "remote_state_reads_cparam"
+                     "init_missing_cparam" ~is_library:false
+                     ~ipc_mode:true;
+                "remote_state_reads_cparam"
+                >: build_contract_init_test env fail_code "remote_state_reads_cparam"
+                     "init_wrong_field_type" ~is_library:false ~ipc_mode:true;
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_key" ~is_library:false ~ipc_mode:true;
