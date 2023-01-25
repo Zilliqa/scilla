@@ -542,6 +542,13 @@ module TypeUtilities = struct
         mk_error1 ~kind:"Incorrect number of arguments to procedure" ?inst:None
           lc)
 
+  let partial_proc_type_applies ~lc formals actuals =
+    if List.length formals < List.length actuals then
+      fail (mk_error1 ~kind:"Extra arguments in procedure call" ?inst:None lc)
+    else
+      let formals' = List.sub ~pos:0 ~len:(List.length actuals) formals in
+      proc_type_applies ~lc formals' actuals
+
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with
     | (PolyFun _ as pf), a :: args' ->
