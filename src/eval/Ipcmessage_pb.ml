@@ -86,17 +86,21 @@ let rec decode_proto_scilla_query d =
     | Some (1, pk) ->
         Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(1)"
           pk
-    | Some (2, Pbrt.Varint) -> v.mapdepth <- Pbrt.Decoder.int_as_varint d
-    | Some (2, pk) ->
+    | Some (2, Pbrt.Bits32) -> v.is_mutable <- Pbrt.Decoder.bool d
+    | Some (2, pk) -> 
         Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(2)"
           pk
-    | Some (3, Pbrt.Bytes) -> v.indices <- Pbrt.Decoder.bytes d :: v.indices
+    | Some (3, Pbrt.Varint) -> v.mapdepth <- Pbrt.Decoder.int_as_varint d
     | Some (3, pk) ->
         Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(3)"
           pk
-    | Some (4, Pbrt.Varint) -> v.ignoreval <- Pbrt.Decoder.bool d
+    | Some (4, Pbrt.Bytes) -> v.indices <- Pbrt.Decoder.bytes d :: v.indices
     | Some (4, pk) ->
         Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(4)"
+          pk
+    | Some (5, Pbrt.Varint) -> v.ignoreval <- Pbrt.Decoder.bool d
+    | Some (5, pk) ->
+        Pbrt.Decoder.unexpected_payload "Message(proto_scilla_query), field(5)"
           pk
     | Some (_, payload_kind) -> Pbrt.Decoder.skip d payload_kind
   done;
@@ -133,11 +137,13 @@ let rec encode_proto_scilla_query (v : Ipcmessage_types.proto_scilla_query)
     encoder =
   Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.string v.Ipcmessage_types.name encoder;
-  Pbrt.Encoder.key (2, Pbrt.Varint) encoder;
+  Pbrt.Encoder.key (2, Pbrt.Bits32) encoder;
+  Pbrt.Encoder.bool v.Ipcmessage_types.is_mutable encoder;
+  Pbrt.Encoder.key (3, Pbrt.Varint) encoder;
   Pbrt.Encoder.int_as_varint v.Ipcmessage_types.mapdepth encoder;
   List.iter v.Ipcmessage_types.indices ~f:(fun x ->
-      Pbrt.Encoder.key (3, Pbrt.Bytes) encoder;
+      Pbrt.Encoder.key (4, Pbrt.Bytes) encoder;
       Pbrt.Encoder.bytes x encoder);
-  Pbrt.Encoder.key (4, Pbrt.Varint) encoder;
+  Pbrt.Encoder.key (5, Pbrt.Varint) encoder;
   Pbrt.Encoder.bool v.Ipcmessage_types.ignoreval encoder;
   ()

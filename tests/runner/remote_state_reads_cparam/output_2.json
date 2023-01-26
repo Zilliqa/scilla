@@ -43,7 +43,7 @@
       }
     },
     { "vname": "remote_reads_test_res_6_1", "type": "Uint128", "value": "0" },
-    { "vname": "remote_reads_test_res_6_2", "type": "Uint64", "value": "0" },
+    { "vname": "remote_reads_test_res_6_2", "type": "String", "value": "" },
     {
       "vname": "remote_reads_test_res_7_3",
       "type": "Option (Bool)",

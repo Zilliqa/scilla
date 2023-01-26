@@ -1,11 +1,16 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7948",
+  "gas_remaining": "7967",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "42" },
+    {
+      "vname": "remote_reads_test_res_10",
+      "type": "ByStr20",
+      "value": "0x1234567890123456789012345678901234567891"
+    },
+    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "0" },
     {
       "vname": "remote_reads_test_res_2",
       "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
@@ -71,11 +76,6 @@
         "argtypes": [ "Uint128" ],
         "arguments": []
       }
-    },
-    {
-      "vname": "remote_reads_test_res_10",
-      "type": "ByStr20",
-      "value": "0x3620c286757a29985cee194eb90064270fb65414"
     },
     {
       "vname": "address_type_erasure_test_res_1",

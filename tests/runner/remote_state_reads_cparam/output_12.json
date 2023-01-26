@@ -1,11 +1,20 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7948",
+  "gas_remaining": "7947",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "42" },
+    {
+      "vname": "remote_reads_test_res_9",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "0" },
     {
       "vname": "remote_reads_test_res_2",
       "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
@@ -63,15 +72,6 @@
       }
     },
     { "vname": "remote_reads_test_res_8", "type": "Uint128", "value": "0" },
-    {
-      "vname": "remote_reads_test_res_9",
-      "type": "Option (Uint128)",
-      "value": {
-        "constructor": "None",
-        "argtypes": [ "Uint128" ],
-        "arguments": []
-      }
-    },
     {
       "vname": "remote_reads_test_res_10",
       "type": "ByStr20",

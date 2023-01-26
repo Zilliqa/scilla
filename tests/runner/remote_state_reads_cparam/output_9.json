@@ -1,11 +1,33 @@
 {
   "scilla_major_version": "0",
-  "gas_remaining": "7948",
+  "gas_remaining": "7944",
   "_accepted": "false",
   "messages": [],
   "states": [
     { "vname": "_balance", "type": "Uint128", "value": "0" },
-    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "42" },
+    {
+      "vname": "remote_reads_test_res_7_6",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Bool" ],
+        "arguments": [
+          { "constructor": "False", "argtypes": [], "arguments": [] }
+        ]
+      }
+    },
+    {
+      "vname": "remote_reads_test_res_7_3",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "Some",
+        "argtypes": [ "Bool" ],
+        "arguments": [
+          { "constructor": "True", "argtypes": [], "arguments": [] }
+        ]
+      }
+    },
+    { "vname": "remote_reads_test_res_1", "type": "Uint128", "value": "0" },
     {
       "vname": "remote_reads_test_res_2",
       "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
@@ -44,24 +66,6 @@
     },
     { "vname": "remote_reads_test_res_6_1", "type": "Uint128", "value": "0" },
     { "vname": "remote_reads_test_res_6_2", "type": "String", "value": "" },
-    {
-      "vname": "remote_reads_test_res_7_3",
-      "type": "Option (Bool)",
-      "value": {
-        "constructor": "None",
-        "argtypes": [ "Bool" ],
-        "arguments": []
-      }
-    },
-    {
-      "vname": "remote_reads_test_res_7_6",
-      "type": "Option (Bool)",
-      "value": {
-        "constructor": "None",
-        "argtypes": [ "Bool" ],
-        "arguments": []
-      }
-    },
     { "vname": "remote_reads_test_res_8", "type": "Uint128", "value": "0" },
     {
       "vname": "remote_reads_test_res_9",

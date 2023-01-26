@@ -58,7 +58,7 @@
         "depth": 0
       },
       { "vname": "remote_reads_test_res_6_1", "type": "Uint128", "depth": 0 },
-      { "vname": "remote_reads_test_res_6_2", "type": "Uint64", "depth": 0 },
+      { "vname": "remote_reads_test_res_6_2", "type": "String", "depth": 0 },
       {
         "vname": "remote_reads_test_res_7_3",
         "type": "Option (Bool)",
@@ -136,7 +136,7 @@
           {
             "vname": "remote6",
             "type":
-              "ByStr20 with contract (x : Uint128) field x : Uint64 end"
+              "ByStr20 with contract (x : Uint128) field x : String end"
           }
         ]
       },

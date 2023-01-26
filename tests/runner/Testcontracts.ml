@@ -468,7 +468,7 @@ let contract_tests env =
                      "init_extra_cparam" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads_cparam"
                 >::: build_contract_tests ~pplit:false env "remote_state_reads_cparam"
-                       succ_code 1 2 [];
+                       succ_code 1 16 [];
                 "address_eq_test"
                 >::: build_contract_tests ~pplit:false env "address_eq_test"
                        succ_code 1 11 [];

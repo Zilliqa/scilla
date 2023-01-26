@@ -20,7 +20,7 @@ field remote_reads_test_res_5_1 : Map Uint128 Bool = Emp Uint128 Bool  (* (x) of
 field remote_reads_test_res_5_3 : Option Bool = None { Bool } (* exists (x)[0] of remote5 *)
 field remote_reads_test_res_5_5 : Option (Option Bool) = None { (Option Bool) } (* (x)[0] of remote5 *)
 field remote_reads_test_res_6_1 : Uint128 = Uint128 0  (* (x) of remote6 *)
-field remote_reads_test_res_6_2 : Uint64 = Uint64 0  (* x of remote6 *)
+field remote_reads_test_res_6_2 : String = ""  (* x of remote6 *)
 field remote_reads_test_res_7_3 : Option Bool = None { Bool } (* (x) = x in remote7 *)
 field remote_reads_test_res_7_6 : Option Bool = None { Bool } (* (y) = y in remote7 *)
 field remote_reads_test_res_8 : Uint128 = Uint128 0 (* remote.(admin).(f).(g) *)
@@ -78,7 +78,7 @@ transition RemoteReadContractParameterTest5(
 end
 
 transition RemoteReadContractParameterTest6(
-  remote6: ByStr20 with contract (x : Uint128) field x : Uint64 end
+  remote6: ByStr20 with contract (x : Uint128) field x : String end
   )
   tmp_6_1 <-& remote6.(x);
   remote_reads_test_res_6_1 := tmp_6_1;
