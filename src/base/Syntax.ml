@@ -377,7 +377,7 @@ module ScillaSyntax (SR : Rep) (ER : Rep) (Lit : ScillaLiteral) = struct
         (** [CallProc(I, P, [A1, ... An])] is a procedure call, when all the
             arguments are specified: [I = P A1 ... An]. Otherwise, it is or
             partial application of procedure that creates a new local variable
-            [I] that has function type: [I = P A1 ... An]. *)
+            [I] that has the [ProcType] type: [I = P A1 ... An]. *)
     | Throw of ER.rep SIdentifier.t option
         (** [Throw(I)] represents: [throw I] *)
     | GasStmt of SGasCharge.gas_charge
