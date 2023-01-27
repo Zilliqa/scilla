@@ -121,6 +121,11 @@ transition RemoteReadContractParameterTest10()
   remote_reads_test_res_10 := ad
 end
 
+transition RemoteReadContractParameterTest11(
+  remote: ByStr20 with contract (x : Uint128) field y : String end
+  )
+end
+
 transition AddressTypeErasureTest1()
   zero = Uint128 0;
   address_type_erasure_test_res_1[zero] := cparam1

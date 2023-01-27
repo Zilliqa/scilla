@@ -1,0 +1,12 @@
+{
+  "gas_remaining": "7953",
+  "errors": [
+    {
+      "error_message":
+        "Address does not satisfy type: address is 0xabfeccdc9012345678901234567890f777564323, expected type is ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Map (Uint128) (Uint128)) end) end) end",
+      "start_location": { "file": "", "line": 0, "column": 0 },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

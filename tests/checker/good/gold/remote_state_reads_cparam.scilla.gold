@@ -171,6 +171,16 @@
         ]
       },
       { "vname": "RemoteReadContractParameterTest10", "params": [] },
+      {
+        "vname": "RemoteReadContractParameterTest11",
+        "params": [
+          {
+            "vname": "remote",
+            "type":
+              "ByStr20 with contract (x : Uint128) field y : String end"
+          }
+        ]
+      },
       { "vname": "AddressTypeErasureTest1", "params": [] },
       { "vname": "AddressTypeErasureTest2", "params": [] }
     ],
@@ -404,10 +414,20 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Unused transition parameter: remote",
+      "start_location": {
+        "file": "contracts/remote_state_reads_cparam.scilla",
+        "line": 125,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Consider using in-place Map access",
       "start_location": {
         "file": "contracts/remote_state_reads_cparam.scilla",
-        "line": 131,
+        "line": 136,
         "column": 14
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
