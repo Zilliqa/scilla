@@ -23,6 +23,7 @@ open DebugMessage
 open ErrorUtils
 open Api
 open IPCUtil
+open Printexc
 
 (* You can swap the RPC engine, by using a different monad here,
    note however that if you are using an asynchronous one, like
@@ -58,11 +59,12 @@ let handler rpc conn =
      should ensure that the computation is started by a runner *)
   let res =
     try M.run (rpc req)
-    with _ ->
+    with e ->
+          let exc_str = Caml.Printexc.get_backtrace() in
       Rpc.failure
-        (RPCError.rpc_of_t
-           RPCError.
-             { code = 0; message = "scilla-server: incorrect invocation" })
+        ( RPCError.rpc_of_t
+            RPCError.
+          { code = 0; message = "scilla-server: exception " ^ exc_str } )
   in
   let str = Jsonrpc.string_of_response ~version:Jsonrpc.V2 res in
   IPCUtil.send_delimited oc str
