@@ -291,6 +291,8 @@ module MkType (I : ScillaIdentifier) = struct
       | PrimType _ | Unit -> acc
       | MapType (kt, vt) -> go kt acc |> go vt
       | FunType (at, rt) -> go at acc |> go rt
+      | ProcType (_, args) ->
+          List.fold_left args ~init:[] ~f:(fun acc arg -> go arg acc)
       | TypeVar n -> add acc n
       | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
       | PolyFun (arg, bt) ->

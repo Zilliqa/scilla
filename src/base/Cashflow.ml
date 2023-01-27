@@ -441,7 +441,7 @@ struct
                           new_map
                       | _ -> targ_tag_map)
                   | PrimType _ | PolyFun (_, _) | Unit -> targ_tag_map
-                  | Address _ -> (* TODO *) targ_tag_map
+                  | Address _ | ProcType _ -> (* TODO *) targ_tag_map
                 in
                 let tvar_tag_map, _ =
                   List.fold_left arg_typs ~init:(init_targ_to_tag_map, arg_tags)
@@ -519,7 +519,7 @@ struct
   let ctr_arg_filter targ =
     let open CFType in
     match targ with
-    | PrimType _ | MapType _ | FunType _ -> true
+    | PrimType _ | MapType _ | FunType _ | ProcType _ -> true
     | ADT _ (* TODO: Detect induction, and ignore only when inductive *)
     | TypeVar _ (* TypeVars tagged at type level *) | PolyFun _ (* Ignore *)
     | Unit ->

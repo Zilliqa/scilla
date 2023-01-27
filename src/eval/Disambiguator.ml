@@ -234,6 +234,9 @@ let disambiguate_type t this_address =
         let dis_arg_t = recurse arg_t in
         let dis_res_t = recurse res_t in
         OutputType.FunType (dis_arg_t, dis_res_t)
+    | ProcType (p, args_tys) ->
+        let dis_args_tys = List.map args_tys ~f:recurse in
+        OutputType.ProcType (p, dis_args_tys)
     | ADT (t_name, targs) ->
         let dis_nm =
           disambiguate_adt_name (InputIdentifier.get_id t_name) this_address

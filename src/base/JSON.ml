@@ -90,7 +90,7 @@ let build_prim_lit_exn t v =
   match t with
   | PrimType pt -> build_prim_literal_of_type pt v
   | Address _ -> build_prim_literal_of_type (Bystrx_typ Type.address_length) v
-  | MapType _ | FunType _ | ADT _ | TypeVar _ | PolyFun _ | Unit ->
+  | MapType _ | FunType _ | ADT _ | TypeVar _ | PolyFun _ | ProcType _ | Unit ->
       raise (exn ())
 
 (****************************************************************)
@@ -240,7 +240,7 @@ and json_to_lit_exn t v =
   | PrimType _ | Address _ ->
       let tv = build_prim_lit_exn t (to_string_exn v) in
       tv
-  | FunType _ | TypeVar _ | PolyFun _ | Unit ->
+  | FunType _ | TypeVar _ | PolyFun _ | ProcType _ | Unit ->
       let exn () =
         mk_invalid_json ~kind:"Invalid type in JSON" ~inst:(pp_typ t)
       in

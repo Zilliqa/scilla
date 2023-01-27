@@ -164,6 +164,7 @@ let replace_address_types l =
     | Address _ -> bystrx_typ Type.address_length
     | MapType (kt, vt) -> MapType (replace_in_type kt, replace_in_type vt)
     | FunType (t1, t2) -> FunType (replace_in_type t1, replace_in_type t2)
+    | ProcType (p, args) -> ProcType (p, List.map args ~f:replace_in_type)
     | ADT (tname, targs) -> ADT (tname, List.map targs ~f:replace_in_type)
   in
   let replace_in_literal l =
