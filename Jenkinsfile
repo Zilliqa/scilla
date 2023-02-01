@@ -46,7 +46,7 @@ timestamps {
                 stage('Update source code') {
                   sh "cp -r ${WORKSPACE}/* /scilla/0"
                   sh "cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes"
-                  sh "apt install -y sudo"
+                  sh "apt update && apt install -y sudo"
                   sh "./scripts/install_shellcheck_ubuntu.sh"
                 }
                 stage('Test') {
