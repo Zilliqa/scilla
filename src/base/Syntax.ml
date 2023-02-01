@@ -25,7 +25,7 @@ open GasCharge
 exception SyntaxError of string * loc
 
 (* Version of the interpreter (major, minor, patch) *)
-let scilla_version = (0, 13, 0)
+let scilla_version = (0, 13, 1)
 let hash_length = 32
 
 (* Builtins *)
