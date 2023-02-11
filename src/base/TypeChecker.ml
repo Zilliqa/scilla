@@ -1015,7 +1015,14 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
               let proc_name =
                 SIdentifier.Name.as_string (SIdentifier.get_id p)
               in
-              let partial_applied_type = ProcType (proc_name, targs) in
+              let unapplied_formal_args =
+                List.sub formal_args
+                  ~pos:(List.length targs - 1)
+                  ~len:(List.length formal_args - List.length targs)
+              in
+              let partial_applied_type =
+                ProcType (proc_name, unapplied_formal_args)
+              in
               let typed_id =
                 add_type_to_ident id (mk_qual_tp partial_applied_type)
               in
