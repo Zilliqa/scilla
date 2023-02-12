@@ -236,6 +236,18 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     rename_local renames_map id (PIdentifier.get_rep id |> Lazy.from_val)
     |> add_loc
 
+  (** Renames [name] using [renames_map]. *)
+  let rename_name (name : string) renames_map =
+    let keys = Map.keys renames_map in
+    List.find keys ~f:(fun n ->
+        String.equal (SIdentifier.Name.as_string n) name)
+    |> Option.value_map ~default:name ~f:(fun k ->
+           let possible_names = Map.find_exn renames_map k in
+           let new_name =
+             choose_name possible_names name (lazy ErrorUtils.dummy_loc)
+           in
+           SIdentifier.Name.as_string new_name)
+
   (** Renames user-defined ADTs from [renames_map]. *)
   let rec rename_ty renames_map (ty : SType.t) : SType.t =
     match ty with
@@ -243,6 +255,12 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         MapType (rename_ty renames_map key_ty, rename_ty renames_map val_ty)
     | FunType (arg_ty, ret_ty) ->
         FunType (rename_ty renames_map arg_ty, rename_ty renames_map ret_ty)
+    | ProcType (pname, args_tys) ->
+        let pname' = rename_name pname renames_map in
+        let args_tys' =
+          List.map args_tys ~f:(fun ty -> rename_ty renames_map ty)
+        in
+        SType.ProcType (pname', args_tys')
     | ADT (id, tys) ->
         let id' = rename_local_loc renames_map id in
         let tys' = List.map tys ~f:(fun ty -> rename_ty renames_map ty) in
@@ -262,6 +280,12 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         let arg_ty', renames_map' = qualify_ty renames_map arg_ty in
         let ret_ty', renames_map' = qualify_ty renames_map' ret_ty in
         (FunType (arg_ty', ret_ty'), renames_map')
+    | ProcType (pname, args_tys) ->
+        let pname' = rename_name pname renames_map in
+        let args_tys' =
+          List.map args_tys ~f:(fun ty -> rename_ty renames_map ty)
+        in
+        (ProcType (pname', args_tys'), renames_map)
     | ADT (id, tys) -> (
         let name = PIdentifier.get_id id in
         match Map.find renames_map name with
