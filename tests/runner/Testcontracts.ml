@@ -499,6 +499,9 @@ let contract_tests env =
                 >::: build_contract_tests env "ark" succ_code 1 1 [];
                 "return-1"
                 >::: build_contract_tests env "return-1" succ_code 1 1 [];
+                "partial-application-1"
+                >::: build_contract_tests env "partial-application-1" succ_code
+                       1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [

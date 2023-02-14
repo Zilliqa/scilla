@@ -445,10 +445,9 @@ module Configuration = struct
     let rec finder procs =
       match procs with
       | p :: p_rest when EvalIdentifier.equal p.comp_name proc_name ->
-          pure (p, p_rest)
+          Some (p, p_rest)
       | _ :: p_rest -> finder p_rest
-      | [] ->
-          fail0 ~kind:"Procedure not found" ~inst:(as_error_string proc_name)
+      | [] -> None
     in
     finder st.procedures
 

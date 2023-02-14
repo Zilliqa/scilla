@@ -204,7 +204,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           let%bind dis_res_t = recurse res_t in
           pure @@ PostDisType.FunType (dis_arg_t, dis_res_t)
       | ProcType (p, args) ->
-          let%bind dis_args = mapM recurse args in
+          let%bind dis_args = mapM args ~f:recurse in
           pure @@ PostDisType.ProcType (p, dis_args)
       | ADT (t_name, targs) ->
           let%bind dis_t_name =

@@ -556,15 +556,37 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*                   Typing statements                        *)
   (**************************************************************)
 
-  (* Auxiliary structure for types of fields and BC components *)
   type stmt_tenv = {
     pure : TEnv.t;
     fields : TEnv.t;
     procedures : (TCName.t * (TCType.t list * TCType.t option)) list;
   }
+  (** Auxiliary structure for types of fields and BC components *)
 
+  (** Looks up a procedure with name [pname] or a local binding to a partial
+      application of procedure. *)
   let lookup_proc env pname =
-    List.Assoc.find env.procedures ~equal:[%equal: TCName.t] (get_id pname)
+    let proc =
+      List.Assoc.find env.procedures ~equal:[%equal: TCName.t] (get_id pname)
+    in
+    match proc with
+    | None -> (
+        (* Lookup local bind to a partial application *)
+        let get_proc_type_args (rr : resolve_result) =
+          match (rr_typ rr).tp with
+          | ProcType (_proc_name, arg_tys) -> Some arg_tys
+          | _ -> None
+        in
+        match TEnv.resolveT env.pure (get_id pname) ~lopt:None with
+        | Ok bind ->
+            get_proc_type_args bind
+            |> Option.value_map
+                 ~f:(fun arg_tys ->
+                   (* Partially applied procedures never have a return type *)
+                   Some (arg_tys, None))
+                 ~default:None
+        | _ -> None)
+    | res -> res
 
   let type_map_access_helper env maptype keys =
     let rec helper maptype keys =
