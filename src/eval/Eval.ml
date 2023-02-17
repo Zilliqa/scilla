@@ -85,33 +85,45 @@ let sanitize_literal l =
 
 (** Looks up for a partial application of procedure bounded to a local variable
     named [p].  *)
-let find_partial_appication (conf : Configuration.t) p =
+let find_partial_appication (conf : Configuration.t) (p : loc SIdentifier.t) :
+    ( component * component list,
+      ErrorUtils.scilla_error list,
+      'b -> 'c )
+    CPSMonad.t =
+  let process_local_bind (local_bind : SLiteral.t) =
+    match literal_type local_bind with
+    | Ok (ProcType (proc_name, _args)) -> (
+        match Configuration.lookup_procedure conf p with
+        | Some (proc, p_rest) -> pure @@ (proc, p_rest)
+        | None ->
+            fail0
+              ~kind:(Printf.sprintf "Cannot find procedure %s" proc_name)
+              ~inst:(as_error_string p))
+    | Error e -> (* Literal typing error *) fail e
+    | _ ->
+        fail0
+          ~kind:
+            (Printf.sprintf "%s is not a procedure and cannot be called"
+               (SIdentifier.Name.as_string (SIdentifier.get_id p)))
+          ~inst:(as_error_string p)
+  in
   match Env.lookup conf.env p with
-  | Ok local_bind -> (
-      let%bind (ty : SType.t) = literal_type local_bind in
-      match ty with
-      | ProcType (proc_name, _args) -> (
-          match Configuration.lookup_procedure conf p with
-          | Some (proc, p_rest) -> Ok (proc, p_rest)
-          | None ->
-              fail0
-                ~kind:
-                  (Printf.sprintf "Cannot find procedure %s"
-                     (SIdentifier.Name.as_string (SIdentifier.get_id p)))
-                ~inst:(as_error_string p))
-      | _ ->
-          fail0
-            ~kind:
-              (Printf.sprintf "%s is not a procedure and cannot be called"
-                 (SIdentifier.Name.as_string (SIdentifier.get_id p)))
-            ~inst:(as_error_string p))
-  | Error e -> Error e
+  | Ok local_bind -> process_local_bind local_bind
+  | Error _ ->
+      fail0
+        ~kind:
+          (Printf.sprintf "Identifier %s is not found"
+             (SIdentifier.Name.as_string (SIdentifier.get_id p)))
+        ~inst:(as_error_string p)
 
-(** Returns true if [p] is a local identifier that has a partial procedure
-    application type. *)
-let is_partial_application conf p =
-  let%bind res = find_partial_appication conf p in
-  Option.is_some res
+(** Applies [p] as is implemented in [apply]. [p] may be a procedure name or a
+    local bind to a partial application of procedure. *)
+let apply_procedure ~apply conf p =
+  match Configuration.lookup_procedure conf p with
+  | Some (proc, p_rest) -> apply proc p_rest
+  | None ->
+      let%bind proc, p_rest = find_partial_appication conf p in
+      apply proc p_rest
 
 let eval_gas_charge env g =
   let open MonadUtil in
@@ -516,7 +528,7 @@ let rec stmt_eval conf stmts =
           in
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
-      | CallProc (id_opt, p, actuals) -> (
+      | CallProc (id_opt, p, actuals) ->
           let apply proc p_rest =
             (* Resolve the actuals *)
             let%bind args =
@@ -525,36 +537,28 @@ let rec stmt_eval conf stmts =
             (* Apply procedure. No gas charged for the application *)
             let%bind conf' = try_apply_as_procedure conf proc p_rest args in
             (* Bind the return of [p] if it returns. *)
-            match id_opt with
-            | Some id -> Configuration.procedure_return conf' id
-            | None -> pure @@ conf'
+            let%bind conf' =
+              match id_opt with
+              | Some id -> Configuration.procedure_return conf' id
+              | None -> pure @@ conf'
+            in
+            stmt_eval conf' sts
           in
-          match Configuration.lookup_procedure conf p with
-          | Some (proc, p_rest) ->
-              let%bind conf' = apply proc p_rest in
-              stmt_eval conf' sts
-          | None when is_partial_application conf p ->
-              let%bind proc, p_rest = find_partial_appication in
-              let%bind conf' = apply proc p_rest in
-              stmt_eval conf' sts
-          | None ->
-              fail0
-                ~kind:
-                  (Printf.sprintf "Cannot find procedure %s"
-                     (SIdentifier.Name.as_string (SIdentifier.get_id p)))
-                ~inst:(as_error_string p))
+          apply_procedure ~apply conf p
       | Iterate (l, p) ->
-          let%bind l_actual = fromR @@ Env.lookup conf.env l in
-          let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
-          let%bind proc, p_rest = Configuration.lookup_procedure conf p in
-          let%bind conf' =
-            foldM l' ~init:conf ~f:(fun confacc arg ->
-                let%bind conf' =
-                  try_apply_as_procedure confacc proc p_rest [ arg ]
-                in
-                pure conf')
+          let apply proc p_rest =
+            let%bind l_actual = fromR @@ Env.lookup conf.env l in
+            let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
+            let%bind conf' =
+              foldM l' ~init:conf ~f:(fun confacc arg ->
+                  let%bind conf' =
+                    try_apply_as_procedure confacc proc p_rest [ arg ]
+                  in
+                  pure conf')
+            in
+            stmt_eval conf' sts
           in
-          stmt_eval conf' sts
+          apply_procedure ~apply conf p
       | Throw eopt ->
           let%bind estr =
             match eopt with
