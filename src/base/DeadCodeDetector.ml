@@ -535,115 +535,171 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
     Map.merge m1 m2 ~f:(fun ~key:_ -> function
       | `Both (s1, s2) -> Some (Set.union s1 s2) | `Left s | `Right s -> Some s)
 
-  (** Returns a list of fields with the contract address type from
-      [address_params] that are used in [s]. *)
-  let rec get_used_address_fields address_params (s, _annot) =
+  (** Returns maps of immutable and mutable fields with the contract address
+      type from [address_params] that are used in [s]. *)
+  let rec get_used_address_fields (s, _annot) =
     match s with
-    | RemoteLoad (_, addr, field, _) | RemoteMapGet (_, addr, field, _, _, _) ->
-        Map.set emp_idsmap ~key:(get_id addr)
-          ~data:(SCIdentifierSet.singleton (get_id field))
+    | RemoteLoad (_, addr, field, Immutable)
+    | RemoteMapGet (_, addr, field, Immutable, _, _) ->
+        ( Map.set emp_idsmap ~key:(get_id addr)
+            ~data:(SCIdentifierSet.singleton (get_id field)),
+          emp_idsmap )
+    | RemoteLoad (_, addr, field, Mutable)
+    | RemoteMapGet (_, addr, field, Mutable, _, _) ->
+        ( emp_idsmap,
+          Map.set emp_idsmap ~key:(get_id addr)
+            ~data:(SCIdentifierSet.singleton (get_id field)) )
     | MatchStmt (_id, arms) ->
-        List.fold_left arms ~init:emp_idsmap ~f:(fun m (_pattern, stmts) ->
-            List.fold_left stmts ~init:emp_idsmap ~f:(fun m sa ->
-                get_used_address_fields address_params sa |> merge_id_maps m)
-            |> merge_id_maps m)
+        List.fold_left arms ~init:(emp_idsmap, emp_idsmap)
+          ~f:(fun (immut_m, mut_m) (_pattern, stmts) ->
+            let immut_m', mut_m' =
+              List.fold_left stmts ~init:(emp_idsmap, emp_idsmap)
+                ~f:(fun (immut_m', mut_m') sa ->
+                  let immut_m'', mut_m'' = get_used_address_fields sa in
+                  ( merge_id_maps immut_m' immut_m'',
+                    merge_id_maps mut_m' mut_m'' ))
+            in
+            (merge_id_maps immut_m immut_m', merge_id_maps mut_m mut_m'))
     | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
     | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
     | CallProc _ | Throw _ | GasStmt _ ->
-        emp_idsmap
+        (emp_idsmap, emp_idsmap)
 
   (** Returns a set of field names of the contract address type. *)
-  let get_addr_fields addr =
-    List.fold_left (SType.IdLoc_Comp.Map.keys addr) ~init:emp_idset
+  let get_addr_fields fields =
+    List.fold_left (SType.IdLoc_Comp.Map.keys fields) ~init:emp_idset
       ~f:(fun s id -> SCIdentifierSet.add s (get_id id))
 
-  (** Updates a map of identifiers [m] iff [ty] has contract address type.
-      [m] has the following structure: [id |-> F] where [F] is a set of field
-      names used in the contract address type. *)
-  let update_contract_params_map m id ty =
+  (** Returns sets with names of immutable and mutable fields of the contract
+      address type [ty]. *)
+  let find_contract_type_fields ty =
     match ty with
-    | SType.Address (ContrAddr (_im_addr, m_addr)) ->
-        let data = get_addr_fields m_addr in
-        Map.set m ~key:(SCIdentifier.get_id id) ~data
-    | _ -> m
+    | SType.Address (ContrAddr (immutable_fields, mutable_fields)) ->
+        Some (get_addr_fields immutable_fields, get_addr_fields mutable_fields)
+    | _ -> None
 
-  (** Checks for unused fields in contract address types of [comp]'s
-      parameters.
-      Returns a set of ids of contract parameters used in this [comp].  *)
-  let check_contract_address_types_in_params used_contract_params
-      contract_params comp =
-    let address_params =
-      List.fold_left comp.comp_params ~init:contract_params
-        ~f:(fun m (id, ty) -> update_contract_params_map m id ty)
+  (** Takes the procedure/transition [comp] and looks for unused fields in its parameters.
+      Returns maps of immutable and mutable fields of the contract parameters used
+      in the body of [comp].
+      Arguments:
+      - [contr_immut_used] and [contr_mut_used] are parameters of the
+        contract that are known as used.
+      - [contr_immut_fields] and [contr_mut_fields] are all the fields of the
+        contract. *)
+  let check_addresses_in_params (comp : component) contr_immut_used
+      contr_mut_used contr_immut_fields contr_mut_fields =
+    (* Collect fields of contract address types from parameters of the component *)
+    let immut_address_params, mut_address_params =
+      List.fold_left comp.comp_params
+        ~init:(contr_immut_fields, contr_mut_fields)
+        ~f:(fun (immut_m, mut_m) (id, ty) ->
+          find_contract_type_fields ty
+          |> Option.value_map ~default:(immut_m, mut_m)
+               ~f:(fun (immut_fields, mut_fields) ->
+                 let update_map m data =
+                   Map.set m ~key:(SCIdentifier.get_id id) ~data
+                 in
+                 (update_map immut_m immut_fields, update_map mut_m mut_fields)))
     in
-    let used_addresses =
+    (* Collect fields of contract address types used in the body of the component *)
+    let immut_used_addresses, mut_used_addresses =
       (* addr |-> set of used fields *)
-      List.fold_left comp.comp_body ~init:emp_idsmap ~f:(fun m s ->
-          get_used_address_fields address_params s |> merge_id_maps m)
+      List.fold_left comp.comp_body ~init:(emp_idsmap, emp_idsmap)
+        ~f:(fun (immut_m, mut_m) s ->
+          let immut_m', mut_m' = get_used_address_fields s in
+          (merge_id_maps immut_m immut_m', merge_id_maps mut_m mut_m'))
     in
-    (* Generate warnings for unused fields in component arguments. *)
+    (* Generate warnings for unused fields in component parameters *)
     List.iter comp.comp_params ~f:(fun (id, ty) ->
-        let name = get_id id in
-        match (Map.find address_params name, Map.find used_addresses name) with
-        | Some fields, Some used_fields
-          when not @@ phys_equal (Set.length fields) (Set.length used_fields)
-          -> (
-            match ty with
-            | SType.Address (ContrAddr (_ims, ms)) ->
-                List.iter (SType.IdLoc_Comp.Map.keys ms) ~f:(fun id ->
-                    let name = get_id id in
-                    if Set.mem fields name && (not @@ Set.mem used_fields name)
-                    then
-                      warn1
-                        ("Unused field in contract address type: "
-                       ^ as_error_string id)
-                        warning_level_dead_code
-                        (SType.TIdentifier.get_rep id))
-            | _ -> ())
+        match ty with
+        | SType.Address (ContrAddr (ims, ms)) ->
+            let name = get_id id in
+            let find_unused address_fields params used_params warn_name =
+              match (Map.find params name, Map.find used_params name) with
+              | Some fields, Some used_fields
+                when not
+                     @@ phys_equal (Set.length fields) (Set.length used_fields)
+                ->
+                  List.iter (SType.IdLoc_Comp.Map.keys address_fields)
+                    ~f:(fun id ->
+                      let name = get_id id in
+                      if Set.mem fields name && (not @@ Set.mem used_fields name)
+                      then
+                        warn1
+                          ("Unused " ^ warn_name ^ " in contract address type: "
+                         ^ as_error_string id)
+                          warning_level_dead_code
+                          (SType.TIdentifier.get_rep id))
+              | _ -> ()
+            in
+            (* Handle immutable fields *)
+            find_unused ims immut_address_params immut_used_addresses
+              "contract parameter";
+            (* Handle mutable fields *)
+            find_unused ms mut_address_params mut_used_addresses "field"
         | _ -> ());
-    (* Collect fields of the [cmod] contract with contract address types used
+    (* Collect fields of the contract with contract address types used
        in this component. *)
-    Map.keys used_addresses
-    |> List.fold_left ~init:used_contract_params ~f:(fun used_ids_map used_id ->
-           let used_fields = Map.find_exn used_addresses used_id in
-           match Map.find used_ids_map used_id with
-           | Some used_fields ->
-               let data = used_fields |> Set.union used_fields in
-               Map.set used_ids_map ~key:used_id ~data
-           | None -> Map.set used_ids_map ~key:used_id ~data:used_fields)
+    let collect contr_used comp_used =
+      Map.keys comp_used
+      |> List.fold_left ~init:contr_used ~f:(fun used_ids_map used_id ->
+             let used_fields = Map.find_exn comp_used used_id in
+             match Map.find used_ids_map used_id with
+             | Some used_fields ->
+                 let data = used_fields |> Set.union used_fields in
+                 Map.set used_ids_map ~key:used_id ~data
+             | None -> Map.set used_ids_map ~key:used_id ~data:used_fields)
+    in
+    ( collect contr_immut_used immut_used_addresses,
+      collect contr_mut_used mut_used_addresses )
 
   (** Checks for unused fields in contract address types occurred in contract
       parameters and parameters of contract's components. *)
   let check_param_contract_address_types cmod =
-    let contract_params =
-      List.fold_left cmod.contr.cparams ~init:emp_idsmap ~f:(fun m (id, ty) ->
-          update_contract_params_map m id ty)
+    (* Collect names of fields in address types of contract params *)
+    let contr_immut, contr_mut =
+      List.fold_left cmod.contr.cparams ~init:(emp_idsmap, emp_idsmap)
+        ~f:(fun (immut_m, mut_m) (id, ty) ->
+          find_contract_type_fields ty
+          |> Option.value_map ~default:(immut_m, mut_m)
+               ~f:(fun (immut_fields', mut_fields') ->
+                 let update_map m data =
+                   Map.set m ~key:(SCIdentifier.get_id id) ~data
+                 in
+                 (update_map immut_m immut_fields', update_map mut_m mut_fields')))
     in
-    let used_contract_params =
-      List.fold_left cmod.contr.ccomps ~init:emp_idsmap ~f:(fun used c ->
-          check_contract_address_types_in_params used contract_params c)
+    let contr_immut_used, contr_mut_used =
+      List.fold_left cmod.contr.ccomps ~init:(emp_idsmap, emp_idsmap)
+        ~f:(fun (immut_used, mut_used) comp ->
+          check_addresses_in_params comp immut_used mut_used contr_immut
+            contr_mut)
     in
-    (* Report unused contract parameters with contract address types. *)
-    Map.keys contract_params
-    |> List.iter ~f:(fun param ->
-           match Map.find used_contract_params param with
-           | Some used_fields ->
-               let all_fields = Map.find_exn contract_params param in
-               let unused_fields = Set.diff all_fields used_fields in
-               if not @@ Set.is_empty unused_fields then
-                 List.iter cmod.contr.cparams ~f:(fun (id, _ty) ->
-                     if SCIdentifier.Name.equal param (SCIdentifier.get_id id)
-                     then
-                       Set.iter unused_fields ~f:(fun f ->
-                           warn1
-                             ("Unused field in contract address type: "
-                             ^ SCIdentifier.Name.as_string f)
-                             warning_level_dead_code
-                             (ER.get_loc (SCIdentifier.get_rep id))))
-           | None ->
-               (* All the fields of [param] are unused, so we don't report it.
-                  It is an unused contract parameter.*)
-               ())
+    (* Report unused contract parameters with contract address types *)
+    let check fields used warn_name =
+      Map.keys fields
+      |> List.iter ~f:(fun param ->
+             match Map.find used param with
+             | Some used_fields ->
+                 let all_fields = Map.find_exn fields param in
+                 let unused_fields = Set.diff all_fields used_fields in
+                 if not @@ Set.is_empty unused_fields then
+                   List.iter cmod.contr.cparams ~f:(fun (id, _ty) ->
+                       if SCIdentifier.Name.equal param (SCIdentifier.get_id id)
+                       then
+                         Set.iter unused_fields ~f:(fun f ->
+                             warn1
+                               ("Unused " ^ warn_name
+                              ^ " in contract address type: "
+                               ^ SCIdentifier.Name.as_string f)
+                               warning_level_dead_code
+                               (ER.get_loc (SCIdentifier.get_rep id))))
+             | None ->
+                 (* All the fields of [param] are unused, so we don't report it.
+                    It is an unused contract parameter.*)
+                 ())
+    in
+    check contr_immut contr_immut_used "contract_parameter";
+    check contr_mut contr_mut_used "field"
 
   type adts_ty =
     ( Name.t,
@@ -774,7 +830,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
                 in
                 ignore @@ Stack.pop env_stack;
                 res))
-      | RemoteLoad (_, addr, field, _) | RemoteMapGet (_, addr, field, _, _, _) -> (
+      | RemoteLoad (_, addr, field, _) | RemoteMapGet (_, addr, field, _, _, _)
+        -> (
           match env_find_bind (SCIdentifier.get_id addr) with
           | Some (ctr_name, ctr_arg_pos) when Map.mem adt_ctrs ctr_name ->
               let ctr_arg_pos_to_fields =

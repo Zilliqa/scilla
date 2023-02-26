@@ -28,6 +28,8 @@ type A =
 
 contract Dead18 ()
 
+field remote_reads_test_res_1 : Uint128 = Uint128 0
+
 procedure use_a1 (a1 : A)
   match a1 with
   | A1_has_unused a11 num a12_unused a13 =>
@@ -52,7 +54,15 @@ procedure use_a2 (a2 : A)
   end
 end
 
-transition test(a : A)
+transition test_mutables(a : A)
   use_a1 a;
   use_a2 a
+end
+
+transition read_cparam_1(
+  remote1: ByStr20 with contract (used : Uint128,
+                                  unused: Uint128)
+                        end)
+  tmp_1 <-& remote1.(used);
+  remote_reads_test_res_1 := tmp_1
 end
