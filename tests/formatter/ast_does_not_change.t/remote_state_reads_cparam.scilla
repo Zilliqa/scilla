@@ -1,0 +1,140 @@
+scilla_version 0
+
+library RRCPLib
+
+(* Tests various aspects of address types with contract parameters *)
+type AddressADT =
+| Address1 of ByStr20 with end
+| Address2 of ByStr20 with contract (param : ByStr20 with contract (x : Uint128) end) field admin : ByStr20 with end end
+
+contract RRCPContract (
+  cparam1: ByStr20 with contract (admin : ByStr20) end)
+
+field remote_reads_test_res_1 : Uint128 = Uint128 0  (* (x) of remote1 *)
+field remote_reads_test_res_2 : AddressADT = Address1 cparam1  (* (x) of remote2 *)
+field remote_reads_test_res_3_2 : Uint128 = Uint128 0  (* (x) of remote3, then (x) of (x) *)
+field remote_reads_test_res_3_3 : Uint64 = Uint64 0  (* (x) of remote3, then y of (x) *)
+field remote_reads_test_res_4_1 : Uint128 = Uint128 0  (* (x) of remote4 *)
+field remote_reads_test_res_4_2 : String = ""  (* (y) of remote4 *)
+field remote_reads_test_res_5_1 : Map Uint128 Bool = Emp Uint128 Bool  (* (x) of remote5 *)
+field remote_reads_test_res_5_3 : Option Bool = None { Bool } (* exists (x)[0] of remote5 *)
+field remote_reads_test_res_5_5 : Option (Option Bool) = None { (Option Bool) } (* (x)[0] of remote5 *)
+field remote_reads_test_res_6_1 : Uint128 = Uint128 0  (* (x) of remote6 *)
+field remote_reads_test_res_6_2 : String = ""  (* x of remote6 *)
+field remote_reads_test_res_7_3 : Option Bool = None { Bool } (* (x) = x in remote7 *)
+field remote_reads_test_res_7_6 : Option Bool = None { Bool } (* (y) = y in remote7 *)
+field remote_reads_test_res_8 : Uint128 = Uint128 0 (* remote.(admin).(f).(g) *)
+field remote_reads_test_res_9 : Option Uint128 = None {Uint128} (* remote.(admin).(f).(g)[0] *)
+field remote_reads_test_res_10 : ByStr20 = _this_address (* cparam1.(admin) *)
+field address_type_erasure_test_res_1 : Map Uint128 (ByStr20 with end) = Emp Uint128 (ByStr20 with end) (* field[0] := cparam1 *)
+
+
+
+transition RemoteReadContractParameterTest1(
+  remote1: ByStr20 with contract (x : Uint128) end
+  )
+  tmp_1 <-& remote1.(x);
+  remote_reads_test_res_1 := tmp_1
+end
+
+transition RemoteReadContractParameterTest2(
+  remote2: ByStr20 with contract (x : AddressADT) end
+  )
+  tmp_2 <-& remote2.(x);
+  remote_reads_test_res_2 := tmp_2
+end
+
+transition RemoteReadContractParameterTest3(
+  remote3: ByStr20 with contract (x : ByStr20 with contract (x : Uint128) field y : Uint64 end) end
+  )
+  tmp_3_1 <-& remote3.(x);
+  tmp_3_2 <-& tmp_3_1.(x);
+  remote_reads_test_res_3_2 := tmp_3_2;
+  tmp_3_3 <-& tmp_3_1.y;
+  remote_reads_test_res_3_3 := tmp_3_3
+end
+
+transition RemoteReadContractParameterTest4(
+  remote4: ByStr20 with contract (x : Uint128, y : String) end
+  )
+  tmp_4_1 <-& remote4.(x);
+  tmp_4_2 <-& remote4.(y);
+  remote_reads_test_res_4_1 := tmp_4_1;
+  remote_reads_test_res_4_2 := tmp_4_2
+end
+
+transition RemoteReadContractParameterTest5(
+  remote5: ByStr20 with contract (x : Map Uint128 Bool) end
+  )
+  tmp_5_1 <-& remote5.(x);
+  remote_reads_test_res_5_1 := tmp_5_1;
+  zero = Uint128 0 ;
+  tmp_5_2 <-& exists remote5.(x)[zero];
+  tmp_5_3 = Some { Bool } tmp_5_2;
+  remote_reads_test_res_5_3 := tmp_5_3;
+  tmp_5_4 <-& remote5.(x)[zero];
+  tmp_5_5 = Some { (Option Bool) } tmp_5_4;
+  remote_reads_test_res_5_5 := tmp_5_5
+end
+
+transition RemoteReadContractParameterTest6(
+  remote6: ByStr20 with contract (x : Uint128) field x : String end
+  )
+  tmp_6_1 <-& remote6.(x);
+  remote_reads_test_res_6_1 := tmp_6_1;
+  tmp_6_2 <-& remote6.x;
+  remote_reads_test_res_6_2 := tmp_6_2
+end
+
+transition RemoteReadContractParameterTest7(
+  remote7: ByStr20 with contract (x : Uint128, y : Uint64) field y : Uint64, field x : Uint128 end
+  )
+  tmp_7_1 <-& remote7.(x);
+  tmp_7_2 <-& remote7.x;
+  tmp_7_3 = let res = builtin eq tmp_7_1 tmp_7_2 in Some { Bool } res;
+  remote_reads_test_res_7_3 := tmp_7_3;
+  tmp_7_4 <-& remote7.(y);
+  tmp_7_5 <-& remote7.y;
+  tmp_7_6 = let res = builtin eq tmp_7_4 tmp_7_5 in Some { Bool } res;
+  remote_reads_test_res_7_6 := tmp_7_6
+end
+
+transition RemoteReadContractParameterTest8(
+  remote: ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Uint128) end) end) end)
+  ad <-& remote.(admin);
+  this_f <-& ad.(f);
+  this_g <-& this_f.(g);
+  remote_reads_test_res_8 := this_g
+end
+
+transition RemoteReadContractParameterTest9(
+  remote: ByStr20 with contract (admin : ByStr20 with contract (f : ByStr20 with contract (g : Map Uint128 Uint128) end) end) end)
+  ad <-& remote.(admin);
+  this_f <-& ad.(f);
+  remote_key = Uint128 0;
+  this_g <-& this_f.(g)[remote_key];
+  remote_reads_test_res_9 := this_g
+end
+
+transition RemoteReadContractParameterTest10()
+  ad <-& cparam1.(admin);
+  remote_reads_test_res_10 := ad
+end
+
+transition RemoteReadContractParameterTest11(
+  remote: ByStr20 with contract (x : Uint128) field y : String end
+  )
+end
+
+transition AddressTypeErasureTest1()
+  zero = Uint128 0;
+  address_type_erasure_test_res_1[zero] := cparam1
+end
+
+transition AddressTypeErasureTest2()
+  zero = Uint128 0;
+  emp_map <- address_type_erasure_test_res_1;
+  new_map = builtin put emp_map zero cparam1;
+  address_type_erasure_test_res_1 := new_map
+end
+
