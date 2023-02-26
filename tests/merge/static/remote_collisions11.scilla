@@ -4,21 +4,32 @@ library RemoteCollisions11
 
 contract RemoteCollisions11()
 
+field param1_read_res: Uint128 = Uint128 0
+field param2_read_res: Uint128 = Uint128 0
 field f: Bool = False
 field z: Uint32 = Uint32 0
 
 transition tr(a: ByStr20)
-  a_opt <- & a as ByStr20 with contract
+  a_opt <- & a as ByStr20 with contract (param1: Uint128,
+                                         param2: Uint128)
     field a_f: Bool,
     field a_f2: Bool,
     field m_f: Map Uint32 Bool
   end;
   match a_opt with
   | Some aa =>
+    (* Read mutables *)
     f <- & aa.a_f;
     f <- & aa.a_f2;
     k <- z;
-    f <- & aa.m_f[k]
+    f <- & aa.m_f[k];
+    (* Read immutables
+       This doesn't require disambiguation, because contract parameters
+       in remote_collisions12.scilla are renamed. *)
+    param1_tmp <-& aa.(param1);
+    param1_read_res := param1_tmp;
+    param2_tmp <-& aa.(param2);
+    param2_read_res := param2_tmp
   | None =>
   end
 end

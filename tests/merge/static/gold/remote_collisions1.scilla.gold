@@ -5,8 +5,16 @@ import BoolUtils
 library MergedLib
 
 
-contract MergedContr ()
+contract MergedContr
+  (
+    remoteCollisions12_param1 : Uint128,
+    remoteCollisions12_param2 : Uint128
+  )
 
+
+field remoteCollisions11_param1_read_res : Uint128 = Uint128 0
+
+field remoteCollisions11_param2_read_res : Uint128 = Uint128 0
 
 field remoteCollisions11_f : Bool = False
 
@@ -29,10 +37,14 @@ transition remoteCollisions11_tr (a : ByStr20)
     remoteCollisions11_f <- (remoteCollisions12_a_f|remoteCollisions13_a_f);
     remoteCollisions11_f <- remoteCollisions12_a_f2;
     k <- remoteCollisions11_z;
-    remoteCollisions11_f <- (remoteCollisions12_m_f|remoteCollisions13_m_f)[k]
+    remoteCollisions11_f <- (remoteCollisions12_m_f|remoteCollisions13_m_f)[k];
+    param1_tmp = remoteCollisions12_param1;
+    remoteCollisions11_param1_read_res := param1_tmp;
+    param2_tmp = remoteCollisions12_param2;
+    remoteCollisions11_param2_read_res := param2_tmp
   | None =>
   end
 end
 
-merge/static/remote_collisions11.scilla:21:15: warning: [2] Name collision: Please disambiguate `m_f` in the configuration file
-merge/static/remote_collisions11.scilla:18:15: warning: [2] Name collision: Please disambiguate `a_f` in the configuration file
+merge/static/remote_collisions11.scilla:25:15: warning: [2] Name collision: Please disambiguate `m_f` in the configuration file
+merge/static/remote_collisions11.scilla:22:15: warning: [2] Name collision: Please disambiguate `a_f` in the configuration file
