@@ -4,7 +4,25 @@ library Dead8
 
 contract Dead8 ()
 
-transition Foo ()
+procedure pr1() : Bool
+  res = True;
+  _return := res
+end
+
+procedure pr2(a: Bool) : Bool
+  _return := a
+end
+
+transition test_dead_variable1()
   alive = True;
   dead = alive
+end
+
+transition test_dead_variable2()
+  dead = pr1
+end
+
+transition test_dead_variable3()
+  param = True;
+  dead = pr2 param
 end

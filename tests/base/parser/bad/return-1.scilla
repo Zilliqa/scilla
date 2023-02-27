@@ -1,0 +1,10 @@
+scilla_version 0
+
+library ReturnBad1
+
+contract ReturnBad1()
+
+procedure test()
+  (* Only [_return := x] assignments are allowed by the parser *)
+  _foo := _creation_block;
+end

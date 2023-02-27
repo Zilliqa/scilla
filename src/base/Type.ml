@@ -26,7 +26,7 @@ let address_length = 20
 
 module PrimType = struct
   type int_bit_width = Bits32 | Bits64 | Bits128 | Bits256
-  [@@deriving sexp, equal, compare]
+  [@@deriving sexp, to_yojson, equal, compare]
 
   type t =
     | Int_typ of int_bit_width
@@ -39,7 +39,7 @@ module PrimType = struct
     | ReplicateContr_typ
     | Bystr_typ
     | Bystrx_typ of int
-  [@@deriving equal, sexp, compare]
+  [@@deriving equal, sexp, to_yojson, compare]
 
   let sexp_of_t = function
     | Int_typ Bits32 -> Sexp.Atom "Int32"
@@ -89,6 +89,7 @@ end
 module TIdentifier_Loc (TIdentifier : ScillaIdentifier) = struct
   type t = loc TIdentifier.t [@@deriving sexp]
 
+  let show = TIdentifier.as_string
   let compare (a : t) (b : t) = TIdentifier.compare a b
   let equal (a : t) (b : t) = TIdentifier.equal a b
 end
@@ -134,7 +135,7 @@ module type ScillaType = sig
     | PolyFun of string * t
     | Unit
     | Address of t addr_kind
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   val pp_typ : t -> string
   val pp_typ_error : t -> string
@@ -221,8 +222,8 @@ module MkType (I : ScillaIdentifier) = struct
     | TypeVar of string
     | PolyFun of string * t
     | Unit
-    | Address of t addr_kind
-  [@@deriving sexp]
+    | Address of (t addr_kind[@to_yojson fun _ -> `String "Address"])
+  [@@deriving sexp, to_yojson]
 
   let pp_typ_helper is_error t =
     let rec recurser = function

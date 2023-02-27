@@ -2,12 +2,20 @@
   "gas_remaining": "4716",
   "errors": [
     {
-      "error_message":
-        "Exception thrown: (Message [(_exception : (String \"Txn already executed\"))])",
+      "error_message": "Exception thrown: (Message [(_exception : (String \"Txn already executed\"))])",
       "start_location": {
         "file": "tests/contracts/Polynetwork.scilla",
         "line": 80,
         "column": 7
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from checkAndMarkFromChainTxn",
+      "start_location": {
+        "file": "tests/contracts/Polynetwork.scilla",
+        "line": 72,
+        "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },

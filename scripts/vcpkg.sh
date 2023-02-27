@@ -40,7 +40,7 @@ then
 fi
 
 echo "Installing vcpkg"
-if ! "$VCPKG_ROOT"/vcpkg install --triplet x64-linux-dynamic
+if ! "$VCPKG_ROOT"/vcpkg install --triplet "$(scripts/vcpkg_triplet.sh)"
 then 
     echo "vcpkg installation failed"
     exit 1

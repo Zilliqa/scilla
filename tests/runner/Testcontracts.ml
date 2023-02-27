@@ -506,6 +506,8 @@ let contract_tests env =
 *)
                 "ark-store-hashes-in-mutable-maps"
                 >::: build_contract_tests env "ark" succ_code 1 1 [];
+                "return-1"
+                >::: build_contract_tests env "return-1" succ_code 1 1 [];
               ];
          "these_tests_must_FAIL"
          >::: [
@@ -529,6 +531,9 @@ let contract_tests env =
                 >::: build_contract_tests env "Polynetwork" fail_code 25 29 [];
                 "exception-example"
                 >::: build_contract_tests env "exception-example" fail_code 1 2
+                       [];
+                "exception-position"
+                >::: build_contract_tests env "exception-position" fail_code 1 1
                        [];
                 "UintParam"
                 >::: build_contract_tests env "UintParam" fail_code 1 3 [];

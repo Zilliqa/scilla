@@ -414,7 +414,11 @@ stmt:
 | l = ID; FETCH; r = sid   { (Load (to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
 | r = remote_fetch_stmt { r }
 | l = ID; ASSIGN; r = sid { (Store ( to_loc_id l (toLoc $startpos(l)), ParserIdentifier.mk_id r (toLoc $startpos(r))), toLoc $startpos) }
-| l = ID; EQ; r = exp    { (Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos) }
+| l = ID; EQ; r = exp  {
+  (* This [Bind] may contain both application of a function or call a procedure
+      with return type because they have the same syntax. We always save it as
+      [Bind] to disambiguate it later. *)
+  ( Bind ( to_loc_id l (toLoc $startpos(l)), r), toLoc $startpos ) }
 | l = ID; FETCH; AND; c = CID; args_opt = option(bcfetch_args) { 
     let bcinfo = build_bcfetch c (Option.value args_opt ~default:[]) (toLoc $startpos) in
     (ReadFromBC ( to_loc_id l (toLoc $startpos(l)), bcinfo), toLoc $startpos) 
@@ -428,15 +432,21 @@ stmt:
 | DELETE; l = ID; keys = nonempty_list(map_access)
   { MapUpdate( to_loc_id l (toLoc $startpos(l)), keys, None), toLoc $startpos }
 | ACCEPT                 { (AcceptPayment, toLoc $startpos) }
+| kw = SPID; ASSIGN; i = sid {
+  if String.equal kw "_return" then
+    (Return (ParserIdentifier.mk_id i (toLoc $startpos(kw))), toLoc $startpos)
+  else
+    raise (SyntaxError (Printf.sprintf "Illegal assignment to %s" kw, toLoc $startpos(kw)))
+  }
 | SEND; m = sid;          { (SendMsgs (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | EVENT; m = sid; { (CreateEvnt (ParserIdentifier.mk_id m (toLoc $startpos(m))), toLoc $startpos) }
 | THROW; mopt = option(sid); { Throw (Core.Option.map mopt ~f:(fun m -> (ParserIdentifier.mk_id m (toLoc $startpos(mopt))))), toLoc $startpos }
 | MATCH; x = sid; WITH; cs=list(stmt_pm_clause); END
   { (MatchStmt (ParserIdentifier.mk_id x (toLoc $startpos(x)), cs), toLoc $startpos)  }
-| (* procedure call *)
+| (* calling a procedure without return type *)
   p = component_id;
   args = list(sident)
-  { (CallProc (p, args), toLoc $startpos)  }
+  { (CallProc (None, p, args), toLoc $startpos)  }
 | (* list iterator *)
   FORALL; l = sident; p = component_id
   { Iterate (l, p), toLoc $startpos }
@@ -488,11 +498,16 @@ component:
 procedure:
 | PROCEDURE; t = component_id;
   params = component_params;
+  ret = option(return_type);
   ss = component_body;
   { { comp_type = CompProc;
       comp_name = t;
       comp_params = params;
-      comp_body = ss } }
+      comp_body = ss;
+      comp_return = ret } }
+
+return_type:
+| COLON; t = typ; { t }
 
 transition:
 | TRANSITION; t = component_id;
@@ -501,7 +516,8 @@ transition:
   { { comp_type = CompTrans;
       comp_name = t;
       comp_params = params;
-      comp_body = ss } }
+      comp_body = ss;
+      comp_return = None; } }
 
 component_id:
 | c = CID { to_loc_id c (toLoc $startpos(c)) }

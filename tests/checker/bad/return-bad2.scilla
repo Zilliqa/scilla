@@ -1,0 +1,26 @@
+scilla_version 0
+
+(* Some of match statement's arms don't return while other return *)
+
+contract ReturnBad2()
+
+procedure match_no_ret(a: Bool) : BNum
+  match a with
+  | True =>
+    ret = _creation_block;
+    _return := ret
+  | False =>
+    ret = _creation_block
+    (* Error: no return *)
+  end
+end
+procedure match_no_ret_fixed(a: Bool) : BNum
+  match a with
+  | True =>
+    ret = _creation_block;
+    _return := ret
+  | False =>
+    ret = _creation_block;
+    _return := ret (* OK *)
+  end
+end

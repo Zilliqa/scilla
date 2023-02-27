@@ -42,12 +42,12 @@ open Type
 
 (* Poor man's dependent type to hold block numbers. *)
 module BNumLit : sig
-  type t [@@deriving sexp]
+  type t [@@deriving sexp, to_yojson]
 
   val create : string -> (t, scilla_error list) result
   val get : t -> string
 end = struct
-  type t = string [@@deriving sexp]
+  type t = string [@@deriving sexp, to_yojson]
 
   let create bn =
     let re = Str.regexp "[0-9]+$" in
@@ -65,7 +65,7 @@ let bnum_create_exn s =
 module type ScillaLiteral = sig
   module LType : ScillaType
 
-  type mtype = LType.t * LType.t [@@deriving sexp]
+  type mtype = LType.t * LType.t [@@deriving sexp, to_yojson]
 
   open Integer256
 
@@ -74,7 +74,7 @@ module type ScillaLiteral = sig
     | Int64L of int64
     | Int128L of int128
     | Int256L of int256
-  [@@deriving equal, sexp]
+  [@@deriving equal, sexp, to_yojson]
 
   val equal_uint32 : uint32 -> uint32 -> bool
 
@@ -83,10 +83,10 @@ module type ScillaLiteral = sig
     | Uint64L of uint64
     | Uint128L of uint128
     | Uint256L of uint256
-  [@@deriving equal, sexp]
+  [@@deriving equal, sexp, to_yojson]
 
   module type BYSTR = sig
-    type t [@@deriving sexp]
+    type t [@@deriving sexp, to_yojson]
 
     val width : t -> int
     val parse_hex : string -> t
@@ -103,7 +103,7 @@ module type ScillaLiteral = sig
   module Bystr : BYSTR
 
   module type BYSTRX = sig
-    type t [@@deriving sexp]
+    type t [@@deriving sexp, to_yojson]
 
     val width : t -> int
     val parse_hex : string -> t
@@ -154,7 +154,7 @@ module type ScillaLiteral = sig
             scilla_error list * uint64 )
           result )
         CPSMonad.t)
-  [@@deriving sexp]
+  [@@deriving sexp, to_yojson]
 
   val subst_type_in_literal : 'a LType.TIdentifier.t -> LType.t -> t -> t
 
@@ -204,7 +204,7 @@ module MkLiteral (T : ScillaType) = struct
   (*******************************************************)
 
   (* The first component is a primitive type *)
-  type mtype = LType.t * LType.t [@@deriving sexp]
+  type mtype = LType.t * LType.t [@@deriving sexp, to_yojson]
 
   open Integer256
 
@@ -225,6 +225,13 @@ module MkLiteral (T : ScillaType) = struct
     | Int256L i' -> Sexp.Atom ("Int256 " ^ Int256.to_string i')
 
   let int_lit_of_sexp _ = failwith "int_lit_of_sexp is not implemented"
+
+  let int_lit_to_yojson = function
+    | Int32L v -> `String (Int32.to_string v)
+    | Int64L v -> `String (Int64.to_string v)
+    | Int128L v -> `String (Int128.to_string v)
+    | Int256L v -> `String (Int256.to_string v)
+
   let equal_uint32 x y = Uint32.compare x y = 0
   let equal_uint64 x y = Uint64.compare x y = 0
   let equal_uint128 x y = Uint128.compare x y = 0
@@ -245,8 +252,14 @@ module MkLiteral (T : ScillaType) = struct
 
   let uint_lit_of_sexp _ = failwith "uint_lit_of_sexp is not implemented"
 
+  let uint_lit_to_yojson = function
+    | Uint32L v -> `String (Uint32.to_string v)
+    | Uint64L v -> `String (Uint64.to_string v)
+    | Uint128L v -> `String (Uint128.to_string v)
+    | Uint256L v -> `String (Uint256.to_string v)
+
   module type BYSTR = sig
-    type t [@@deriving sexp]
+    type t [@@deriving sexp, to_yojson]
 
     val width : t -> int
     val parse_hex : string -> t
@@ -261,7 +274,7 @@ module MkLiteral (T : ScillaType) = struct
   end
 
   module Bystr : BYSTR = struct
-    type t = string [@@deriving sexp]
+    type t = string [@@deriving sexp, to_yojson]
 
     let width = String.length
 
@@ -286,7 +299,7 @@ module MkLiteral (T : ScillaType) = struct
   end
 
   module type BYSTRX = sig
-    type t [@@deriving sexp]
+    type t [@@deriving sexp, to_yojson]
 
     val width : t -> int
     val parse_hex : string -> t
@@ -342,6 +355,34 @@ module MkLiteral (T : ScillaType) = struct
           result )
         CPSMonad.t)
   [@@deriving sexp]
+
+  let rec to_yojson (lit : t) : Yojson.Safe.t =
+    let htbl_to_yojson (ht : (t, t) Hashtbl.t) : Yojson.Safe.t =
+      `List
+        (Hashtbl.fold
+           (fun k v (acc : Yojson.Safe.t list) ->
+             acc @ [ `List [ to_yojson k; to_yojson v ] ])
+           ht [])
+    in
+    match lit with
+    | StringLit s -> [%to_yojson: string] s
+    | IntLit l -> int_lit_to_yojson l
+    | UintLit ul -> uint_lit_to_yojson ul
+    | BNum bn -> BNumLit.to_yojson bn
+    | ByStrX s -> Bystrx.to_yojson s
+    | ByStr s -> Bystr.to_yojson s
+    | Msg s -> [%to_yojson: (string * LType.t * t) list] s
+    | Map (ty, ht) ->
+        `Assoc [ ("mtype", mtype_to_yojson ty); ("data", htbl_to_yojson ht) ]
+    | ADTValue (n, ts, ls) ->
+        `Assoc
+          [
+            ("name", [%to_yojson: LType.TIdentifier.Name.t] n);
+            ("types", [%to_yojson: LType.t list] ts);
+            ("lits", [%to_yojson: t list] ls);
+          ]
+    | Clo _ -> `String "Clo"
+    | TAbs _ -> `String "TAbs"
 
   (****************************************************************)
   (*                     Type substitutions                       *)

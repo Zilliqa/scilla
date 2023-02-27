@@ -1,0 +1,23 @@
+scilla_version 0
+
+(* Test for https://github.com/zilliqa/scilla/issues/958  *)
+
+contract TestExn ()
+
+procedure CheckExn ()
+  e = { _exception : "Error"; code : Int32 -1 };
+  throw e
+end
+
+procedure CheckNoExn ()
+  (* No-op *)
+end
+
+procedure CheckNestedExn ()
+  CheckExn
+end
+
+transition Test ()
+  CheckNoExn;
+  CheckNestedExn
+end

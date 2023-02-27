@@ -81,7 +81,7 @@ opam install ./scilla.opam
 ```
 
 If you are using a local opam switch (see [here](https://github.com/Zilliqa/scilla/blob/master/INSTALL.md#installing-opam-packages))
-in you local Scilla repo (`~/path/to/scilla`), then most likely you will want to reuse the same local switch for your Scilla-based project.
+in your local Scilla repo (`~/path/to/scilla`), then most likely you will want to reuse the same local switch for your Scilla-based project.
 To do that create a symlink `_opam` as follows:
 
 ```shell
@@ -205,7 +205,7 @@ the cursor currently is.
 ```
 ### VSCode Plugin
 
-Visual Studio Code support for Scilla is avaiable. [Github Source](https://github.com/as1ndu/vscode-scilla)
+Visual Studio Code support for Scilla is available. [Github Source](https://github.com/as1ndu/vscode-scilla)
 You can install it through:https://marketplace.visualstudio.com/items?itemName=as1ndu.scilla
 
 Credits: [as1ndu](https://github.com/as1ndu)

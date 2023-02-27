@@ -55,27 +55,22 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   module SCType = SCLiteral.LType
   module SCIdentifier = SCType.TIdentifier
 
-  module SCIdentifierComp = struct
-    include SCIdentifier.Name
-    include Comparable.Make (SCIdentifier.Name)
-  end
-
+  (** [ERComp] is used to compare identifiers keeping their positions in
+      order to generate errors in the checker. *)
   module ERComp = struct
     module T = struct
       include ER
 
       type t = rep SCIdentifier.t [@@deriving sexp]
 
-      let compare (a : t) (b : t) =
-        SCIdentifier.Name.compare (SCIdentifier.get_id a)
-          (SCIdentifier.get_id b)
+      let compare = SCIdentifier.compare
     end
 
     include T
     include Comparable.Make (T)
   end
 
-  module SCIdentifierSet = Set.Make (SCIdentifierComp)
+  module SCIdentifierSet = Set.Make (SCIdentifier.Name)
   module ERSet = Set.Make (ERComp)
   module SCSyntax = ScillaSyntax (SR) (ER) (SCLiteral)
   module SCU = ContractUtil.ScillaContractUtil (SR) (ER)
@@ -84,7 +79,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
 
   let emp_idset = SCIdentifierSet.empty
   let emp_erset = ERSet.empty
-  let emp_idsmap = Map.empty (module SCIdentifierComp)
+  let emp_idsmap = Map.empty (module SCIdentifier.Name)
 
   (** Warning level for dead code detection *)
   let warning_level_dead_code = 3
@@ -260,8 +255,9 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
       | Bind (_, e) -> report_expr e
       | MatchStmt (_, pslist) -> List.iter pslist ~f:report_unreachable_adapter
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | GasStmt _
-      | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | GasStmt _ | Throw _ | Iterate _ | CallProc _ | CreateEvnt _ | SendMsgs _
+        ->
           ()
     in
     Option.iter cmod.libs ~f:(fun l ->
@@ -429,17 +425,25 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             match topt with
             | Some x -> (ERSet.add lv x, adts, ctrs)
             | None -> (lv, adts, ctrs))
-        | CallProc (p, al) ->
+        | CallProc (id_opt, p, al) ->
             proc_dict := p :: !proc_dict;
-            (ERSet.of_list al |> ERSet.union lv, adts, ctrs)
+            let lv' =
+              match id_opt with
+              | Some id when ERSet.mem lv id -> ERSet.add lv id
+              | Some id ->
+                  warn "Unused local binding: " id ER.get_loc;
+                  ERSet.add lv id
+              | None -> lv
+            in
+            (ERSet.of_list al |> ERSet.union lv', adts, ctrs)
         | Iterate (l, p) ->
             proc_dict := p :: !proc_dict;
             (ERSet.add lv l, adts, ctrs)
         | Bind (i, e) ->
-            let live_vars_no_i =
-              ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
-            in
             if ERSet.mem lv i then
+              let live_vars_no_i =
+                ERSet.filter ~f:(fun x -> not @@ SCIdentifier.equal i x) lv
+              in
               let e_live_vars, adts', ctrs' = expr_iter e in
               ( ERSet.union e_live_vars live_vars_no_i,
                 SCIdentifierSet.union adts' adts,
@@ -490,7 +494,7 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             else (
               warn "Unused type cast statement to: " x ER.get_loc;
               (ERSet.add lv r, adts, ctrs))
-        | SendMsgs v | CreateEvnt v -> (ERSet.add lv v, adts, ctrs)
+        | SendMsgs v | CreateEvnt v | Return v -> (ERSet.add lv v, adts, ctrs)
         | AcceptPayment | GasStmt _ -> (lv, adts, ctrs))
     | _ -> (emp_erset, emp_idset, emp_idset)
 
@@ -561,8 +565,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
             in
             (merge_id_maps immut_m immut_m', merge_id_maps mut_m mut_m'))
     | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-    | CallProc _ | Throw _ | GasStmt _ ->
+    | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+    | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
         (emp_idsmap, emp_idsmap)
 
   (** Returns a set of field names of the contract address type. *)
@@ -704,15 +708,15 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
   type adts_ty =
     ( Name.t,
       (int, SCIdentifierSet.t, Core.Int.comparator_witness) Map_intf.Map.t,
-      SCIdentifierComp.comparator_witness )
+      SCIdentifier.Name.comparator_witness )
     Map_intf.Map.t
   (** An information about used fields in ADT constructors that have contract
       address type: [ctr_name |-> (ctr_arg_pos |-> field_names)] *)
 
   type env_ty =
     ( Name.t,
-      (Name.t, int, SCIdentifierComp.comparator_witness) Map_intf.Map.t,
-      SCIdentifierComp.comparator_witness )
+      (Name.t, int, SCIdentifier.Name.comparator_witness) Map_intf.Map.t,
+      SCIdentifier.Name.comparator_witness )
     Map_intf.Map.t
   (** An environment holds mapping of ADT constructor fields that are bound to
       variables inside this pattern matching arm in the following format:
@@ -851,8 +855,8 @@ module DeadCodeDetector (SR : Rep) (ER : Rep) = struct
               Map.set used ~key:ctr_name ~data:ctr_arg_pos_to_fields'
           | _ -> used)
       | Bind _ | Load _ | Store _ | MapUpdate _ | MapGet _ | ReadFromBC _
-      | TypeCast _ | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _
-      | CallProc _ | Throw _ | GasStmt _ ->
+      | TypeCast _ | AcceptPayment | Return _ | Iterate _ | SendMsgs _
+      | CreateEvnt _ | CallProc _ | Throw _ | GasStmt _ ->
           used
     in
     List.fold_left comp.comp_body ~init:used ~f:(fun used s -> aux used s)

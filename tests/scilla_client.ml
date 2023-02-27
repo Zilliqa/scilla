@@ -30,6 +30,14 @@ let pp_error json =
   | `String s -> DebugMessage.perr s
   | j -> J.pretty_to_string j |> DebugMessage.perr
 
+(** Reads RPC call response. *)
+let read_response r =
+  let json = Jsonrpc.string_of_response r |> J.from_string in
+  if r.Rpc.success then pp_result json
+  else (
+    pp_error json;
+    exit 1)
+
 let mk_cmd cb ~summary =
   Command.basic ~summary
     Command.Let_syntax.(
@@ -41,13 +49,17 @@ let mk_cmd cb ~summary =
       let args =
         String.split argv ~on:' ' |> List.filter ~f:(Fn.non String.is_empty)
       in
-      fun () ->
-        let r = cb ~sock_path args in
-        let json = r |> Jsonrpc.string_of_response |> J.from_string in
-        if r.Rpc.success then pp_result json
-        else (
-          pp_error json;
-          exit 1))
+      fun () -> cb ~sock_path args |> read_response)
+
+let mk_cmd_no_args cb ~summary =
+  Command.basic ~summary
+    Command.Let_syntax.(
+      let%map_open sock_path =
+        flag "-socket"
+          (optional_with_default Server.sock_path string)
+          ~doc:"SOCKET Address for communication with the server"
+      in
+      fun () -> cb ~sock_path |> read_response)
 
 let run = mk_cmd Client.run ~summary:"Execute contract"
 
@@ -60,8 +72,15 @@ let check =
 let disambiguate =
   mk_cmd Client.disambiguate ~summary:"Name disambiguation tool for migration"
 
+let scilla_version = mk_cmd_no_args Client.version ~summary:"Get Scilla version"
+
 let cmd_group =
   Command.group ~summary:"Scilla client"
-    [ ("run", run); ("check", check); ("disambiguate", disambiguate) ]
+    [
+      ("run", run);
+      ("check", check);
+      ("disambiguate", disambiguate);
+      ("scilla-version", scilla_version);
+    ]
 
 let () = Command_unix.run cmd_group

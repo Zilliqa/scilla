@@ -46,6 +46,9 @@ let mk_params args =
 let mk_call name ~sock_path args =
   rpc ~sock_path @@ Rpc.call name (mk_params args)
 
+and mk_call_no_args name ~sock_path = rpc ~sock_path @@ Rpc.call name []
+
 let run = mk_call "run"
 let check = mk_call "check"
 let disambiguate = mk_call "disambiguate"
+let version = mk_call_no_args "version"

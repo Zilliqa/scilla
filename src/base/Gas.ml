@@ -238,7 +238,7 @@ module ScillaGas (SR : Rep) (ER : Rep) = struct
               in
               let s' = MatchStmt (x, clauses') in
               pure @@ [ (GasStmt g, srep); (s', srep) ]
-          | AcceptPayment ->
+          | AcceptPayment | Return _ ->
               let g = GasStmt (GasGasCharge.StaticCost 1) in
               pure @@ [ (g, srep); (s, srep) ]
           | Iterate (l, _) ->

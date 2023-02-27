@@ -1,6 +1,6 @@
 # escape=\
 
-ARG ZILLIQA_VERSION=v8.4.0
+ARG ZILLIQA_VERSION=v0.0.0
 FROM zilliqa/zilliqa-deps:${ZILLIQA_VERSION} AS builder
 
 # Manually input tag or commit, can be overwritten by docker build-args
@@ -24,7 +24,7 @@ RUN apt-get install -y software-properties-common \
     pkg-config \
     zlib1g-dev
 
-ENV OCAML_VERSION 4.11.2
+ENV OCAML_VERSION 4.12.0
 
 WORKDIR ${SOURCE_DIR}
 

@@ -213,13 +213,15 @@ struct
     | TypeCast (id, addr, ty) ->
         OutputSyntax.TypeCast (map_id fe id, map_id fe addr, map_type ty ~fl)
     | AcceptPayment -> OutputSyntax.AcceptPayment
+    | Return i -> OutputSyntax.Return (map_id fe i)
     | Iterate (list, proc) ->
         OutputSyntax.Iterate (map_id fe list, map_id fs proc)
     | SendMsgs id -> OutputSyntax.SendMsgs (map_id fe id)
     | CreateEvnt id -> OutputSyntax.CreateEvnt (map_id fe id)
-    | CallProc (proc, args) ->
+    | CallProc (id_opt, proc, args) ->
+        let id = Option.map ~f:(fun id -> map_id fe id) id_opt in
         OutputSyntax.CallProc
-          (map_id fs proc, List.map args ~f:(fun a -> map_id fe a))
+          (id, map_id fs proc, List.map args ~f:(fun a -> map_id fe a))
     | Throw oid ->
         OutputSyntax.Throw (Option.map oid ~f:(fun id -> map_id fe id))
     | GasStmt gc -> OutputSyntax.GasStmt (gas_charge gc)
@@ -247,7 +249,8 @@ struct
         OutputSyntax.LibTyp
           (map_id fe ty_id, List.map ctr_defs ~f:(fun cd -> ctr_def cd ~fe ~fl))
 
-  let component { comp_type; comp_name; comp_params; comp_body } ~fe ~fl ~fs =
+  let component { comp_type; comp_name; comp_params; comp_body; comp_return }
+      ~fe ~fl ~fs =
     OutputSyntax.
       {
         comp_type;
@@ -256,6 +259,7 @@ struct
           List.map comp_params ~f:(fun (param, ty) ->
               (map_id fe param, map_type ty ~fl));
         comp_body = statements_annot comp_body ~fe ~fl ~fs;
+        comp_return;
       }
 
   let contract { cname; cparams; cconstraint; cfields; ccomps } ~fe ~fs ~fl =

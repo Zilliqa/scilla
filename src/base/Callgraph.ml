@@ -73,6 +73,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
     [@@deriving sexp]
 
     let mk id ty = { id; ty; out_edges = []; in_edges = [] }
+    let id n = n.id
 
     let succs node =
       List.fold_left node.out_edges ~init:[] ~f:(fun acc e ->
@@ -99,6 +100,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
 
   let find_node (nodes : Node.t list) name =
     List.find nodes ~f:(fun node -> CGIdentifier.equal node.id name)
+
+  let get_node (cg : cg) name = find_node cg.nodes name
 
   (** Collects names of functions/procedures/transitions defined in the
       contract.
@@ -186,8 +189,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
     let rec visit_stmt (s, _annot) =
       match s with
       | Bind (_id, ea) -> collect_funcalls ea collected_nodes
-      | CallProc (id, _) | Iterate (_, id) -> (
-          find_node collected_nodes id |> function
+      | CallProc (_, proc, _) | Iterate (_, proc) -> (
+          find_node collected_nodes proc |> function
           | Some n -> NodeSet.singleton n
           | None -> emp_nodes_set)
       | MatchStmt (_id, arms) ->
@@ -197,8 +200,8 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
                   NodeSet.union acc @@ visit_stmt sa)
               |> NodeSet.union acc)
       | Load _ | RemoteLoad _ | Store _ | MapUpdate _ | MapGet _
-      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | SendMsgs _
-      | CreateEvnt _ | Throw _ | GasStmt _ ->
+      | RemoteMapGet _ | ReadFromBC _ | TypeCast _ | AcceptPayment | Return _
+      | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
           emp_nodes_set
     in
     List.fold_left comp.comp_body ~init:emp_nodes_set ~f:(fun acc s ->
@@ -264,7 +267,7 @@ module ScillaCallgraph (SR : Rep) (ER : Rep) = struct
   (** Returns true iff [name] is the function name on the CG *)
   let is_function (cg : cg) name = find_function cg name |> Option.is_some
 
-  (** Returns names of functions called insisde the body of the caller. *)
+  (** Returns names of functions called inside the body of the caller. *)
   let get_callees (cg : cg) callee =
     find_function cg callee
     |> Option.value_map ~default:[] ~f:(fun n -> Node.succs n)

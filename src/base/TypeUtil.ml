@@ -36,13 +36,15 @@ open TUType
 (*                Inferred types and qualifiers                 *)
 (****************************************************************)
 
-type 'rep inferred_type = { tp : TUType.t; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : TUType.t; qual : 'rep }
+[@@deriving sexp, to_yojson]
 
 module type QualifiedTypes = sig
   type t
 
   val t_of_sexp : Sexp.t -> t
   val sexp_of_t : t -> Sexp.t
+  val to_yojson : t -> Yojson.Safe.t
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 
@@ -280,7 +282,7 @@ functor
 (****************************************************************)
 
 module PlainTypes : QualifiedTypes = struct
-  type t = unit [@@deriving sexp]
+  type t = unit [@@deriving sexp, to_yojson]
 
   let mk_qualified_type t = { tp = t; qual = () }
 end

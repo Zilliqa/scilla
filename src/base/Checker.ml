@@ -63,10 +63,10 @@ module CG = ScillaCallgraph (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
-  let cmod = FEParser.parse_file syn ctr in
-  if Result.is_ok cmod then
+  let ast = FEParser.parse_file syn ctr in
+  if Result.is_ok ast then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
-  cmod
+  ast
 
 (* Change local names to global names *)
 let disambiguate_lmod lmod elibs names_and_addresses this_address =
@@ -309,6 +309,7 @@ let check_cmodule cli =
       wrap_error_with_gas initial_gas
       @@ check_parsing cli.input_file Parser.Incremental.cmodule
     in
+    let cmod = FEParser.disambiguate_calls cmod in
     (* Import whatever libs we want. *)
     let this_address_opt, init_address_map =
       Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs

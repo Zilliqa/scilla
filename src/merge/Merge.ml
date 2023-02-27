@@ -61,15 +61,10 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     include Comparable.Make (T)
   end
 
-  module PIdentifierComp = struct
-    include PIdentifier.Name
-    include Comparable.Make (PIdentifier.Name)
-  end
-
-  module PIdentifierSet = Set.Make (PIdentifierComp)
+  module PIdentifierSet = Set.Make (PIdentifier.Name)
   open PSyntax
 
-  let emp_ids_map = Map.empty (module PIdentifierComp)
+  let emp_ids_map = Map.empty (module PIdentifier.Name)
 
   (** Name of the currently merged contract. *)
   let g_contract_name = ref ""
@@ -137,7 +132,7 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
          name)
       Util.disambiguate_warning_level (Lazy.force loc);
     Set.to_list candidates
-    |> List.sort ~compare:PIdentifierComp.compare
+    |> List.sort ~compare:PIdentifier.Name.compare
     |> List.fold_left ~init:[] ~f:(fun acc l ->
            acc @ [ PIdentifier.Name.as_string l ])
     |> String.concat ~sep:"|" |> Printf.sprintf "(%s)"
@@ -416,10 +411,13 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     | Bind (id, expr) ->
         let id' = rename_local_er renames_map id in
         (Bind (id', rename_expr renames_map expr), annot)
-    | CallProc (id, args) ->
-        let id' = rename_local_sr renames_map id in
+    | CallProc (id_opt, proc, args) ->
+        let id_opt' =
+          Option.map id_opt ~f:(fun id -> rename_local_er renames_map id)
+        in
+        let proc' = rename_local_sr renames_map proc in
         let args' = List.map args ~f:(fun a -> rename_local_er renames_map a) in
-        (CallProc (id', args'), annot)
+        (CallProc (id_opt', proc', args'), annot)
     | Iterate (list, id) ->
         let id' = rename_local_sr renames_map id in
         let list' = rename_local_er renames_map list in
@@ -474,6 +472,9 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
     | ReadFromBC (id, q) ->
         let id' = rename_local_er renames_map id in
         (ReadFromBC (id', q), annot)
+    | Return id ->
+        let id' = rename_local_er renames_map id in
+        (Return id', annot)
     | AcceptPayment | SendMsgs _ | CreateEvnt _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
@@ -768,8 +769,8 @@ module ScillaMerger (SR : Rep) (ER : Rep) = struct
         in
         (Bind (id', body), annot)
     | Load _ | Store _ | Bind _ | MapUpdate _ | MapGet _ | ReadFromBC _
-    | AcceptPayment | Iterate _ | SendMsgs _ | CreateEvnt _ | CallProc _
-    | Throw _ | GasStmt _ ->
+    | AcceptPayment | Return _ | Iterate _ | SendMsgs _ | CreateEvnt _
+    | CallProc _ | Throw _ | GasStmt _ ->
         (stmt, annot)
 
   let localize_comp renames_map comp =

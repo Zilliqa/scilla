@@ -4,6 +4,21 @@
 #@ WARNING:
 #@ The following comment has been copied from "src/base/ParserFaults.messages".
 #@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
+#@ WARNING:
+#@ The following comment has been copied from "src/base/ParserFaults.messages".
+#@ It may need to be proofread, updated, moved, or removed.
 # This file is part of scilla.
 # 
 # Copyright (c) 2018 - present Zilliqa Research Pvt. Ltd.
@@ -34,7 +49,7 @@ type_term: CID LPAREN TID WITH
 ##
 ## Ends in an error in state: 74.
 ##
-## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## targ -> LPAREN typ . RPAREN [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
 ##
 ## The known suffix of the stack is as follows:
@@ -48,7 +63,7 @@ type_term: CID LPAREN WITH
 ##
 ## Ends in an error in state: 73.
 ##
-## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## targ -> LPAREN . typ RPAREN [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -61,7 +76,7 @@ type_term: CID MAP WITH
 ##
 ## Ends in an error in state: 20.
 ##
-## targ -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## targ -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -74,7 +89,7 @@ type_term: CID PERIOD WITH
 ##
 ## Ends in an error in state: 57.
 ##
-## scid -> CID PERIOD . CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## scid -> CID PERIOD . CID [ UNDERSCORE TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID PERIOD
@@ -87,7 +102,7 @@ type_term: CID TID WITH
 ##
 ## Ends in an error in state: 77.
 ##
-## list(targ) -> targ . list(targ) [ TARROW RPAREN RBRACE EQ EOF END COMMA ]
+## list(targ) -> targ . list(targ) [ THROW TARROW SPID SEND RPAREN RBRACE MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## targ
@@ -100,8 +115,8 @@ type_term: FORALL TID PERIOD TID WITH
 ##
 ## Ends in an error in state: 69.
 ##
-## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF END COMMA ]
-## typ -> FORALL TID PERIOD typ . [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> typ . TARROW typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
+## typ -> FORALL TID PERIOD typ . [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## FORALL TID PERIOD typ
@@ -114,7 +129,7 @@ type_term: FORALL TID PERIOD WITH
 ##
 ## Ends in an error in state: 68.
 ##
-## typ -> FORALL TID PERIOD . typ [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> FORALL TID PERIOD . typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## FORALL TID PERIOD
@@ -127,7 +142,7 @@ type_term: FORALL TID WITH
 ##
 ## Ends in an error in state: 67.
 ##
-## typ -> FORALL TID . PERIOD typ [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> FORALL TID . PERIOD typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## FORALL TID
@@ -140,7 +155,7 @@ type_term: FORALL WITH
 ##
 ## Ends in an error in state: 66.
 ##
-## typ -> FORALL . TID PERIOD typ [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> FORALL . TID PERIOD typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## FORALL
@@ -154,7 +169,7 @@ type_term: LPAREN TID WITH
 ## Ends in an error in state: 82.
 ##
 ## typ -> typ . TARROW typ [ TARROW RPAREN ]
-## typ -> LPAREN typ . RPAREN [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> LPAREN typ . RPAREN [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN typ
@@ -167,7 +182,7 @@ type_term: LPAREN WITH
 ##
 ## Ends in an error in state: 65.
 ##
-## typ -> LPAREN . typ RPAREN [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> LPAREN . typ RPAREN [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -195,7 +210,7 @@ type_term: MAP CID LPAREN MAP WITH
 ##
 ## Ends in an error in state: 39.
 ##
-## t_map_value -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> MAP . t_map_key t_map_value [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -208,7 +223,7 @@ type_term: MAP CID LPAREN WITH
 ##
 ## Ends in an error in state: 41.
 ##
-## t_map_value -> LPAREN . t_map_value_allow_targs RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN . t_map_value_allow_targs RPAREN [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -221,13 +236,13 @@ type_term: MAP CID UNDERSCORE
 ##
 ## Ends in an error in state: 25.
 ##
-## address_typ -> CID . WITH END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID . WITH CONTRACT loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID . WITH LIBRARY END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID . WITH SPID END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID . WITH CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## scid -> CID . [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## scid -> CID . PERIOD CID [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID . WITH END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID . WITH CONTRACT loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID . WITH LIBRARY END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID . WITH SPID END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID . WITH CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## scid -> CID . [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## scid -> CID . PERIOD CID [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID
@@ -254,7 +269,7 @@ type_term: MAP WITH
 ##
 ## Ends in an error in state: 37.
 ##
-## typ -> MAP . t_map_key t_map_value [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> MAP . t_map_key t_map_value [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP
@@ -267,8 +282,8 @@ type_term: TID TARROW TID WITH
 ##
 ## Ends in an error in state: 71.
 ##
-## typ -> typ . TARROW typ [ TARROW RPAREN EQ EOF END COMMA ]
-## typ -> typ TARROW typ . [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> typ . TARROW typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
+## typ -> typ TARROW typ . [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ TARROW typ
@@ -281,7 +296,7 @@ type_term: TID TARROW WITH
 ##
 ## Ends in an error in state: 70.
 ##
-## typ -> typ TARROW . typ [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> typ TARROW . typ [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## typ TARROW
@@ -294,11 +309,11 @@ type_term: CID WITH EOF
 ##
 ## Ends in an error in state: 26.
 ##
-## address_typ -> CID WITH . END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID WITH . CONTRACT loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID WITH . LIBRARY END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID WITH . SPID END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID WITH . CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH . END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID WITH . CONTRACT loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID WITH . LIBRARY END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID WITH . SPID END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID WITH . CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH
@@ -309,7 +324,7 @@ Invalid or incomplete type.
 
 type_term: TID WITH
 ##
-## Ends in an error in state: 376.
+## Ends in an error in state: 383.
 ##
 ## typ -> typ . TARROW typ [ TARROW EOF ]
 ## type_term -> typ . EOF [ # ]
@@ -323,7 +338,7 @@ This is an invalid type term, the ADT constructor arguments are likely incorrect
 
 type_term: WITH
 ##
-## Ends in an error in state: 374.
+## Ends in an error in state: 381.
 ##
 ## type_term' -> . type_term [ # ]
 ##
@@ -336,7 +351,7 @@ This is an invalid type term.
 
 stmts_term: ACCEPT WITH
 ##
-## Ends in an error in state: 326.
+## Ends in an error in state: 329.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . [ EOF END BAR ]
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt . SEMICOLON separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
@@ -351,7 +366,7 @@ This is likely an improperly terminated statement (lacking the semicolon).
 
 stmts_term: CID WITH
 ##
-## Ends in an error in state: 330.
+## Ends in an error in state: 333.
 ##
 ## stmt -> component_id . list(sident) [ SEMICOLON EOF END BAR ]
 ##
@@ -364,7 +379,7 @@ This is an invalid statements term.
 
 stmts_term: DELETE ID WITH
 ##
-## Ends in an error in state: 323.
+## Ends in an error in state: 326.
 ##
 ## stmt -> DELETE ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -377,7 +392,7 @@ This is an invalid delete statement, it lacks the keys to delete.
 
 stmts_term: DELETE WITH
 ##
-## Ends in an error in state: 322.
+## Ends in an error in state: 325.
 ##
 ## stmt -> DELETE . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -390,7 +405,7 @@ This is an invalid delete statement, it lacks a map to delete from.
 
 stmts_term: EVENT WITH
 ##
-## Ends in an error in state: 320.
+## Ends in an error in state: 323.
 ##
 ## stmt -> EVENT . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -403,7 +418,7 @@ This is an invalid event statement, it lacks a separated identifier for the even
 
 stmts_term: ID ASSIGN WITH
 ##
-## Ends in an error in state: 312.
+## Ends in an error in state: 315.
 ##
 ## stmt -> ID ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -416,7 +431,7 @@ This is an invalid assign statement, it lacks a separated identifier.
 
 stmts_term: ID FETCH AND WITH
 ##
-## Ends in an error in state: 272.
+## Ends in an error in state: 275.
 ##
 ## remote_fetch_stmt -> ID FETCH AND . ID PERIOD sident [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND . SPID PERIOD SPID [ SEMICOLON EOF END BAR ]
@@ -436,7 +451,7 @@ This is an invalid bind and statement. The parser expects a capital identifier a
 
 stmts_term: ID FETCH EXISTS ID WITH
 ##
-## Ends in an error in state: 270.
+## Ends in an error in state: 273.
 ##
 ## stmt -> ID FETCH EXISTS ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -449,7 +464,7 @@ This is an invalid existence bind statement. It lacks a non-empty list of access
 
 stmts_term: ID FETCH EXISTS WITH
 ##
-## Ends in an error in state: 269.
+## Ends in an error in state: 272.
 ##
 ## stmt -> ID FETCH EXISTS . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -462,7 +477,7 @@ This is an invalid existence bind statement. It lacks a map to check existence o
 
 stmts_term: ID FETCH ID WITH
 ##
-## Ends in an error in state: 265.
+## Ends in an error in state: 268.
 ##
 ## sid -> ID . [ SEMICOLON EOF END BAR ]
 ## stmt -> ID FETCH ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -476,7 +491,7 @@ This is an invalid bind statement, it is lacking a non empty list of map accesse
 
 stmts_term: ID FETCH WITH
 ##
-## Ends in an error in state: 264.
+## Ends in an error in state: 267.
 ##
 ## remote_fetch_stmt -> ID FETCH . AND ID PERIOD sident [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH . AND SPID PERIOD SPID [ SEMICOLON EOF END BAR ]
@@ -499,7 +514,7 @@ This is an invalid bind statement, the bind can be followed by '&', 'exists' or 
 
 stmts_term: ID EQ WITH
 ##
-## Ends in an error in state: 310.
+## Ends in an error in state: 313.
 ##
 ## stmt -> ID EQ . exp [ SEMICOLON EOF END BAR ]
 ##
@@ -512,7 +527,7 @@ This is an invalid equal statement, it is lacking a valid expression on the righ
 
 stmts_term: ID LSQB SPID RSQB ASSIGN WITH
 ##
-## Ends in an error in state: 315.
+## Ends in an error in state: 318.
 ##
 ## stmt -> ID nonempty_list(map_access) ASSIGN . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -525,7 +540,7 @@ The map key must be assigned to some separated identifier.
 
 stmts_term: ID LSQB SPID RSQB SEMICOLON
 ##
-## Ends in an error in state: 314.
+## Ends in an error in state: 317.
 ##
 ## stmt -> ID nonempty_list(map_access) . ASSIGN sid [ SEMICOLON EOF END BAR ]
 ##
@@ -536,7 +551,7 @@ stmts_term: ID LSQB SPID RSQB SEMICOLON
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 267, spurious reduction of production nonempty_list(map_access) -> map_access
+## In state 270, spurious reduction of production nonempty_list(map_access) -> map_access
 ##
 # see tests/parser/bad/stmts_t-id-lsqb-spid-rsqb-semicolon.scilla
 
@@ -544,7 +559,7 @@ This is likely an invalid map assign statement, it lacks the assign.
 
 stmts_term: ID LSQB SPID RSQB WITH
 ##
-## Ends in an error in state: 267.
+## Ends in an error in state: 270.
 ##
 ## nonempty_list(map_access) -> map_access . [ SEMICOLON EOF END BAR ASSIGN ]
 ## nonempty_list(map_access) -> map_access . nonempty_list(map_access) [ SEMICOLON EOF END BAR ASSIGN ]
@@ -558,7 +573,7 @@ This is an invalid statements term. A possible continuation may be assigning a m
 
 stmts_term: ID LSQB SPID WITH
 ##
-## Ends in an error in state: 262.
+## Ends in an error in state: 265.
 ##
 ## map_access -> LSQB sident . RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -571,7 +586,7 @@ This is an invalid statements term. A possible continuation may be accessing a k
 
 stmts_term: ID LSQB WITH
 ##
-## Ends in an error in state: 261.
+## Ends in an error in state: 264.
 ##
 ## map_access -> LSQB . sident RSQB [ SEMICOLON LSQB EOF END BAR ASSIGN ]
 ##
@@ -597,7 +612,7 @@ This is an invalid statements term, likely a bad procedure call with faulty argu
 
 stmts_term: ID WITH
 ##
-## Ends in an error in state: 260.
+## Ends in an error in state: 263.
 ##
 ## component_id -> ID . [ SPID SEMICOLON ID EOF END CID BAR ]
 ## remote_fetch_stmt -> ID . FETCH AND ID PERIOD sident [ SEMICOLON EOF END BAR ]
@@ -624,7 +639,7 @@ This is an invalid statements term. Scilla expects to do something with the iden
 
 stmts_term: MATCH SPID UNDERSCORE
 ##
-## Ends in an error in state: 255.
+## Ends in an error in state: 258.
 ##
 ## stmt -> MATCH sid . WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -637,7 +652,7 @@ This is an invalid match statement, 'with' is expected after what is specified t
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ##
-## Ends in an error in state: 334.
+## Ends in an error in state: 337.
 ##
 ## list(stmt_pm_clause) -> stmt_pm_clause . list(stmt_pm_clause) [ END ]
 ##
@@ -648,9 +663,9 @@ stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW ACCEPT EOF
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 326, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
-## In state 332, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
-## In state 333, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt))
+## In state 329, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
+## In state 335, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
+## In state 336, spurious reduction of production stmt_pm_clause -> BAR pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt))
 ##
 # see tests/parser/bad/stmts_t-match-spid-with-bar-underscore-arrow-accept-eof.scilla
 
@@ -658,7 +673,7 @@ When the match statement is finished, the parser expects 'end'.
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE ARROW WITH
 ##
-## Ends in an error in state: 259.
+## Ends in an error in state: 262.
 ##
 ## stmt_pm_clause -> BAR pattern ARROW . loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -671,7 +686,7 @@ This is an invalid statements term. In the match expression, after an arrow the 
 
 stmts_term: MATCH SPID WITH BAR UNDERSCORE WITH
 ##
-## Ends in an error in state: 258.
+## Ends in an error in state: 261.
 ##
 ## stmt_pm_clause -> BAR pattern . ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -684,7 +699,7 @@ This is an invalid statements term. In the match expression, after a pattern is 
 
 stmts_term: MATCH SPID WITH BAR WITH
 ##
-## Ends in an error in state: 257.
+## Ends in an error in state: 260.
 ##
 ## stmt_pm_clause -> BAR . pattern ARROW loption(separated_nonempty_list(SEMICOLON,stmt)) [ END BAR ]
 ##
@@ -697,7 +712,7 @@ In the match statement there is a malformed pattern.
 
 stmts_term: MATCH SPID WITH WITH
 ##
-## Ends in an error in state: 256.
+## Ends in an error in state: 259.
 ##
 ## stmt -> MATCH sid WITH . list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -710,7 +725,7 @@ There is a malformed pattern matching clause, the bar is likely missing.
 
 stmts_term: MATCH WITH
 ##
-## Ends in an error in state: 254.
+## Ends in an error in state: 257.
 ##
 ## stmt -> MATCH . sid WITH list(stmt_pm_clause) END [ SEMICOLON EOF END BAR ]
 ##
@@ -749,7 +764,7 @@ This send statement is either unfinished or not properly terminated.
 
 stmts_term: SEND WITH
 ##
-## Ends in an error in state: 252.
+## Ends in an error in state: 255.
 ##
 ## stmt -> SEND . sid [ SEMICOLON EOF END BAR ]
 ##
@@ -762,7 +777,7 @@ It is expected to send to a separated identifier.
 
 stmts_term: THROW END
 ##
-## Ends in an error in state: 372.
+## Ends in an error in state: 379.
 ##
 ## stmts_term -> stmts . EOF [ # ]
 ##
@@ -775,9 +790,9 @@ stmts_term: THROW END
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 249, spurious reduction of production option(sid) ->
 ## In state 251, spurious reduction of production stmt -> THROW option(sid)
-## In state 326, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
-## In state 332, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
-## In state 340, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt))
+## In state 329, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
+## In state 335, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
+## In state 343, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt))
 ##
 # special case, only via stmts_term entry point should never happen
 # throw itself is a valid statement term and a procedure or transition
@@ -787,7 +802,7 @@ This is an invalid statements term, bad throw.
 
 stmts_term: THROW SEMICOLON WITH
 ##
-## Ends in an error in state: 327.
+## Ends in an error in state: 330.
 ##
 ## separated_nonempty_list(SEMICOLON,stmt) -> stmt SEMICOLON . separated_nonempty_list(SEMICOLON,stmt) [ EOF END BAR ]
 ##
@@ -815,7 +830,7 @@ This throw does not throw a valid exception or is not properly terminated.
 
 stmts_term: WITH
 ##
-## Ends in an error in state: 370.
+## Ends in an error in state: 377.
 ##
 ## stmts_term' -> . stmts_term [ # ]
 ##
@@ -868,7 +883,7 @@ To import another library mention the new library name directly after the previo
 
 lmodule: SCILLA_VERSION NUMLIT IMPORT CONTRACT
 ##
-## Ends in an error in state: 366.
+## Ends in an error in state: 373.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT imports . library EOF [ # ]
 ##
@@ -901,7 +916,7 @@ If import is mentioned there must be one or more imported libraries with capital
 
 lmodule: SCILLA_VERSION NUMLIT LIBRARY CID CONTRACT
 ##
-## Ends in an error in state: 367.
+## Ends in an error in state: 374.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT imports library . EOF [ # ]
 ##
@@ -1120,7 +1135,7 @@ This is an invalid library module because it lacks a capital identifier for a na
 
 lmodule: SCILLA_VERSION NUMLIT WITH
 ##
-## Ends in an error in state: 365.
+## Ends in an error in state: 372.
 ##
 ## lmodule -> SCILLA_VERSION NUMLIT . imports library EOF [ # ]
 ##
@@ -1133,7 +1148,7 @@ This is an invalid library module, Scilla version must be followed by 'library' 
 
 lmodule: WITH
 ##
-## Ends in an error in state: 363.
+## Ends in an error in state: 370.
 ##
 ## lmodule' -> . lmodule [ # ]
 ##
@@ -1743,7 +1758,7 @@ This is an invalid expression. If it is an application of a function, it is nece
 
 exp_term: STRING WITH
 ##
-## Ends in an error in state: 361.
+## Ends in an error in state: 368.
 ##
 ## exp_term -> exp . EOF [ # ]
 ##
@@ -1795,7 +1810,7 @@ Type functions expect a type id (e.g. 'A).
 
 exp_term: WITH
 ##
-## Ends in an error in state: 359.
+## Ends in an error in state: 366.
 ##
 ## exp_term' -> . exp_term [ # ]
 ##
@@ -1836,9 +1851,9 @@ For a mutable field declaration, the parser expects a valid lower case beginning
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID LPAREN RPAREN WITH
 ##
-## Ends in an error in state: 344.
+## Ends in an error in state: 347.
 ##
-## procedure -> PROCEDURE component_id component_params . component_body [ TRANSITION PROCEDURE EOF ]
+## procedure -> PROCEDURE component_id component_params . option(return_type) component_body [ TRANSITION PROCEDURE EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## PROCEDURE component_id component_params
@@ -1849,9 +1864,9 @@ In the transition body the parser expects a list of semi-colon separated stateme
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE ID WITH
 ##
-## Ends in an error in state: 343.
+## Ends in an error in state: 346.
 ##
-## procedure -> PROCEDURE component_id . component_params component_body [ TRANSITION PROCEDURE EOF ]
+## procedure -> PROCEDURE component_id . component_params option(return_type) component_body [ TRANSITION PROCEDURE EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## PROCEDURE component_id
@@ -1863,9 +1878,9 @@ be a left parenthesis.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE WITH
 ##
-## Ends in an error in state: 342.
+## Ends in an error in state: 345.
 ##
-## procedure -> PROCEDURE . component_id component_params component_body [ TRANSITION PROCEDURE EOF ]
+## procedure -> PROCEDURE . component_id component_params option(return_type) component_body [ TRANSITION PROCEDURE EOF ]
 ##
 ## The known suffix of the stack is as follows:
 ## PROCEDURE
@@ -1876,7 +1891,7 @@ A procedure requires a valid name.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN END WITH
 ##
-## Ends in an error in state: 349.
+## Ends in an error in state: 356.
 ##
 ## list(component) -> component . list(component) [ EOF ]
 ##
@@ -1889,7 +1904,7 @@ Following a transition definition, the parser expects a transition or a procedur
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN RPAREN THROW BAR
 ##
-## Ends in an error in state: 338.
+## Ends in an error in state: 341.
 ##
 ## component_body -> stmts . END [ TRANSITION PROCEDURE EOF ]
 ##
@@ -1902,9 +1917,9 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN R
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 249, spurious reduction of production option(sid) ->
 ## In state 251, spurious reduction of production stmt -> THROW option(sid)
-## In state 326, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
-## In state 332, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
-## In state 340, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt))
+## In state 329, spurious reduction of production separated_nonempty_list(SEMICOLON,stmt) -> stmt
+## In state 335, spurious reduction of production loption(separated_nonempty_list(SEMICOLON,stmt)) -> separated_nonempty_list(SEMICOLON,stmt)
+## In state 343, spurious reduction of production stmts -> loption(separated_nonempty_list(SEMICOLON,stmt))
 ##
 # see tests/parser/cmodule-transition-id-lparen-rparen-throw-bar.scilla
 
@@ -1927,7 +1942,7 @@ cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN TRANSITION ID LPAREN W
 ##
 ## Ends in an error in state: 245.
 ##
-## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SEND MATCH ID FORALL EVENT END DELETE CID ACCEPT ]
+## component_params -> LPAREN . loption(separated_nonempty_list(COMMA,param_pair)) RPAREN [ THROW SPID SEND MATCH ID FORALL EVENT END DELETE COLON CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN
@@ -2035,7 +2050,7 @@ cmodule: SCILLA_VERSION NUMLIT LIBRARY CID EOF
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 12, spurious reduction of production list(libentry) ->
 ## In state 222, spurious reduction of production library -> LIBRARY CID list(libentry)
-## In state 357, spurious reduction of production option(library) -> library
+## In state 364, spurious reduction of production option(library) -> library
 ##
 # see tests/parser/bad/cmodule-version-number-library-name
 
@@ -2123,7 +2138,7 @@ type_term: CID MAP CID TYPE
 ##
 ## Ends in an error in state: 106.
 ##
-## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## targ -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -2142,7 +2157,7 @@ type_term: CID TYPE
 ##
 ## Ends in an error in state: 72.
 ##
-## typ -> scid . list(targ) [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> scid . list(targ) [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## scid
@@ -2201,11 +2216,32 @@ type_term: CID WITH CONTRACT FIELD WITH
 
 Contract fields are not allowed to start with underscore.
 
+type_term: CID WITH CONTRACT LPAREN ID COLON TID EQ
+##
+## Ends in an error in state: 96.
+##
+## separated_nonempty_list(COMMA,param_pair) -> param_pair . [ RPAREN ]
+## separated_nonempty_list(COMMA,param_pair) -> param_pair . COMMA separated_nonempty_list(COMMA,param_pair) [ RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## param_pair
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 84, spurious reduction of production type_annot -> COLON typ
+## In state 85, spurious reduction of production id_with_typ -> ID type_annot
+## In state 99, spurious reduction of production param_pair -> id_with_typ
+##
+
+Ends in an error in state: 81.
+
 type_term: CID WITH CONTRACT LPAREN WITH
 ##
 ## Ends in an error in state: 33.
 ##
-## address_typ -> CID WITH CONTRACT LPAREN . separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH CONTRACT LPAREN . separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH CONTRACT LPAREN
@@ -2217,8 +2253,8 @@ type_term: CID WITH CONTRACT WITH
 ##
 ## Ends in an error in state: 32.
 ##
-## address_typ -> CID WITH CONTRACT . loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
-## address_typ -> CID WITH CONTRACT . LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH CONTRACT . loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
+## address_typ -> CID WITH CONTRACT . LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH CONTRACT
@@ -2230,7 +2266,7 @@ type_term: HEXLIT WITH
 ##
 ## Ends in an error in state: 22.
 ##
-## scid -> HEXLIT . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN ID HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## scid -> HEXLIT . PERIOD CID [ UNDERSCORE TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## HEXLIT
@@ -2242,7 +2278,7 @@ type_term: MAP CID MAP CID TYPE
 ##
 ## Ends in an error in state: 40.
 ##
-## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> MAP t_map_key . t_map_value [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -2261,7 +2297,7 @@ type_term: MAP CID TYPE
 ##
 ## Ends in an error in state: 38.
 ##
-## typ -> MAP t_map_key . t_map_value [ TARROW RPAREN EQ EOF END COMMA ]
+## typ -> MAP t_map_key . t_map_value [ THROW TARROW SPID SEND RPAREN MATCH ID FORALL EVENT EQ EOF END DELETE COMMA CID ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## MAP t_map_key
@@ -2308,7 +2344,7 @@ Ends in an error in state: 99.
 
 stmts_term: FORALL SPID WITH
 ##
-## Ends in an error in state: 318.
+## Ends in an error in state: 321.
 ##
 ## stmt -> FORALL sident . component_id [ SEMICOLON EOF END BAR ]
 ##
@@ -2320,7 +2356,7 @@ Ends in an error in state: 297.
 
 stmts_term: FORALL WITH
 ##
-## Ends in an error in state: 317.
+## Ends in an error in state: 320.
 ##
 ## stmt -> FORALL . sident component_id [ SEMICOLON EOF END BAR ]
 ##
@@ -2332,7 +2368,7 @@ Ends in an error in state: 296.
 
 stmts_term: ID FETCH AND CID PERIOD ID WITH
 ##
-## Ends in an error in state: 305.
+## Ends in an error in state: 308.
 ##
 ## remote_fetch_stmt -> ID FETCH AND sident . AS address_typ [ SEMICOLON EOF END BAR ]
 ##
@@ -2344,7 +2380,7 @@ Remote reads are not allowed to use namespaces.
 
 stmts_term: ID FETCH AND CID WITH
 ##
-## Ends in an error in state: 296.
+## Ends in an error in state: 299.
 ##
 ## sident -> CID . PERIOD ID [ AS ]
 ## stmt -> ID FETCH AND CID . option(bcfetch_args) [ SEMICOLON EOF END BAR ]
@@ -2357,7 +2393,7 @@ Ends in an error in state: 283.
 
 stmts_term: ID FETCH AND EXISTS ID PERIOD ID WITH
 ##
-## Ends in an error in state: 294.
+## Ends in an error in state: 297.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -2369,7 +2405,7 @@ Ends in an error in state: 281.
 
 stmts_term: ID FETCH AND EXISTS ID PERIOD WITH
 ##
-## Ends in an error in state: 289.
+## Ends in an error in state: 292.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD . ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD . LPAREN ID RPAREN nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -2382,7 +2418,7 @@ Ends in an error in state: 280.
 
 stmts_term: ID FETCH AND EXISTS ID WITH
 ##
-## Ends in an error in state: 288.
+## Ends in an error in state: 291.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID . PERIOD ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID . PERIOD LPAREN ID RPAREN nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -2395,7 +2431,7 @@ Ends in an error in state: 279.
 
 stmts_term: ID FETCH AND EXISTS WITH
 ##
-## Ends in an error in state: 287.
+## Ends in an error in state: 290.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS . ID PERIOD ID nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND EXISTS . ID PERIOD LPAREN ID RPAREN nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
@@ -2408,7 +2444,7 @@ Ends in an error in state: 278.
 
 stmts_term: ID FETCH AND ID PERIOD ID WITH
 ##
-## Ends in an error in state: 284.
+## Ends in an error in state: 287.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD ID . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ## sident -> ID . [ SEMICOLON EOF END BAR ]
@@ -2421,7 +2457,7 @@ Ends in an error in state: 275.
 
 stmts_term: ID FETCH AND ID PERIOD LPAREN SPID WITH
 ##
-## Ends in an error in state: 279.
+## Ends in an error in state: 282.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD LPAREN sident . RPAREN list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -2433,7 +2469,7 @@ Ends in an error in state: 273.
 
 stmts_term: ID FETCH AND ID PERIOD LPAREN WITH
 ##
-## Ends in an error in state: 278.
+## Ends in an error in state: 281.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD LPAREN . sident RPAREN list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -2445,7 +2481,7 @@ Ends in an error in state: 272.
 
 stmts_term: ID FETCH AND ID PERIOD WITH
 ##
-## Ends in an error in state: 277.
+## Ends in an error in state: 280.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD . sident [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD . LPAREN sident RPAREN list(map_access) [ SEMICOLON EOF END BAR ]
@@ -2459,7 +2495,7 @@ Ends in an error in state: 271.
 
 stmts_term: ID FETCH AND ID WITH
 ##
-## Ends in an error in state: 276.
+## Ends in an error in state: 279.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID . PERIOD sident [ SEMICOLON EOF END BAR ]
 ## remote_fetch_stmt -> ID FETCH AND ID . PERIOD LPAREN sident RPAREN list(map_access) [ SEMICOLON EOF END BAR ]
@@ -2474,7 +2510,7 @@ Either blockchain state variable or remote field read expected.
 
 stmts_term: ID FETCH AND SPID AS CID UNDERSCORE
 ##
-## Ends in an error in state: 307.
+## Ends in an error in state: 310.
 ##
 ## address_typ -> CID . WITH END [ SEMICOLON EOF END BAR ]
 ## address_typ -> CID . WITH CONTRACT loption(separated_nonempty_list(COMMA,address_type_field)) END [ SEMICOLON EOF END BAR ]
@@ -2490,7 +2526,7 @@ Casts to non-ByStr20 types are not allowed.
 
 stmts_term: ID FETCH AND SPID AS WITH
 ##
-## Ends in an error in state: 306.
+## Ends in an error in state: 309.
 ##
 ## remote_fetch_stmt -> ID FETCH AND sident AS . address_typ [ SEMICOLON EOF END BAR ]
 ##
@@ -2502,7 +2538,7 @@ Ends in an error in state: 285.
 
 stmts_term: ID FETCH AND SPID PERIOD WITH
 ##
-## Ends in an error in state: 274.
+## Ends in an error in state: 277.
 ##
 ## remote_fetch_stmt -> ID FETCH AND SPID PERIOD . SPID [ SEMICOLON EOF END BAR ]
 ##
@@ -2514,7 +2550,7 @@ Ends in an error in state: 268.
 
 stmts_term: ID FETCH AND SPID WITH
 ##
-## Ends in an error in state: 273.
+## Ends in an error in state: 276.
 ##
 ## remote_fetch_stmt -> ID FETCH AND SPID . PERIOD SPID [ SEMICOLON EOF END BAR ]
 ## sident -> SPID . [ AS ]
@@ -2527,7 +2563,7 @@ Ends in an error in state: 267.
 
 lmodule: SCILLA_VERSION WITH
 ##
-## Ends in an error in state: 364.
+## Ends in an error in state: 371.
 ##
 ## lmodule -> SCILLA_VERSION . NUMLIT imports library EOF [ # ]
 ##
@@ -2591,7 +2627,7 @@ exp_term: HEXLIT PERIOD WITH
 ##
 ## Ends in an error in state: 23.
 ##
-## scid -> HEXLIT PERIOD . CID [ UNDERSCORE TYPE TRANSITION TID TARROW SPID SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET LBRACE IN ID HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## scid -> HEXLIT PERIOD . CID [ UNDERSCORE TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET LBRACE IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## HEXLIT PERIOD
@@ -2634,7 +2670,7 @@ match-expression is probably missing `end` keyword.
 
 cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN FIELD ID COLON TID EQ STRING WITH
 ##
-## Ends in an error in state: 351.
+## Ends in an error in state: 358.
 ##
 ## list(field) -> field . list(field) [ TRANSITION PROCEDURE EOF ]
 ##
@@ -2857,7 +2893,7 @@ type_term: MAP CID LPAREN MAP CID CID TYPE
 ##
 ## Ends in an error in state: 42.
 ##
-## t_map_value -> LPAREN t_map_value_allow_targs . RPAREN [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## t_map_value -> LPAREN t_map_value_allow_targs . RPAREN [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## LPAREN t_map_value_allow_targs
@@ -2898,7 +2934,7 @@ type_term: CID WITH SPID WITH
 ##
 ## Ends in an error in state: 27.
 ##
-## address_typ -> CID WITH SPID . END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH SPID . END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH SPID
@@ -2910,7 +2946,7 @@ type_term: CID WITH LIBRARY WITH
 ##
 ## Ends in an error in state: 29.
 ##
-## address_typ -> CID WITH LIBRARY . END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH LIBRARY . END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH LIBRARY
@@ -2920,7 +2956,7 @@ Ends in an error in state: 29. Please report your example at https://github.com/
 
 stmts_term: ID FETCH AND CID LPAREN WITH
 ##
-## Ends in an error in state: 297.
+## Ends in an error in state: 300.
 ##
 ## bcfetch_args -> LPAREN . separated_nonempty_list(COMMA,sident) RPAREN [ SEMICOLON EOF END BAR ]
 ##
@@ -2932,7 +2968,7 @@ Ends in an error in state: 290. Please report your example at https://github.com
 
 stmts_term: ID FETCH AND CID LPAREN ID WITH
 ##
-## Ends in an error in state: 298.
+## Ends in an error in state: 301.
 ##
 ## separated_nonempty_list(COMMA,sident) -> sident . [ RPAREN ]
 ## separated_nonempty_list(COMMA,sident) -> sident . COMMA separated_nonempty_list(COMMA,sident) [ RPAREN ]
@@ -2945,7 +2981,7 @@ Ends in an error in state: 291. Please report your example at https://github.com
 
 stmts_term: ID FETCH AND CID LPAREN ID COMMA WITH
 ##
-## Ends in an error in state: 299.
+## Ends in an error in state: 302.
 ##
 ## separated_nonempty_list(COMMA,sident) -> sident COMMA . separated_nonempty_list(COMMA,sident) [ RPAREN ]
 ##
@@ -2955,11 +2991,68 @@ stmts_term: ID FETCH AND CID LPAREN ID COMMA WITH
 
 Ends in an error in state: 292. Please report your example at https://github.com/Zilliqa/scilla/issues.
 
+stmts_term: SPID WITH
+##
+## Ends in an error in state: 252.
+##
+## stmt -> SPID . ASSIGN sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## SPID
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+stmts_term: SPID ASSIGN WITH
+##
+## Ends in an error in state: 253.
+##
+## stmt -> SPID ASSIGN . sid [ SEMICOLON EOF END BAR ]
+##
+## The known suffix of the stack is as follows:
+## SPID ASSIGN
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE CID LPAREN RPAREN COLON WITH
+##
+## Ends in an error in state: 348.
+##
+## return_type -> COLON . typ [ THROW SPID SEND MATCH ID FORALL EVENT END DELETE CID ACCEPT ]
+##
+## The known suffix of the stack is as follows:
+## COLON
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
+cmodule: SCILLA_VERSION NUMLIT CONTRACT CID LPAREN RPAREN PROCEDURE CID LPAREN RPAREN COLON CID RPAREN
+##
+## Ends in an error in state: 349.
+##
+## return_type -> COLON typ . [ THROW SPID SEND MATCH ID FORALL EVENT END DELETE CID ACCEPT ]
+## typ -> typ . TARROW typ [ THROW TARROW SPID SEND MATCH ID FORALL EVENT END DELETE CID ACCEPT ]
+##
+## The known suffix of the stack is as follows:
+## COLON typ
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 25, spurious reduction of production scid -> CID
+## In state 72, spurious reduction of production list(targ) ->
+## In state 81, spurious reduction of production typ -> scid list(targ)
+##
+
+<YOUR SYNTAX ERROR MESSAGE HERE>
+
 type_term: CID WITH CONTRACT LPAREN ID COLON CID RPAREN WITH
 ##
 ## Ends in an error in state: 87.
 ##
-## address_typ -> CID WITH CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN . loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID TARROW SEMICOLON RPAREN RBRACE PROCEDURE MAP LPAREN LET IN HEXLIT FIELD EQ EOF END CONTRACT COMMA CID BAR ARROW ]
+## address_typ -> CID WITH CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN . loption(separated_nonempty_list(COMMA,address_type_field)) END [ TYPE TRANSITION TID THROW TARROW SPID SEND SEMICOLON RPAREN RBRACE PROCEDURE MATCH MAP LPAREN LET IN ID HEXLIT FORALL FIELD EVENT EQ EOF END DELETE CONTRACT COMMA CID BAR ARROW ACCEPT ]
 ##
 ## The known suffix of the stack is as follows:
 ## CID WITH CONTRACT LPAREN separated_nonempty_list(COMMA,param_pair) RPAREN
@@ -2969,7 +3062,7 @@ type_term: CID WITH CONTRACT LPAREN ID COLON CID RPAREN WITH
 
 stmts_term: ID FETCH AND ID PERIOD LPAREN ID RPAREN WITH
 ##
-## Ends in an error in state: 280.
+## Ends in an error in state: 283.
 ##
 ## remote_fetch_stmt -> ID FETCH AND ID PERIOD LPAREN sident RPAREN . list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -2981,7 +3074,7 @@ stmts_term: ID FETCH AND ID PERIOD LPAREN ID RPAREN WITH
 
 stmts_term: ID FETCH AND ID PERIOD LPAREN ID RPAREN LSQB ID RSQB WITH
 ##
-## Ends in an error in state: 281.
+## Ends in an error in state: 284.
 ##
 ## list(map_access) -> map_access . list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -2993,7 +3086,7 @@ stmts_term: ID FETCH AND ID PERIOD LPAREN ID RPAREN LSQB ID RSQB WITH
 
 stmts_term: ID FETCH AND EXISTS ID PERIOD LPAREN WITH
 ##
-## Ends in an error in state: 290.
+## Ends in an error in state: 293.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD LPAREN . ID RPAREN nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -3005,7 +3098,7 @@ stmts_term: ID FETCH AND EXISTS ID PERIOD LPAREN WITH
 
 stmts_term: ID FETCH AND EXISTS ID PERIOD LPAREN ID WITH
 ##
-## Ends in an error in state: 291.
+## Ends in an error in state: 294.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD LPAREN ID . RPAREN nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##
@@ -3017,7 +3110,7 @@ stmts_term: ID FETCH AND EXISTS ID PERIOD LPAREN ID WITH
 
 stmts_term: ID FETCH AND EXISTS ID PERIOD LPAREN ID RPAREN WITH
 ##
-## Ends in an error in state: 292.
+## Ends in an error in state: 295.
 ##
 ## remote_fetch_stmt -> ID FETCH AND EXISTS ID PERIOD LPAREN ID RPAREN . nonempty_list(map_access) [ SEMICOLON EOF END BAR ]
 ##

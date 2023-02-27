@@ -184,6 +184,7 @@ module CheckerTests = Scilla_test.Util.DiffBasedTests (struct
       "blowup_1.scilla";
       "blowup_2.scilla";
       "builtin_type_args.scilla";
+      "return-1.scilla";
     ]
 
   let exit_code : UnixLabels.process_status = WEXITED 0

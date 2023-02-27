@@ -1,11 +1,12 @@
 # Invoke `make` to build, `make clean` to clean up, etc.
 
-OCAML_VERSION_RECOMMENDED=4.11.2
+OCAML_VERSION_RECOMMENDED=4.12.0
 # In case of upgrading ocamlformat version:
 # package.json also needs updating
 OCAMLFORMAT_VERSION=0.22.4
 IPC_SOCK_PATH="/tmp/zilliqa.sock"
 CPPLIB_DIR=${PWD}/_build/default/src/base/cpp
+VCPKG_BASE=${PWD}/vcpkg_installed/$(shell scripts/vcpkg_triplet.sh)
 
 # Dependencies useful for developing Scilla
 OPAM_DEV_DEPS := \
@@ -13,6 +14,19 @@ merlin \
 ocamlformat.$(OCAMLFORMAT_VERSION) \
 ocp-indent \
 utop
+
+# Determine the rpath patch tool based on the OS
+OS_NAME := $(shell uname -s)
+ifeq ($(OS_NAME),Linux)
+	RPATH_CMD := patchelf --set-rpath
+endif
+ifeq ($(OS_NAME),Darwin)
+	RPATH_CMD := install_name_tool -add_rpath
+endif
+
+define patch_rpath
+	find _build/default/$(1) -type f -name '*.exe' -exec chmod u+w \{} \; -exec $(RPATH_CMD) "$(VCPKG_BASE)/lib" \{} \; -exec chmod u+w \{} \;
+endef
 
 .PHONY: default release utop dev clean docker zilliqa-docker
 
@@ -24,7 +38,7 @@ default: release
 release:
 	./scripts/build_deps.sh
 	dune build --profile release @install
-	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 
 # Build only scilla-checker and scilla-runner
@@ -32,14 +46,14 @@ slim:
 	./scripts/build_deps.sh
 	dune build --profile release src/runners/scilla_runner.exe
 	dune build --profile release src/runners/scilla_checker.exe
-	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 
 dev:
 	./scripts/build_deps.sh
 	dune build --profile dev @install
 	dune build --profile dev tests/scilla_client.exe
-	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,src/runners)
 	@test -L bin || ln -s _build/install/default/bin .
 	ln -s ../../../default/tests/scilla_client.exe _build/install/default/bin/scilla-client
 
@@ -52,7 +66,7 @@ parser-messages:
 	mv src/base/NewParserFaults.messages src/base/ParserFaults.messages
 	rm src/base/NewParserFaultsStubs.messages
 
-# Launch utop such that it finds the libraroes.
+# Launch utop such that it finds the libraries.
 utop: release
 	OCAMLPATH=_build/install/default/lib:$(OCAMLPATH) utop
 
@@ -74,7 +88,7 @@ test_install : install
 	dune build --profile release tests/polynomials/testsuite_polynomials.exe
 	dune build --profile release tests/base/testsuite_base.exe
 	dune build --profile release tests/testsuite.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
@@ -97,12 +111,12 @@ debug :
 testbase: dev
   # This effectively adds all the runners into PATH variable
 	dune build --profile dev tests/base/testsuite_base.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
 
 goldbase: dev
 	dune build --profile dev tests/base/testsuite_base.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
 
 # Run all tests for all packages in the repo: scilla-base, polynomials, scilla
@@ -110,7 +124,7 @@ test: dev
 	dune build --profile dev tests/polynomials/testsuite_polynomials.exe
 	dune build --profile dev tests/base/testsuite_base.exe
 	dune build --profile dev tests/testsuite.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	ulimit -n 1024; dune exec --no-build -- tests/polynomials/testsuite_polynomials.exe
 	ulimit -n 1024; dune exec --no-build -- tests/base/testsuite_base.exe -print-diff true
 	ulimit -n 1024; dune exec --no-build -- tests/testsuite.exe -print-diff true
@@ -119,7 +133,7 @@ test: dev
 gold: dev
 	dune build --profile dev tests/base/testsuite_base.exe
 	dune build --profile dev tests/testsuite.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	ulimit -n 4096; dune exec --no-build -- tests/base/testsuite_base.exe -update-gold true
 	ulimit -n 4096; dune exec --no-build -- tests/testsuite.exe -update-gold true
 	dune promote
@@ -129,7 +143,7 @@ gold: dev
 # don't want multiple threads of the testsuite connecting to the same server concurrently.
 test_extipcserver: dev
 	dune build --profile dev tests/testsuite.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,tests)
 	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
 	-ext-ipc-server $(IPC_SOCK_PATH) \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
@@ -137,13 +151,15 @@ test_extipcserver: dev
 # Run tests in server-mode
 test_server: dev
 	dune build src/runners/scilla_server.exe
-	find _build/default/src/runners -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
+	$(call patch_rpath,src/runners)
 	dune build --profile dev tests/testsuite.exe
-	find _build/default/tests -type f -name '*.exe' -exec chmod u+w \{} \; -exec patchelf --set-rpath "${PWD}/vcpkg_installed/x64-linux-dynamic/lib" \{} \; -exec chmod u+w \{} \;
-	./_build/default/src/runners/scilla_server.exe &
+	$(call patch_rpath,tests)
+	killall -r "scilla_server.exe" || true
+	_build/default/src/runners/scilla_server.exe -daemonise -logs /tmp/scilla-server
 	dune exec --no-build -- tests/testsuite.exe -print-diff true -runner sequential \
   -server true \
 	-only-test "tests:0:contract_tests:0:these_tests_must_SUCCEED"
+	killall -r "scilla_server.exe" || true
 
 # === TESTS (end) =============================================================
 

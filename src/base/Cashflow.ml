@@ -37,7 +37,7 @@ module CashflowRep (R : Rep) = struct
         CFName.t
         * money_tag list (* name of adt paired with tags of type params *)
     | Inconsistent
-  [@@deriving sexp, equal]
+  [@@deriving sexp, to_yojson, equal]
 
   let rec money_tag_to_string tag =
     match tag with
@@ -48,7 +48,7 @@ module CashflowRep (R : Rep) = struct
     | Map t -> "(Map " ^ money_tag_to_string t ^ ")"
     | _ -> sexp_of_money_tag tag |> Sexplib.Sexp.to_string
 
-  type rep = money_tag * R.rep [@@deriving sexp]
+  type rep = money_tag * R.rep [@@deriving sexp, to_yojson]
 
   let get_loc r = match r with _, rr -> R.get_loc rr
   let dummy_rep = (NoInfo, R.dummy_rep)
@@ -229,10 +229,12 @@ struct
       | TypeCast (x, r, t) ->
           CFSyntax.TypeCast (add_noinfo_to_ident x, add_noinfo_to_ident r, t)
       | AcceptPayment -> CFSyntax.AcceptPayment
+      | Return i -> CFSyntax.Return (add_noinfo_to_ident i)
       | SendMsgs x -> CFSyntax.SendMsgs (add_noinfo_to_ident x)
       | CreateEvnt x -> CFSyntax.CreateEvnt (add_noinfo_to_ident x)
-      | CallProc (p, args) ->
-          CFSyntax.CallProc (p, List.map args ~f:add_noinfo_to_ident)
+      | CallProc (id_opt, p, args) ->
+          let id = Option.map id_opt ~f:(fun id -> add_noinfo_to_ident id) in
+          CFSyntax.CallProc (id, p, List.map args ~f:add_noinfo_to_ident)
       | Iterate (l, p) -> CFSyntax.Iterate (add_noinfo_to_ident l, p)
       | Throw xopt -> (
           match xopt with
@@ -243,13 +245,16 @@ struct
     (res_s, rep)
 
   let cf_init_tag_component component =
-    let { comp_type; comp_name; comp_params; comp_body } = component in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } =
+      component
+    in
     {
       CFSyntax.comp_type;
       CFSyntax.comp_name;
       CFSyntax.comp_params =
         List.map ~f:(fun (x, t) -> (add_noinfo_to_ident x, t)) comp_params;
       CFSyntax.comp_body = List.map ~f:cf_init_tag_stmt comp_body;
+      CFSyntax.comp_return;
     }
 
   let cf_init_tag_contract contract token_fields =
@@ -1872,6 +1877,18 @@ struct
               || [%equal: ECFR.money_tag] (get_id_tag r) r_tag) )
       | AcceptPayment ->
           (AcceptPayment, param_env, field_env, local_env, ctr_tag_map, false)
+      | Return i ->
+          let i_tag = lub_tags NoInfo (lookup_var_tag2 i local_env param_env) in
+          let new_i = update_id_tag i i_tag in
+          let new_local_env, new_param_env =
+            update_var_tag2 i i_tag local_env param_env
+          in
+          ( Return new_i,
+            new_param_env,
+            field_env,
+            new_local_env,
+            ctr_tag_map,
+            not @@ [%equal: ECFR.money_tag] (get_id_tag i) i_tag )
       | GasStmt g ->
           (GasStmt g, param_env, field_env, local_env, ctr_tag_map, false)
       | SendMsgs m ->
@@ -1898,7 +1915,9 @@ struct
             new_local_env,
             ctr_tag_map,
             not @@ [%equal: ECFR.money_tag] (get_id_tag e) e_tag )
-      | CallProc (p, args) ->
+      | CallProc (id_opt, p, args) ->
+          (* TODO: Bindings from procedure calls are not taken into account in
+                   the cash flow analysis. *)
           let new_args =
             List.map args ~f:(fun arg ->
                 update_id_tag arg (lookup_var_tag2 arg local_env param_env))
@@ -1915,7 +1934,7 @@ struct
             | Ok res -> res
             | Unequal_lengths -> false
           in
-          ( CallProc (p, new_args),
+          ( CallProc (id_opt, p, new_args),
             param_env,
             field_env,
             local_env,
@@ -1993,7 +2012,7 @@ struct
           new_changes || acc_changes ))
 
   let cf_tag_component t param_env field_env ctr_tag_map =
-    let { comp_type; comp_name; comp_params; comp_body } = t in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = t in
     let empty_local_env = AssocDictionary.make_dict () in
     let implicit_local_env =
       AssocDictionary.insert MessagePayload.amount_label Money
@@ -2028,6 +2047,7 @@ struct
         comp_name;
         comp_params = new_params;
         comp_body = new_comp_body;
+        comp_return;
       },
       new_param_env,
       new_field_env,

@@ -1,0 +1,335 @@
+scilla_version 0
+
+(***************************************************)
+(*               Associated library                *)
+(***************************************************)
+import BoolUtils
+library NonfungibleToken
+
+let one_msg = 
+  fun (msg : Message) => 
+  let nil_msg = Nil {Message} in
+Cons {Message} msg nil_msg
+
+(* Checks and see if an address is a contract owner *)
+let checkContractOwner =
+    fun (msgSender: ByStr20) => 
+    fun (contractOwner: ByStr20) =>
+        builtin eq msgSender contractOwner
+
+(* Checks and see if an address is a token owner *)
+let isTokenOwner = 
+    fun (msgSender: ByStr20) =>
+    fun (tokenId: Uint256) =>
+    fun (tokenOwnerMap_tmp : Map (Uint256) (ByStr20)) =>
+        let tokenOwner = builtin get tokenOwnerMap_tmp tokenId in
+        match tokenOwner with
+        | None => False
+        | Some val =>
+            builtin eq val msgSender
+        end 
+
+(* Checks if a given address is approved to make txn the given tokenID *)
+(* Not to be confused with isApprovedForAll                            *)
+let isApproved = 
+    fun (msgSender: ByStr20) =>
+    fun (tokenID: Uint256) =>
+    fun (approvalMap_tmp: Map (Uint256) (ByStr20)) =>
+        let val = builtin get approvalMap_tmp tokenID in
+        match val with
+        | None => False 
+        | Some val =>
+            builtin eq val msgSender
+        end
+
+(* Checks if an message sender is approved by a given owner. (i.e. operator) *)
+let isApprovedForAll = 
+    fun (msgSender: ByStr20) =>
+    fun (tokenOwner: ByStr20) =>
+    fun (operatorMap: Map (ByStr20) (Map (ByStr20) (Bool))) =>
+        let m = builtin get operatorMap tokenOwner in
+        match m with
+        | None => False
+            (* owner did not assign anyone to the approval mapping *)
+        | Some val =>
+            (* val is of type Map (ByStr20) (Bool) *)
+            let check_list = builtin get val msgSender in
+            match check_list with
+            | None => False
+            | Some is_sender_approved =>
+                (* check if sender has access rights *)
+                match is_sender_approved with
+                | True => True
+                | False => False
+                end
+            end
+        end
+
+(* Check if a sender is an operator of the owner, approved for the given ID *)
+(* or is the owner of the token *)
+let isApprovedOrOwner =
+    fun (isOwner: Bool) =>
+    fun (isApproved: Bool) =>
+    fun (isApprovedForAll: Bool) =>
+        let isOwnerOrApproved =  orb isOwner isApproved in
+        orb isOwnerOrApproved isApprovedForAll
+
+(* Error events *)
+let makeErrorEvent =
+    fun (location: String) =>
+    fun (errorCode: Uint32) =>
+        {_eventname: "Error"; raisedAt: location; code: errorCode }
+
+(* Error codes *)
+let code_success = Uint32 0
+let code_failure = Uint32 1
+let code_not_authorized = Uint32 2
+let code_not_found = Uint32 4
+let code_bad_request = Uint32 5
+let code_token_exists = Uint32 6
+let code_unexpected_error = Uint32 9
+
+
+(***************************************************)
+(*             The contract definition             *)
+(***************************************************)
+
+contract NonfungibleToken
+(contractOwner : ByStr20,
+ name : String,
+ symbol: String
+)
+
+(* mutable fields *)
+
+(* Mapping between tokenId to token owner *)
+field tokenOwnerMap: Map Uint256 ByStr20 = Emp Uint256 ByStr20
+(* Mapping from owner to number of owned tokens *)
+field ownedTokenCount: Map ByStr20 Uint256 = Emp ByStr20 Uint256
+
+(* Mapping between tokenId to approved address *)
+(* @dev: There can only be one approved address per token at a given time. *)
+field tokenApprovals: Map Uint256 ByStr20 = Emp Uint256 ByStr20
+
+(* Mapping from owner to operator approvals  *)
+field operatorApprovals: Map ByStr20 (Map ByStr20 Bool) 
+                            = Emp ByStr20 (Map ByStr20 Bool)
+
+(* immutable field *)
+
+(* @notice Count all NFTs assigned to an owner *)
+transition balanceOf(address: ByStr20) 
+    optionBal <- ownedTokenCount[address];
+    balance = match optionBal with
+    | Some bal => bal
+    | None => Uint256 0
+    end;
+    e = {_eventname: "balanceOf"; bal: balance};
+    event e
+end
+
+
+(* Get the owner of a particular tokenId *)
+transition ownerOf(tokenId: Uint256) 
+    someVal <- tokenOwnerMap[tokenId];
+    match someVal with
+    | Some val =>
+        e = {_eventname: "ownerOf"; id: tokenId; owner: val};
+        event e
+    | None =>
+        e = let raisedAt = "ownerOf" in makeErrorEvent raisedAt code_not_found;
+        event e
+    end
+end
+
+(* @dev:    Mint new tokens. Only `contractOwner` can mint the token*)
+(* @param:  to - address of the token recipient                     *)
+(* @param:  tokenId - token id of the new token                     *)
+(* Returns error message code_token_exist if token exists           *)
+transition mint(to: ByStr20, tokenId: Uint256)
+
+    (* Sender must be the contract owner *)
+    isAuthorized = checkContractOwner contractOwner _sender;
+    match isAuthorized with
+    | True =>
+        currentTokenOwnerMap <- tokenOwnerMap;
+        (* Check if token exists *)
+        tokenExist <- exists tokenOwnerMap[tokenId];
+        match tokenExist with
+        | True =>
+            (* Token exists, return error code *)
+            e = let raisedAt = "mint" in makeErrorEvent raisedAt code_token_exists;
+            event e
+        | False =>
+            (* Mint token *)
+            tokenOwnerMap[tokenId] := to;
+            (* add to owner count *)
+            userCnt <- ownedTokenCount[to];
+            match userCnt with
+            | Some val =>
+                (* Append to existing results *)
+                newVal= let one = Uint256 1 in builtin add val one;
+                ownedTokenCount[to] := newVal
+            | None =>
+                (* User does not have existing tokens *)
+                newVal = Uint256 1;
+                ownedTokenCount[to] := newVal
+            end;
+
+            (* Emit success event *)
+            e = {_eventname: "Mint successful"; by: _sender; recipient: to; token: tokenId};
+            event e
+        end
+    | False =>
+        (* Unauthorized transaction - sender is not the contract owner*)
+        e = let raisedAt = "mint" in makeErrorEvent raisedAt code_not_authorized;
+        event e
+    end
+
+    
+end
+
+(* @dev Transfer the ownership of a given token ID to another address *)
+(* @param from:     Current owner of the token                        *)
+(* @param to:       Recipient address of the token                    *)
+(* @param tokenId   uint256 id of the token to be transferred         *)
+transition transferFrom(from: ByStr20, to: ByStr20, tokenId: Uint256)
+    copy_tokenOwnerMap <- tokenOwnerMap;
+    copy_tokenApprovals <- tokenApprovals;
+    copy_operatorApproval <- operatorApprovals;
+
+    (* Get tokenOwner ByStr20 *)
+    getTokenOwner <- tokenOwnerMap[tokenId];
+    match getTokenOwner with
+    | None =>
+        (* Token not found *)
+        e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_not_found;
+        event e
+        
+    | Some tokenOwner =>
+        
+        (* Libary functions to check for conditions *)
+        checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
+        checkApproved = isApproved _sender tokenId copy_tokenApprovals;
+        checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
+
+        (* Checks if the `from` is indeed the owner of the token *)
+        isFromTokenOwner = builtin eq tokenOwner from;
+        match isFromTokenOwner with
+        | False =>
+            (* From address is not the same as the tokenOwner    *)
+            e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_bad_request;
+            event e
+        | True => 
+            (* isApprovedOrOwner checks if any of the three conditions are met *)
+            isAuthorized = isApprovedOrOwner checkOwner checkApproved checkApprovedForAll;
+
+            match isAuthorized with
+            | True =>
+                (* Remove from Approval *)
+                match checkApproved with
+                | True =>
+                    (* Remove entry from approvals at the token level *)
+                    delete tokenApprovals[tokenId] 
+                | False =>
+                end;
+
+                (* Change tokenOwnerMap *)
+                tokenOwnerMap[tokenId] := to;
+
+                (* Change Count *)
+                curr_otc <- ownedTokenCount;
+
+                (*subtract one from previous token owner *)
+                somePrevBal <- ownedTokenCount[from];
+                match somePrevBal with
+                | Some prevBal =>
+                    newBal  = let one = Uint256 1 in builtin sub prevBal one;
+                    ownedTokenCount[from] := newBal
+                | None =>
+                    e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_unexpected_error;
+                    event e
+                end;
+
+                (* add one to the new token owner *)
+                userCnt <- ownedTokenCount[to];
+                (* Calculate the new token count value for recipient *)
+                newVal = let one = Uint256 1 in match userCnt with
+                | Some val =>
+                    (* Add to existing value *)
+                    builtin add val one
+                | None => one
+                end;
+                ownedTokenCount[to] := newVal; 
+                e = {_eventname: "transferFrom successful"; from: _sender; recipient: to; token: tokenId}; 
+                event e
+            | False =>
+                (* Unauthorized transaction *)
+                e = let raisedAt = "transferFrom" in makeErrorEvent raisedAt code_not_authorized;
+                event e
+            end
+        end
+    end
+end
+
+(* @dev: Approves another address to transfer the given token ID                *)
+(* - There can only be one approved address per token at a given time           *)
+(* - Absence of entry in tokenApproval indicates there is no approved address   *)
+(* param: to ByStr20 to be approved for the given token id                      *)
+(* param: tokenId uint256 id of the token to be apporved                        *)
+
+
+transition approve(to: ByStr20, tokenId: Uint256)
+
+    copy_tokenOwnerMap <- tokenOwnerMap;
+    copy_operatorApproval <- operatorApprovals;
+
+    (* Get tokenOwner ByStr20 *)
+    getTokenOwner <- tokenOwnerMap[tokenId];
+    match getTokenOwner with
+    | None =>
+        (* Token not found *)
+        e = let raisedAt = "approve" in makeErrorEvent raisedAt code_not_found;
+        event e
+    | Some tokenOwner =>
+        checkApprovedForAll = isApprovedForAll _sender tokenOwner copy_operatorApproval;
+        checkOwner = isTokenOwner _sender tokenId copy_tokenOwnerMap;
+        isAuthorized = orb checkApprovedForAll checkOwner;
+        match isAuthorized with
+        | True =>
+            (* add to token approval mapping *)
+            tokenApprovals[tokenId] := to;
+            (* Emit event *)
+            e = {_eventname: "Approve successful"; from: _sender; approvedTo: to; token: tokenId};
+            event e
+        | False =>
+            (* Unauthorized transaction *)
+            e = let raisedAt = "approve" in makeErrorEvent raisedAt code_not_authorized;
+            event e
+        end
+    end
+end
+
+(* @dev: sets or unsets the approval of a given operator                *)
+(* @param: address to be set or unset as operator                       *)
+(* @param: approved - status of the approval to be set                  *)
+
+transition setApprovalForAll(to: ByStr20, approved: Bool)
+
+    copy_operatorApproval <- operatorApprovals;
+    (* Checks if the _sender is approving himself *)
+    isValidOperation = let check = builtin eq _sender to in negb check;
+    (* require _sender is not approving himself *)
+    match isValidOperation with
+    | True =>
+        (* Check if sender has an existing record on the operatorApproval *)
+        operatorApprovals[_sender][to] := approved;
+        (* Stringify boolean value to be emitted in the event *)
+        approvedStr = bool_to_string approved;
+        e = {_eventname: "setApprovalForAll successful"; from: _sender; recipient: to; status: approvedStr};
+        event e
+    | False =>
+        e = let raisedAt = "setApprovalForAll" in makeErrorEvent raisedAt code_not_authorized;
+        event e
+    end
+end

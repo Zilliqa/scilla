@@ -26,7 +26,8 @@ module TUIdentifier = TUType.TIdentifier
 module TUName = TUIdentifier.Name
 
 (* An inferred type with possible qualifiers *)
-type 'rep inferred_type = { tp : TUType.t; qual : 'rep } [@@deriving sexp]
+type 'rep inferred_type = { tp : TUType.t; qual : 'rep }
+[@@deriving sexp, to_yojson]
 
 (* Qualifiers to type inference with additional information *)
 module type QualifiedTypes = sig
@@ -34,6 +35,7 @@ module type QualifiedTypes = sig
 
   val t_of_sexp : Sexp.t -> t
   val sexp_of_t : t -> Sexp.t
+  val to_yojson : t -> Yojson.Safe.t
   val mk_qualified_type : TUType.t -> t inferred_type
 end
 

@@ -441,6 +441,8 @@ struct
           of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^^ as_kwd ^^^ of_type typ
         | Ast.AcceptPayment ->
           accept_kwd
+        | Ast.Return id ->
+          !^"_return" ^//^ assign ^//^ of_ann_id id
         | Ast.Iterate (arg_list, proc) ->
           (* forall l p *)
           forall_kwd ^//^ of_ann_id arg_list ^//^ of_ann_id proc
@@ -448,9 +450,14 @@ struct
           send_kwd ^//^ of_ann_id msgs
         | Ast.CreateEvnt events ->
           event_kwd ^//^ of_ann_id events
-        | Ast.CallProc (proc, args) ->
-          if List.is_empty args then of_ann_id proc
-          else of_ann_id proc ^//^ of_ann_ids args
+        | Ast.CallProc (id_opt, proc, args) ->
+          let call =
+            if List.is_empty args then of_ann_id proc
+            else of_ann_id proc ^//^ of_ann_ids args
+          in
+          (match id_opt with
+           | None -> call
+           | Some id -> of_ann_id id ^^^ equals ^//^ call)
         | Ast.Throw oexc ->
           (match oexc with
            | None -> throw_kwd
@@ -471,13 +478,18 @@ struct
             typed_params)
           rparen
 
-      let of_component Ast.{comp_comments; comp_type; comp_name; comp_params; comp_body} =
+      let of_component Ast.{comp_comments; comp_type; comp_name; comp_params; comp_body; comp_return} =
         let comp_type = !^(Syntax.component_type_to_string comp_type)
         and comp_name = of_ann_id comp_name
         and comp_params = of_parameters comp_params ~sep:(break 1)
         and comp_body = of_stmts comp_body in
-        concat_comments comp_comments ^^
-        group (comp_type ^^^ comp_name ^//^ comp_params) ^^
+        let signature = match comp_return with
+        | None ->
+          (group (comp_type ^^^ comp_name ^//^ comp_params))
+        | Some ty ->
+          (group (comp_type ^^^ comp_name ^//^ comp_params ^//^ colon ^//^ of_type ty))
+        in
+        concat_comments comp_comments ^^ signature ^^
           indent (hardline ^^ comp_body) ^^ hardline ^^
         end_kwd
 

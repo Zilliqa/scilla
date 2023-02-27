@@ -2,8 +2,7 @@
   "gas_remaining": "7563",
   "errors": [
     {
-      "error_message":
-        "Exception thrown: (Message [(_exception : (String \"Error\")) ; (code : (Int32 -7))])",
+      "error_message": "Exception thrown: (Message [(_exception : (String \"Error\")) ; (code : (Int32 -7))])",
       "start_location": {
         "file": "tests/contracts/ark.scilla",
         "line": 161,
@@ -12,28 +11,28 @@
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Raised from IsNotExpired",
+      "error_message": "Raised from ThrowError",
       "start_location": {
         "file": "tests/contracts/ark.scilla",
-        "line": 208,
+        "line": 159,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Raised from IsValidSide",
+      "error_message": "Raised from IsNotVoided",
       "start_location": {
         "file": "tests/contracts/ark.scilla",
-        "line": 243,
+        "line": 262,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     },
     {
-      "error_message": "Raised from IsValidPrice",
+      "error_message": "Raised from ValidateAndConsumeCheque",
       "start_location": {
         "file": "tests/contracts/ark.scilla",
-        "line": 219,
+        "line": 298,
         "column": 11
       },
       "end_location": { "file": "", "line": 0, "column": 0 }

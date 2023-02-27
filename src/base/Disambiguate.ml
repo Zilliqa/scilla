@@ -680,6 +680,11 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure @@ (PostDisSyntax.TypeCast (dis_x, dis_r, dis_t), new_var_dict)
         | AcceptPayment -> pure @@ (PostDisSyntax.AcceptPayment, var_dict_acc)
+        | Return i ->
+            let%bind dis_i =
+              disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) i
+            in
+            pure @@ (PostDisSyntax.Return dis_i, var_dict_acc)
         | Iterate (l, proc) ->
             let%bind dis_l =
               disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) l
@@ -697,7 +702,14 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               disambiguate_identifier_helper var_dict_acc (SR.get_loc rep) e
             in
             pure @@ (PostDisSyntax.CreateEvnt dis_e, var_dict_acc)
-        | CallProc (proc, args) ->
+        | CallProc (id_opt, proc, args) ->
+            let%bind dis_id_opt =
+              match id_opt with
+              | Some id ->
+                  let%bind dis_id = name_def_as_simple_global id in
+                  pure @@ Some dis_id
+              | None -> pure @@ None
+            in
             (* Only locally defined procedures are allowed *)
             let%bind dis_proc = name_def_as_simple_global proc in
             let%bind dis_args =
@@ -705,7 +717,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 ~f:
                   (disambiguate_identifier_helper var_dict_acc (SR.get_loc rep))
             in
-            pure @@ (PostDisSyntax.CallProc (dis_proc, dis_args), var_dict_acc)
+            pure
+            @@ ( PostDisSyntax.CallProc (dis_id_opt, dis_proc, dis_args),
+                 var_dict_acc )
         | Throw xopt ->
             let%bind dis_xopt =
               option_mapM xopt
@@ -733,7 +747,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
   (**************************************************************)
 
   let disambiguate_component (dicts : name_dicts) comp =
-    let { comp_type; comp_name; comp_params; comp_body } = comp in
+    let { comp_type; comp_name; comp_params; comp_body; comp_return } = comp in
     let%bind dis_comp_name = name_def_as_simple_global comp_name in
     let%bind dis_comp_params =
       mapM comp_params ~f:(fun (x, t) ->
@@ -748,6 +762,13 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
           remove_local_id_from_dict dict (as_string x))
     in
     let body_dicts = { dicts with var_dict = body_var_dict } in
+    let%bind dis_return =
+      match comp_return with
+      | None -> pure None
+      | Some ret ->
+          let%bind dis_t = disambiguate_type dicts.typ_dict ret in
+          pure (Some dis_t)
+    in
     let%bind dis_comp_body = disambiguate_stmts body_dicts comp_body in
     pure
     @@ {
@@ -755,6 +776,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
          PostDisSyntax.comp_name = dis_comp_name;
          PostDisSyntax.comp_params = dis_comp_params;
          PostDisSyntax.comp_body = dis_comp_body;
+         PostDisSyntax.comp_return = dis_return;
        }
 
   (**************************************************************)
