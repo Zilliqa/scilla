@@ -42,7 +42,7 @@ type ss_field = {
 
 (* The blockchain info is a map from (query_name, query_args) to some info. *)
 type bcinfo_state = (string, (string, string) Caml.Hashtbl.t) Caml.Hashtbl.t
-type external_state = { caddr : SSLiteral.Bystrx.t; cstate : ss_field list }
+type external_state = { caddr : SSLiteral.Bystrx.t; cparams: ss_field list; cstate : ss_field list }
 
 type service_mode =
   | IPC of string
@@ -69,7 +69,7 @@ module MakeStateService () = struct
     | Uninitialized -> fail0 ~kind:"StateService: Uninitialized" ?inst:None
     | SS (sm, fields, estates, bcinfo) -> pure (sm, fields, estates, bcinfo)
 
-  let field_type fields fname =
+  let field_type fields fname is_mutable =
     match
       List.find fields ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
     with
@@ -77,12 +77,13 @@ module MakeStateService () = struct
     | None ->
         fail1
           ~kind:
-            (sprintf "StateService: Unable to determine the type of field %s."
+            (sprintf "StateService: Unable to determine the type of %s %s."
+               (if is_mutable then "field" else "contract parameter")
                (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
 
-  let fetch_local ~fname ~keys fields =
+  let fetch_local ~fname ~is_mutable ~keys fields =
     let s = fields in
     match
       List.find s ~f:(fun z -> [%equal: SSName.t] z.fname (get_id fname))
@@ -143,7 +144,8 @@ module MakeStateService () = struct
     | _ ->
         fail1
           ~kind:
-            (sprintf "StateService: field \"%s\" not found.\n"
+            (sprintf "StateService: %s \"%s\" not found.\n"
+               (if is_mutable then "field" else "contract parameter")
                (as_error_string fname))
           ?inst:None
           (ER.get_loc (get_rep fname))
@@ -152,7 +154,7 @@ module MakeStateService () = struct
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr -> (
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         let%bind res = StateIPCClient.fetch ~socket_addr ~fname ~keys ~tp in
         if not @@ List.is_empty keys then pure @@ res
         else
@@ -165,7 +167,7 @@ module MakeStateService () = struct
                 ?inst:None
                 (ER.get_loc (get_rep fname))
           | Some _res' -> pure @@ res)
-    | Local -> fetch_local ~fname ~keys fields
+    | Local -> fetch_local ~fname ~is_mutable:true ~keys fields
 
   let fetch_bcinfo ~query_name ~query_args =
     let%bind sm, _fields, _estates, bcinfo = assert_init () in
@@ -189,34 +191,34 @@ module MakeStateService () = struct
               ?inst:None)
 
   (* Common function for external state lookup.
-     * If the caddr+fname+keys combination exists:
+     * If the caddr+fname+mutable_field+keys combination exists:
      *     If ~ignoreval is true: (None, Some type) is returned
      *     if ~ignoreval is false: (Some val, Some type) is returned
      * Else: (None, None) is returned
   *)
-  let external_fetch ~caddr ~fname ~keys ~ignoreval =
+  let external_fetch ~caddr ~fname ~is_mutable ~keys ~ignoreval =
     let%bind sm, _fields, estates, _bcinfo = assert_init () in
     let caddr_hex = SSLiteral.Bystrx.hex_encoding caddr in
     match sm with
     | IPC socket_addr ->
-        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~keys
+        StateIPCClient.external_fetch ~socket_addr ~caddr:caddr_hex ~fname ~is_mutable ~keys
           ~ignoreval
     | Local -> (
         match
           List.find_map estates ~f:(fun estate ->
               if SSLiteral.Bystrx.equal caddr estate.caddr then
-                Some estate.cstate
+                if is_mutable then Some estate.cstate else Some estate.cparams
               else None)
         with
-        | Some fields -> (
+        | Some cparams_or_fields -> (
             match
-              List.find_map fields ~f:(fun field ->
+              List.find_map cparams_or_fields ~f:(fun field ->
                   if SSName.equal field.fname (get_id fname) then
                     Some field.ftyp
                   else None)
             with
             | Some stored_tp ->
-                let%bind res = fetch_local ~fname ~keys fields in
+                let%bind res = fetch_local ~fname ~is_mutable ~keys cparams_or_fields in
                 pure (res, Option.map res ~f:(fun _ -> stored_tp))
             | None -> pure (None, None))
         | None -> pure (None, None))
@@ -317,7 +319,7 @@ module MakeStateService () = struct
     let%bind sm, fields, estates, bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         StateIPCClient.update ~socket_addr ~fname ~keys ~value ~tp
     | Local ->
         let%bind fields' = update_local ~fname ~keys (Some value) fields in
@@ -325,15 +327,15 @@ module MakeStateService () = struct
         pure ()
 
   (* Is a key in a map. keys must be non-empty. *)
-  let is_member ~fname ~keys =
+  let is_member ~fname ~is_mutable ~keys =
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
-        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~keys ~tp in
+        let%bind tp = field_type fields fname is_mutable in
+        let%bind res = StateIPCClient.is_member ~socket_addr ~fname ~is_mutable ~keys ~tp in
         pure @@ res
     | Local ->
-        let%bind v = fetch_local ~fname ~keys fields in
+        let%bind v = fetch_local ~fname ~is_mutable ~keys fields in
         pure @@ Option.is_some v
 
   (* Remove a key from a map. keys must be non-empty. *)
@@ -341,7 +343,7 @@ module MakeStateService () = struct
     let%bind sm, fields, _estates, _bcinfo = assert_init () in
     match sm with
     | IPC socket_addr ->
-        let%bind tp = field_type fields fname in
+        let%bind tp = field_type fields fname true in
         StateIPCClient.remove ~socket_addr ~fname ~keys ~tp
     | Local ->
         let%bind _ = update_local ~fname ~keys None fields in

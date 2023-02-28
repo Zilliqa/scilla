@@ -160,6 +160,7 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      is_mutable = true;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -194,11 +195,12 @@ let fetch ~socket_addr ~fname ~keys ~tp =
  *     if ~ignoreval is false: (Some val, Some type) is returned
  * Else: (None, None) is returned
  *)
-let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
+let external_fetch ~socket_addr ~caddr ~fname ~is_mutable ~keys ~ignoreval =
   let open Ipcmessage_types in
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      is_mutable;
       (* We don't have the type information (and hence map depth) for
          remote state reads. The blockchain does. It'll take care of it.
       *)
@@ -237,6 +239,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      is_mutable = true;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = false;
@@ -254,11 +257,12 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   pure ()
 
 (* Is a key in a map. keys must be non-empty. *)
-let is_member ~socket_addr ~fname ~keys ~tp =
+let is_member ~socket_addr ~fname ~is_mutable ~keys ~tp =
   let open Ipcmessage_types in
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      is_mutable;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;
@@ -279,6 +283,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let q =
     {
       name = IPCCIdentifier.as_string fname;
+      is_mutable = true;
       mapdepth = TypeUtilities.map_depth tp;
       indices = List.map keys ~f:serialize_literal;
       ignoreval = true;

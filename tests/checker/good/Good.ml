@@ -70,6 +70,7 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "shadow_import.scilla";
       "remote_state_reads.scilla";
       "remote_state_reads_2.scilla";
+      "remote_state_reads_cparam.scilla";
       "address_eq_test.scilla";
       "address_list_traversal.scilla";
       "polymorphic_address.scilla";

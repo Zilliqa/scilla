@@ -66,6 +66,17 @@
       | t -> PrimType t
     with | _ -> raise (exn ())
 
+  let mk_contract_address_typ immutables mutables =
+    let open SType in
+    let mk_fs fs field_kind = List.fold_left (fun acc (id, t) ->
+                                            match IdLoc_Comp.Map.add acc ~key:id ~data:t with
+                                            | `Ok new_map -> new_map
+                                            | `Duplicate ->
+                                               raise (SyntaxError (("Duplicate " ^ field_kind ^ " name " ^ (ParserIdentifier.as_string id) ^ " in address type"), ParserIdentifier.get_rep id)))
+                                          IdLoc_Comp.Map.empty fs
+    in
+    Address (ContrAddr (mk_fs immutables "contract parameter", mk_fs mutables "field"))
+  
   let build_prim_literal_exn t v loc =
     match SLiteral.build_prim_literal t v with
     | Some l -> l
@@ -243,22 +254,14 @@ t_map_value_allow_targs :
 | t = t_map_value
   { t }
 
-address_typ :
+address_typ:
 | d = CID; WITH; END;
     { if d = "ByStr20"
       then Address AnyAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | d = CID; WITH; CONTRACT; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
-      then
-        let fs' = List.fold_left (fun acc (id, t) -> 
-                                   match SType.IdLoc_Comp.Map.add acc ~key:id ~data:t with
-                                   | `Ok new_map -> new_map
-                                   | `Duplicate ->
-                                      raise (SyntaxError (Printf.sprintf "Duplicate field name %s in address type" (ParserIdentifier.as_string id), toLoc $startpos(d))))
-                                 SType.IdLoc_Comp.Map.empty fs
-        in
-        Address (ContrAddr fs')
+      then mk_contract_address_typ [] fs
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | d = CID; WITH; LIBRARY; END;
     { if d = "ByStr20"
@@ -269,9 +272,9 @@ address_typ :
       then Address CodeAddr
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 | (* Adding this production in preparation for contract parameters *)
-  d = CID; WITH; CONTRACT; LPAREN; _ps = separated_list(COMMA, param_pair); RPAREN; _fs = separated_list(COMMA, address_type_field); END;
+  d = CID; WITH; CONTRACT; LPAREN; ps = separated_nonempty_list(COMMA, param_pair); RPAREN; fs = separated_list(COMMA, address_type_field); END;
     { if d = "ByStr20"
-      then raise (SyntaxError ("Contract parameters in address types not yet supported", toLoc $startpos(d)))
+      then mk_contract_address_typ ps fs
       else raise (SyntaxError ("Invalid type", toLoc $startpos(d))) }
 
 typ :
@@ -450,19 +453,24 @@ stmt:
 
 remote_fetch_stmt:
 | l = ID; FETCH; AND; adr = ID; PERIOD; r = sident
-  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r), toLoc $startpos }
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, Mutable), toLoc $startpos }
 | (* Reading _sender._balance or _origin._balance *)
   l = ID; FETCH; AND; adr = SPID; PERIOD; r = SPID
-  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r))), toLoc $startpos }
-| (* Adding this production in preparation for remote reads of contract parameters *)
-  _l = ID; FETCH; AND; _adr = ID; PERIOD; LPAREN; _r = sident; RPAREN;
-  { raise (SyntaxError ("Remote fetch of contract parameters not yet supported", toLoc $startpos(_adr))) }
+  { RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Mutable), toLoc $startpos }
+| (* Reading immutable fields *)
+  l = ID; FETCH; AND; adr = ID; PERIOD; LPAREN; r = sident; RPAREN; keys = list(map_access)
+  {
+    match keys with
+    | [] -> RemoteLoad (to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, Immutable), toLoc $startpos
+    | _  -> RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), r, Immutable, keys, true), toLoc $startpos
+  }
 | l = ID; FETCH; AND; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, true), toLoc $startpos }
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Mutable, keys, true), toLoc $startpos }
 | l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; r = ID; keys = nonempty_list(map_access)
-  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), keys, false), toLoc $startpos }
-| (* Adding this production in preparation for address type casts *)
-  l = ID; FETCH; AND; adr = sident; AS; t = address_typ
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Mutable, keys, false), toLoc $startpos }
+| l = ID; FETCH; AND; EXISTS; adr = ID; PERIOD; LPAREN; r = ID; RPAREN; keys = nonempty_list(map_access)
+  { RemoteMapGet(to_loc_id l (toLoc $startpos(l)), to_loc_id adr (toLoc $startpos(adr)), to_loc_id r (toLoc $startpos(r)), Immutable, keys, false), toLoc $startpos }
+| l = ID; FETCH; AND; adr = sident; AS; t = address_typ
   { TypeCast(to_loc_id l (toLoc $startpos(l)), adr, t), toLoc $startpos }
 
 stmt_pm_clause:

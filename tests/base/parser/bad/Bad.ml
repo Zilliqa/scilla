@@ -36,6 +36,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
     [
       "address_duplicate_field.scilla";
       "address_spid_as_field.scilla";
+      "address_type_duplicate_parameter.scilla";
+      "address_type_empty_parameter.scilla";
       "bad_cast_2.scilla";
       "bad_cast_3.scilla";
       "bad_map_key_2.scilla";

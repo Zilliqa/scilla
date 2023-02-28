@@ -240,9 +240,10 @@ functor
                   ~inst:a
           | PolyFun (arg, bt) -> is_wf_typ' bt (arg :: tb)
           | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
-          | Address (ContrAddr fts) ->
-              foldM (IdLoc_Comp.Map.to_alist fts) ~init:() ~f:(fun _ (_, t) ->
-                  is_wf_typ' t tb)
+          | Address (ContrAddr (im_fts, m_fts)) ->
+              let is_wf_typ'_wrapper _ (_, t) = is_wf_typ' t tb in
+              let%bind () = foldM (IdLoc_Comp.Map.to_alist im_fts) ~init:() ~f:is_wf_typ'_wrapper in
+              foldM (IdLoc_Comp.Map.to_alist m_fts) ~init:() ~f:is_wf_typ'_wrapper
         in
         is_wf_typ' t []
 
@@ -370,12 +371,12 @@ module TypeUtilities = struct
           (* Messages and Events are considered primitive types *)
           allow_messages_events
           || TUType.(
-               (not @@ [%equal: TUType.t] t msg_typ)
-               || [%equal: TUType.t] t event_typ)
+              (not @@ [%equal: TUType.t] t msg_typ)
+              || [%equal: TUType.t] t event_typ)
       | ADT (tname, ts) -> (
           let open DataTypeDictionary in
           if List.mem seen_adts tname ~equal:TUIdentifier.equal then true
-            (* Inductive ADT - ignore this branch *)
+          (* Inductive ADT - ignore this branch *)
           else
             (* Check that ADT is serializable *)
             match lookup_name ~sloc:(get_rep tname) (get_id tname) with
@@ -389,11 +390,13 @@ module TypeUtilities = struct
                 in
                 adt_serializable
                 && List.for_all ts ~f:(fun t -> recurser t seen_adts seen_tvars)
-          )
-      | Address (ContrAddr fts) when check_addresses ->
+        )
+      | Address (ContrAddr (im_fts, m_fts)) when check_addresses ->
           (* If check_addresses is true, then all field types in the address type should be legal field types.
              No need to check for serialisability or storability, since addresses are stored and passed as ByStr20. *)
-          IdLoc_Comp.Map.for_all fts ~f:(fun t ->
+          IdLoc_Comp.Map.for_all im_fts ~f:(fun t ->
+              is_legal_contract_parameter_type_helper t seen_adts seen_tvars) &&
+          IdLoc_Comp.Map.for_all m_fts ~f:(fun t ->
               is_legal_field_type_helper t seen_adts seen_tvars)
       | Address _ -> true
     in
@@ -401,6 +404,14 @@ module TypeUtilities = struct
 
   and is_legal_field_type_helper t seen_adts seen_tvars =
     (* Maps are allowed. Address values should be checked for storable field types. *)
+    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
+      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
+      ~check_addresses:true t seen_adts seen_tvars
+
+  and is_legal_contract_parameter_type_helper t seen_adts seen_tvars =
+    (* Like transitions parameters, except maps are allowed because a
+       bug was exploited before it had been fixed. Address values
+       should be checked for storable field types. *)
     is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
       ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
       ~check_addresses:true t seen_adts seen_tvars
@@ -424,12 +435,8 @@ module TypeUtilities = struct
       ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
       ~check_addresses:true t [] []
 
-  let is_legal_contract_parameter_type t =
-    (* Like transitions parameters, except maps are allowed (due to an exploited bug). Address values should be checked for storable field types. *)
-    is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:true t [] []
-
+  let is_legal_contract_parameter_type t = is_legal_contract_parameter_type_helper t [] []
+    
   let is_legal_field_type t = is_legal_field_type_helper t [] []
 
   let is_legal_hash_argument_type t =
@@ -471,7 +478,7 @@ module TypeUtilities = struct
   let rec map_depth mt =
     match mt with MapType (_, vt) -> 1 + map_depth vt | _ -> 0
 
-  let address_field_type loc f t =
+  let address_field_type loc f t is_mutable =
     let preknown_field_type =
       if [%equal: TUName.t] (get_id f) ContractUtil.balance_label then
         Some ContractUtil.balance_type
@@ -492,14 +499,9 @@ module TypeUtilities = struct
     | (Address LibAddr | Address CodeAddr | Address (ContrAddr _))
       when Option.is_some preknown_field_type ->
         pure @@ Option.value_exn preknown_field_type
-    | Address (ContrAddr fts) -> (
-        let loc_removed =
-          List.map (IdLoc_Comp.Map.to_alist fts) ~f:(fun (f, t) ->
-              (get_id f, t))
-        in
-        match
-          List.Assoc.find loc_removed (get_id f) ~equal:[%equal: TUName.t]
-        with
+    | Address (ContrAddr (im_fts, m_fts)) -> (
+        let fts = if is_mutable then m_fts else im_fts in
+        match IdLoc_Comp.Map.find fts (mk_id (get_id f) dummy_loc) with
         | Some ft -> pure ft
         | None -> not_declared ())
     | _ ->

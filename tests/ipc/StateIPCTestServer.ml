@@ -30,10 +30,11 @@ open StateIPCIdl
 open IPCUtil
 module Hashtbl = Caml.Hashtbl
 
-type value_table = (string, value_type) Hashtbl.t
-and value_type = NonMapVal of string | MapVal of value_table
+type map_value_table = (string, value_type) Hashtbl.t
+and value_type = NonMapVal of string | MapVal of map_value_table
 
-type type_table = (string, string) Hashtbl.t
+type value_table = (string * bool, value_type) Hashtbl.t
+type type_table = (string * bool, string) Hashtbl.t
 
 (* State of the full blockchain, i.e., for all addresses.
  * None indicates *this* address and Some indicates "external state". 
@@ -130,18 +131,19 @@ module MakeServer () = struct
     match contr_state with
     | Some (vt, tt, _bcinfo) -> (
         let query = decode_serialized_query query in
-        let t = Hashtbl.find_opt tt query.name in
         match query with
-        | { name; indices; ignoreval; _ } -> (
-            let string_indices_list =
-              name :: List.map indices ~f:Bytes.to_string
-            in
-            let%bind vopt = recurser (MapVal vt) string_indices_list in
-            match vopt with
-            | Some v ->
-                if ignoreval then pure @@ (true, "", t)
-                else
-                  pure @@ (true, encode_serialized_value (serialize_value v), t)
+        | { name; is_mutable; indices; ignoreval; _ } -> (
+            let t = Hashtbl.find_opt tt (name, is_mutable) in
+            let string_indices_list = List.map indices ~f:Bytes.to_string in
+            match Hashtbl.find_opt vt (name, is_mutable) with
+            | Some mvt -> (
+                let%bind vopt = recurser mvt string_indices_list in
+                match vopt with
+                | Some v ->
+                    if ignoreval then pure @@ (true, "", t)
+                    else
+                      pure @@ (true, encode_serialized_value (serialize_value v), t)
+                | None -> pure @@ (false, "", t))
             | None -> pure @@ (false, "", t)))
     | None -> pure (false, "", None)
 
@@ -175,7 +177,7 @@ module MakeServer () = struct
     let query = decode_serialized_query query in
     let vt, tt, _bcinfo =
       match Hashtbl.find_opt table addr_opt with
-      | Some (vt, tt, bcinfo) -> (vt, tt, bcinfo)
+      | Some (tvt, tt, bcinfo) -> (tvt, tt, bcinfo)
       | None ->
           let vt, tt, bcinfo =
             (Hashtbl.create 8, Hashtbl.create 8, Hashtbl.create 1)
@@ -186,19 +188,30 @@ module MakeServer () = struct
     (* Update type if provided *)
     let () =
       match ty_opt with
-      | Some ty -> Hashtbl.replace tt query.name ty
+      | Some ty -> Hashtbl.replace tt (query.name, query.is_mutable) ty
       | None -> ()
     in
     (* Update value *)
     match query with
-    | { name; indices; ignoreval; _ } -> (
+    | { name; is_mutable; indices; ignoreval; _ } ->
         let string_indices_list = List.map indices ~f:Bytes.to_string in
-        match ignoreval with
-        | true -> recurser_update vt (name :: string_indices_list)
-        | false ->
-            let new_val = deserialize_value (decode_serialized_value value) in
-            recurser_update ~new_val:(Some new_val) vt
-              (name :: string_indices_list))
+        if ignoreval then
+          if List.is_empty string_indices_list then
+            pure @@ Hashtbl.remove vt (name, is_mutable)
+          else
+            match Hashtbl.find_opt vt (name, is_mutable) with
+            | Some (MapVal m) -> recurser_update m string_indices_list
+            | Some (NonMapVal _) -> fail RPCError.{ code = 0; message = update_message }
+            | None -> pure ()
+        else
+          let new_val = deserialize_value (decode_serialized_value value) in
+          if List.is_empty string_indices_list then
+            pure @@ Hashtbl.replace vt (name, is_mutable) new_val
+          else
+            match Hashtbl.find_opt vt (name, is_mutable) with
+            | Some (MapVal m) -> recurser_update ~new_val:(Some new_val) m string_indices_list
+            | Some (NonMapVal _)
+            | None -> fail RPCError.{ code = 0; message = update_message }
 
   let fetch_state_value query =
     let%bind f, v, _t = fetch_state_value_helper None query in

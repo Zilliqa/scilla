@@ -99,6 +99,7 @@
     "value": [
         {
             "address": "0xabfeccdc9012345678901234567890f777564324",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "64" },
                 { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564324" }
@@ -106,6 +107,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564325",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "31" },
                 { "vname": "transactionCount", "type": "Uint32", "value": "5" },
@@ -139,6 +141,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564326",
+            "cparams": [],
             "state": [
                 { "vname": "_balance", "type": "Uint128", "value": "128" }
             ]

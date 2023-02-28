@@ -822,6 +822,7 @@ module InputStateService = struct
       let q =
         {
           name = InputIdentifier.as_string fname;
+          is_mutable = true;
           mapdepth = TypeUtil.TypeUtilities.map_depth tp;
           indices = [];
           (* indices are not needed, as we are only fetching entire states *)
@@ -926,7 +927,8 @@ let run_with_args args =
             if String.is_empty args.ipc_address then
               (* Use the provided state json. *)
               (* We control the state files, so we can assume the type info is correct *)
-              parse_json args.input_state this_address
+              parse_json args.input_state this_address |>
+              List.map ~f:(fun (n, t, v) -> (n, t, v))
             else
               (* Use IPC *)
               (* Fetch state from IPC server *)
@@ -1027,7 +1029,7 @@ let run_with_args args =
       (* state_to_json maps name * literal to a vname * type * value json, which is
          the format for both init and state jsons *)
       ( JSON.ContractState.state_to_json init,
-        JSON.ContractState.state_to_json state )
+        JSON.ContractState.state_to_json state)
 
 let output_to_string = Yojson.Basic.pretty_to_string
 

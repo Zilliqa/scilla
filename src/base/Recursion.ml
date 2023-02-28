@@ -73,8 +73,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           forallM ~f:walk targs
       | PolyFun (_, t) -> walk t
       | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
-      | Address (ContrAddr fts) ->
-          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let%bind () = forallM (IdLoc_Comp.Map.to_alist im_fts) ~f:(fun (_, t) -> walk t) in
+          forallM (IdLoc_Comp.Map.to_alist m_fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 
@@ -188,8 +189,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       let%bind new_s =
         match s with
         | Load (x, f) -> pure @@ RecursionSyntax.Load (x, f)
-        | RemoteLoad (x, adr, f) ->
-            pure @@ RecursionSyntax.RemoteLoad (x, adr, f)
+        | RemoteLoad (x, adr, f, mutability) ->
+            pure @@ RecursionSyntax.RemoteLoad (x, adr, f, mutability)
         | Store (f, x) -> pure @@ RecursionSyntax.Store (f, x)
         | Bind (x, e) ->
             let%bind new_e = rec_exp e in
@@ -198,8 +199,8 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
             pure @@ RecursionSyntax.MapUpdate (m, is, vopt)
         | MapGet (x, m, is, del) ->
             pure @@ RecursionSyntax.MapGet (x, m, is, del)
-        | RemoteMapGet (x, adr, m, is, del) ->
-            pure @@ RecursionSyntax.RemoteMapGet (x, adr, m, is, del)
+        | RemoteMapGet (x, adr, m, mutability, is, del) ->
+            pure @@ RecursionSyntax.RemoteMapGet (x, adr, m, mutability, is, del)
         | MatchStmt (x, pss) ->
             let%bind new_pss =
               mapM
@@ -301,8 +302,9 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
           fail1 ~kind:"Type variables not allowed in type definitions"
             ?inst:None error_loc
       | Address AnyAddr | Address CodeAddr | Address LibAddr -> pure ()
-      | Address (ContrAddr fts) ->
-          forallM (IdLoc_Comp.Map.to_alist fts) ~f:(fun (_, t) -> walk t)
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let%bind () = forallM (IdLoc_Comp.Map.to_alist im_fts) ~f:(fun (_, t) -> walk t) in
+          forallM (IdLoc_Comp.Map.to_alist m_fts) ~f:(fun (_, t) -> walk t)
     in
     walk t
 

@@ -2,7 +2,7 @@ scilla_version 0
 
 library RemoteCollisions12
 
-contract RemoteCollisions12()
+contract RemoteCollisions12(param1: Uint128, param2: Uint128)
 
 field a_f: Bool = False
 field a_f2: Bool = False

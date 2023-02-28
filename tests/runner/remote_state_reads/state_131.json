@@ -99,6 +99,7 @@
     "value": [
         {
             "address": "0xabfeccdc9012345678901234567890f777564323",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "42" },
@@ -116,6 +117,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564324",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "64" },
@@ -133,6 +135,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564325",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "31" },
@@ -161,6 +164,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564326",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "128" },
@@ -170,6 +174,7 @@
         },
         {
             "address": "0xabfeccdc9012345678901234567890f777564327",
+            "cparams": [],
             "state": [
                 { "vname": "_nonce", "type": "Uint64", "value": "0" },
                 { "vname": "_balance", "type": "Uint128", "value": "1" }

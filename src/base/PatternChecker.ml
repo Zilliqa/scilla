@@ -249,16 +249,16 @@ struct
         let%bind checked_s =
           match s with
           | Load (i, x) -> pure @@ (CheckedPatternSyntax.Load (i, x), rep)
-          | RemoteLoad (i, adr, x) ->
-              pure @@ (CheckedPatternSyntax.RemoteLoad (i, adr, x), rep)
+          | RemoteLoad (i, adr, x, mutability) ->
+              pure @@ (CheckedPatternSyntax.RemoteLoad (i, adr, x, mutability), rep)
           | Store (i, x) -> pure @@ (CheckedPatternSyntax.Store (i, x), rep)
           | MapUpdate (m, klist, v) ->
               pure @@ (CheckedPatternSyntax.MapUpdate (m, klist, v), rep)
           | MapGet (v, m, klist, valfetch) ->
               pure @@ (CheckedPatternSyntax.MapGet (v, m, klist, valfetch), rep)
-          | RemoteMapGet (v, adr, m, klist, valfetch) ->
+          | RemoteMapGet (v, adr, m, mutability, klist, valfetch) ->
               pure
-              @@ ( CheckedPatternSyntax.RemoteMapGet (v, adr, m, klist, valfetch),
+              @@ ( CheckedPatternSyntax.RemoteMapGet (v, adr, m, mutability, klist, valfetch),
                    rep )
           | Bind (i, e) ->
               wrap_pmcheck_serr srep

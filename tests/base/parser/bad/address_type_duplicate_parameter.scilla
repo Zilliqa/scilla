@@ -1,0 +1,8 @@
+scilla_version 0
+
+contract T ()
+
+ (* Duplicate parameter names not allowed in address type *)
+transition F (z : ByStr20 with contract (x : Uint128, x : Uint64) end)
+  y <-& x._balance
+end

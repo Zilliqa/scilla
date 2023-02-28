@@ -1,0 +1,149 @@
+[
+  { "vname": "_balance", "type": "Uint128", "value": "0" },
+  {
+    "vname": "remote_reads_test_res_1",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_2",
+    "type": "0x3620c286757a29985cee194eb90064270fb65414.AddressADT",
+    "value": {
+      "constructor": "0x3620c286757a29985cee194eb90064270fb65414.Address1",
+      "argtypes": [],
+      "arguments": [ "0x1234567890123456789012345678901234567890" ]
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_3_2",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_3_3",
+    "type": "Uint64",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_4_1",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_4_2",
+    "type": "String",
+    "value": ""
+  },
+  {
+    "vname": "remote_reads_test_res_5_1",
+    "type": "Map (Uint128) (Bool)",
+    "value": []
+  },
+  {
+    "vname": "remote_reads_test_res_5_3",
+    "type": "Option Bool",
+    "value": {
+        "constructor": "None",
+        "argtypes": ["Bool"],
+        "arguments": []
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_5_5",
+    "type": "Option (Option Bool)",
+    "value": {
+        "constructor": "None",
+        "argtypes": ["Option (Bool)"],
+        "arguments": []
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_6_1",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_6_2",
+    "type": "String",
+    "value": ""
+  },
+  {
+    "vname": "remote_reads_test_res_7_3",
+    "type": "Option Bool",
+    "value": {
+        "constructor": "None",
+        "argtypes": ["Bool"],
+        "arguments": []
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_7_6",
+    "type": "Option Bool",
+    "value": {
+        "constructor": "None",
+        "argtypes": ["Bool"],
+        "arguments": []
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_8",
+    "type": "Uint128",
+    "value": "0"
+  },
+  {
+    "vname": "remote_reads_test_res_9",
+    "type": "Option Uint128",
+    "value": {
+        "constructor": "None",
+        "argtypes": ["Uint128"],
+        "arguments": []
+    }
+  },
+  {
+    "vname": "remote_reads_test_res_10",
+    "type": "ByStr20",
+    "value": "0x3620c286757a29985cee194eb90064270fb65414"
+  },
+  {
+    "vname": "address_type_erasure_test_res_1",
+    "type": "Map Uint128 (ByStr20 with end)",
+    "value": []
+  },
+  {
+    "vname": "_external",
+    "type": "Unit",
+    "value": [
+        {
+            "address": "0x1234567890123456789012345678901234567890",
+            "cparams": [
+                { "vname": "admin", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567891" }
+            ],
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "42" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0x1234567890123456789012345678901234567890" }
+            ]
+        },
+        {
+            "address": "0xabfeccdc9012345678901234567890f777564323",
+            "cparams": [
+                {
+                    "vname": "x",
+                    "type": "Map Uint128 Bool",
+                    "value": [
+                        {
+                            "key": "0",
+                            "val": { "constructor": "True", "argtypes": [], "arguments": [] }
+                        }
+                    ]
+                }
+            ],
+            "state": [
+                { "vname": "_nonce", "type": "Uint64", "value": "0" },
+                { "vname": "_balance", "type": "Uint128", "value": "64" },
+                { "vname": "_this_address", "type": "ByStr20", "value": "0xabfeccdc9012345678901234567890f777564323" }
+            ]
+        }
+    ]
+  }
+]

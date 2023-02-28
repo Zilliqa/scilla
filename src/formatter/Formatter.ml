@@ -66,6 +66,8 @@ struct
     let field_kwd = !^"field"
     let of_kwd = !^"of"
     let type_kwd = !^"type"
+    let address_type_kwd = !^"ByStr20 with"
+    let codehash_kwd = !^"_codehash"
     let import_kwd = !^"import"
     let library_kwd = !^"library"
     let scilla_version_kwd = !^"scilla_version"
@@ -164,26 +166,38 @@ struct
       parens_if (p > 0) @@
       match kind with
       (* Any address in use *)
-      | AnyAddr -> !^"ByStr20 with end"
+      | AnyAddr -> address_type_kwd ^//^ end_kwd
       (* Address containing a library *)
-      | LibAddr -> !^"ByStr20 with library end"
+      | LibAddr -> address_type_kwd ^//^ library_kwd ^//^ end_kwd
       (* Address containing a library or contract *)
-      | CodeAddr -> !^"ByStr20 with _codehash end"
+      | CodeAddr -> address_type_kwd ^//^ codehash_kwd ^//^ end_kwd
       (* Address containing a contract *)
-      | ContrAddr fields_map ->
-        let alist = Ast.SType.IdLoc_Comp.Map.to_alist fields_map in
-        let contract_fields =
-          separate_map
-            (comma ^^ break 1)
-            (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
-            alist
-        in
-        if List.is_empty alist then !^"ByStr20 with contract end"
-        else
-          surround indentation 1
-            !^"ByStr20 with contract"
-            contract_fields
-            end_kwd
+      | ContrAddr (im_fields_map, m_fields_map) ->
+          let im_fields = 
+            separate_map
+              (comma ^^ break 1)
+              (fun (f, ty) -> group (of_id f ^/^ colon ^/^ of_type ty))
+              (Ast.SType.IdLoc_Comp.Map.to_alist im_fields_map)
+          in
+          let m_fields =
+            separate_map
+              (comma ^^ break 1)
+              (fun (f, ty) -> group (field_kwd ^/^ of_id f ^/^ colon ^/^ of_type ty))
+              (Ast.SType.IdLoc_Comp.Map.to_alist m_fields_map)
+          in
+          match Ast.SType.IdLoc_Comp.Map.is_empty im_fields_map, Ast.SType.IdLoc_Comp.Map.is_empty m_fields_map with
+          | true, true -> address_type_kwd ^//^ contract_kwd ^//^ end_kwd
+          | false, true  -> address_type_kwd ^//^ contract_kwd ^//^ (parens im_fields) ^//^ end_kwd
+          | true, false ->
+              surround indentation 1
+                (address_type_kwd ^//^ contract_kwd)
+                m_fields
+                end_kwd
+          | false, false ->
+              surround indentation 1
+                (address_type_kwd ^//^ contract_kwd ^//^ (parens im_fields))
+                m_fields
+                end_kwd
 
     (* whitespace-separated non-primitive types need to be parenthesized *)
     let of_types typs ~sep =
@@ -360,8 +374,8 @@ struct
       | GasExpr _ -> failwith "Gas annotations cannot appear in user contracts's expressions"
       ) |> wrap_comments comments
 
-      let of_map_access map keys =
-        let map = of_ann_id map
+      let of_map_access map mutable_remote_field keys =
+        let map = if mutable_remote_field then of_ann_id map else lparen ^^ of_ann_id map ^^ rparen
         and keys = concat_map (fun k -> brackets @@ of_ann_id k) keys in
         map ^^ keys
 
@@ -369,8 +383,11 @@ struct
         (match stmt with
         | Ast.Load (id, field) ->
           of_ann_id id ^^^ rev_arrow ^//^ of_ann_id field
-        | Ast.RemoteLoad (id, addr, field) ->
-          of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_ann_id field
+        | Ast.RemoteLoad (id, addr, field, mutability) ->
+            if Syntax.is_mutable mutability then
+              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_ann_id field
+            else 
+              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ lparen ^^ of_ann_id field ^^ rparen
         | Ast.Store (field, id) ->
           of_ann_id field ^^^ assign ^//^ of_ann_id id
         | Ast.Bind (id, expr) ->
@@ -378,24 +395,25 @@ struct
         | Ast.MapUpdate (map, keys, mode) ->
           (* m[k1][k2][..] := v OR delete m[k1][k2][...] *)
           (match mode with
-           | Some value -> of_map_access map keys ^^^ assign ^//^ of_ann_id value
-           | None -> delete_kwd ^^^ of_map_access map keys)
+           | Some value -> of_map_access map true keys ^^^ assign ^//^ of_ann_id value
+           | None -> delete_kwd ^^^ of_map_access map true keys)
         | Ast.MapGet (id, map, keys, mode) ->
           (* v <- m[k1][k2][...] OR b <- exists m[k1][k2][...] *)
           (* If the bool is set, then we interpret this as value retrieve,
             otherwise as an "exists" query. *)
            if mode then
-            of_ann_id id ^^^ rev_arrow ^//^ of_map_access map keys
+            of_ann_id id ^^^ rev_arrow ^//^ of_map_access map true keys
            else
-            of_ann_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map keys
-        | Ast.RemoteMapGet (id, addr, map, keys, mode) ->
-          (* v <-& adr.m[k1][k2][...] OR b <-& exists adr.m[k1][k2][...] *)
-          (* If the bool is set, then we interpret this as value retrieve,
-            otherwise as an "exists" query. *)
-           if mode then
-            of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map keys
-           else
-            of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map keys
+            of_ann_id id ^^^ rev_arrow ^//^ exists_kwd ^^^ of_map_access map true keys
+        | Ast.RemoteMapGet (id, addr, map, mutability, keys, mode) ->
+          (* v <-& adr.(m)[k1][k2][...] OR b <-& exists adr.(m)[k1][k2][...] OR
+             v <-& adr.m[k1][k2][...] OR b <-& exists adr.m[k1][k2][...] *)
+          (* If mode is set, then we interpret this as value retrieve,
+             otherwise as an "exists" query. *)
+            if mode then
+              of_ann_id id ^^^ blockchain_arrow ^//^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
+            else
+              of_ann_id id ^^^ blockchain_arrow ^//^ exists_kwd ^^^ of_ann_id addr ^^ dot ^^ of_map_access map (Syntax.is_mutable mutability) keys
         | Ast.MatchStmt (id, branches) ->
           match_kwd ^^^ of_ann_id id ^^^ with_kwd ^/^
           separate_map hardline

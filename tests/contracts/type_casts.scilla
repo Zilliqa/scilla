@@ -29,6 +29,13 @@ field test_6_4_g_res : Option Bool = None {Bool}
 field test_6_4_failed_cast : Bool = False
 field test_7_g_res : Option Bool = None {Bool}
 field test_7_h_res : Option Int256 = None {Int256}
+field test_9_f_res : Option Uint128 = None {Uint128}
+field test_10_f_immut_res : Option Uint128 = None {Uint128}
+field test_10_g_immut_res : Option Bool = None {Bool}
+field test_10_f_mut_res : Option String = None {String}
+field test_11_f_immut_res : Option Uint128 = None {Uint128}
+field test_11_g_immut_res : Option Bool = None {Bool}
+field test_11_f_mut_res : Option String = None {String}
 
 transition CastTest1(x : ByStr20 with contract end)
   (* Cast to less restrictive type *)
@@ -182,4 +189,52 @@ end
 transition CastTest8()
   (* cast an address defined in the contract library *)
   maybe_contract_address <-& zero_address as ByStr20 with contract end
+end
+
+transition CastTest9(x : ByStr20 with contract (g : Bool, f : Uint128) field f : String end)
+  (* Cast to less restrictive type with immutable fields *)
+  x_cast <-& x as ByStr20 with contract (f : Uint128) end;
+  match x_cast with
+  | Some x_as_address =>
+    f <-& x_as_address.(f);
+    f_res = Some {Uint128} f;
+    test_9_f_res := f_res
+  | None =>
+  end
+end
+
+transition CastTest10(x : ByStr20 with contract (g : Bool, f : Uint128) field f : String end)
+  (* Cast to same type with immutable fields *)
+  x_cast <-& x as ByStr20 with contract (g : Bool, f : Uint128) field f : String end;
+  match x_cast with
+  | Some x_as_address =>
+    f_immut <-& x_as_address.(f);
+    f_immut_res = Some {Uint128} f_immut;
+    test_10_f_immut_res := f_immut_res;
+    g_immut <-& x_as_address.(g);
+    g_immut_res = Some {Bool} g_immut;
+    test_10_g_immut_res := g_immut_res;
+    f_mut <-& x_as_address.f;
+    f_mut_res = Some {String} f_mut;
+    test_10_f_mut_res := f_mut_res
+  | None =>
+  end
+end
+
+transition CastTest11(x : ByStr20)
+  (* Cast to address with both mutable and immutable fields *)
+  x_cast <-& x as ByStr20 with contract (g : Bool, f : Uint128) field f : String end;
+  match x_cast with
+  | Some x_as_address =>
+    f_immut <-& x_as_address.(f);
+    f_immut_res = Some {Uint128} f_immut;
+    test_11_f_immut_res := f_immut_res;
+    g_immut <-& x_as_address.(g);
+    g_immut_res = Some {Bool} g_immut;
+    test_11_g_immut_res := g_immut_res;
+    f_mut <-& x_as_address.f;
+    f_mut_res = Some {String} f_mut;
+    test_11_f_mut_res := f_mut_res
+  | None =>
+  end
 end

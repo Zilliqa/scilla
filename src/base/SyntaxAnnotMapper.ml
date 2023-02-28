@@ -75,14 +75,10 @@ struct
     let open MType in
     match kind with
     | AnyAddr | CodeAddr | LibAddr -> kind
-    | ContrAddr fields_map ->
-        let mapped_keys =
-          IdLoc_Comp.Map.map_keys_exn fields_map ~f:(fun f -> map_id fl f)
-        in
-        let mapped_values =
-          IdLoc_Comp.Map.map mapped_keys ~f:(fun ty -> map_type ty ~fl)
-        in
-        ContrAddr mapped_values
+    | ContrAddr (im_fields_map, m_fields_map) ->
+        let key_mapper fields_map = IdLoc_Comp.Map.map_keys_exn fields_map ~f:(map_id fl) in
+        let value_mapper fields_map = IdLoc_Comp.Map.map (key_mapper fields_map) ~f:(fun ty -> map_type ty ~fl) in
+        ContrAddr (value_mapper im_fields_map, value_mapper m_fields_map)
 
   let literal lit ~fl =
     let rec walk lit =
@@ -180,8 +176,8 @@ struct
   let rec statement stmt ~fe ~fl ~fs =
     match stmt with
     | Load (id, field) -> OutputSyntax.Load (map_id fe id, map_id fe field)
-    | RemoteLoad (id, addr, field) ->
-        OutputSyntax.RemoteLoad (map_id fe id, map_id fe addr, map_id fe field)
+    | RemoteLoad (id, addr, field, mutability) ->
+        OutputSyntax.RemoteLoad (map_id fe id, map_id fe addr, map_id fe field, mutability)
     | Store (field, value) ->
         OutputSyntax.Store (map_id fe field, map_id fe value)
     | Bind (id, e) -> OutputSyntax.Bind (map_id fe id, expr_annot e ~fe ~fl ~fs)
@@ -196,11 +192,12 @@ struct
             map_id fe map,
             List.map keys ~f:(fun k -> map_id fe k),
             mode )
-    | RemoteMapGet (value, addr, map, keys, mode) ->
+    | RemoteMapGet (value, addr, map, mutability, keys, mode) ->
         OutputSyntax.RemoteMapGet
           ( map_id fe value,
             map_id fe addr,
             map_id fe map,
+            mutability,
             List.map keys ~f:(fun k -> map_id fe k),
             mode )
     | MatchStmt (matchee, branches) ->

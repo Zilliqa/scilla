@@ -193,10 +193,10 @@ module Configuration = struct
             ~inst:(EvalName.as_error_string i)
             (ER.get_loc (get_rep k))
 
-  let remote_load st caddr k =
+  let remote_load st caddr k is_mutable =
     let%bind fval =
       fromR
-      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
+      @@ StateService.external_fetch ~caddr ~fname:k ~is_mutable ~keys:[] ~ignoreval:false
     in
     match fval with
     | Some v, _ ->
@@ -229,10 +229,10 @@ module Configuration = struct
           ~inst:(EvalName.as_error_string (get_id k))
           (ER.get_loc (get_rep k))
 
-  let remote_field_type caddr k =
+  let remote_field_type caddr k is_mutable =
     let%bind fval =
       fromR
-      @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:true
+      @@ StateService.external_fetch ~caddr ~fname:k ~is_mutable ~keys:[] ~ignoreval:true
     in
     match fval with
     | _, Some ty -> pure ty
@@ -272,23 +272,23 @@ module Configuration = struct
             (ER.get_loc (get_rep m))
     else
       let%bind is_member =
-        fromR @@ StateService.is_member ~fname:m ~keys:klist
+        fromR @@ StateService.is_member ~fname:m ~is_mutable:true ~keys:klist
       in
       pure @@ EvalLiteral.build_bool_lit is_member
 
-  let remote_map_get caddr m keys fetchval =
+  let remote_map_get caddr m is_mutable keys fetchval =
     let open EvalLiteral in
     if fetchval then
       (* We need to fetch the type in advance because the type-option returned
        * by the actual call may be None if the key(s) wasn't found,
        * (but the map map field itself still exists). *)
-      let%bind mt = remote_field_type caddr m in
+      let%bind mt = remote_field_type caddr m is_mutable in
       let%bind vt =
         fromR @@ EvalTypeUtilities.map_access_type mt (List.length keys)
       in
       let%bind vopt, _ =
         fromR
-        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:false
+        @@ StateService.external_fetch ~caddr ~fname:m ~is_mutable ~keys ~ignoreval:false
       in
       (* Need to wrap the result in a Scilla Option. *)
       match vopt with
@@ -297,7 +297,7 @@ module Configuration = struct
     else
       let%bind _, topt =
         fromR
-        @@ StateService.external_fetch ~caddr ~fname:m ~keys ~ignoreval:true
+        @@ StateService.external_fetch ~caddr ~fname:m ~is_mutable ~keys ~ignoreval:true
       in
       pure @@ EvalLiteral.build_bool_lit (Option.is_some topt)
 
@@ -399,7 +399,7 @@ module Configuration = struct
       (* Check that sender balance is sufficient *)
       let%bind sender_addr = lookup_sender_addr st in
       let%bind sender_balance_l =
-        remote_load st sender_addr (mk_loc_id balance_label)
+        remote_load st sender_addr (mk_loc_id balance_label) true
       in
       let incoming' = st.incoming_funds in
       match sender_balance_l with
@@ -568,7 +568,7 @@ module EvalTypecheck = struct
   let is_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id this_address_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~is_mutable:true ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -576,7 +576,7 @@ module EvalTypecheck = struct
   let is_library_or_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id codehash_label in
     let%bind _, this_typ_opt =
-      StateService.external_fetch ~caddr ~fname:this_id ~keys:[] ~ignoreval:true
+      StateService.external_fetch ~caddr ~fname:this_id ~is_mutable:true ~keys:[] ~ignoreval:true
     in
     pure @@ Option.is_some this_typ_opt
 
@@ -591,11 +591,11 @@ module EvalTypecheck = struct
     let balance_id = EvalIdentifier.mk_loc_id balance_label in
     let nonce_id = EvalIdentifier.mk_loc_id nonce_label in
     let%bind balance_lit, _ =
-      StateService.external_fetch ~caddr ~fname:balance_id ~keys:[]
+      StateService.external_fetch ~caddr ~fname:balance_id ~is_mutable:true ~keys:[]
         ~ignoreval:false
     in
     let%bind nonce_lit, _ =
-      StateService.external_fetch ~caddr ~fname:nonce_id ~keys:[]
+      StateService.external_fetch ~caddr ~fname:nonce_id ~is_mutable:true ~keys:[]
         ~ignoreval:false
     in
     match (balance_lit, nonce_lit) with
@@ -613,16 +613,21 @@ module EvalTypecheck = struct
       pure contract_addr
     else pure true
 
-  let typecheck_remote_fields ~caddr fts =
+  let typecheck_remote_fields ~caddr im_fts m_fts =
     (* Check that all fields are defined at caddr, and that their types are assignable to what is expected *)
-    allM fts ~f:(fun (f, t) ->
-        let%bind res =
-          StateService.external_fetch ~caddr ~fname:f ~keys:[] ~ignoreval:true
-        in
-        match res with
-        | _, Some ext_typ ->
-            pure @@ EvalType.type_assignable ~expected:t ~actual:ext_typ
-        | _, None -> pure false)
+    let checker fts mutables = 
+      allM fts ~f:(fun (f, t) ->
+          let%bind res =
+            StateService.external_fetch ~caddr ~fname:f ~is_mutable:mutables ~keys:[] ~ignoreval:true
+          in
+          match res with
+          | _, Some ext_typ ->
+              pure @@ EvalType.type_assignable ~expected:t ~actual:ext_typ
+          | _, None -> pure false)
+    in
+    let%bind im_ok = checker im_fts false in
+    let%bind m_ok = checker m_fts true in
+    pure (im_ok && m_ok)
 
   type evalTCResult =
     | AddressNotInUse
@@ -642,14 +647,15 @@ module EvalTypecheck = struct
     | CodeAddr ->
         let%bind in_use = is_library_or_contract_addr ~caddr in
         if not in_use then pure NeitherCodeAtAddress else pure Success
-    | ContrAddr fts ->
+    | ContrAddr (im_fts, m_fts) ->
         (* True if the address contains a contract with the appropriate fields, false otherwise *)
         let%bind contract_addr = is_contract_addr ~caddr in
         if not contract_addr then pure NoContractAtAddress
         else
           let%bind fts_ok =
             typecheck_remote_fields ~caddr
-              (EvalType.IdLoc_Comp.Map.to_alist fts)
+              (EvalType.IdLoc_Comp.Map.to_alist im_fts)
+              (EvalType.IdLoc_Comp.Map.to_alist m_fts)
           in
           if not fts_ok then pure FieldTypeMismatch else pure Success
 

@@ -1,6 +1,8 @@
 {
   "cashflow_tags": {
-    "State variables": [],
+    "State variables": [
+      { "field": "remote_reads_test_res_1", "tag": "NoInfo" }
+    ],
     "ADT constructors": [
       {
         "dead_code_test18.A": [
@@ -16,11 +18,22 @@
     "scilla_major_version": "0",
     "vname": "Dead18",
     "params": [],
-    "fields": [],
+    "fields": [
+      { "vname": "remote_reads_test_res_1", "type": "Uint128", "depth": 0 }
+    ],
     "transitions": [
       {
-        "vname": "test",
+        "vname": "test_mutables",
         "params": [ { "vname": "a", "type": "dead_code_test18.A" } ]
+      },
+      {
+        "vname": "read_cparam_1",
+        "params": [
+          {
+            "vname": "remote1",
+            "type": "ByStr20 with contract (unused : Uint128, used : Uint128) end"
+          }
+        ]
       }
     ],
     "procedures": [
@@ -119,6 +132,16 @@
   },
   "warnings": [
     {
+      "warning_message": "Write only field: remote_reads_test_res_1",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 67,
+        "column": 3
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused field in contract address type: a1_unused2_3",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
@@ -149,10 +172,20 @@
       "warning_id": 3
     },
     {
+      "warning_message": "Unused contract parameter in contract address type: unused",
+      "start_location": {
+        "file": "contracts/dead_code_test18.scilla",
+        "line": 64,
+        "column": 35
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 },
+      "warning_id": 3
+    },
+    {
       "warning_message": "Unused match bound: num",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
-        "line": 33,
+        "line": 35,
         "column": 23
       },
       "end_location": { "file": "", "line": 0, "column": 0 },
@@ -162,7 +195,7 @@
       "warning_message": "Unused match bound: a12_unused",
       "start_location": {
         "file": "contracts/dead_code_test18.scilla",
-        "line": 33,
+        "line": 35,
         "column": 27
       },
       "end_location": { "file": "", "line": 0, "column": 0 },

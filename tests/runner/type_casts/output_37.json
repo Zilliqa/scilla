@@ -191,6 +191,69 @@
       "vname": "test_6_4_failed_cast",
       "type": "Bool",
       "value": { "constructor": "False", "argtypes": [], "arguments": [] }
+    },
+    {
+      "vname": "test_9_f_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_10_f_immut_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_10_g_immut_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_10_f_mut_res",
+      "type": "Option (String)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "String" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_11_f_immut_res",
+      "type": "Option (Uint128)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Uint128" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_11_g_immut_res",
+      "type": "Option (Bool)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "Bool" ],
+        "arguments": []
+      }
+    },
+    {
+      "vname": "test_11_f_mut_res",
+      "type": "Option (String)",
+      "value": {
+        "constructor": "None",
+        "argtypes": [ "String" ],
+        "arguments": []
+      }
     }
   ],
   "events": []

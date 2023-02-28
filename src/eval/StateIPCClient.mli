@@ -39,6 +39,7 @@ val external_fetch :
   socket_addr:string ->
   caddr:string ->
   fname:'a IPCCIdentifier.t ->
+  is_mutable: bool ->
   keys:IPCCLiteral.t list ->
   ignoreval:bool ->
   (IPCCLiteral.t option * IPCCType.t option, scilla_error list) result
@@ -56,6 +57,7 @@ val update :
 val is_member :
   socket_addr:string ->
   fname:loc IPCCIdentifier.t ->
+  is_mutable:bool ->
   keys:IPCCLiteral.t list ->
   tp:IPCCType.t ->
   (bool, scilla_error list) result

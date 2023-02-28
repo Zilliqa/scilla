@@ -219,8 +219,8 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
       | Address AnyAddr -> pure @@ PostDisType.Address AnyAddr
       | Address CodeAddr -> pure @@ PostDisType.Address CodeAddr
       | Address LibAddr -> pure @@ PostDisType.Address LibAddr
-      | Address (ContrAddr fts) ->
-          let%bind dis_fts =
+      | Address (ContrAddr (im_fts, m_fts)) ->
+          let fts_disambiguator fts = 
             foldM (IdLoc_Comp.Map.to_alist fts)
               ~init:PostDisType.IdLoc_Comp.Map.empty ~f:(fun acc (id, t) ->
                 let%bind dis_id = name_def_as_simple_global id in
@@ -228,7 +228,9 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
                 pure
                 @@ PostDisType.IdLoc_Comp.Map.set acc ~key:dis_id ~data:dis_t)
           in
-          pure @@ PostDisType.Address (ContrAddr dis_fts)
+          let%bind dis_im_fts = fts_disambiguator im_fts in
+          let%bind dis_m_fts = fts_disambiguator m_fts in
+          pure @@ PostDisType.Address (ContrAddr (dis_im_fts, dis_m_fts))
     in
 
     recurse t
@@ -537,7 +539,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               remove_local_id_from_dict var_dict_acc (as_string x)
             in
             pure @@ (PostDisSyntax.Load (dis_x, dis_f), new_var_dict)
-        | RemoteLoad (x, adr, f) ->
+        | RemoteLoad (x, adr, f, mutability) ->
             let%bind dis_x = name_def_as_simple_global x in
             (* adr may be defined anywhere, so must be disambiguated *)
             let%bind dis_adr =
@@ -550,7 +552,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
               remove_local_id_from_dict var_dict_acc (as_string x)
             in
             pure
-            @@ (PostDisSyntax.RemoteLoad (dis_x, dis_adr, dis_f), new_var_dict)
+            @@ (PostDisSyntax.RemoteLoad (dis_x, dis_adr, dis_f, mutability), new_var_dict)
         | Store (f, x) ->
             (* f must be a locally defined field *)
             let%bind dis_f = name_def_as_simple_global f in
@@ -598,7 +600,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure
             @@ (PostDisSyntax.MapGet (dis_x, dis_m, dis_ks, fetch), new_var_dict)
-        | RemoteMapGet (x, adr, m, ks, fetch) ->
+        | RemoteMapGet (x, adr, m, mutability, ks, fetch) ->
             let%bind dis_x = name_def_as_simple_global x in
             (* adr may be defined anywhere, so must be disambiguated *)
             let%bind dis_adr =
@@ -617,7 +619,7 @@ module ScillaDisambiguation (SR : Rep) (ER : Rep) = struct
             in
             pure
             @@ ( PostDisSyntax.RemoteMapGet
-                   (dis_x, dis_adr, dis_m, dis_ks, fetch),
+                   (dis_x, dis_adr, dis_m, mutability, dis_ks, fetch),
                  new_var_dict )
         | MatchStmt (x, pss) ->
             let%bind dis_x =
