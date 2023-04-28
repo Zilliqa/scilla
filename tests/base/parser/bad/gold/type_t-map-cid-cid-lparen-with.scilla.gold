@@ -1,12 +1,11 @@
 {
   "errors": [
     {
-      "error_message":
-        "This type annotation is not closed properly, or is missing parentheses to group the types, or has a missing or misplaced '='.\n",
+      "error_message": "This is an invalid map type, the map value type is likely incorrect, possibly because of an unclosed parenthesis. The map type must be a storable type, i.e., a base type, a valid ADT, or a map type.\n",
       "start_location": {
         "file": "base/parser/bad/type_t-map-cid-cid-lparen-with.scilla",
         "line": 5,
-        "column": 29
+        "column": 35
       },
       "end_location": { "file": "", "line": 0, "column": 0 }
     }
