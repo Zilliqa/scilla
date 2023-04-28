@@ -220,18 +220,9 @@ t_map_value_args:
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
 
 t_map_value :
-(*
-| d = scid; targs=list(t_map_value_args)
-    { match targs with
-      | [] -> to_type d (toLoc $startpos(d))
-      | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
-*)
-| d = scid;
-  { to_type d (toLoc $startpos(d)) }
+| t = t_map_value_allow_targs;
+  { t }
 | MAP; k=t_map_key; v = t_map_value; { SType.MapType (k, v) }
-  | LPAREN; t = t_map_value_allow_targs; RPAREN;
-    { (* We only allow targs when the type is surrounded by parentheses *)
-      t }
 | vt = address_typ; { vt }
 
 t_map_value_allow_targs :
@@ -240,8 +231,7 @@ t_map_value_allow_targs :
     match targs with
     | [] -> to_type d (toLoc $startpos(d))
     | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
-| t = t_map_value
-  { t }
+| LPAREN; t = t_map_value RPAREN; { t }
 
 address_typ :
 | d = CID; WITH; END;
