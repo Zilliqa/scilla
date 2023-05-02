@@ -88,3 +88,5 @@ deps/schnorr/install/
 #  vcpkg build files
 # -----------------------------------------------------------------------------
 vcpkg_installed/
+
+debug/

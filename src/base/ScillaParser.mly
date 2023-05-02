@@ -233,6 +233,15 @@ t_map_value :
     { (* We only allow targs when the type is surrounded by parentheses *)
       t }
 | vt = address_typ; { vt }
+| t = t_map_value_allow_targs_deprecated { t }
+
+t_map_value_allow_targs_deprecated :
+| d = scid; targs = nonempty_list(t_map_value_args)
+  {
+    match targs with
+    | [] -> to_type d (toLoc $startpos(d))
+    | _ -> ADT (SIdentifier.mk_id d (toLoc $startpos(d)), targs) }
+
 
 t_map_value_allow_targs :
 | d = scid; targs = nonempty_list(t_map_value_args)
