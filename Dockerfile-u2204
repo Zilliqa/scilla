@@ -1,0 +1,79 @@
+# escape=\
+ARG BASE_IMAGE=ubuntu:22.04
+
+FROM ${BASE_IMAGE}
+
+ARG MAJOR_VERSION=0
+
+COPY . /scilla/${MAJOR_VERSION}
+
+WORKDIR /scilla/${MAJOR_VERSION}
+
+RUN apt-get update \
+    && apt-get install -y software-properties-common \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    wget \
+    cmake \
+    ccache \
+    build-essential \
+    m4 \
+    ocaml \
+    opam \
+    patchelf \
+    pkg-config \
+    tar \
+    zlib1g-dev \
+    libgmp-dev \
+    libffi-dev \
+    libssl-dev \
+    libsecp256k1-dev \
+    libboost-system-dev \
+    libboost-test-dev \
+    libboost-dev \
+    libpcre3-dev \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV OCAML_VERSION 4.12.0
+
+# CMake gets installed here
+ENV PATH="/root/.local/bin:${PATH}"
+
+# CMake 3.24
+ARG CMAKE_VERSION=3.24.2
+RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && echo "739d372726cb23129d57a539ce1432453448816e345e1545f6127296926b6754 cmake-${CMAKE_VERSION}-Linux-x86_64.sh" | sha256sum -c \ 
+    && mkdir -p "${HOME}"/.local \
+    && bash ./cmake-${CMAKE_VERSION}-Linux-x86_64.sh --skip-license --prefix="${HOME}"/.local/ \
+    && "${HOME}"/.local/bin/cmake --version \
+    && rm cmake-${CMAKE_VERSION}-Linux-x86_64.sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Setup ccache
+RUN ln -s "$(which ccache)" /usr/local/bin/gcc \
+  && ln -s "$(which ccache)" /usr/local/bin/g++ \
+  && ln -s "$(which ccache)" /usr/local/bin/cc \
+  && ln -s "$(which ccache)" /usr/local/bin/c++
+
+# This tag must be equivalent to the hash specified by "builtin-baseline" in vcpkg.json
+ARG VCPKG_COMMIT_OR_TAG=2022.09.27
+ARG VCPKG_ROOT=/vcpkg
+ENV CCACHE_DIR="/ccache"
+
+RUN ccache -p && ccache -z
+
+RUN git clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT} \
+  && git -C ${VCPKG_ROOT} checkout ${VCPKG_COMMIT_OR_TAG} \
+  && ${VCPKG_ROOT}/bootstrap-vcpkg.sh
+
+RUN --mount=type=cache,target=/ccache/ \
+    --mount=type=cache,target=/root/.cache/vcpkg/ \
+    CCACHE_BASEDIR="/scilla" \
+     make opamdep-ci \
+    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
+    && eval $(opam env) \
+    && make
+
