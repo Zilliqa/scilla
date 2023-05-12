@@ -30,8 +30,7 @@ let () =
           We rely on a simple python program (in vcpkg_cmd) to do so portably.
       *)
       let vcpkg_cmd =
-        "python3 -c 'import os, sys; print(os.path.realpath(\"../../../../../"
-        ^^ "%s" ^^ "\"))'"
+        "python3 -c 'import os, sys; print(os.path.realpath(os.environ[\"SCILLA_REPO_ROOT\"]" ^^ "+\"/%s\"))'"
       in
       let vcpkg_triplet_path =
         input_line

@@ -21,7 +21,7 @@
  (public_name scilla.base)
  (wrapped true)
  (libraries core core_unix core_unix.sys_unix num hex stdint angstrom
-   polynomials cryptokit secp256k1 bitstring yojson fileutils scilla_crypto
+   polynomials cryptokit vcpkg-secp256k1 bitstring yojson fileutils scilla_crypto
    menhirLib ocamlgraph)
  (preprocess
   (pps ppx_sexp_conv ppx_deriving_yojson ppx_let ppx_deriving.show ppx_compare bisect_ppx
