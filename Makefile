@@ -195,7 +195,7 @@ zilliqa-docker:
 .PHONY : opamdep
 opamdep:
 	opam init --compiler=ocaml-base-compiler.$(OCAML_VERSION_RECOMMENDED) --yes
-	opam pin -n --yes ${PWD}/vcpkg-ocaml/vcpkg-secp256k1/1.0
+	opam pin -n --yes ${PWD}/vcpkg-ocaml/vcpkg-secp256k1
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes
 	opam install --yes $(OPAM_DEV_DEPS)
@@ -207,7 +207,7 @@ dev-deps:
 .PHONY : opamdep-ci
 opamdep-ci:
 	opam init --disable-sandboxing --compiler=ocaml-base-compiler.$(OCAML_VERSION) --yes
-	opam pin -n --yes ${PWD}/vcpkg-ocaml/vcpkg-secp256k1/1.0
+	opam pin -n --yes ${PWD}/vcpkg-ocaml/vcpkg-secp256k1
 	eval $$(opam env)
 	opam install ./scilla.opam --deps-only --with-test --yes --assume-depexts
 	opam install ocamlformat.$(OCAMLFORMAT_VERSION) --yes

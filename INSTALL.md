@@ -32,15 +32,6 @@ export PKG_CONFIG_PATH="_OpenSSL_prefix_/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 ### openSUSE
 
-- Install `libsecp256k1-devel` from
-  https://software.opensuse.org/package/libsecp256k1-devel by clicking
-  the wrench icon next to the Search button and selecting `Show
-  development packages`, and then `OK` to apply the settings.
-  Then you should see the page reload and show the package in
-  question.  Click the `Show experimental packages` icon 
-  corresponding to your distribution in order to perform the
-  1-click install from the `network:cryptocurrencies` project.
-
 - Install `bubblewrap` from
   https://software.opensuse.org/package/bubblewrap by clicking on the
   `Show experimental packages` button and then performing the 1-click
@@ -60,13 +51,6 @@ sudo zypper install -y curl m4 opam2 pkg-config zlib-devel gmp-devel libffi-deve
 
 ### Ubuntu
 
-On machines with Ubuntu strictly older than 18.04, run these additional commands first:
-
-```shell
-# Add Ubuntu PPA for libsecp256k1-dev
-sudo add-apt-repository ppa:tah83/secp256k1 -y
-```
-
 On machines older than Ubuntu 20.04, CMake >=3.16 (which is a requirement) is not present.
 Run the script `scripts/install_cmake_ubuntu.sh` (without root) to install a new CMake
 into `~/.local/bin`.
@@ -76,7 +60,7 @@ Required Ubuntu packages can be installed as below:
 ```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 sudo apt-get update
-sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libsecp256k1-dev libpcre3-dev cmake autoconf patchelf
+sudo apt-get install -y curl build-essential m4 ocaml opam pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libboost-test-dev libpcre3-dev cmake autoconf patchelf
 ```
 
 On systems strictly older than 18.04, the [binary installation script](https://opam.ocaml.org/doc/Install.html#Binary-distribution) can be used. In this case, the `opam` package used in the `apt-get install` command should be skipped.
@@ -126,21 +110,17 @@ necessary dependencies available.
 
 ### Windows 10 Pro/Home Edition (Creators Update & later) via WSL
 
-1. Enable [Windows Subsystem for Linux](https://youtu.be/epZOKY83t8g) (Choose Ubuntu 18.04 LTS)
+1. Enable [Windows Subsystem for Linux](https://youtu.be/epZOKY83t8g) (Choose Ubuntu 22.04 LTS)
 
 2. Install required Ubuntu Packages
 
 - OpenSSL ships with WSL so there is no further action needed.
 ```shell
-sudo add-apt-repository ppa:tah83/secp256k1 -y
-```
-
-```shell
 sudo add-apt-repository -y ppa:avsm/ppa
 ```
 
 ```shell
-sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev
+sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libpcre3-dev
 ```
 
 3. Delete other ppa entries
@@ -154,7 +134,7 @@ sudo apt-get update
 4. Re-install the packages (but this time with a  `--fix-missing` flag)
 
 ```shell
-sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libsecp256k1-dev libpcre3-dev --fix-missing
+sudo apt-get install -y curl build-essential m4 ocaml pkg-config zlib1g-dev libgmp-dev libffi-dev libssl-dev libboost-system-dev libpcre3-dev --fix-missing
 ```
 
 5. Install opam 2.x
@@ -269,7 +249,6 @@ libffi
 lzlib
 pcre
 pkg-config
-secp256k1
 # All required OS packages found.
 ```
 
@@ -327,6 +306,7 @@ opam switch create scilla ocaml-base-compiler.4.12.0
 
 Now you will need to install scilla's dependencies with the following command:
 ```shell
+export SCILLA_REPO_ROOT=/path/to/scilla
 opam install ./scilla.opam --deps-only --with-test
 ```
 
