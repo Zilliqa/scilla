@@ -1,5 +1,5 @@
-opam-version: "1.2"
-name: "secp256k1"
+opam-version: "2.0"
+name: "vcpkg-secp256k1"
 synopsis: "Elliptic curve library secp256k1 wrapper for Ocaml"
 description: """
 This library wrap the secp256k1 EC(DSA) library into an OCaml library. At the moment only a subset of functionalities are available:
@@ -8,20 +8,15 @@ This library wrap the secp256k1 EC(DSA) library into an OCaml library. At the mo
 - ECDSA: verify, sign, recover
 
 All exchanged data (pubkey, signature, seckey) are represented as hex strings.
-"""
-version: "0.4.4"
-maintainer: "Davide Gessa <gessadavide@gmail.com>"
-authors: [
-  "Davide Gessa <gessadavide@gmail.com>"
-  "Vincent Bernardoff <vb@luminar.eu.org>"
-  "Yoichi Hirai <i@yoichihirai.com>"
-  "Anton Trunov"
-]
 
-homepage: "https://github.com/dakk/secp256k1-ml"
-bug-reports: "https://github.com/dakk/secp256k1-ml/issues"
+Forked from https://github.com/dakk/secp256k1-ml and changed to use the secp256k1 compiled by vcpkg.
+"""
+version: "1.0"
+maintainer: "Zilliqa"
+homepage: "https://github.com/Zilliqa/scilla"
+bug-reports: "https://github.com/Zilliqa/scilla/issues"
 license: "MIT"
-dev-repo: "git+https://github.com/dakk/secp256k1-ml"
+dev-repo: "git+https://github.com/Zilliqa/scilla"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
@@ -35,7 +30,6 @@ depends: [
   "alcotest" {with-test & >= "0.8.1"}
   "odoc" {with-test & >= "1.3.0"}
   "base-bigarray"
-  "conf-secp256k1"
 ]
 
 depexts: []

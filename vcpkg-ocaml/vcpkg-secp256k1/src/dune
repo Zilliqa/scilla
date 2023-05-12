@@ -1,6 +1,6 @@
 (library
  (name secp256k1)
- (public_name secp256k1)
+ (public_name vcpkg-secp256k1)
  (libraries bigarray)
  (c_names secp256k1_wrap)
  (c_flags
