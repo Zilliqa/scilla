@@ -1,0 +1,14 @@
+(executable
+ (name test)
+ (libraries secp256k1 hex alcotest))
+
+(alias
+ (name runtest)
+ (deps
+  (:< test.exe))
+ (action
+  (run %{<})))
+
+(env
+  (dev
+    (flags (:standard -warn-error -A))))
