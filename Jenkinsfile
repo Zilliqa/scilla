@@ -6,7 +6,7 @@ spec:
     beta.kubernetes.io/os: "linux"
   containers:
   - name: "ubuntu"
-    image: "648273915458.dkr.ecr.us-west-2.amazonaws.com/scilla:e5e71a5"
+    image: "648273915458.dkr.ecr.us-west-2.amazonaws.com/scilla:429e2f9"
     command:
     - cat
     tty: true
@@ -45,7 +45,7 @@ timestamps {
                 env.VCPKG_ROOT="/vcpkg"
                 env.SCILLA_REPO_ROOT="/scilla/0"
                 stage('Update source code') {
-                  sh "cp -r ${WORKSPACE}/* /scilla/0"
+                  sh "mkdir -p /scilla/0 && cp -r ${WORKSPACE}/* /scilla/0 && ln -s ${WORKSPACE}/.git /scilla/0/.git"
                   sh "cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes"
                   sh "apt update && apt install -y sudo"
                   sh "./scripts/install_shellcheck_ubuntu.sh"
