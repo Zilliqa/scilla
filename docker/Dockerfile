@@ -20,7 +20,6 @@ RUN apt-get update -y \
     libcurl4-openssl-dev \
     libgmp-dev \
     libpcre3-dev \
-    libsecp256k1-dev \
     libssl-dev \
     libtool \
     libxml2-utils \
@@ -47,11 +46,11 @@ FROM base AS builder
 
 # CMake 3.24
 ARG CMAKE_VERSION=3.24.2
-RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-aarch64.sh \
+RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
     && mkdir -p "${HOME}"/.local \
-    && bash ./cmake-${CMAKE_VERSION}-Linux-aarch64.sh --skip-license --prefix="${HOME}"/.local/ \
+    && bash ./cmake-${CMAKE_VERSION}-Linux-x86_64.sh --skip-license --prefix="${HOME}"/.local/ \
     && "${HOME}"/.local/bin/cmake --version \
-    && rm cmake-${CMAKE_VERSION}-Linux-aarch64.sh
+    && rm cmake-${CMAKE_VERSION}-Linux-x86_64.sh
 ENV PATH="/root/.local/bin:${PATH}"
 
 # Setup ccache
@@ -84,9 +83,10 @@ ENV OCAML_VERSION 4.12.0
 COPY vcpkg-registry/ vcpkg-registry
 COPY vcpkg-configuration.json .
 COPY vcpkg.json .
+COPY vcpkg-ocaml/ vcpkg-ocaml
 COPY src/ src
 COPY scripts/ scripts
-COPY dune* .
+COPY dune* ./
 COPY Makefile .
 COPY scilla.opam .
 COPY shell.nix .
@@ -94,13 +94,13 @@ COPY .ocamlformat .
 COPY tests/ tests
 
 # Make sure vcpkg installs brings in the dependencies
-RUN --mount=type=cache,target=/root/.cache/vcpkg/ \
-  && ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
+RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
 
 RUN update-alternatives --install /usr/bin/python python "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 \
   && update-alternatives --install /usr/bin/python3 python3 "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 # set python3 as default instead python3
 
 ENV PKG_CONFIG_PATH="${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
+ENV SCILLA_REPO_ROOT="${SOURCE_DIR}"
 
 RUN make opamdep-ci \
     && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
@@ -119,8 +119,7 @@ FROM ubuntu:22.04
 
 RUN apt-get update -y \
     && apt-get install -y build-essential \
-    libgmp-dev \
-    libsecp256k1-dev
+    libgmp-dev
 
 ARG SOURCE_DIR="/scilla/${MAJOR_VERSION}"
 

@@ -21,7 +21,6 @@ depends: [
   "conf-m4" {build}
   "conf-openssl"
   "conf-pkg-config" {build}
-  "conf-secp256k1"
   "conf-zlib"
   "core" {>= "v0.15.0" & < "v0.16~"}
   "core_unix" {>= "v0.15.0" & < "v0.16~"}
@@ -46,7 +45,7 @@ depends: [
   "ppx_string_interpolation" {>= "1.0.1" & < "1.1~"}
   "pprint" {= "20220103"}
   "qcheck" {>= "0.19.1" & < "0.20~"}
-  "secp256k1" {>= "0.4.4" & < "0.5~"}
+  "vcpkg-secp256k1"
   "seq"
   "stdint" {>= "0.5.1" & < "0.8~"}
   "yojson" {>= "1.7.0" & < "2.1~"}
