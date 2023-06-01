@@ -95,8 +95,7 @@ COPY .ocamlformat .
 COPY tests/ tests
 
 # Make sure vcpkg installs brings in the dependencies
-RUN --mount=type=cache,target=/root/.cache/vcpkg/ \
-  && ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
+RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
 
 RUN update-alternatives --install /usr/bin/python python "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 \
   && update-alternatives --install /usr/bin/python3 python3 "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 # set python3 as default instead python3
