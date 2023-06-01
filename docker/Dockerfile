@@ -87,7 +87,7 @@ COPY vcpkg-configuration.json .
 COPY vcpkg.json .
 COPY src/ src
 COPY scripts/ scripts
-COPY dune* .
+COPY dune* ./
 COPY Makefile .
 COPY scilla.opam .
 COPY shell.nix .
