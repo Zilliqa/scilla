@@ -30,6 +30,7 @@ esac
 unameOut="$(uname -m)"
 case "${unameOut}" in
     arm*)       ARCH=arm64;;
+    aarch*)     ARCH=arm64;;
     x86_64*)    ARCH=x64;;
     *)          echo "Unknown machine ${unameOut}"
 esac
