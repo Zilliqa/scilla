@@ -1,0 +1,45 @@
+name: CI - Integration tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  run-tests:
+    name: tests
+    runs-on: docker
+    steps:
+    - name: Clean environment
+      # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
+      shell: bash
+      run: |
+        docker system df
+        docker system prune -a -f --filter "until=336h"
+        docker system df
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Build Docker images
+      run: DOCKER_BUILDKIT=1 docker build --build-arg EXTRA_BUILD_PARAMS="debug tests" --target test_runner -t scilla:tests -f docker/Dockerfile .
+      shell: bash
+    - name: Run make test
+      run: |
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test
+      shell: bash
+    - name: Run make test_server
+      run: |
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server
+      shell: bash
+    - name: Run make lint
+      run: |
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint
+      shell: bash
