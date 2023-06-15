@@ -1,0 +1,47 @@
+name: CI - Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
+  push:
+    branches-ignore:
+      - 'release/**'
+
+jobs:
+  push-to-ecr:
+    permissions:
+      id-token: write
+      contents: write
+    name: build
+    runs-on: docker
+    env:
+      GCP_REGISTRY_DOMAIN: asia-docker.pkg.dev
+      GCP_REGISTRY: asia-docker.pkg.dev/${{ secrets.GCP_STG_REGISTRY_PROJECT_ID }}/zilliqa-private
+    steps:
+    - name: Clean environment
+      # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
+      shell: bash
+      run: |
+        docker system df
+        docker system prune -a -f --filter "until=168h"
+        docker system df
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Docker build and push
+      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
+      with:
+        file: docker/Dockerfile
+        push: true
+        tag: ${{ env.GCP_REGISTRY }}/scilla
+        tag-length: 8
+        registry: ${{ env.GCP_REGISTRY_DOMAIN }}
+        workload-identity-provider: "${{ secrets.GCP_PRD_GITHUB_WIF }}"
+        service-account: "${{ secrets.GCP_STG_GITHUB_SA_DOCKER_REGISTRY }}"
+        cache-key: ${{ github.event.repository.name }}
