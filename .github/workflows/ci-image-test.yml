@@ -29,7 +29,7 @@ jobs:
         fetch-depth: 0
         ref: ${{ inputs.commitOrTag }}
     - name: Build Docker images
-      run: DOCKER_BUILDKIT=1 docker build --build-arg EXTRA_BUILD_PARAMS="debug tests" --target test_runner -t scilla:tests -f docker/Dockerfile .
+      run: DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile .
       shell: bash
     - name: Run make test
       run: |
