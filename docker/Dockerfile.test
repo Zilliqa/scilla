@@ -1,4 +1,3 @@
-# Requires a Scilla local tag build from docker/Dockerfile
 FROM 648273915458.dkr.ecr.us-west-2.amazonaws.com/scilla:429e2f9
 
 ENV VCPKG_ROOT="/vcpkg"
