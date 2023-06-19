@@ -55,7 +55,7 @@ jobs:
       shell: bash
     - name: Run make coveralls
       run: |
-        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make coveralls GITHUB_RUN_NUMBER=${{ github.run_number }}'
+        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make coveralls TRAVIS_JOB_ID=${{ github.run_number }}'
       shell: bash
     - name: Run make lint
       run: |
