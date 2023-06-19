@@ -1,6 +1,9 @@
 # Requires a Scilla local tag build from docker/Dockerfile
 FROM scilla:local
 
+ENV VCPKG_ROOT="/vcpkg"
+ENV SCILLA_REPO_ROOT="/scilla/0"
+
 RUN apt-get update -y \
   && apt install -y sudo
 
