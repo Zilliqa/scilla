@@ -14,8 +14,8 @@ on:
 jobs:
   run-tests:
     permissions:
-      id-token: read
-      contents: read
+      id-token: write
+      contents: write
     name: tests
     runs-on: docker
     steps:
