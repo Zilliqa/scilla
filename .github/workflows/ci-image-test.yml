@@ -29,17 +29,19 @@ jobs:
         fetch-depth: 0
         ref: ${{ inputs.commitOrTag }}
     - name: Build Docker images
-      run: DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile .
+      run: |
+        DOCKER_BUILDKIT=1 docker build -t scilla:local -f docker/Dockerfile .
+        DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile.test .
       shell: bash
     - name: Run make test
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test
+        docker run --rm -i scilla:tests bash -c 'cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test'
       shell: bash
     - name: Run make test_server
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server
+        docker run --rm -i scilla:tests bash -c 'cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server'
       shell: bash
     - name: Run make lint
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint
+        docker run --rm -i scilla:tests bash -c 'cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint'
       shell: bash

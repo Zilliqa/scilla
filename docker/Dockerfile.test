@@ -1,0 +1,18 @@
+# Requires a Scilla local tag build from docker/Dockerfile
+FROM scilla:local
+
+RUN apt-get update -y \
+  && apt install -y sudo
+
+COPY / /scilla/0/
+
+RUN cd /scilla/0 \
+  && eval \$(opam env) \
+  && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes"
+
+ARG SC_VERSION=v0.7.1
+
+RUN wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SC_VERSION}/shellcheck-${SC_VERSION}.linux.x86_64.tar.xz" | tar -xJv \
+  && sudo mv "shellcheck-${SC_VERSION}/shellcheck" /usr/local/bin/ \
+  && rm -rf "shellcheck-${SC_VERSION}/shellcheck" \
+  && shellcheck --version
