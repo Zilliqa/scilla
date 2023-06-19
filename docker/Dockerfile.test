@@ -8,6 +8,6 @@ COPY / /scilla/0/
 
 RUN cd /scilla/0 \
   && eval $(opam env) \
-  && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes"
+  && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes
 
 RUN ./scripts/install_shellcheck_ubuntu.sh
