@@ -33,13 +33,13 @@ jobs:
       shell: bash
     - name: Run make test
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test
       shell: bash
     - name: Run make test_server
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server
       shell: bash
     - name: Run make lint
       run: |
-        docker run --rm -i scilla:tests -- cd /scilla/0 && eval \$(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint
+        docker run --rm -i scilla:tests -- cd /scilla/0 && eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint
       shell: bash
