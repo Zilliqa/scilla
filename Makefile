@@ -232,7 +232,7 @@ coveralls:
 	BISECT_ENABLE=YES make
 	dune build @install
 	ulimit -n 1024; dune exec -- tests/testsuite.exe
-	bisect-ppx-report coveralls coverage.json --ignore-missing-files --service-name jenkins --service-job-id ${TRAVIS_JOB_ID}
+	bisect-ppx-report coveralls coverage.json --ignore-missing-files --service-name jenkins --service-job-id ${GITHUB_RUN_NUMBER}
 	curl -L -F json_file=@./coverage.json https://coveralls.io/api/v1/jobs
 	make clean
 	-find . -type f -name 'bisect*.coverage' | xargs rm
