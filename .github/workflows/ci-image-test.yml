@@ -28,9 +28,18 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ inputs.commitOrTag }}
+    - name: Configure AWS Credentials
+      uses: Zilliqa/gh-actions-workflows/actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
+        oidc-role: ${{ secrets.OIDC_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
+    - name: Login to the registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
     - name: Build Docker images
       run: |
-        DOCKER_BUILDKIT=1 docker build -t scilla:local -f docker/Dockerfile .
         DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile.test .
       shell: bash
     - name: Run make test
