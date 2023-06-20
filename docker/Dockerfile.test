@@ -3,13 +3,13 @@ FROM 648273915458.dkr.ecr.us-west-2.amazonaws.com/scilla:429e2f9
 ENV VCPKG_ROOT="/vcpkg"
 ENV SCILLA_REPO_ROOT="/scilla/0"
 
-WORKDIR /scilla/0/
 COPY . /scilla/0/
 
-RUN apt-get update -y \
+RUN apt update \
   && apt install -y sudo
 
-RUN eval $(opam env) \
+RUN cd /scilla/0 \
+  && eval $(opam env) \
   && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes
 
-RUN ./scripts/install_shellcheck_ubuntu.sh
+RUN /scilla/0/scripts/install_shellcheck_ubuntu.sh

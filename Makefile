@@ -226,7 +226,6 @@ coverage :
 
 .PHONY : coveralls
 coveralls:
-	make clean
 	mkdir -p _build/coverage
 	./scripts/build_deps.sh
 	BISECT_ENABLE=YES make
