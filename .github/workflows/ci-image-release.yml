@@ -1,6 +1,12 @@
 name: CI - Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
   push:
     tags:
 
@@ -11,12 +17,23 @@ jobs:
       contents: write
     runs-on: docker
     steps:
-    - name: 'Checkout scm'
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Check if the commit or tag was passed manually
+      id: set-tag
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "tag=$(git rev-parse HEAD | cut -c1-8)" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
     - name: Check if the tag head is the same as master head
       id: check-latest
+      if: github.event_name == 'workflow_dispatch'
       run: |
         if test $(git rev-parse origin/master) = $(git rev-parse HEAD); then
           echo "latest=true" >> $GITHUB_OUTPUT
@@ -29,7 +46,7 @@ jobs:
       with:
         file: docker/Dockerfile
         push: true
-        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla:${{ github.ref_name }}
+        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla:${{ steps.set-tag.outputs.tag }}
         tag-latest: ${{ steps.check-latest.outputs.latest }}
         registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
         aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
@@ -41,7 +58,7 @@ jobs:
       with:
         file: docker/Dockerfile
         push: true
-        tag: Zilliqa/scilla:${{ github.ref_name }}
+        tag: Zilliqa/scilla:${{ steps.set-tag.outputs.tag }}
         tag-latest: ${{ steps.check-latest.outputs.latest }}
         cache-key: ${{ github.event.repository.name }}
         registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
