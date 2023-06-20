@@ -9,6 +9,7 @@ on:
         default: ''
   push:
     tags:
+      - v*
 
 jobs:
   release-image:
