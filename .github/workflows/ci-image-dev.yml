@@ -36,11 +36,11 @@ jobs:
       with:
         file: docker/Dockerfile
         push: true
-        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/scilla
+        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla
         tag-length: 8
         tag-latest: ${{ github.ref_name == github.event.repository.default_branch }}
-        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-        aws-region: ${{ secrets.AWS_REGION }}
+        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
+        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
         role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
         oidc-role: ${{ secrets.OIDC_ROLE }}
         cache-key: ${{ github.event.repository.name }}
