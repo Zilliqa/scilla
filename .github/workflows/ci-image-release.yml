@@ -57,7 +57,7 @@ jobs:
       uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
       with:
         file: docker/Dockerfile
-        push: false
+        push: true
         tag: Zilliqa/scilla:${{ steps.set-tag.outputs.tag }}
         tag-latest: ${{ steps.check-latest.outputs.latest }}
         cache-key: ${{ github.event.repository.name }}
