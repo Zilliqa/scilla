@@ -24,7 +24,7 @@ jobs:
     - name: Check if the tag head is the same as master head
       id: check-latest
       run: |
-        if test $(git rev-parse origin/master) = $(git rev-parse HEAD); then
+        if test $(git rev-parse origin/devops-700) = $(git rev-parse HEAD); then
           echo "latest=true" >> $GITHUB_OUTPUT
         else
           echo "latest=false" >> $GITHUB_OUTPUT
