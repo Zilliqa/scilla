@@ -1,4 +1,4 @@
-scillaname: CI - Release
+name: CI - Release
 
 on:
   workflow_dispatch:
@@ -8,12 +8,7 @@ on:
         required: false
         default: ''
   push:
-    branches:
-      - 'release/**'
-    paths:
-    - 'VERSION'
     tags:
-      - v*
 
 jobs:
   release-image:
