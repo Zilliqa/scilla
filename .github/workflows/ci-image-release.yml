@@ -17,19 +17,26 @@ jobs:
       contents: write
     runs-on: docker
     steps:
-    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+    - name: 'Checkout scm'
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-        ref: ${{ inputs.commitOrTag }}
+    - name: Check if the tag matches the master commit
+      id: check-latest
+      run: |
+        if test $(git rev-parse origin/master) = $(git rev-parse HEAD); then
+          echo "latest=true" >> $GITHUB_OUTPUT
+        else
+          echo "latest=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
     - name: Docker build and push
       uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
       with:
         file: docker/Dockerfile
         push: true
-        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla
-        tag-length: 8
-        tag-latest: ${{ github.ref_name == github.event.repository.default_branch }}
+        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla:${{ github.ref_name }}
+        tag-latest: ${{ steps.check-latest.outputs.latest }}
         registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
         aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
         role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
@@ -40,8 +47,7 @@ jobs:
       with:
         file: docker/Dockerfile
         push: true
-        tag: Zilliqa/scilla
-        tag-length: 8
+        tag: Zilliqa/scilla:${{ github.ref_name }}
         tag-latest: ${{ github.ref_name == github.event.repository.default_branch }}
         cache-key: ${{ github.event.repository.name }}
         registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
