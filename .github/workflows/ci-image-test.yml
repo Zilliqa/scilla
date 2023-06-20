@@ -43,7 +43,7 @@ jobs:
         registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
     - name: Build Docker images
       run: |
-        DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile.test .
+        DOCKER_BUILDKIT=1 docker build -t scilla:tests --build-arg ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }} -f docker/Dockerfile.test .
       shell: bash
     - name: Run make test
       run: |
