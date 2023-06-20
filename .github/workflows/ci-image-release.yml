@@ -33,7 +33,7 @@ jobs:
       shell: bash
     - name: Check if the tag head is the same as master head
       id: check-latest
-      if: github.event_name == 'workflow_dispatch'
+      if: github.event_name != 'workflow_dispatch'
       run: |
         if test $(git rev-parse origin/master) = $(git rev-parse HEAD); then
           echo "latest=true" >> $GITHUB_OUTPUT
