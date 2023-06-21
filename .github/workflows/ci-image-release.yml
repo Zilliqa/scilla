@@ -1,0 +1,66 @@
+name: CI - Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
+  push:
+    tags:
+      - v*
+
+jobs:
+  release-image:
+    permissions:
+      id-token: write
+      contents: write
+    runs-on: docker
+    steps:
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Check if the commit or tag was passed manually
+      id: set-tag
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "tag=$(git rev-parse HEAD | cut -c1-8)" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    - name: Check if the tag head is the same as master head
+      id: check-latest
+      if: github.event_name != 'workflow_dispatch'
+      run: |
+        if test $(git rev-parse origin/master) = $(git rev-parse HEAD); then
+          echo "latest=true" >> $GITHUB_OUTPUT
+        else
+          echo "latest=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    - name: Docker build and push
+      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
+      with:
+        file: docker/Dockerfile
+        push: true
+        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla:${{ steps.set-tag.outputs.tag }}
+        tag-latest: ${{ steps.check-latest.outputs.latest }}
+        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
+        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
+        role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
+        oidc-role: ${{ secrets.OIDC_ROLE }}
+        cache-key: ${{ github.event.repository.name }}
+    - name: Docker build and push (Dockerhub)
+      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
+      with:
+        file: docker/Dockerfile
+        push: true
+        tag: Zilliqa/scilla:${{ steps.set-tag.outputs.tag }}
+        tag-latest: ${{ steps.check-latest.outputs.latest }}
+        cache-key: ${{ github.event.repository.name }}
+        registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+        registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
