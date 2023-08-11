@@ -11,14 +11,9 @@ depends: [
   "bitstring" {>= "3.1.0" & < "4.2~"}
   "camlp-streams" {>= "5.0.1" & < "5.1~"}
   "cmdliner" {>= "1.1.1" & < "1.2~"}
-  "conf-boost"
-  "conf-cmake" {build}
   "conf-gcc" {build}
   "conf-gmp"
   "conf-g++" {build}
-  "conf-libffi"
-  "conf-libpcre"
-  "conf-m4" {build}
   "conf-openssl"
   "conf-pkg-config" {build}
   "conf-secp256k1"
