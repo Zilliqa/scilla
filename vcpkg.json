@@ -5,14 +5,14 @@
     "jsoncpp",
     "openssl",
     "protobuf",
-    "python3",
-    "boost",
+    "boost-system",
+    "boost-test",
     "curl",
     "libffi",
     "schnorr",
     "cryptoutils"
   ],
-  "builtin-baseline": "6ca56aeb457f033d344a7106cb3f9f1abf8f4e98",
+  "builtin-baseline": "9d47b24eacbd1cd94f139457ef6cd35e5d92cc84",
   "overrides": [
     {
       "name": "jsoncpp",

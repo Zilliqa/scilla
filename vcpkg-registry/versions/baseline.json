@@ -1,6 +1,5 @@
 {
   "default": {
-    "python3": { "baseline": "3.10.5", "port-version": 6 },
     "schnorr": { "baseline": "8.2.0", "port-version": 0 },
     "cryptoutils": { "baseline": "8.3.0", "port-version": 1 }
   }

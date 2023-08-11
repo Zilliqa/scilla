@@ -3,7 +3,7 @@
     {
       "kind": "filesystem",
       "path": "vcpkg-registry",
-      "packages": [ "python3", "schnorr", "cryptoutils" ]
+      "packages": [ "schnorr", "cryptoutils" ]
     }
   ]
 }
