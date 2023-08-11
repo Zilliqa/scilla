@@ -41,7 +41,7 @@ RUN apt-get update -y \
     wget \
     zip \
     zlib1g-dev \
-    && apt-get remove -y cmake python2 python3 && apt-get autoremove -y
+    && apt-get remove -y cmake python2 && apt-get autoremove -y
 
 FROM base AS builder
 
@@ -62,7 +62,7 @@ RUN ln -s "$(which ccache)" /usr/local/bin/gcc \
   && ln -s "$(which ccache)" /usr/local/bin/c++
 
 # This tag must be equivalent to the hash specified by "builtin-baseline" in vcpkg.json
-ARG VCPKG_COMMIT_OR_TAG=2022.09.27
+ARG VCPKG_COMMIT_OR_TAG=2023.07.21
 ARG VCPKG_ROOT=/vcpkg
 
 RUN ccache -p && ccache -z
@@ -73,7 +73,6 @@ RUN git clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT} \
   && git -C ${VCPKG_ROOT} checkout ${VCPKG_COMMIT_OR_TAG} \
   && ${VCPKG_ROOT}/bootstrap-vcpkg.sh
 
-RUN apt-get remove -y python3-dev && apt-get autoremove -y
 # Manually input tag or commit, can be overwritten by docker build-args
 ARG MAJOR_VERSION=0
 ARG SOURCE_DIR="/scilla/${MAJOR_VERSION}"
@@ -97,8 +96,7 @@ COPY tests/ tests
 # Make sure vcpkg installs brings in the dependencies
 RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
 
-RUN update-alternatives --install /usr/bin/python python "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 \
-  && update-alternatives --install /usr/bin/python3 python3 "${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/tools/python3/python3.10" 10 # set python3 as default instead python3
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 
 ENV PKG_CONFIG_PATH="${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
 
