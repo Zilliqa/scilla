@@ -93,7 +93,14 @@ COPY shell.nix .
 COPY .ocamlformat .
 COPY tests/ tests
 
-# Make sure vcpkg installs brings in the dependencies
+RUN apt update -y \
+  && apt install -y apt-transport-https ca-certificates gnupg curl \
+  && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
+  && apt update -y && apt install -y google-cloud-cli
+
+ENV VCPKG_BINARY_SOURCES="default,readwrite;x-gcs,gs://vcpkg/ubuntu/22.04/x64-linux-dynamic/${VCPKG_COMMIT_OR_TAG}/,read"
+
 RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
