@@ -47,7 +47,6 @@ FROM base AS builder
 
 ARG CMAKE_VERSION=3.25.1
 RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
-    && echo "6598da34f0e3a0f763809e25cfdd646aa1d5e4d133c4277821e63ae5cfe09457 cmake-${CMAKE_VERSION}-Linux-x86_64.sh" | sha256sum -c \ 
     && mkdir -p "${HOME}"/.local \
     && bash ./cmake-${CMAKE_VERSION}-Linux-x86_64.sh --skip-license --prefix="${HOME}"/.local/ \
     && "${HOME}"/.local/bin/cmake --version \
@@ -100,9 +99,8 @@ RUN apt update -y \
 
 ENV VCPKG_BINARY_SOURCES="default,readwrite;x-gcs,gs://vcpkg/ubuntu/22.04/x64-linux-dynamic/${VCPKG_COMMIT_OR_TAG}/,read"
 
+# Make sure vcpkg installs brings in the dependencies
 RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 
 ENV PKG_CONFIG_PATH="${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
 
@@ -115,11 +113,21 @@ ARG BUILD_DIR="${SOURCE_DIR}/_build/default"
 ARG VCPKG_INSTALL_LIB_DIR="${BUILD_DIR}/vcpkg_installed/x64-linux-dynamic/lib"
 
 RUN mkdir -p ${VCPKG_INSTALL_LIB_DIR} \
-  && ldd ${BUILD_DIR}/src/runners/*.exe | grep vcpkg_installed | gawk '{print $3}' | xargs -I{} cp {} ${VCPKG_INSTALL_LIB_DIR} \
-  && rm -rf vcpkg_installed \
+  && ldd ${BUILD_DIR}/src/runners/*.exe | grep vcpkg_installed | gawk '{print $3}' | xargs -I{} cp {} ${VCPKG_INSTALL_LIB_DIR}
+
+FROM builder AS test_runner
+
+COPY easyrun.sh .
+ENV VCPKG_ROOT=/vcpkg
+RUN apt update -y && apt install -y sudo
+RUN ./scripts/install_shellcheck_ubuntu.sh
+
+FROM builder AS cleanup_vcpkg
+
+RUN rm -rf vcpkg_installed \
   && ln -s ${BUILD_DIR}/vcpkg_installed vcpkg_installed
 
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS base
 
 RUN apt-get update -y \
     && apt-get install -y build-essential \
@@ -128,5 +136,5 @@ RUN apt-get update -y \
 
 ARG SOURCE_DIR="/scilla/${MAJOR_VERSION}"
 
-COPY --from=builder ${SOURCE_DIR}       ${SOURCE_DIR}
+COPY --from=cleanup_vcpkg ${SOURCE_DIR}       ${SOURCE_DIR}
 

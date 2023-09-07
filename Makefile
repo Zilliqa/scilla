@@ -168,7 +168,10 @@ clean:
 	dune clean
 # Remove remaining files/folders ignored by git as defined in .gitignore (-X)
 # but keeping a local opam switch and other dependencies built.
-	git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/** --exclude=\!_esy/** --exclude=\!vcpkg_installed
+	@if [ -d .git ]; \
+	then \
+		git clean -dfXq --exclude=\!deps/** --exclude=\!_opam/** --exclude=\!_esy/** --exclude=\!vcpkg_installed; \
+	fi
 
 # Clean up libff installation
 cleanall: clean

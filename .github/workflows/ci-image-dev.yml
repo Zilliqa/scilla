@@ -1,0 +1,44 @@
+name: CI - Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
+  push:
+    branches-ignore: []
+
+jobs:
+  push-to-ecr:
+    permissions:
+      id-token: write
+      contents: write
+    name: build
+    runs-on: docker
+    steps:
+    - name: Clean environment
+      # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
+      shell: bash
+      run: |
+        docker system df
+        docker system prune -a -f --filter "until=168h"
+        docker system df
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Docker build and push
+      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
+      with:
+        file: docker/Dockerfile
+        push: true
+        tag: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com/scilla
+        tag-length: 8
+        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
+        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
+        role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
+        oidc-role: ${{ secrets.OIDC_ROLE }}
+        cache-key: ${{ github.event.repository.name }}
