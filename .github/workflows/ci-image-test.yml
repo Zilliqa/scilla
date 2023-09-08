@@ -1,0 +1,63 @@
+name: CI - Integration tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitOrTag:
+        description: 'Commit or tag'
+        required: false
+        default: ''
+  pull_request:
+    branches:
+      - 'release-v**'
+
+jobs:
+  run-tests:
+    permissions:
+      id-token: write
+      contents: write
+    name: tests
+    runs-on: docker
+    steps:
+    - name: Clean environment
+      # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
+      shell: bash
+      run: |
+        docker system df
+        docker system prune -a -f --filter "until=336h"
+        docker system df
+    - name: 'Checkout scm ${{ inputs.commitOrTag }}'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.commitOrTag }}
+    - name: Configure AWS Credentials
+      uses: Zilliqa/gh-actions-workflows/actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
+        oidc-role: ${{ secrets.OIDC_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
+    - name: Login to the registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
+    - name: Build Docker images
+      run: |
+        DOCKER_BUILDKIT=1 docker build --target test_runner -t scilla:tests -f docker/Dockerfile .
+      shell: bash
+    - name: Run make test
+      run: |
+        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test'
+      shell: bash
+    - name: Run make test_server
+      run: |
+        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test_server'
+      shell: bash
+    - name: Run make coveralls
+      run: |
+        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make coveralls TRAVIS_JOB_ID=${{ github.run_number }}'
+      shell: bash
+    - name: Run make lint
+      run: |
+        docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make lint'
+      shell: bash
