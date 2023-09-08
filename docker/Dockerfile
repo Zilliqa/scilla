@@ -47,6 +47,7 @@ FROM base AS builder
 
 ARG CMAKE_VERSION=3.25.1
 RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+    && echo "6598da34f0e3a0f763809e25cfdd646aa1d5e4d133c4277821e63ae5cfe09457 cmake-${CMAKE_VERSION}-Linux-x86_64.sh" | sha256sum -c \ 
     && mkdir -p "${HOME}"/.local \
     && bash ./cmake-${CMAKE_VERSION}-Linux-x86_64.sh --skip-license --prefix="${HOME}"/.local/ \
     && "${HOME}"/.local/bin/cmake --version \
