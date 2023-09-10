@@ -32,11 +32,11 @@ jobs:
           echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         fi
       shell: bash
-    - name: Check if the tag head is the same as release-v0.13.4 head
+    - name: Check if the tag head is the same as release-v0.13.5 head
       id: check-latest
       if: github.event_name != 'workflow_dispatch'
       run: |
-        if test $(git rev-parse origin/release-v0.13.4) = $(git rev-parse HEAD); then
+        if test $(git rev-parse origin/release-v0.13.5) = $(git rev-parse HEAD); then
           echo "latest=true" >> $GITHUB_OUTPUT
         else
           echo "latest=false" >> $GITHUB_OUTPUT
