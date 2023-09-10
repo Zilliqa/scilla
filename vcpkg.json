@@ -19,16 +19,12 @@
       "version-string": "1.8.1-1"
     },
     {
-      "name": "openssl",
-      "version-string": "1.1.1n"
-    },
-    {
       "name": "schnorr",
-      "version": "8.2.0"
+      "version": "9.3"
     },
     {
       "name": "cryptoutils",
-      "version": "8.3.0#1"
+      "version": "9.3"
     }
   ]
 }
