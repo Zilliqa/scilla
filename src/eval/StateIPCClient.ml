@@ -51,26 +51,32 @@ let ipcclient_exn_wrapper thunk =
   try thunk () with
   | Core_unix.Unix_error (_, s1, s2) ->
       fail0 ~kind:("StateIPCClient: Unix error: " ^ s1 ^ s2) ?inst:None
-  | _ ->
+  | e ->
+      let e = Exn.to_string e in
+      print_endline (Printf.sprintf "error making JSON-RPC call: %s" e);
       fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call"
         ?inst:None
 
-let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
-  let socket =
-    Core_unix.socket ~domain:Core_unix.PF_UNIX ~kind:Core_unix.SOCK_STREAM
-      ~protocol:0 ()
-  in
-  Core_unix.connect socket ~addr:(Core_unix.ADDR_UNIX socket_addr);
-  let ic = Core_unix.in_channel_of_descr socket in
-  let oc = Core_unix.out_channel_of_descr socket in
+let http_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
-  (* Send data to the socket. *)
-  let _ = send_delimited oc msg_buf in
-  (* Get response. *)
-  let response = Caml.input_line ic in
-  Core_unix.close socket;
-  DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
+  print_endline (Printf.sprintf "Sending: %s\n" msg_buf);
+  let exception Http_error of string in
+  let response =
+    match Ezcurl.post ~headers:["content-type", "application/json"] ~content:(`String msg_buf) ~params:[] ~url:socket_addr () with
+    | Ok response -> response
+    | Error (_, err) -> (
+      print_endline (Printf.sprintf "error calling RPC: %s" err);
+      raise (Http_error (Printf.sprintf "error calling RPC: %s" err))
+    )
+  in
+
+  let response = if response.code = 200 then response.body else (
+    print_endline (Printf.sprintf "error response from RPC: code: %d, body: %s" response.code response.body);
+    raise (Http_error "error response from RPC")
+  )
+  in
+
+  print_endline (Printf.sprintf "Response: %s\n" response);
   M.return @@ Jsonrpc.response_of_string response
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
@@ -137,7 +143,7 @@ let encode_serialized_value value =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_val value encoder;
-    pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+    pure @@ Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
   with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 let decode_serialized_value value =
@@ -150,7 +156,7 @@ let encode_serialized_query query =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_query query encoder;
-    pure @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+    pure @@ Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
   with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
@@ -168,14 +174,14 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   let%bind q' = encode_serialized_query q in
   let%bind res =
     let thunk () =
-      translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
+      translate_res @@ IPCClient.fetch_state_value (http_rpc ~socket_addr) q'
     in
     ipcclient_exn_wrapper thunk
   in
   match res with
   | true, res' ->
       let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
-      let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+      let%bind decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
       let%bind res'' = deserialize_value decoded_pb tp' in
       pure @@ Some res''
   | false, _ -> pure None
@@ -211,7 +217,7 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
   let%bind res =
     let thunk () =
       translate_res
-      @@ IPCClient.fetch_ext_state_value (binary_rpc ~socket_addr) caddr q'
+      @@ IPCClient.fetch_ext_state_value (http_rpc ~socket_addr) caddr q'
     in
     ipcclient_exn_wrapper thunk
   in
@@ -226,7 +232,7 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
         let%bind tp' =
           TypeUtilities.map_access_type stored_typ (List.length keys)
         in
-        let%bind decoded_pb = decode_serialized_value (Bytes.of_string res') in
+        let%bind decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
         let%bind res'' = deserialize_value decoded_pb tp' in
         pure @@ (Some res'', Some stored_typ)
   | false, _, _ -> pure (None, None)
@@ -247,7 +253,7 @@ let update ~socket_addr ~fname ~keys ~value ~tp =
   let%bind () =
     let thunk () =
       translate_res
-      @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' value'
+      @@ IPCClient.update_state_value (http_rpc ~socket_addr) q' value'
     in
     ipcclient_exn_wrapper thunk
   in
@@ -267,7 +273,7 @@ let is_member ~socket_addr ~fname ~keys ~tp =
   let%bind q' = encode_serialized_query q in
   let%bind res =
     let thunk () =
-      translate_res @@ IPCClient.fetch_state_value (binary_rpc ~socket_addr) q'
+      translate_res @@ IPCClient.fetch_state_value (http_rpc ~socket_addr) q'
     in
     ipcclient_exn_wrapper thunk
   in
@@ -290,7 +296,7 @@ let remove ~socket_addr ~fname ~keys ~tp =
   let%bind () =
     let thunk () =
       translate_res
-      @@ IPCClient.update_state_value (binary_rpc ~socket_addr) q' dummy_val
+      @@ IPCClient.update_state_value (http_rpc ~socket_addr) q' dummy_val
     in
     ipcclient_exn_wrapper thunk
   in
@@ -304,7 +310,7 @@ let fetch_bcinfo ~socket_addr ~query_name ~query_args =
   let%bind res =
     let thunk () =
       translate_res
-      @@ IPCClient.fetch_bcinfo (binary_rpc ~socket_addr) query_name query_args
+      @@ IPCClient.fetch_bcinfo (http_rpc ~socket_addr) query_name query_args
     in
     ipcclient_exn_wrapper thunk
   in
