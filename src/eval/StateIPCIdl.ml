@@ -69,12 +69,12 @@ module IPCIdl (R : RPC) = struct
   let return_update = Param.mk Rpc.Types.unit
 
   let fetch_state_value =
-    declare "fetchStateValue"
+    declare "fetchStateValueB64"
       [ "Fetch state value from blockchain" ]
       (query @-> returning return_fetch RPCError.err)
 
   let fetch_ext_state_value =
-    declare "fetchExternalStateValue"
+    declare "fetchExternalStateValueB64"
       [ "Fetch state value of another contract from the blockchain" ]
       (addr @-> query @-> returning return_ext_fetch RPCError.err)
 
@@ -99,7 +99,7 @@ module IPCIdl (R : RPC) = struct
       @-> returning return_update RPCError.err)
 
   let update_state_value =
-    declare "updateStateValue"
+    declare "updateStateValueB64"
       [ "Update state value in blockchain" ]
       (query @-> value @-> returning return_update RPCError.err)
 end
