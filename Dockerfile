@@ -5,13 +5,6 @@ FROM --platform=linux/amd64 ${BASE_IMAGE}
 
 ARG MAJOR_VERSION=0
 
-COPY . /scilla/${MAJOR_VERSION}
-
-WORKDIR /scilla/${MAJOR_VERSION}
-
-# Install socat
-RUN apt-get update && apt-get install -y socat
-
 RUN apt-get update \
     && apt-get install -y software-properties-common \
     && add-apt-repository ppa:avsm/ppa -y \
@@ -35,8 +28,12 @@ RUN apt-get update \
     libboost-dev \
     libpcre3-dev \
     vim \
+    socat \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
+
+COPY . /scilla/${MAJOR_VERSION}
+WORKDIR /scilla/${MAJOR_VERSION}
 
 ENV OCAML_VERSION 4.11.2
 
