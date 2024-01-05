@@ -12,7 +12,7 @@ SERVER_PID=$!
 echo "forwarding traffic." 1>&2
 
 # Block until we see the scilla server has provided the socket
-while [ ! -S /tmp/scilla-socket/server.sock ]; do echo " waiting for scilla to start..." 2>&1; sleep 1; done
+while [ ! -S /tmp/scilla-socket/server.sock ]; do sleep 1; done
 
 echo "forwarding other traffic." 1>&2
 
