@@ -76,7 +76,7 @@ let ipcclient_exn_wrapper thunk =
   | Core_unix.Unix_error (_, s1, s2) ->
       assert_failure ("StateIPCTestClient: Unix error: " ^ s1 ^ s2)
   | _ ->
-      assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call"
+      assert_failure "StateIPCTestClient: Unexpected error making JSON-RPC call!"
 
 let binary_rpc ~sock_addr (call : Rpc.call) : Rpc.response M.t =
   let socket =

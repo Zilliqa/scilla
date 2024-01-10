@@ -718,7 +718,7 @@ module InputStateService = struct
 
     (* | _ ->
        fatal_error
-         (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call") *)
+         (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC callx") *)
 
     let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
       let socket =
