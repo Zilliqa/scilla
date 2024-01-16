@@ -5,6 +5,13 @@ echo "Starting server." 1>&2
 rm -rf myfifo 1>&2
 mkfifo myfifo 1>&2
 
+# Clear the directories we will be using the files for
+mkdir -p /tmp/scilla_init/
+mkdir -p /tmp/scilla_input/
+
+rm -rf /tmp/scilla_init/*
+rm -rf /tmp/scilla_input/*
+
 # netcat listen to 12346 and forward it to/from a local socket (this is the state queries/updates)
 nc -lkv 12346 <myfifo | nc -lkUD /tmp/scilla-server.sock > myfifo &
 
