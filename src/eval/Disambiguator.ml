@@ -262,9 +262,34 @@ let member_exn = JSONParser.member_exn
 let to_string_exn = JSONParser.to_string_exn
 let constr_pattern_arg_types_exn = JSONParser.constr_pattern_arg_types_exn
 let lookup_adt_name_exn = JSONParser.lookup_adt_name_exn
-let add_adt_parser = JSONParser.add_adt_parser
-let lookup_adt_parser_opt = JSONParser.lookup_adt_parser_opt
-let lookup_adt_parser = JSONParser.lookup_adt_parser
+
+(*************************************)
+(*********** ADT parsers *************)
+(*************************************)
+
+type adt_parser_entry =
+  | Incomplete (* Parser not completely constructed. *)
+  | Parser of (Basic.t -> OutputLiteral.t)
+
+let adt_parsers =
+  let open Caml in
+  let ht : (string, adt_parser_entry) Hashtbl.t = Hashtbl.create 10 in
+  ht
+
+let add_adt_parser adt_name parser =
+  let open Caml in
+  let _ = Hashtbl.replace adt_parsers adt_name parser in
+  ()
+
+let lookup_adt_parser_opt adt_name =
+  let open Caml in
+  Hashtbl.find_opt adt_parsers adt_name
+
+let lookup_adt_parser adt_name =
+  let open Caml in
+  match Hashtbl.find_opt adt_parsers adt_name with
+  | None -> raise (mk_invalid_json ~kind:"ADT not found" ~inst:adt_name)
+  | Some p -> p
 
 (* Generate a parser. Parse directly into OutputLiteral *)
 let gen_parser (t' : OutputType.t) (this_address : string) :
@@ -718,7 +743,7 @@ module InputStateService = struct
 
     (* | _ ->
        fatal_error
-         (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC callx") *)
+         (mk_error0 "StateIPCClient: Unexpected error making JSON-RPC call") *)
 
     let binary_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
       let socket =
@@ -783,7 +808,7 @@ module InputStateService = struct
       try
         let encoder = Pbrt.Encoder.create () in
         Ipcmessage_pb.encode_proto_scilla_query query encoder;
-        Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+        Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
       with e -> fatal_error (mk_error0 ~kind:(Exn.to_string e) ?inst:None)
 
     let decode_serialized_value value =
@@ -813,7 +838,7 @@ module InputStateService = struct
       in
       match res with
       | Some (true, res') ->
-          let decoded_pb = decode_serialized_value (Bytes.of_string res') in
+          let decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
           let res'' = deserialize_value decoded_pb tp this_address in
           Some res''
       | Some (false, _) | None -> None
