@@ -1,7 +1,10 @@
 # escape=\
 
 # Common dependencies of the builder and runner stages.
-FROM ubuntu:22.04 AS base
+FROM --platform=linux/amd64 ubuntu:22.04 AS base
+
+RUN apt-get update -y
+
 # Format guideline: one package per line and keep them alphabetically sorted
 RUN apt-get update -y \
     && apt-get install -y software-properties-common \
@@ -92,6 +95,9 @@ COPY scilla.opam .
 COPY shell.nix .
 COPY .ocamlformat .
 COPY tests/ tests
+COPY handle_connection.sh .
+COPY run_scilla_tcp.sh .
+COPY write_files.py .
 
 # Make sure vcpkg installs brings in the dependencies
 RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
@@ -115,10 +121,14 @@ RUN mkdir -p ${VCPKG_INSTALL_LIB_DIR} \
   && rm -rf vcpkg_installed \
   && ln -s ${BUILD_DIR}/vcpkg_installed vcpkg_installed
 
-FROM ubuntu:22.04
+FROM --platform=linux/amd64  ubuntu:22.04
 
 RUN apt-get update -y \
     && apt-get install -y build-essential \
+    netcat-openbsd \
+    vim \
+    socat \
+    python3 \
     libgmp-dev
 
 ARG SOURCE_DIR="/scilla/${MAJOR_VERSION}"
