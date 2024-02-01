@@ -121,7 +121,7 @@ RUN mkdir -p ${VCPKG_INSTALL_LIB_DIR} \
   && rm -rf vcpkg_installed \
   && ln -s ${BUILD_DIR}/vcpkg_installed vcpkg_installed
 
-FROM --platform=linux/amd64  ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu:22.04
 
 RUN apt-get update -y \
     && apt-get install -y build-essential \
