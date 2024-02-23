@@ -68,6 +68,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) ->
           let%bind () = walk t1 in
           walk t2
+      | ProcType (_p, args) -> forallM ~f:walk args
       | ADT (s, targs) ->
           let%bind () = is_adt_in_scope s in
           forallM ~f:walk targs
@@ -288,6 +289,7 @@ module ScillaRecursion (SR : Rep) (ER : Rep) = struct
       | MapType (t1, t2) | FunType (t1, t2) ->
           let%bind _ = walk t1 in
           walk t2
+      | ProcType (_, args) -> forallM args ~f:walk
       | ADT (s, targs) ->
           (* Only allow ADTs that are already in scope. This prevents mutually inductive definitions. *)
           let%bind _ = is_adt_in_scope s in

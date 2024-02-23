@@ -755,7 +755,7 @@ struct
           | LibVar _ | LibTyp _ -> None)
       in
       (* Returns an array with information about matched [Option] arguments
-         [Some(args)] if the [fun_name] is a procedure. *)
+         [Some(args)] if [fun_name] is a procedure. *)
       let handle_comp (cmod : cmodule) option_args_matches fun_name =
         let get_comp_args comp =
           match comp.comp_type with
@@ -769,8 +769,8 @@ struct
                     match param_ty with
                     | ADT (id, _targs) when is_option_name id ->
                         Map.set m ~key:(get_id param_id) ~data:i
-                    | ADT _ | PrimType _ | MapType _ | FunType _ | TypeVar _
-                    | PolyFun _ | Unit | Address _ ->
+                    | ADT _ | PrimType _ | MapType _ | FunType _ | ProcType _
+                    | TypeVar _ | PolyFun _ | Unit | Address _ ->
                         m)
               in
               (* Mark Option arguments that matches inside the body. *)

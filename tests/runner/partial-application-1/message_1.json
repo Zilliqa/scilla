@@ -1,0 +1,37 @@
+{
+  "_tag": "test",
+  "_amount": "0",
+  "_sender": "0x1234567890123456789012345678901234567890",
+  "params": [
+    {
+      "vname": "l",
+      "type": "List Int32",
+      "value": {
+        "constructor": "Cons",
+        "argtypes": [
+          "Int32"
+        ],
+        "arguments": [
+          "2",
+          {
+            "constructor": "Cons",
+            "argtypes": [
+              "Int32"
+            ],
+            "arguments": [
+              "1",
+              {
+                "constructor": "Nil",
+                "argtypes": [
+                  "Int32"
+                ],
+                "arguments": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "_origin": "0x1234567890123456789012345678901234567890"
+}

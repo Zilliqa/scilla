@@ -200,6 +200,14 @@ module TypeUtilities : sig
     TUType.t list ->
     (unit list, scilla_error list) result
 
+  (* Checks if types of the specified [actuals] arguments are assignable to the
+     corresponding types of [formals]. *)
+  val partial_proc_type_applies :
+    lc:ErrorUtils.loc ->
+    TUType.t list ->
+    TUType.t list ->
+    (unit list, scilla_error list) result
+
   (* Applying a type function without gas charge (for builtins) *)
   val elab_tfun_with_args_no_gas :
     TUType.t -> TUType.t list -> (TUType.t, scilla_error list) result

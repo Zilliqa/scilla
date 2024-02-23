@@ -147,6 +147,7 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
       match t with
       | PrimType _ | Unit | TypeVar _ -> 1
       | PolyFun (_, t) -> 1 + type_size t
+      | ProcType (_, args) -> 1 + List.length args
       | MapType (t1, t2) | FunType (t1, t2) -> 1 + type_size t1 + type_size t2
       | ADT (_, ts) ->
           List.fold_left ts ~init:1 ~f:(fun acc t -> acc + type_size t)
@@ -163,7 +164,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
         | MapType (_, _)
         | FunType (_, _)
         | ADT (_, _)
-        | PolyFun (_, _) ->
+        | PolyFun (_, _)
+        | ProcType (_, _) ->
             1
         | TypeVar n -> if String.(n = tvar) then tp_size else 1
         | Address AnyAddr | Address LibAddr | Address CodeAddr -> 1
@@ -201,6 +203,9 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             else
               let%bind res = recurser t' in
               pure (PolyFun (arg, res))
+        | ProcType (pname, args) ->
+            let%bind args' = mapM args ~f:recurser in
+            pure (ProcType (pname, args'))
         | Address AnyAddr | Address LibAddr | Address CodeAddr -> pure t
         | Address (ContrAddr fts) ->
             let%bind fts_res =
@@ -551,15 +556,37 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
   (*                   Typing statements                        *)
   (**************************************************************)
 
-  (* Auxiliary structure for types of fields and BC components *)
   type stmt_tenv = {
     pure : TEnv.t;
     fields : TEnv.t;
     procedures : (TCName.t * (TCType.t list * TCType.t option)) list;
   }
+  (** Auxiliary structure for types of fields and BC components *)
 
+  (** Looks up a procedure with name [pname] or a local binding to a partial
+      application of procedure. *)
   let lookup_proc env pname =
-    List.Assoc.find env.procedures ~equal:[%equal: TCName.t] (get_id pname)
+    let proc =
+      List.Assoc.find env.procedures ~equal:[%equal: TCName.t] (get_id pname)
+    in
+    match proc with
+    | None -> (
+        (* Lookup local bind to a partial application *)
+        let get_proc_type_args (rr : resolve_result) =
+          match (rr_typ rr).tp with
+          | ProcType (_proc_name, arg_tys) -> Some arg_tys
+          | _ -> None
+        in
+        match TEnv.resolveT env.pure (get_id pname) ~lopt:None with
+        | Ok bind ->
+            get_proc_type_args bind
+            |> Option.value_map
+                 ~f:(fun arg_tys ->
+                   (* Partially applied procedures never have a return type *)
+                   Some (arg_tys, None))
+                 ~default:None
+        | _ -> None)
+    | res -> res
 
   let type_map_access_helper env maptype keys =
     let rec helper maptype keys =
@@ -985,8 +1012,8 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
             @@ add_stmt_to_stmts_env_gas
                  (TypedSyntax.CreateEvnt typed_i, rep)
                  checked_stmts
-        | CallProc (id_opt, p, args) ->
-            let%bind arg_typs, ret_ty_opt =
+        | CallProc (id_opt, p, actual_args) ->
+            let%bind formal_args, ret_ty_opt =
               match lookup_proc env p with
               | Some (arg_typs, ret_ty_opt) -> pure (arg_typs, ret_ty_opt)
               | None ->
@@ -995,41 +1022,76 @@ module ScillaTypechecker (SR : Rep) (ER : Rep) = struct
                        ~inst:(as_error_string p)
                        (SR.get_loc (get_rep p)))
             in
-            let%bind typed_args =
-              let%bind targs, typed_actuals = type_actuals env.pure args in
+            let%bind targs, typed_actuals = type_actuals env.pure actual_args in
+            let is_partial_application =
+              Option.is_some id_opt
+              && List.length formal_args > List.length targs
+            in
+            if is_partial_application then
               let%bind _ =
                 fromR_TE
-                @@ proc_type_applies arg_typs targs ~lc:(SR.get_loc rep)
+                @@ partial_proc_type_applies formal_args targs
+                     ~lc:(SR.get_loc rep)
               in
-              pure typed_actuals
-            in
-            let%bind typed_id_opt, checked_stmts =
-              match id_opt with
-              | None ->
-                  let%bind checked_stmts = type_stmts comp sts get_loc env in
-                  pure @@ (None, checked_stmts)
-              | Some id -> (
-                  match ret_ty_opt with
-                  | Some ret_ty ->
-                      let typed_id = add_type_to_ident id (mk_qual_tp ret_ty) in
-                      let%bind checked_stmts =
-                        with_extended_env env get_tenv_pure
-                          [ (id, ret_ty) ]
-                          []
-                          (type_stmts comp sts get_loc)
-                      in
-                      pure @@ (Some typed_id, checked_stmts)
-                  | None ->
-                      fail
-                        (mk_type_error1
-                           ~kind:"Procedure does not return a value"
-                           ~inst:(as_error_string p)
-                           (SR.get_loc (get_rep p))))
-            in
-            pure
-            @@ add_stmt_to_stmts_env_gas
-                 (TypedSyntax.CallProc (typed_id_opt, p, typed_args), rep)
-                 checked_stmts
+              let id = Option.value_exn id_opt in
+              let proc_name =
+                SIdentifier.Name.as_string (SIdentifier.get_id p)
+              in
+              let unapplied_formal_args =
+                List.sub formal_args
+                  ~pos:(List.length targs - 1)
+                  ~len:(List.length formal_args - List.length targs)
+              in
+              let partial_applied_type =
+                ProcType (proc_name, unapplied_formal_args)
+              in
+              let typed_id =
+                add_type_to_ident id (mk_qual_tp partial_applied_type)
+              in
+              let%bind checked_stmts =
+                with_extended_env env get_tenv_pure
+                  [ (id, partial_applied_type) ]
+                  []
+                  (type_stmts comp sts get_loc)
+              in
+              pure
+              @@ add_stmt_to_stmts_env_gas
+                   (TypedSyntax.CallProc (Some typed_id, p, typed_actuals), rep)
+                   checked_stmts
+            else
+              let%bind _ =
+                fromR_TE
+                @@ proc_type_applies formal_args targs ~lc:(SR.get_loc rep)
+              in
+              let%bind typed_id_opt, checked_stmts =
+                match id_opt with
+                | None ->
+                    let%bind checked_stmts = type_stmts comp sts get_loc env in
+                    pure @@ (None, checked_stmts)
+                | Some id -> (
+                    match ret_ty_opt with
+                    | Some ret_ty ->
+                        let typed_id =
+                          add_type_to_ident id (mk_qual_tp ret_ty)
+                        in
+                        let%bind checked_stmts =
+                          with_extended_env env get_tenv_pure
+                            [ (id, ret_ty) ]
+                            []
+                            (type_stmts comp sts get_loc)
+                        in
+                        pure @@ (Some typed_id, checked_stmts)
+                    | None ->
+                        fail
+                          (mk_type_error1
+                             ~kind:"Procedure does not return a value"
+                             ~inst:(as_error_string p)
+                             (SR.get_loc (get_rep p))))
+              in
+              pure
+              @@ add_stmt_to_stmts_env_gas
+                   (TypedSyntax.CallProc (typed_id_opt, p, typed_actuals), rep)
+                   checked_stmts
         | Iterate (l, p) -> (
             let%bind lt =
               fromR_TE

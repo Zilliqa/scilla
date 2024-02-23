@@ -188,7 +188,7 @@ let assert_no_address_type_in_type t gas_remaining =
         let () = recurser kt in
         recurser vt
     | ADT (_, ts) -> List.iter ts ~f:recurser
-    | FunType _ | TypeVar _ | PolyFun _ | Unit ->
+    | FunType _ | ProcType _ | TypeVar _ | PolyFun _ | Unit ->
         fatal_error_gas_scale Gas.scale_factor
           (mk_error0 ~kind:"Illegal type in json file" ~inst:(pp_typ t))
           gas_remaining

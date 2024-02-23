@@ -216,6 +216,7 @@ functor
           | FunType (at, rt) ->
               let%bind () = is_wf_typ' at tb in
               is_wf_typ' rt tb
+          | ProcType (_, args) -> forallM args ~f:(fun ty -> is_wf_typ' ty tb)
           | ADT (n, ts) ->
               let open Datatypes.DataTypeDictionary in
               let%bind adt = lookup_name ~sloc:(get_rep n) (get_id n) in
@@ -348,8 +349,8 @@ module TypeUtilities = struct
     | _ -> true
 
   let rec is_legal_type_helper ~allow_maps ~allow_messages_events
-      ~allow_closures ~allow_polymorphism ~allow_unit ~check_addresses t
-      seen_adts seen_tvars =
+      ~allow_closures ~allow_polymorphism ~allow_partial_procedures ~allow_unit
+      ~check_addresses t seen_adts seen_tvars =
     let rec recurser t seen_adts seen_tvars =
       match t with
       | FunType (a, r) ->
@@ -358,6 +359,7 @@ module TypeUtilities = struct
           && recurser r seen_adts seen_tvars
       | PolyFun (tvar, t) ->
           allow_polymorphism && recurser t seen_adts (tvar :: seen_tvars)
+      | ProcType _ -> allow_partial_procedures
       | Unit -> allow_unit
       | MapType (kt, vt) ->
           allow_maps
@@ -402,47 +404,54 @@ module TypeUtilities = struct
   and is_legal_field_type_helper t seen_adts seen_tvars =
     (* Maps are allowed. Address values should be checked for storable field types. *)
     is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:true t seen_adts seen_tvars
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:true t
+      seen_adts seen_tvars
 
   let is_legal_message_field_type t =
     (* Maps are not allowed. Address values are considered ByStr20 when used as message field value. *)
     is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:false t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:false t
+      [] []
 
   let is_legal_transition_parameter_type t =
     (* Maps are not allowed. Address values should be checked for storable field types. *)
     is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:true t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:true t
+      [] []
 
   let is_legal_procedure_parameter_type t =
-    (* Like transition parametes, except messages, events and closures are allowed,
+    (* Like transition parameters, except messages, events and closures are allowed,
        since parameters do not need to be serializable. *)
     is_legal_type_helper ~allow_maps:false ~allow_messages_events:true
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:true t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:true t
+      [] []
 
   let is_legal_contract_parameter_type t =
     (* Like transitions parameters, except maps are allowed (due to an exploited bug). Address values should be checked for storable field types. *)
     is_legal_type_helper ~allow_maps:true ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:true t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:true t
+      [] []
 
   let is_legal_field_type t = is_legal_field_type_helper t [] []
 
   let is_legal_hash_argument_type t =
     (* Only closures and type closures are disallowed. Addresses behave like ByStr20. *)
     is_legal_type_helper ~allow_maps:true ~allow_messages_events:true
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:false t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:false t
+      [] []
 
   let is_legal_map_key_type t =
     (* Only primitive (non-message and non-event) types are allowed. Addresses behave like ByStr20, and are thus allowed. *)
     is_legal_type_helper ~allow_maps:false ~allow_messages_events:false
-      ~allow_closures:false ~allow_polymorphism:false ~allow_unit:false
-      ~check_addresses:false t [] []
+      ~allow_closures:false ~allow_polymorphism:false
+      ~allow_partial_procedures:false ~allow_unit:false ~check_addresses:false t
+      [] []
 
   let get_msgevnt_type m lc =
     let open ContractUtil.MessagePayload in
@@ -541,6 +550,13 @@ module TypeUtilities = struct
       ~msg:(fun () ->
         mk_error1 ~kind:"Incorrect number of arguments to procedure" ?inst:None
           lc)
+
+  let partial_proc_type_applies ~lc formals actuals =
+    if List.length formals < List.length actuals then
+      fail (mk_error1 ~kind:"Extra arguments in procedure call" ?inst:None lc)
+    else
+      let formals' = List.sub ~pos:0 ~len:(List.length actuals) formals in
+      proc_type_applies ~lc formals' actuals
 
   let rec elab_tfun_with_args_no_gas tf args =
     match (tf, args) with

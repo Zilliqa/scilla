@@ -129,14 +129,21 @@ module type ScillaType = sig
   [@@deriving sexp]
 
   type t =
-    | PrimType of PrimType.t
-    | MapType of t * t
+    | PrimType of PrimType.t  (** [PrimType(T)] represents a primary type *)
+    | MapType of t * t  (** [MapType(K, V)] is a mapping type: [K |-> V] *)
     | FunType of t * t
+        (** [FunType(Ty1, Ty2)] is a function type: [Ty1 => Ty2]  *)
     | ADT of loc TIdentifier.t * t list
-    | TypeVar of string
+        (** [ADT(N, Args)] represents ADT type [N] with type parameters [Args] *)
+    | TypeVar of string  (** [TypeVar(T)] is a type variable *)
     | PolyFun of string * t
-    | Unit
-    | Address of t addr_kind
+        (** [PolyFun('A, T)] represents a polymorphic function type where
+          ['A] is a type parameter. For example: [forall 'A. List 'a -> List 'A] *)
+    | ProcType of string * t list
+        (** [ProcType(P, Args)] is a type of partial application of procedure
+            [P] which has formal arguments with types [Args] *)
+    | Unit  (** [Unit] is a unit type *)
+    | Address of t addr_kind  (** [Address(A)] represents address *)
   [@@deriving sexp, to_yojson]
 
   val pp_typ : t -> string
@@ -223,6 +230,7 @@ module MkType (I : ScillaIdentifier) = struct
     | ADT of loc TIdentifier.t * t list
     | TypeVar of string
     | PolyFun of string * t
+    | ProcType of string * t list
     | Unit
     | Address of (t addr_kind[@to_yojson fun _ -> `String "Address"])
   [@@deriving sexp, to_yojson]
@@ -239,6 +247,9 @@ module MkType (I : ScillaIdentifier) = struct
           in
           String.concat ~sep:" " elems
       | FunType (at, vt) -> sprintf "%s -> %s" (with_paren at) (recurser vt)
+      | ProcType (p, args_tys) ->
+          sprintf "%s (%s)" p
+            (List.map args_tys ~f:recurser |> String.concat ~sep:", ")
       | TypeVar tv -> tv
       | PolyFun (tv, bt) -> sprintf "forall %s. %s" tv (recurser bt)
       | Unit -> sprintf "()"
@@ -280,6 +291,8 @@ module MkType (I : ScillaIdentifier) = struct
       | PrimType _ | Unit -> acc
       | MapType (kt, vt) -> go kt acc |> go vt
       | FunType (at, rt) -> go at acc |> go rt
+      | ProcType (_, args) ->
+          List.fold_left args ~init:[] ~f:(fun acc arg -> go arg acc)
       | TypeVar n -> add acc n
       | ADT (_, ts) -> List.fold_left ts ~init:acc ~f:(Fn.flip go)
       | PolyFun (arg, bt) ->
@@ -314,6 +327,9 @@ module MkType (I : ScillaIdentifier) = struct
         let ats = subst_type_in_type tvar tp at in
         let rts = subst_type_in_type tvar tp rt in
         FunType (ats, rts)
+    | ProcType (p, args_tys) ->
+        let args_tyss = List.map args_tys ~f:(subst_type_in_type tvar tp) in
+        ProcType (p, args_tyss)
     | TypeVar n -> if String.(tvar = n) then tp else tm
     | ADT (s, ts) ->
         let ts' = List.map ts ~f:(subst_type_in_type tvar tp) in
@@ -337,6 +353,8 @@ module MkType (I : ScillaIdentifier) = struct
       match t with
       | MapType (kt, vt) -> MapType (kt, recursor vt taken)
       | FunType (at, rt) -> FunType (recursor at taken, recursor rt taken)
+      | ProcType (p, args_tys) ->
+          ProcType (p, List.map args_tys ~f:(fun ty -> recursor ty taken))
       | ADT (n, ts) ->
           let ts' = List.map ts ~f:(fun w -> recursor w taken) in
           ADT (n, ts')

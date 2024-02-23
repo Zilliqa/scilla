@@ -83,6 +83,48 @@ let sanitize_literal l =
   if is_legal_message_field_type t then pure l
   else fail0 ~kind:"Cannot serialize literal" ~inst:(pp_literal l)
 
+(** Looks up for a partial application of procedure bounded to a local variable
+    named [p].  *)
+let find_partial_appication (conf : Configuration.t) (p : loc SIdentifier.t) :
+    ( component * component list,
+      ErrorUtils.scilla_error list,
+      'b -> 'c )
+    CPSMonad.t =
+  let process_local_bind (local_bind : SLiteral.t) =
+    match literal_type local_bind with
+    | Ok (ProcType (proc_name, _args)) -> (
+        match Configuration.lookup_procedure conf p with
+        | Some (proc, p_rest) -> pure @@ (proc, p_rest)
+        | None ->
+            fail0
+              ~kind:(Printf.sprintf "Cannot find procedure %s" proc_name)
+              ~inst:(as_error_string p))
+    | Error e -> (* Literal typing error *) fail e
+    | _ ->
+        fail0
+          ~kind:
+            (Printf.sprintf "%s is not a procedure and cannot be called"
+               (SIdentifier.Name.as_string (SIdentifier.get_id p)))
+          ~inst:(as_error_string p)
+  in
+  match Env.lookup conf.env p with
+  | Ok local_bind -> process_local_bind local_bind
+  | Error _ ->
+      fail0
+        ~kind:
+          (Printf.sprintf "Identifier %s is not found"
+             (SIdentifier.Name.as_string (SIdentifier.get_id p)))
+        ~inst:(as_error_string p)
+
+(** Applies [p] as is implemented in [apply]. [p] may be a procedure name or a
+    local bind to a partial application of procedure. *)
+let apply_procedure ~apply conf p =
+  match Configuration.lookup_procedure conf p with
+  | Some (proc, p_rest) -> apply proc p_rest
+  | None ->
+      let%bind proc, p_rest = find_partial_appication conf p in
+      apply proc p_rest
+
 let eval_gas_charge env g =
   let open MonadUtil in
   let open Result.Let_syntax in
@@ -164,6 +206,7 @@ let replace_address_types l =
     | Address _ -> bystrx_typ Type.address_length
     | MapType (kt, vt) -> MapType (replace_in_type kt, replace_in_type vt)
     | FunType (t1, t2) -> FunType (replace_in_type t1, replace_in_type t2)
+    | ProcType (p, args) -> ProcType (p, List.map args ~f:replace_in_type)
     | ADT (tname, targs) -> ADT (tname, List.map targs ~f:replace_in_type)
   in
   let replace_in_literal l =
@@ -486,32 +529,36 @@ let rec stmt_eval conf stmts =
           let%bind conf' = Configuration.create_event conf eparams_resolved in
           stmt_eval conf' sts
       | CallProc (id_opt, p, actuals) ->
-          (* Resolve the actuals *)
-          let%bind args =
-            mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
+          let apply proc p_rest =
+            (* Resolve the actuals *)
+            let%bind args =
+              mapM actuals ~f:(fun arg -> fromR @@ Env.lookup conf.env arg)
+            in
+            (* Apply procedure. No gas charged for the application *)
+            let%bind conf' = try_apply_as_procedure conf proc p_rest args in
+            (* Bind the return of [p] if it returns. *)
+            let%bind conf' =
+              match id_opt with
+              | Some id -> Configuration.procedure_return conf' id
+              | None -> pure @@ conf'
+            in
+            stmt_eval conf' sts
           in
-          let%bind proc, p_rest = Configuration.lookup_procedure conf p in
-          (* Apply procedure. No gas charged for the application *)
-          let%bind conf' = try_apply_as_procedure conf proc p_rest args in
-          (* Bind the return of [p] if it returns. *)
-          let%bind conf' =
-            match id_opt with
-            | Some id -> Configuration.procedure_return conf' id
-            | None -> pure @@ conf'
-          in
-          stmt_eval conf' sts
+          apply_procedure ~apply conf p
       | Iterate (l, p) ->
-          let%bind l_actual = fromR @@ Env.lookup conf.env l in
-          let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
-          let%bind proc, p_rest = Configuration.lookup_procedure conf p in
-          let%bind conf' =
-            foldM l' ~init:conf ~f:(fun confacc arg ->
-                let%bind conf' =
-                  try_apply_as_procedure confacc proc p_rest [ arg ]
-                in
-                pure conf')
+          let apply proc p_rest =
+            let%bind l_actual = fromR @@ Env.lookup conf.env l in
+            let%bind l' = fromR @@ Datatypes.scilla_list_to_ocaml l_actual in
+            let%bind conf' =
+              foldM l' ~init:conf ~f:(fun confacc arg ->
+                  let%bind conf' =
+                    try_apply_as_procedure confacc proc p_rest [ arg ]
+                  in
+                  pure conf')
+            in
+            stmt_eval conf' sts
           in
-          stmt_eval conf' sts
+          apply_procedure ~apply conf p
       | Throw eopt ->
           let%bind estr =
             match eopt with

@@ -64,6 +64,7 @@ struct
       | PrimType _ | Unit | TypeVar _ -> ty
       | MapType (ty1, ty2) -> MapType (walk ty1, walk ty2)
       | FunType (ty1, ty2) -> FunType (walk ty1, walk ty2)
+      | ProcType (p, args) -> ProcType (p, List.map args ~f:walk)
       | PolyFun (tv, ty) -> PolyFun (tv, walk ty)
       | ADT (tid, tys) ->
           ADT (map_id fl tid, List.map tys ~f:(fun ty -> walk ty))

@@ -149,6 +149,8 @@ struct
         (* TODO: test MapType and PolyFun pretty-printing *)
       | MapType (kt, vt) ->
           parens_if (p > 0) @@ map_kwd ^//^ (of_type_with_prec 1 kt) ^/^ (of_type_with_prec 1 vt)
+      | ProcType _ ->
+          failwith "ProcType annotation cannot appear in source code"
       | PolyFun (tv, bt) ->
           parens_if (p > 0) @@ forall_kwd ^^^ !^tv ^^ dot ^//^ (of_type_with_prec 0 bt)
       | ADT (tid, tys) ->
