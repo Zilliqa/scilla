@@ -98,6 +98,8 @@ module Tests = Scilla_test.Util.DiffBasedTests (struct
       "dead_code_test18.scilla";
       "simple-dex-remote-reads.scilla";
       "type_casts.scilla";
+      "accounting_tests.scilla";
+      "accounting_tests_support.scilla";
       "timestamp.scilla";
       "codehash.scilla";
       "chainid.scilla";

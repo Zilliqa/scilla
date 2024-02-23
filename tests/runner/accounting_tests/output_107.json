@@ -1,0 +1,25 @@
+{
+  "gas_remaining": "7937",
+  "errors": [
+    {
+      "error_message":
+        "Exception thrown: (Message [(_exception : (String \"Unexpected balance\")) ; (expected : (Uint128 30)) ; (actual : (Uint128 20))])",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 208,
+        "column": 5
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    },
+    {
+      "error_message": "Raised from CheckSenderBalance",
+      "start_location": {
+        "file": "tests/contracts/accounting_tests.scilla",
+        "line": 212,
+        "column": 12
+      },
+      "end_location": { "file": "", "line": 0, "column": 0 }
+    }
+  ],
+  "warnings": []
+}

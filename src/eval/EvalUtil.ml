@@ -193,40 +193,19 @@ module Configuration = struct
             ~inst:(EvalName.as_error_string i)
             (ER.get_loc (get_rep k))
 
-  let remote_load st caddr k =
+  let remote_load caddr k =
     let%bind fval =
       fromR
       @@ StateService.external_fetch ~caddr ~fname:k ~keys:[] ~ignoreval:false
     in
     match fval with
-    | Some v, _ ->
-        (* _sender._balance is a special case if funds have been accepted. _amount must be deducted. *)
-        let%bind sender_addr = lookup_sender_addr st in
-        if
-          st.accepted
-          && EvalLiteral.Bystrx.equal sender_addr caddr
-          && EvalName.equal (get_id k) balance_label
-        then
-          let%bind amount_lit =
-            fromR
-            @@ lookup st
-                 (mk_loc_id (label_name_of_string MessagePayload.amount_label))
-          in
-          match (v, amount_lit) with
-          | UintLit (Uint128L sender_balance), UintLit (Uint128L amount)
-            when Uint128.compare sender_balance amount >= 0 ->
-              pure
-              @@ EvalLiteral.UintLit
-                   (Uint128L Uint128.(sender_balance - amount))
-          | _ ->
-              fail0 ~kind:"Unexpected sender balance or amount literal"
-                ~inst:
-                  (sprintf "sender balance = %s, amount = %s" (pp_literal v)
-                     (pp_literal amount_lit))
-        else pure v
+    | Some v, _ -> pure v
     | _ ->
-        fail1 ~kind:"Error loading field"
-          ~inst:(EvalName.as_error_string (get_id k))
+        fail1 ~kind:"Error loading remote field"
+          ~inst:
+            (Printf.sprintf "%s at address %s"
+               (EvalName.as_error_string (get_id k))
+               (SLiteral.Bystrx.hex_encoding caddr))
           (ER.get_loc (get_rep k))
 
   let remote_field_type caddr k =
@@ -396,37 +375,11 @@ module Configuration = struct
     if st.accepted then (* Do nothing *)
       pure st
     else
-      (* Check that sender balance is sufficient *)
-      let%bind sender_addr = lookup_sender_addr st in
-      let%bind sender_balance_l =
-        remote_load st sender_addr (mk_loc_id balance_label)
-      in
       let incoming' = st.incoming_funds in
-      match sender_balance_l with
-      | UintLit (Uint128L sender_balance) ->
-          if Uint128.compare incoming' sender_balance > 0 then
-            fail0 ~kind:"Insufficient sender balance for acceptance"
-              ~inst:
-                ("Incoming vs sender_balance: "
-                ^ Uint128.to_string incoming'
-                ^ " vs "
-                ^ Uint128.to_string sender_balance)
-          else if
-            (* Although unsigned integer is used, and this check isn't
-             * necessary, we have it just in case, somehow a malformed
-             * Uint128 literal manages to reach here. *)
-            Uint128.compare incoming' Uint128.zero >= 0
-          then
-            let balance = Uint128.add st.balance incoming' in
-            let accepted = true in
-            let incoming_funds = Uint128.zero in
-            pure @@ { st with balance; accepted; incoming_funds }
-          else
-            fail0 ~kind:"Incoming balance is negative (somehow)"
-              ~inst:(Uint128.to_string incoming')
-      | _ ->
-          fail0 ~kind:"Unrecognized balance literal at sender"
-            ~inst:(pp_literal sender_balance_l)
+      let balance = Uint128.add st.balance incoming' in
+      let accepted = true in
+      let incoming_funds = Uint128.zero in
+      pure @@ { st with balance; accepted; incoming_funds }
 
   (** Implements returning value from the current procedure.
       The return result will be bind to [id]. *)
@@ -473,7 +426,7 @@ module Configuration = struct
                  String.compare s t)
         in
         if tag_found && amount_found && recipient_found && uniq_entries then
-          pure m'
+          pure ()
         else
           fail0
             ~kind:"Message is missing a mandatory field or has duplicate fields"
@@ -484,10 +437,32 @@ module Configuration = struct
 
   let send_messages conf ms =
     let%bind ls' = fromR @@ Datatypes.scilla_list_to_ocaml ms in
-    let%bind ls = mapM ~f:validate_outgoing_message ls' in
+    let%bind () = forallM ~f:validate_outgoing_message ls' in
+    let%bind out_funds =
+      foldM ls' ~init:Uint128.zero ~f:(fun run_total msg_lit ->
+          match msg_lit with
+          | SLiteral.Msg msg ->
+              let%bind amount = fromR @@ MessagePayload.get_amount msg in
+              pure Uint128.(run_total + amount)
+          | _ ->
+              fail0
+                ~kind:
+                  "Literal verified as a message, but is not a message literal"
+                ~inst:(pp_literal msg_lit))
+    in
     let old_emitted = conf.emitted in
-    let emitted = old_emitted @ ls in
-    pure { conf with emitted }
+    let emitted = old_emitted @ ls' in
+    let old_balance = conf.balance in
+    let%bind balance =
+      if Uint128.compare old_balance out_funds < 0 then
+        fail0 ~kind:"Balance too low for outgoing message"
+          ~inst:
+            (sprintf "Current balance: %s. Required balance: %s"
+               (Uint128.to_string old_balance)
+               (Uint128.to_string out_funds))
+      else pure @@ Uint128.(old_balance - out_funds)
+    in
+    pure { conf with emitted; balance }
 
   let validate_event m' =
     let open EvalLiteral in

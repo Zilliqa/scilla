@@ -443,7 +443,7 @@ let contract_tests env =
                      "init" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
                 >::: build_contract_tests ~pplit:false env "remote_state_reads"
-                       succ_code 1 11 [];
+                       succ_code 1 10 [];
                 "remote_state_reads_2"
                 >::: build_contract_tests ~pplit:false env
                        "remote_state_reads_2" succ_code 1 5 [];
@@ -471,6 +471,12 @@ let contract_tests env =
                        "address_list_traversal" succ_code 1 2 [];
                 "type_casts"
                 >::: build_contract_tests env "type_casts" succ_code 1 37 [];
+                "accounting_tests"
+                >::: build_contract_tests env "accounting_tests" succ_code 1 25
+                       [];
+                "accounting_tests_support"
+                >::: build_contract_tests env "accounting_tests_support"
+                       succ_code 1 7 [];
                 "addfunds_proxy"
                 >::: build_contract_tests env "addfunds_proxy" succ_code 1 2 [];
                 "addfunds"
@@ -574,7 +580,7 @@ let contract_tests env =
                      "init_address_type" ~is_library:false ~ipc_mode:true;
                 "remote_state_reads"
                 >::: build_contract_tests env "remote_state_reads" fail_code 101
-                       131 [];
+                       130 [];
                 "map_as_cparam"
                 >: build_contract_init_test env fail_code "map_as_cparam"
                      "init_illegal_key" ~is_library:false ~ipc_mode:true;
@@ -597,6 +603,9 @@ let contract_tests env =
                 >: build_contract_init_test env fail_code
                      "address_list_as_cparam" "init_address_type"
                      ~is_library:false ~ipc_mode:true;
+                "accounting_tests"
+                >::: build_contract_tests env "accounting_tests" fail_code 100
+                       109 [];
                 "ark-store-hashes-in-mutable-maps-idempotent"
                 >::: build_contract_tests env "ark" fail_code 2 2 [];
               ];

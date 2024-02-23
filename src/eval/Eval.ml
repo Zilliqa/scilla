@@ -376,7 +376,7 @@ let rec stmt_eval conf stmts =
           let%bind a = fromR @@ Configuration.lookup conf adr in
           match a with
           | ByStrX s' when Bystrx.width s' = Type.address_length ->
-              let%bind l = Configuration.remote_load conf s' r in
+              let%bind l = Configuration.remote_load s' r in
               let conf' = Configuration.bind conf (get_id x) l in
               stmt_eval conf' sts
           | _ ->
@@ -964,8 +964,6 @@ let handle_message (tenv, incoming_funds, procedures, stmts, tname) cstate =
   in
   let new_msgs = conf'.emitted in
   let new_events = conf'.events in
-  (* Make sure that we aren't too generous and subract funds *)
-  let%bind cstate'' = post_process_msgs cstate' new_msgs in
 
   (*Return new contract state, messages and events *)
-  pure (cstate'', new_msgs, new_events, conf'.accepted)
+  pure (cstate', new_msgs, new_events, conf'.accepted)

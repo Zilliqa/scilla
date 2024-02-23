@@ -1,7 +1,23 @@
 {
-    "_tag": "SenderBalanceTest",
-    "_amount": "100",
-    "_sender": "0x5c6712c8f3b049e98e733cfdb38a8e37a1c724c0",
-    "params": [],
-    "_origin": "0x5c6712c8f3b049e98e733cfdb38a8e37a1c724c0"
+    "_tag": "RemoteReadsTest",
+    "_amount": "0",
+    "_sender": "0xabfeccdc9012345678901234567890f777564322",
+    "params": [
+        {
+            "vname" : "remote1",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564323"
+        },
+        {
+            "vname" : "remote2",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564324"
+        },
+        {
+            "vname" : "remote3",
+            "type" : "ByStr20",
+            "value" : "0xabfeccdc9012345678901234567890f777564325"
+        }
+    ],
+    "_origin": "0xabfeccdc9012345678901234567890f777564322"
 }
