@@ -292,6 +292,8 @@ let build_misc_tests env =
       [
         "-init";
         tests_dir_file env.tests_dir test_ctxt ("init_bad" ^ snum ^. "json");
+        "-gaslimit";
+        testsuit_gas_limit;
         "-libdir";
         "src" ^/ "stdlib";
         "-jsonerrors";

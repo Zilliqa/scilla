@@ -85,7 +85,9 @@ let build_prim_lit_exn t v =
       ~inst:(v ^ " of type " ^ pp_typ t)
   in
   let build_prim_literal_of_type t v =
-    match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
+    try
+      match build_prim_literal t v with Some v' -> v' | None -> raise (exn ())
+    with Invalid_argument _ -> raise (exn ())
   in
   match t with
   | PrimType pt -> build_prim_literal_of_type pt v
