@@ -4,7 +4,7 @@
  (wrapped true)
  (modes byte native)
  (libraries core core_unix.sys_unix angstrom stdint yojson cryptokit
-   scilla_base rpclib unix rpclib.json rresult ocaml-protoc)
+   scilla_base rpclib unix rpclib.json rresult ocaml-protoc ezcurl)
  (preprocess
   (pps ppx_sexp_conv ppx_let bisect_ppx --conditional ppx_deriving_rpc
     ppx_deriving.show ppx_compare))
