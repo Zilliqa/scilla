@@ -18,6 +18,7 @@ RUN apt-get update -y \
     git \
     lcov \
     libcurl4-openssl-dev \
+    libev-dev \
     libgmp-dev \
     libpcre3-dev \
     libssl-dev \
@@ -119,9 +120,9 @@ FROM ubuntu:22.04
 
 RUN apt-get update -y \
     && apt-get install -y build-essential \
+    libev-dev \
     libgmp-dev
 
 ARG SOURCE_DIR="/scilla/${MAJOR_VERSION}"
 
 COPY --from=builder ${SOURCE_DIR}       ${SOURCE_DIR}
-

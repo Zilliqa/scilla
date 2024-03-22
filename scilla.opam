@@ -49,6 +49,8 @@ depends: [
   "seq"
   "stdint" {>= "0.5.1" & < "0.8~"}
   "yojson" {>= "1.7.0" & < "2.1~"}
+  "opium"  {>= "0.20.0" & < "1.0.0"}
+  "ezcurl" {>= "0.2.4" & < "0.3.0"}
 ]
 build: [
   [ "./scripts/build_deps.sh" ]
