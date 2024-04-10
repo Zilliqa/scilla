@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - 'master'
+      - 'main-zq2'
 
 jobs:
   run-tests:
@@ -20,6 +21,7 @@ jobs:
     runs-on: docker
     env:
       GCP_REGISTRY_DOMAIN: asia-docker.pkg.dev
+      GCP_REGISTRY: asia-docker.pkg.dev/${{ secrets.GCP_PRD_REGISTRY_PROJECT_ID }}/zilliqa-private
     steps:
     - name: Clean environment
       # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
@@ -33,28 +35,23 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ inputs.commitOrTag }}
-    - name: Configure AWS Credentials
-      uses: Zilliqa/gh-actions-workflows/actions/configure-aws-credentials@v1
+    - name: "Configure GCP Credentials"
+      id: google-auth
+      uses: "google-github-actions/auth@v1"
       with:
-        role-to-assume: ${{ secrets.ECR_DEPLOYER_ROLE }}
-        oidc-role: ${{ secrets.OIDC_ROLE }}
-        aws-region: ${{ secrets.AWS_REGION_ZILLIQA }}
-    - name: Login to the registry
+        token_format: "access_token"
+        workload_identity_provider: "${{ secrets.GCP_PRD_GITHUB_WIF }}"
+        service_account: "${{ secrets.GCP_PRD_GITHUB_SA_DOCKER_REGISTRY }}"
+        create_credentials_file: true
+    - name: Login to the GCP registry
       uses: docker/login-action@v2
       with:
-        registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
-    - name: Build Docker images
-      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
-      with:
-        file: docker/Dockerfile
-        push: true
-        tag: scilla:tests
         registry: ${{ env.GCP_REGISTRY_DOMAIN }}
-        build-args: |
-          ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}
-        workload-identity-provider: "${{ secrets.GCP_PRD_GITHUB_WIF }}"
-        service-account: "${{ secrets.GCP_STG_GITHUB_SA_DOCKER_REGISTRY }}"
-        cache-key: ${{ github.event.repository.name }}
+        username: "oauth2accesstoken"
+        password: "${{ steps.google-auth.outputs.access_token }}"
+    - name: Build Docker images
+      run: DOCKER_BUILDKIT=1 docker build -t scilla:test -f docker/Dockerfile.test .
+      shell: bash
     - name: Run make test
       run: |
         docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test'
