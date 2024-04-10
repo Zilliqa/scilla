@@ -7,7 +7,7 @@ WORKDIR /scilla/0/
 COPY . /scilla/0/
 
 RUN apt update \
-  && apt install -y sudo
+  && apt install -y sudo opam
 
 RUN eval $(opam env) \
   && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib opam install reason.3.8.2 --yes
