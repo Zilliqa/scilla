@@ -91,9 +91,7 @@ COPY .ocamlformat .
 COPY tests/ tests
 
 RUN make opamdep-ci \
-    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
-    && eval $(opam env) \
-    && make
+    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc
 
 
 WORKDIR /scilla/0/
