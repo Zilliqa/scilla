@@ -41,7 +41,7 @@ RUN apt-get update -y \
     zlib1g-dev \
     && apt-get remove -y cmake python2 python3 && apt-get autoremove -y
 
- CMake 3.24
+# CMake 3.24
 ARG CMAKE_VERSION=3.24.2
 RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
     && mkdir -p "${HOME}"/.local \
