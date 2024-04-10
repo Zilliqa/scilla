@@ -27,6 +27,7 @@ jobs:
       # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
       shell: bash
       run: |
+        docker-buildx-plugin \
         docker system df
         docker system prune -a -f --filter "until=336h"
         docker system df
@@ -50,7 +51,7 @@ jobs:
         username: "oauth2accesstoken"
         password: "${{ steps.google-auth.outputs.access_token }}"
     - name: Build Docker images
-      run: docker build -t scilla:tests -f docker/Dockerfile.test .
+      run: DOCKER_BUILDKIT=1 docker build -t scilla:tests -f docker/Dockerfile.test .
       shell: bash
     - name: Run make test
       run: |
