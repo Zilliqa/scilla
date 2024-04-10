@@ -18,6 +18,8 @@ jobs:
       contents: write
     name: tests
     runs-on: docker
+    env:
+      GCP_REGISTRY_DOMAIN: asia-docker.pkg.dev
     steps:
     - name: Clean environment
       # Prune the Docker resources created over 10 days before the current execution (change the value for a more/less aggressive cleanup).
@@ -42,9 +44,17 @@ jobs:
       with:
         registry: ${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}.dkr.ecr.${{ secrets.AWS_REGION_ZILLIQA }}.amazonaws.com
     - name: Build Docker images
-      run: |
-        DOCKER_BUILDKIT=1 docker build -t scilla:tests --build-arg ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }} -f docker/Dockerfile.test .
-      shell: bash
+      uses: Zilliqa/gh-actions-workflows/actions/ci-dockerized-app-build-push@v1
+      with:
+        file: docker/Dockerfile
+        push: true
+        tag: scilla:tests
+        registry: ${{ env.GCP_REGISTRY_DOMAIN }}
+        build-args: |
+          ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID_ZILLIQA }}
+        workload-identity-provider: "${{ secrets.GCP_PRD_GITHUB_WIF }}"
+        service-account: "${{ secrets.GCP_STG_GITHUB_SA_DOCKER_REGISTRY }}"
+        cache-key: ${{ github.event.repository.name }}
     - name: Run make test
       run: |
         docker run --rm -i scilla:tests bash -c 'eval $(opam env) && LD_LIBRARY_PATH=/scilla/0/vcpkg_installed/x64-linux-dynamic/lib make test'
