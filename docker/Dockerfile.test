@@ -6,7 +6,6 @@ FROM ubuntu:22.04 AS base
 RUN apt-get update -y \
     && apt-get install -y software-properties-common \
     && apt-get update && apt-get install -y --no-install-recommends \
-    docker-buildx-plugin \
     autoconf \
     bison \
     build-essential \
