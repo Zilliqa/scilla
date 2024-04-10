@@ -50,7 +50,7 @@ jobs:
         username: "oauth2accesstoken"
         password: "${{ steps.google-auth.outputs.access_token }}"
     - name: Build Docker images
-      run: DOCKER_BUILDKIT=1 docker build -t scilla:test -f docker/Dockerfile.test .
+      run: docker build -t scilla:test -f docker/Dockerfile.test .
       shell: bash
     - name: Run make test
       run: |
