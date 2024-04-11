@@ -54,7 +54,7 @@ let run_handler req =
   let res =
     try M.run (rpc req)
     with e ->
-      print_endline (Exn.to_string e);
+      DebugMessage.plog (Exn.to_string e);
       Rpc.failure
         (RPCError.rpc_of_t
            RPCError.
