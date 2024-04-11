@@ -53,30 +53,30 @@ let ipcclient_exn_wrapper thunk =
       fail0 ~kind:("StateIPCClient: Unix error: " ^ s1 ^ s2) ?inst:None
   | e ->
       let e = Exn.to_string e in
-      print_endline (Printf.sprintf "error making JSON-RPC call: %s" e);
+      DebugMessage.plog (Printf.sprintf "error making JSON-RPC call: %s" e);
       fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call"
         ?inst:None
 
 let http_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
-  print_endline (Printf.sprintf "Sending: %s\n" msg_buf);
+  DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   let exception Http_error of string in
   let response =
     match Ezcurl.post ~headers:["content-type", "application/json"] ~content:(`String msg_buf) ~params:[] ~url:socket_addr () with
     | Ok response -> response
     | Error (_, err) -> (
-      print_endline (Printf.sprintf "error calling RPC: %s" err);
+      DebugMessage.plog (Printf.sprintf "error calling RPC: %s" err);
       raise (Http_error (Printf.sprintf "error calling RPC: %s" err))
     )
   in
 
   let response = if response.code = 200 then response.body else (
-    print_endline (Printf.sprintf "error response from RPC: code: %d, body: %s" response.code response.body);
+    DebugMessage.plog (Printf.sprintf "error response from RPC: code: %d, body: %s" response.code response.body);
     raise (Http_error "error response from RPC")
   )
   in
 
-  print_endline (Printf.sprintf "Response: %s\n" response);
+  DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
   M.return @@ Jsonrpc.response_of_string response
 
 (* Encode a literal into bytes, opaque to the backend storage. *)
