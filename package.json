@@ -48,7 +48,9 @@
     "@opam/ppx_deriving_rpc": ">=6.0.0 <10.0.0",
     "@opam/secp256k1": ">=0.4.4 <0.5.0",
     "@opam/stdint": ">=0.5.1 <0.8.0",
-    "@opam/yojson": ">=1.7.0 <2.1.0"
+    "@opam/yojson": ">=1.7.0 <2.1.0",
+    "@opam/opium": ">=0.20.0 <1.0.0",
+    "@opam/ezcurl": ">=0.2.4 <0.3.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",

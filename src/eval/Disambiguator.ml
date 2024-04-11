@@ -808,7 +808,7 @@ module InputStateService = struct
       try
         let encoder = Pbrt.Encoder.create () in
         Ipcmessage_pb.encode_proto_scilla_query query encoder;
-        Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+        Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
       with e -> fatal_error (mk_error0 ~kind:(Exn.to_string e) ?inst:None)
 
     let decode_serialized_value value =
@@ -838,7 +838,7 @@ module InputStateService = struct
       in
       match res with
       | Some (true, res') ->
-          let decoded_pb = decode_serialized_value (Bytes.of_string res') in
+          let decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
           let res'' = deserialize_value decoded_pb tp this_address in
           Some res''
       | Some (false, _) | None -> None
