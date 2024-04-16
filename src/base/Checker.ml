@@ -63,7 +63,7 @@ module CG = ScillaCallgraph (TCSRep) (TCERep)
 
 (* Check that the module parses *)
 let check_parsing ctr syn =
-  let ast = FEParser.parse_file syn ctr in
+  let ast = FEParser.parse_string syn ctr in
   if Result.is_ok ast then
     plog @@ sprintf "\n[Parsing]:\n module [%s] is successfully parsed.\n" ctr;
   ast
@@ -236,15 +236,14 @@ let check_lmodule cli =
     let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
     let%bind (lmod : ParserSyntax.lmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file Parser.Incremental.lmodule
+      @@ check_parsing cli.input Parser.Incremental.lmodule
     in
     let this_address_opt, init_address_map =
-      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+      Option.value_map cli.init ~f:get_init_this_address_and_extlibs_string
         ~default:(None, [])
     in
-    let this_address =
-      Option.value this_address_opt
-        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    (* this_address is mandatory *)
+    let this_address = Option.value_exn this_address_opt
     in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
@@ -307,17 +306,16 @@ let check_cmodule cli =
     let initial_gas = Uint64.mul Gas.scale_factor cli.gas_limit in
     let%bind (cmod : ParserSyntax.cmodule) =
       wrap_error_with_gas initial_gas
-      @@ check_parsing cli.input_file Parser.Incremental.cmodule
+      @@ check_parsing cli.input Parser.Incremental.cmodule
     in
     let cmod = FEParser.disambiguate_calls cmod in
     (* Import whatever libs we want. *)
     let this_address_opt, init_address_map =
-      Option.value_map cli.init_file ~f:get_init_this_address_and_extlibs
+      Option.value_map cli.init ~f:get_init_this_address_and_extlibs_string
         ~default:(None, [])
     in
-    let this_address =
-      Option.value this_address_opt
-        ~default:(FilePath.chop_extension (FilePath.basename cli.input_file))
+    (* this_address is mandatory *)
+    let this_address = Option.value_exn this_address_opt
     in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
@@ -344,7 +342,7 @@ let check_cmodule cli =
      CG.dump_callgraph stdout cg;
      exit 0)
     else if cli.dump_callgraph then
-      let out = Out_channel.create (cli.input_file ^ ".dot") ~binary:true in
+      let out = Out_channel.create ("callgraph.dot") ~binary:true in
       CG.dump_callgraph out cg);
     let%bind () =
       if cli.disable_analy_warn then pure ()
@@ -441,10 +439,9 @@ let run args ~exe_name =
   let cli = init_checker args ~exe_name in
   let open FilePath in
   let open GlobalConfig.StdlibTracker in
-  if check_extension cli.input_file file_extn_library then
+  if cli.is_library then
     (* Check library modules. *)
     check_lmodule cli |> fun (out, _) -> out
-  else if check_extension cli.input_file file_extn_contract then
+  else
     (* Check contract modules. *)
     check_cmodule cli |> fun (out, _) -> out
-  else fatal_error (mk_error0 ~kind:"Unknown file extension" ?inst:None)

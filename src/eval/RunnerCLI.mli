@@ -21,8 +21,8 @@ type args = {
   input_state : string;
   input_message : string;
   input_blockchain : string;
-  output : string;
   input : string;
+  is_library : bool;
   libdirs : string list;
   gas_limit : Stdint.uint64;
   balance : Stdint.uint128;
