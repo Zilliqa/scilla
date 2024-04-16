@@ -60,6 +60,10 @@ let from_file f =
   let thunk () = Basic.from_file f in
   json_exn_wrapper thunk ~filename:f
 
+let from_string f =
+  let thunk () = Basic.from_string f in
+  json_exn_wrapper thunk ~filename:f
+
 let parse_as_name n =
   match String.split_on_chars ~on:[ '.' ] n with
   | [ t1; t2 ] -> JSONName.parse_qualified_name t1 t2
@@ -329,6 +333,18 @@ module ContractState = struct
     in
     (curstates, List.concat extstates)
 
+  let get_json_data_string s =
+    let json = from_string s in
+    (* input json is a list of key/value pairs *)
+    let jlist = json |> to_list_exn in
+    let curstates, extstates =
+      List.partition_map jlist ~f:(fun j ->
+          match jobj_to_statevar j with
+          | ThisContr (n, t, v) -> First (n, t, v)
+          | ExtrContrs extlist -> Second extlist)
+    in
+    (curstates, List.concat extstates)
+
   (* Get a json object from given states *)
   let state_to_json states =
     let states_str =
@@ -414,6 +430,35 @@ module ContractState = struct
                  ~kind:"Illegal type for field specified in init json"
                  ~inst:(JSONName.as_string ContractUtil.this_address_label)))
 
+  let get_init_this_address_and_extlibs_string s =
+    (* We filter out type information from init files for the time being *)
+    let init_data, _ = get_json_data_string s in
+    let extlibs = get_init_extlibs init_data in
+    let this_address_init_opt =
+      match
+        List.filter init_data ~f:(fun (name, _, _) ->
+            String.(name = JSONName.as_string ContractUtil.this_address_label))
+      with
+      | [ (_, _, adr) ] -> Some adr
+      | [] ->
+          None
+          (* We allow init files without a _this_address entry in scilla-checker *)
+      | _ ->
+          raise
+            (mk_invalid_json ~kind:"Multiple entries specified in init json"
+               ~inst:(JSONName.as_string ContractUtil.this_address_label))
+    in
+    match this_address_init_opt with
+    | None -> (None, extlibs)
+    | Some adr -> (
+        match get_address_literal adr with
+        | Some adr -> (Some adr, extlibs)
+        | None ->
+            raise
+              (mk_invalid_json
+                 ~kind:"Illegal type for field specified in init json"
+                 ~inst:(JSONName.as_string ContractUtil.this_address_label)))
+
   (* Convert a single JSON serialized literal back to its Scilla value. *)
   let jstring_to_literal jstring tp =
     let thunk () = Yojson.Basic.from_string jstring in
@@ -427,6 +472,41 @@ module Message = struct
       Invalid inputs in the json are ignored **)
   let get_json_data filename =
     let json = from_file filename in
+    let tags = member_exn tag_label json |> to_string_exn in
+    let amounts = member_exn amount_label json |> to_string_exn in
+    let senders = member_exn sender_label json |> to_string_exn in
+    let origins = member_exn origin_label json |> to_string_exn in
+    (* Make tag, amount and sender into a literal *)
+    let tag =
+      (tag_label, tag_type, build_prim_lit_exn JSONType.string_typ tags)
+    in
+    let amount =
+      (amount_label, amount_type, build_prim_lit_exn amount_type amounts)
+    in
+    let sender =
+      (sender_label, sender_type, build_prim_lit_exn sender_type senders)
+    in
+    let origin =
+      (origin_label, origin_type, build_prim_lit_exn origin_type origins)
+    in
+    let pjlist = member_exn "params" json |> to_list_exn in
+    let params =
+      List.map pjlist ~f:(fun f ->
+          let name, t, v =
+            match jobj_to_statevar f with
+            | ThisContr (name, t, v) -> (name, t, v)
+            | ExtrContrs _ ->
+                raise
+                  (mk_invalid_json
+                     ~kind:"_external cannot be present in a message JSON"
+                     ?inst:None)
+          in
+          (name, t, v))
+    in
+    tag :: amount :: origin :: sender :: params
+
+  let get_json_data_string s =
+    let json = from_string s in
     let tags = member_exn tag_label json |> to_string_exn in
     let amounts = member_exn amount_label json |> to_string_exn in
     let senders = member_exn sender_label json |> to_string_exn in

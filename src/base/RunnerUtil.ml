@@ -65,6 +65,24 @@ let get_init_this_address_and_extlibs filename =
       fatal_error
         (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:filename)
 
+let get_init_this_address_and_extlibs_string str =
+  try
+    let this_address, name_addr_pairs =
+      JSON.ContractState.get_init_this_address_and_extlibs_string str
+    in
+    if
+      List.contains_dup
+        ~compare:(fun a b -> String.compare (fst a) (fst b))
+        name_addr_pairs
+    then
+      fatal_error
+      @@ mk_error0 ~kind:"Duplicate extlib map entries in init JSON file"
+            ~inst:str
+    else (this_address, name_addr_pairs)
+  with Invalid_json s ->
+    fatal_error
+      (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:str)
+
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib name sloc =
@@ -191,12 +209,13 @@ let import_all_libs ldirs =
   import_libs names' []
 
 type runner_cli = {
-  input_file : string;
+  input : string;
+  is_library : bool;
   stdlib_dirs : string list;
   gas_limit : Stdint.uint64;
   (* Run gas use analysis? *)
   gua_flag : bool;
-  init_file : string option;
+  init : string option;
   cf_flag : bool;
   cf_token_fields : string list;
   p_contract_info : bool;
@@ -209,8 +228,9 @@ type runner_cli = {
 let parse_cli args ~exe_name =
   let r_stdlib_dir = ref [] in
   let r_gas_limit = ref None in
-  let r_input_file = ref "" in
-  let r_init_file = ref None in
+  let r_input = ref "" in
+  let r_is_library = ref false in
+  let r_init = ref None in
   let r_json_errors = ref false in
   let r_gua = ref false in
   let r_contract_info = ref false in
@@ -247,8 +267,9 @@ let parse_cli args ~exe_name =
         Arg.Unit (fun () -> r_gua := true),
         "Run gas use analysis and print use polynomial." );
       ( "-init",
-        Arg.String (fun x -> r_init_file := Some x),
-        "Path to initialization json" );
+        Arg.String (fun x -> r_init := Some x),
+        "Initialization json" );
+      ( "-islibrary", Arg.Unit (fun () -> r_is_library := true), "Is the contract a library?");
       ( "-cf",
         Arg.Unit (fun () -> r_cf := true),
         "Run cashflow checker and print results" );
@@ -298,7 +319,7 @@ let parse_cli args ~exe_name =
   let usage = mandatory_usage ^ "\n  " ^ optional_usage ^ "\n" in
 
   (* Only one input file allowed, so the last anonymous argument will be *it*. *)
-  let anon_handler s = r_input_file := s in
+  let anon_handler s = r_input := s in
   let () =
     match args with
     | None -> Arg.parse speclist anon_handler mandatory_usage
@@ -310,21 +331,22 @@ let parse_cli args ~exe_name =
         with Arg.Bad msg | Arg.Help msg ->
           fatal_error_noformat (Printf.sprintf "%s\n" msg))
   in
-  if String.is_empty !r_input_file then fatal_error_noformat usage;
+  if String.is_empty !r_input then fatal_error_noformat usage;
   let gas_limit =
     match !r_gas_limit with Some g -> g | None -> fatal_error_noformat usage
   in
   if not @@ List.is_empty !r_cf_token_fields then r_cf := true;
   GlobalConfig.set_use_json_errors !r_json_errors;
   {
-    input_file = !r_input_file;
+    input = !r_input;
+    is_library = !r_is_library;
     stdlib_dirs = !r_stdlib_dir;
     gas_limit;
     gua_flag = !r_gua;
     p_contract_info = !r_contract_info;
     cf_flag = !r_cf;
     cf_token_fields = !r_cf_token_fields;
-    init_file = !r_init_file;
+    init = !r_init;
     p_type_info = !r_type_info;
     disable_analy_warn = !r_disable_analy_warn;
     dump_callgraph = !r_dump_callgraph;

@@ -115,9 +115,9 @@ let map_json_input_strings_to_names map =
       | _ -> raise (mk_invalid_json ~kind:"invalid name in json input" ~inst:x))
 
 (* Parse the input state json and extract out _balance separately *)
-let input_state_json filename =
+let input_state_json s =
   let open JSON.ContractState in
-  let states_str, estates_str = get_json_data filename in
+  let states_str, estates_str = get_json_data_string s in
   let states = map_json_input_strings_to_names states_str in
   let estates =
     List.map estates_str ~f:(fun (addr, states_str) ->
@@ -225,13 +225,13 @@ let assert_no_address_type_in_literal l gas_remaining =
   in
   recurser l
 
-let validate_get_init_json init_file gas_remaining source_ver =
+let validate_get_init_json str gas_remaining source_ver =
   (* Retrieve initial parameters *)
   let initargs_str, _ =
-    try JSON.ContractState.get_json_data init_file
+    try JSON.ContractState.get_json_data_string str
     with Invalid_json s ->
       fatal_error_gas_scale Gas.scale_factor
-        (s @ mk_error0 ~kind:"Failed to parse json" ~inst:init_file)
+        (s @ mk_error0 ~kind:"Failed to parse json" ~inst:str)
         gas_remaining
   in
   (* Read init.json, and strip types. Types in init files must be ignored due to backward compatibility *)
@@ -308,7 +308,7 @@ let perform_dynamic_typechecks checks gas_remaining =
       | Error s -> fatal_error_gas_scale Gas.scale_factor s new_gas_remaining)
 
 let deploy_library args gas_remaining =
-  match FEParser.parse_lmodule args.input with
+  match FEParser.parse_lmodule_string args.input with
   | Error e ->
       (* Error is printed by the parser. *)
       plog (sprintf "%s\n" "Failed to parse input library file.");
@@ -319,10 +319,10 @@ let deploy_library args gas_remaining =
            args.input);
 
       (* Parse external libraries. *)
-      let lib_dirs = FilePath.dirname args.input :: args.libdirs in
+      let lib_dirs = args.libdirs in
       StdlibTracker.add_stdlib_dirs lib_dirs;
       let this_address_opt, init_address_map =
-        get_init_this_address_and_extlibs args.input_init
+        get_init_this_address_and_extlibs_string args.input_init
       in
       match this_address_opt with
       | None ->
@@ -380,16 +380,12 @@ let deploy_library args gas_remaining =
 let run_with_args args =
   let is_deployment = String.is_empty args.input_message in
   let is_ipc = not @@ String.is_empty args.ipc_address in
-  let is_library =
-    FilePath.check_extension args.input
-      GlobalConfig.StdlibTracker.file_extn_library
-  in
+  let is_library = args.is_library in
   let initial_gas_limit = Uint64.mul args.gas_limit Gas.scale_factor in
   let gas_remaining =
     (* Subtract gas based on (contract+init) size / message size. *)
     if is_deployment then
-      let cost' =
-        UnixLabels.((stat args.input).st_size + (stat args.input_init).st_size)
+      let cost' = (String.length args.input) + (String.length args.input_init)
       in
       let cost = Uint64.of_int cost' in
       if Uint64.compare initial_gas_limit cost < 0 then
@@ -399,7 +395,7 @@ let run_with_args args =
           Uint64.zero
       else Uint64.sub initial_gas_limit cost
     else
-      let cost = Uint64.of_int (UnixLabels.stat args.input_message).st_size in
+      let cost = Uint64.of_int (String.length args.input_message) in
       if Uint64.compare initial_gas_limit cost < 0 then
         fatal_error_gas_scale Gas.scale_factor
           (mk_error0 ~kind:"Insufficient gas to parse message" ?inst:None)
@@ -420,7 +416,7 @@ let run_with_args args =
           ("events", output_event_json []);
         ]
   else
-    match FEParser.parse_cmodule args.input with
+    match FEParser.parse_cmodule_string args.input with
     | Error e ->
         (* Error is printed by the parser. *)
         plog (sprintf "%s\n" "Failed to parse input file.");
@@ -432,10 +428,10 @@ let run_with_args args =
              args.input);
 
         (* Parse external libraries. *)
-        let lib_dirs = FilePath.dirname args.input :: args.libdirs in
+        let lib_dirs = args.libdirs in
         StdlibTracker.add_stdlib_dirs lib_dirs;
         let this_address_opt, init_address_map =
-          get_init_this_address_and_extlibs args.input_init
+          get_init_this_address_and_extlibs_string args.input_init
         in
         match this_address_opt with
         | None ->
@@ -576,7 +572,7 @@ let run_with_args args =
               else
                 (* Not initialization, execute transition specified in the message *)
                 let mmsg =
-                  try JSON.Message.get_json_data args.input_message
+                  try JSON.Message.get_json_data_string args.input_message
                   with Invalid_json s ->
                     fatal_error_gas_scale Gas.scale_factor
                       (s

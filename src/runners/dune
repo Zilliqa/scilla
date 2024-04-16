@@ -1,10 +1,10 @@
 (executables
- (names scilla_runner eval_runner type_checker scilla_checker scilla_server
+ (names scilla_runner scilla_checker scilla_server
    disambiguate_state_json scilla_fmt scilla_merger scilla_server_http)
- (public_names scilla-runner eval-runner type-checker scilla-checker
+ (public_names scilla-runner scilla-checker
    scilla-server disambiguate_state_json scilla-fmt scilla-merger scilla-server-http)
  (package scilla)
- (modules scilla_runner eval_runner type_checker scilla_checker scilla_server
+ (modules scilla_runner scilla_checker scilla_server
    disambiguate_state_json scilla_fmt scilla_merger scilla_server_http)
  (libraries core core_unix.command_unix angstrom yojson cryptokit fileutils
    scilla_base scilla_eval scilla_server_lib scilla_crypto scilla_format

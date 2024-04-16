@@ -24,8 +24,8 @@ type args = {
   input_state : string;
   input_message : string;
   input_blockchain : string;
-  output : string;
   input : string;
+  is_library : bool;
   libdirs : string list;
   gas_limit : Stdint.uint64;
   balance : Stdint.uint128;
@@ -38,8 +38,8 @@ let f_input_init = ref ""
 let f_input_state = ref ""
 let f_input_message = ref ""
 let f_input_blockchain = ref ""
-let f_output = ref ""
 let f_input = ref ""
+let f_is_library = ref false
 let f_trace_file = ref ""
 let f_trace_level = ref ""
 let d_libs = ref []
@@ -56,8 +56,8 @@ let reset () =
   f_input_state := "";
   f_input_message := "";
   f_input_blockchain := "";
-  f_output := "";
   f_input := "";
+  f_is_library := false;
   f_trace_file := "";
   f_trace_level := "";
   d_libs := [];
@@ -89,33 +89,15 @@ let validate_main usage =
   in
   let msg = "" in
   let msg =
-    (* init.json is mandatory *)
-    if not @@ Sys_unix.file_exists_exn !f_input_init then
-      "Invalid initialization file\n"
-    else msg
-  in
-  let msg =
     (* input_state.json is not mandatory, but if provided, should be valid *)
     if invalid_optional_fname !f_input_state then
       msg ^ "Invalid input contract state: " ^ !f_input_state ^ "\n"
     else msg
   in
   let msg =
-    (* input_message.json is not mandatory, but if provided, should be valid *)
-    if invalid_optional_fname !f_input_message then
-      msg ^ "Invalid input message\n"
-    else msg
-  in
-  let msg =
     (* input_blockchain.json is not mandatory, but if provided, should be valid *)
     if invalid_optional_fname !f_input_blockchain then
       msg ^ "Invalid input blockchain state\n"
-    else msg
-  in
-  let msg =
-    (* input file is mandatory *)
-    if not @@ Sys_unix.file_exists_exn !f_input then
-      msg ^ "Invalid input contract file\n"
     else msg
   in
   (* Note: output file is optional, if it's missing we will output to stdout *)
@@ -167,13 +149,13 @@ let parse args ~exe_name =
         "Print Scilla version and exit" );
       ( "-init",
         Arg.String (fun x -> f_input_init := x),
-        "Path to initialization json" );
+        "Initialization json" );
       ( "-istate",
         Arg.String (fun x -> f_input_state := x),
-        "Path to state input json" );
+        "State input json" );
       ( "-imessage",
         Arg.String (fun x -> f_input_message := x),
-        "Path to message input json" );
+        "Message input json" );
       ( "-ipcaddress",
         Arg.String (fun x -> i_ipc_address := x),
         "Socket address for IPC communication with blockchain for state access"
@@ -181,8 +163,8 @@ let parse args ~exe_name =
       ( "-iblockchain",
         Arg.String (fun x -> f_input_blockchain := x),
         "Path to blockchain input json" );
-      ("-o", Arg.String (fun x -> f_output := x), "Path to output json");
-      ("-i", Arg.String (fun x -> f_input := x), "Path to scilla contract");
+      ("-i", Arg.String (fun x -> f_input := x), "Scilla contract");
+      ("-islibrary", Arg.Bool (fun b -> f_is_library := b), "Is the contract a library?");
       ( "-tracefile",
         Arg.String (fun x -> f_trace_file := x),
         "Path to trace file. (prints to stdout if no file specified)" );
@@ -275,8 +257,8 @@ let parse args ~exe_name =
     input_state = !f_input_state;
     input_message = !f_input_message;
     input_blockchain = !f_input_blockchain;
-    output = !f_output;
     input = !f_input;
+    is_library = !f_is_library;
     balance =
       (match !v_balance with Some v -> v | None -> Stdint.Uint128.zero);
     libdirs = !d_libs;
