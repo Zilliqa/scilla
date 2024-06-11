@@ -40,7 +40,36 @@ found in [INSTALL.md](./INSTALL.md).
 
 ### 3. Compiling
 
-To build the project from the root folder:
+You'll need to install `vcpkg` and set `VCPKG_ROOT` to the root of your `vcpkg` installation, following the instructions at <https://github.com/microsoft/vcpkg>.
+
+```sh
+export VCPKG_ROOT=/my/directory/vcpkg
+export SCILLA_REPO_ROOT=/where/you/checked/out/scilla
+apt install libgmp-dev patchelf
+```
+
+If `vcpkg` installation fails, you'll need to set:
+
+```sh
+export VCPKG_ALWAYS_INSTALL=true
+```
+
+To force vcpkg to try again. You'll also need to do:
+
+```
+make opamdep
+```
+
+To make opam dependencies. You may well need to:
+
+```
+touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
+```
+
+And retry to persuade `secp256k1` to rebuild.
+
+Now, to build the project from the root folder:
+
 ```
 make
 ```
