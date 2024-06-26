@@ -1,0 +1,81 @@
+FROM ubuntu:24.04 AS base
+
+RUN apt-get update -y \
+    && apt-get install -y software-properties-common \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    build-essential \
+    ca-certificates \
+    ccache \
+    cmake \
+    cron \
+    curl \
+    dnsutils \
+    gawk \
+    git \
+    lcov \
+    libcurl4-openssl-dev \
+    libev-dev \
+    libgmp-dev \
+    libpcre3-dev \
+    libssl-dev \
+    libtool \
+    libxml2-utils \
+    ninja-build \
+    nload \
+    ocaml \
+    ocl-icd-opencl-dev \
+    opam \
+    openssh-client \
+    patchelf \
+    pkg-config \
+    rsync \
+    rsyslog \
+    tar \
+    unzip \
+    vim \
+    wget \
+    zip \
+    zlib1g-dev \
+    && apt-get autoremove -y
+
+FROM base AS builder
+
+ARG VCPKG_COMMIT_OR_TAG=2022.09.27
+ARG VCPKG_ROOT=/vcpkg
+
+RUN git clone https://github.com/microsoft/vcpkg ${VCPKG_ROOT} \
+  && git -C ${VCPKG_ROOT} checkout ${VCPKG_COMMIT_OR_TAG} \
+  && ${VCPKG_ROOT}/bootstrap-vcpkg.sh
+
+ARG SOURCE_DIR="/scilla"
+ENV SCILLA_REPO_ROOT="/scilla"
+
+WORKDIR ${SOURCE_DIR}
+
+ENV OCAML_VERSION 4.12.0
+
+COPY vcpkg-registry/ vcpkg-registry
+COPY vcpkg-configuration.json .
+COPY vcpkg.json .
+COPY vcpkg-ocaml/ vcpkg-ocaml
+COPY src/ src
+COPY scripts/ scripts
+COPY dune* ./
+COPY Makefile .
+COPY scilla.opam .
+COPY shell.nix .
+COPY .ocamlformat .
+COPY tests/ tests
+
+# Make sure vcpkg installs brings in the dependencies
+RUN --mount=type=cache,target=/root/.cache/vcpkg/ ${VCPKG_ROOT}/vcpkg install --triplet=x64-linux-dynamic
+
+ENV PKG_CONFIG_PATH="${SOURCE_DIR}/vcpkg_installed/x64-linux-dynamic/lib/pkgconfig"
+ENV SCILLA_REPO_ROOT="${SOURCE_DIR}"
+
+RUN make opamdep-ci \
+    && echo '. ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true ' >> ~/.bashrc \
+    && eval $(opam env) \
+    && make
