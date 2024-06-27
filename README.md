@@ -36,7 +36,6 @@ You'll need to install `vcpkg` and set `VCPKG_ROOT` to the root of your `vcpkg` 
 ```sh
 export VCPKG_ROOT=/my/directory/vcpkg
 export SCILLA_REPO_ROOT=/where/you/checked/out/scilla
-apt install libgmp-dev patchelf
 ```
 
 Now install the opam dependencies:
@@ -48,7 +47,7 @@ eval $(opam env)
 
 Now install packages and try to build the first time:
 
-```shl
+```sh
 make
 ```
 
@@ -69,10 +68,12 @@ sed -i '1s;^;#include <cstdint>\n;' vcpkg_installed/x64-linux-dynamic/include/Sn
 And you may well need to:
 
 ```
+make
 touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
+make opamdep
 ```
 
-And retry to persuade `secp256k1` to rebuild.
+A few times to persuade `secp256k1` to build.
 
 Now build again:
 
