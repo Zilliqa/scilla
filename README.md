@@ -39,20 +39,34 @@ export SCILLA_REPO_ROOT=/where/you/checked/out/scilla
 apt install libgmp-dev patchelf
 ```
 
+Now install the opam dependencies:
+
+```sh
+make opamdep
+eval $(opam env)
+```
+
+Now install packages and try to build the first time:
+
+```shl
+make
+```
+
 If `vcpkg` installation fails, you'll need to set:
 
 ```sh
 export VCPKG_ALWAYS_INSTALL=true
 ```
 
-To force vcpkg to try again. You'll also need to do:
+and run `make` again.
+
+The first build will fail, because `Snark.h` doesn't include `<cstdio>` properly. You now need to fix this:
 
 ```
-make opamdep
-eval $(opam env)
+sed -i '1s;^;#include <cstdint>\n;' vcpkg_installed/x64-linux-dynamic/include/Snark/Snark.h
 ```
 
-To make opam dependencies. You may well need to:
+And you may well need to:
 
 ```
 touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
@@ -60,11 +74,13 @@ touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
 
 And retry to persuade `secp256k1` to rebuild.
 
-Now, to build the project from the root folder:
+Now build again:
 
 ```
 make
 ```
+
+and this time the build should succeed!
 
 ### Installation
 
