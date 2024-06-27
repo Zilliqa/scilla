@@ -111,7 +111,7 @@ let rec encode_proto_scilla_val_map (v : Ipcmessage_types.proto_scilla_val_map)
     encoder =
   let encode_key = Pbrt.Encoder.string in
   let encode_value x encoder =
-    Pbrt.Encoder.nested encode_proto_scilla_val x encoder
+    Pbrt.Encoder.nested (encode_proto_scilla_val x) encoder
   in
   List.iter v.Ipcmessage_types.m ~f:(fun (k, v) ->
       Pbrt.Encoder.key 1 Pbrt.Bytes encoder;

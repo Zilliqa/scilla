@@ -49,6 +49,7 @@ To force vcpkg to try again. You'll also need to do:
 
 ```
 make opamdep
+eval $(opam env)
 ```
 
 To make opam dependencies. You may well need to:

@@ -35,7 +35,7 @@ default: release
 APT_REQUIREMENTS= autoconf bison build-essential ca-certificates  ccache  cmake  cron curl dnsutils gawk \
 	git lcov libcurl4-openssl-dev libev-dev libgmp-dev libpcre3-dev libssl-dev libtool \
 	libxml2-utils ninja-build nload ocaml ocl-icd-opencl-dev opam  openssh-client patchelf pkg-config \
-	rsync rsyslog tar unzip vim wget zip zlib1g-dev
+	rsync rsyslog tar unzip vim wget zip zlib1g-dev ocaml-dune
 
 install-from-apt:
 	apt-get update -y
