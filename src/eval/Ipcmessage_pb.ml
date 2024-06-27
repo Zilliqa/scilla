@@ -114,28 +114,28 @@ let rec encode_proto_scilla_val_map (v : Ipcmessage_types.proto_scilla_val_map)
     Pbrt.Encoder.nested (encode_proto_scilla_val x) encoder
   in
   List.iter v.Ipcmessage_types.m ~f:(fun (k, v) ->
-      Pbrt.Encoder.key 1 Pbrt.Bytes encoder;
+      Pbrt.Encoder.key (1,Pbrt.Bytes) encoder;
       let map_entry = ((k, Pbrt.Bytes), (v, Pbrt.Bytes)) in
       Pbrt.Encoder.map_entry ~encode_key ~encode_value map_entry encoder)
 
 and encode_proto_scilla_val (v : Ipcmessage_types.proto_scilla_val) encoder =
   match v with
   | Ipcmessage_types.Bval x ->
-      Pbrt.Encoder.key 1 Pbrt.Bytes encoder;
+      Pbrt.Encoder.key (1,Pbrt.Bytes) encoder;
       Pbrt.Encoder.bytes x encoder
   | Ipcmessage_types.Mval x ->
-      Pbrt.Encoder.key 2 Pbrt.Bytes encoder;
-      Pbrt.Encoder.nested encode_proto_scilla_val_map x encoder
+      Pbrt.Encoder.key (2, Pbrt.Bytes) encoder;
+      Pbrt.Encoder.nested (encode_proto_scilla_val_map x) encoder
 
 let rec encode_proto_scilla_query (v : Ipcmessage_types.proto_scilla_query)
     encoder =
-  Pbrt.Encoder.key 1 Pbrt.Bytes encoder;
+  Pbrt.Encoder.key (1, Pbrt.Bytes) encoder;
   Pbrt.Encoder.string v.Ipcmessage_types.name encoder;
-  Pbrt.Encoder.key 2 Pbrt.Varint encoder;
+  Pbrt.Encoder.key (2, Pbrt.Varint) encoder;
   Pbrt.Encoder.int_as_varint v.Ipcmessage_types.mapdepth encoder;
   List.iter v.Ipcmessage_types.indices ~f:(fun x ->
-      Pbrt.Encoder.key 3 Pbrt.Bytes encoder;
+      Pbrt.Encoder.key (3, Pbrt.Bytes) encoder;
       Pbrt.Encoder.bytes x encoder);
-  Pbrt.Encoder.key 4 Pbrt.Varint encoder;
+  Pbrt.Encoder.key (4, Pbrt.Varint) encoder;
   Pbrt.Encoder.bool v.Ipcmessage_types.ignoreval encoder;
   ()
