@@ -33,12 +33,15 @@ then
 fi
 
 # If already installed, exit early.
+if [[ -z "${VCPKG_ALWAYS_INSTALL}" ]]
+then
 if [[ -d vcpkg_installed ]]
 then
     echo "Found vcpkg_installed, not installing again"
     exit 0
 fi
-
+fi
+   
 echo "Installing vcpkg"
 if ! "$VCPKG_ROOT"/vcpkg install --triplet "$(scripts/vcpkg_triplet.sh)"
 then 

@@ -28,9 +28,21 @@ define patch_rpath
 	find _build/default/$(1) -type f -name '*.exe' -exec chmod u+w \{} \; -exec $(RPATH_CMD) "$(VCPKG_BASE)/lib" \{} \; -exec chmod u+w \{} \;
 endef
 
-.PHONY: default release utop dev clean docker zilliqa-docker
+.PHONY: default release utop dev clean docker zilliqa-docker install-from-apt
 
 default: release
+
+APT_REQUIREMENTS= autoconf bison build-essential ca-certificates  ccache  cmake  cron curl dnsutils gawk \
+	git lcov libcurl4-openssl-dev libev-dev libgmp-dev libpcre3-dev libssl-dev libtool \
+	libxml2-utils ninja-build nload ocaml ocl-icd-opencl-dev opam  openssh-client patchelf pkg-config \
+	rsync rsyslog tar unzip vim wget zip zlib1g-dev ocaml-dune 
+
+install-from-apt:
+	sudo apt-get update -y
+	sudo apt-get install -y software-properties-common
+	sudo apt-get update
+	sudo apt-get install -y --no-install-recommends $(APT_REQUIREMENTS)
+
 
 # Build one library and one standalone executable that implements
 # multiple subcommands and uses the library.

@@ -90,3 +90,8 @@ deps/schnorr/install/
 vcpkg_installed/
 
 debug/
+
+# Emacs backups
+*~
+\#*
+.\#*

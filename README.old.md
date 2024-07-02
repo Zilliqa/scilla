@@ -1,33 +1,42 @@
-# Scilla: A smart contract intermediate level language
+# Scilla: A Smart Contract Intermediate Level Language
+
+[![Build Status](https://travis-ci.com/Zilliqa/scilla.svg?token=7qzjATfZuxTQvRjMHPVQ&branch=master)](https://travis-ci.com/Zilliqa/scilla)
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/Zilliqa/scilla/blob/master/LICENSE)
+[![Discord chat](https://img.shields.io/discord/370992535725932544.svg)](https://discord.gg/mWp9HdR)
+[![Coverage Status](https://coveralls.io/repos/github/Zilliqa/scilla/badge.svg?branch=master)](https://coveralls.io/github/Zilliqa/scilla?branch=master)
+
+<p align="center">
+  <a href="https://scilla-lang.org/"><img src="https://github.com/Zilliqa/scilla/blob/master/imgs/scilla-logo-color.jpg" width="200" height="200"></a>
+</p>
 
 ## Introduction
+Scilla short for Smart Contract Intermediate-Level LAnguage is an intermediate-level smart contract language being developed for Zilliqa. Scilla has been designed as a principled language with smart contract safety in mind.
 
-Scilla is a smart contract language used by the Zilliqa blockchain.
+Scilla imposes a structure on smart contracts that will make applications less vulnerable to attacks by eliminating certain known vulnerabilities directly at the language-level. Furthermore, the principled structure of Scilla will make applications inherently more secure and amenable to formal verification.
 
-A language reference can be found [here](https://scilla.readthedocs.io/en/latest/)
+Zilliqa - the underlying blockchain platform on which Scilla contracts are run, has been designed to be scalable. It employs the idea of sharding to validate transactions in parallel. Zilliqa has an intrinsic token named Zilling, ZIL for short that are required to run smart contracts on Zilliqa.
+
+### Language Reference
+
+A comprehensive documentation on Scilla, its features and constructs can be found [here](https://scilla.readthedocs.io/en/latest/)
 
 ## Building Scilla
 
-Here are some instructions for building Scilla natively. A dockerfile
-is provided in `docker/`, as is a
-`Dockerfile.test-modern-ubuntu-build` which we use to test these
-instructions.
+If you don't want to setup and build Scilla from source, skip this section to follow the opam installation instructions.
 
 ### 1. Cloning source code
 
+We suggest users to use the latest release of Scilla available [here](https://github.com/Zilliqa/scilla/releases).
+
+If you'd like to hack on Scilla, clone it with all of its submodules:
 ```shell
 git clone --jobs 4 --recurse-submodules https://github.com/Zilliqa/scilla/
 ```
 
 ### 2. Build prerequisites
 
-There are packages you'll need - run:
-
-```shell
-make install-from-apt
-```
-
-To install them, or see the list in the `Makefile`.
+Platform specific instructions for setting up your system for building Scilla can be
+found in [INSTALL.md](./INSTALL.md).
 
 ### 3. Compiling
 
@@ -36,19 +45,7 @@ You'll need to install `vcpkg` and set `VCPKG_ROOT` to the root of your `vcpkg` 
 ```sh
 export VCPKG_ROOT=/my/directory/vcpkg
 export SCILLA_REPO_ROOT=/where/you/checked/out/scilla
-```
-
-Now install the opam dependencies:
-
-```sh
-make opamdep
-eval $(opam env)
-```
-
-Now install packages and try to build the first time:
-
-```sh
-make
+apt install libgmp-dev patchelf
 ```
 
 If `vcpkg` installation fails, you'll need to set:
@@ -57,31 +54,25 @@ If `vcpkg` installation fails, you'll need to set:
 export VCPKG_ALWAYS_INSTALL=true
 ```
 
-and run `make` again.
-
-The first build will fail, because `Snark.h` doesn't include `<cstdio>` properly. You now need to fix this:
+To force vcpkg to try again. You'll also need to do:
 
 ```
-sed -i '1s;^;#include <cstdint>\n;' vcpkg_installed/x64-linux-dynamic/include/Snark/Snark.h
-```
-
-And you may well need to:
-
-```
-make
-touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
 make opamdep
 ```
 
-A few times to persuade `secp256k1` to build.
+To make opam dependencies. You may well need to:
 
-Now build again:
+```
+touch scilla/_build/default/vcpkg-ocaml/vcpkg-secp256k1/src/c_flags.exp
+```
+
+And retry to persuade `secp256k1` to rebuild.
+
+Now, to build the project from the root folder:
 
 ```
 make
 ```
-
-and this time the build should succeed!
 
 ### Installation
 
@@ -95,6 +86,36 @@ and can similarly be uninstalled as
 
 ```
 make uninstall
+```
+
+## Installing Scilla with opam
+Scilla can be installed using OCaml's package manager `opam`.
+
+### Installing Scilla from GitHub
+
+To install the development version of Scilla package make sure you are using
+the correct opam switch and execute the following
+
+```shell
+opam pin add scilla git+https://github.com/Zilliqa/scilla#master --yes
+```
+
+### Installing Scilla from your local repo
+
+```shell
+cd <scilla-repo>
+# It is important to pick the right git branch because opam pins the package to the current branch
+git checkout master
+opam install ./scilla.opam
+```
+
+If you are using a local opam switch (see [here](https://github.com/Zilliqa/scilla/blob/master/INSTALL.md#installing-opam-packages))
+in your local Scilla repo (`~/path/to/scilla`), then most likely you will want to reuse the same local switch for your Scilla-based project.
+To do that create a symlink `_opam` as follows:
+
+```shell
+cd <scilla-based-project-repo>
+ln -s ~/path/to/scilla/_opam _opam
 ```
 
 ## Running the binary
@@ -217,4 +238,3 @@ Visual Studio Code support for Scilla is available. [Github Source](https://gith
 You can install it through:https://marketplace.visualstudio.com/items?itemName=as1ndu.scilla
 
 Credits: [as1ndu](https://github.com/as1ndu)
-

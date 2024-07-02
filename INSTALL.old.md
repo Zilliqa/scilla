@@ -1,5 +1,7 @@
 # Building and Developing Scilla
 
+_These are old instructions - check out the (rather scatty) build instructions in README.md for how to build Scilla for ZQ2_
+
 The recommended installation process is comprised of two separate steps:
 - installation of system-wide packages using your OS native package manager and
 - installation of OCaml packages using the [opam](https://opam.ocaml.org) package manager.
