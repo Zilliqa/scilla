@@ -17,7 +17,7 @@
 *)
 
 open Core
-open Scilla_eval
+open Scilla_base
 open Api
 module U = Core_unix
 module M = Idl.IdM

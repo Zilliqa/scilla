@@ -16,7 +16,7 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_eval
+open Scilla_base
 open Idl
 open IPCUtil
 

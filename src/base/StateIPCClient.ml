@@ -17,7 +17,6 @@
 *)
 open Core
 open Result.Let_syntax
-open Scilla_base
 open MonadUtil
 open Literal
 open ParserUtil
@@ -62,18 +61,24 @@ let http_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   let exception Http_error of string in
   let response =
-    match Ezcurl.post ~headers:["content-type", "application/json"] ~content:(`String msg_buf) ~params:[] ~url:socket_addr () with
+    match
+      Ezcurl.post
+        ~headers:[ ("content-type", "application/json") ]
+        ~content:(`String msg_buf) ~params:[] ~url:socket_addr ()
+    with
     | Ok response -> response
-    | Error (_, err) -> (
-      DebugMessage.plog (Printf.sprintf "error calling RPC: %s" err);
-      raise (Http_error (Printf.sprintf "error calling RPC: %s" err))
-    )
+    | Error (_, err) ->
+        DebugMessage.plog (Printf.sprintf "error calling RPC: %s" err);
+        raise (Http_error (Printf.sprintf "error calling RPC: %s" err))
   in
 
-  let response = if response.code = 200 then response.body else (
-    DebugMessage.plog (Printf.sprintf "error response from RPC: code: %d, body: %s" response.code response.body);
-    raise (Http_error "error response from RPC")
-  )
+  let response =
+    if response.code = 200 then response.body
+    else (
+      DebugMessage.plog
+        (Printf.sprintf "error response from RPC: code: %d, body: %s"
+           response.code response.body);
+      raise (Http_error "error response from RPC"))
   in
 
   DebugMessage.plog (Printf.sprintf "Response: %s\n" response);
@@ -143,7 +148,8 @@ let encode_serialized_value value =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_val value encoder;
-    pure @@ Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+    pure @@ Base64.encode_exn @@ Bytes.to_string
+    @@ Pbrt.Encoder.to_bytes encoder
   with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 let decode_serialized_value value =
@@ -156,7 +162,8 @@ let encode_serialized_query query =
   try
     let encoder = Pbrt.Encoder.create () in
     Ipcmessage_pb.encode_proto_scilla_query query encoder;
-    pure @@ Base64.encode_exn @@ Bytes.to_string @@ Pbrt.Encoder.to_bytes encoder
+    pure @@ Base64.encode_exn @@ Bytes.to_string
+    @@ Pbrt.Encoder.to_bytes encoder
   with e -> fail0 ~kind:(Exn.to_string e) ?inst:None
 
 (* Fetch from a field. "keys" is empty when fetching non-map fields or an entire Map field.
@@ -181,7 +188,9 @@ let fetch ~socket_addr ~fname ~keys ~tp =
   match res with
   | true, res' ->
       let%bind tp' = TypeUtilities.map_access_type tp (List.length keys) in
-      let%bind decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
+      let%bind decoded_pb =
+        decode_serialized_value (Bytes.of_string (Base64.decode_exn res'))
+      in
       let%bind res'' = deserialize_value decoded_pb tp' in
       pure @@ Some res''
   | false, _ -> pure None
@@ -232,7 +241,9 @@ let external_fetch ~socket_addr ~caddr ~fname ~keys ~ignoreval =
         let%bind tp' =
           TypeUtilities.map_access_type stored_typ (List.length keys)
         in
-        let%bind decoded_pb = decode_serialized_value (Bytes.of_string (Base64.decode_exn res')) in
+        let%bind decoded_pb =
+          decode_serialized_value (Bytes.of_string (Base64.decode_exn res'))
+        in
         let%bind res'' = deserialize_value decoded_pb tp' in
         pure @@ (Some res'', Some stored_typ)
   | false, _, _ -> pure (None, None)

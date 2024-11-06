@@ -16,7 +16,6 @@
   scilla.  If not, see <http://www.gnu.org/licenses/>.
 *)
 
-open Scilla_base
 open ErrorUtils
 open Literal
 module IPCCLiteral = GlobalLiteral
