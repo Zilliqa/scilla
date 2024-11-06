@@ -18,7 +18,6 @@
 
 open Core
 open Result.Let_syntax
-open Scilla_base
 open MonadUtil
 open TypeUtil
 open ParserUtil

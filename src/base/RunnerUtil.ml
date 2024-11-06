@@ -77,20 +77,54 @@ let get_init_this_address_and_extlibs_string str =
     then
       fatal_error
       @@ mk_error0 ~kind:"Duplicate extlib map entries in init JSON file"
-            ~inst:str
+           ~inst:str
     else (this_address, name_addr_pairs)
   with Invalid_json s ->
-    fatal_error
-      (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:str)
+    fatal_error (s @ mk_error0 ~kind:"Unable to parse JSON file" ~inst:str)
 
+module CULiteral = GlobalLiteral
+module CUType = CULiteral.LType
+module CUIdentifier = CUType.TIdentifier
+module CUName = CUIdentifier.Name
+open Result.Let_syntax
+open MonadUtil
+
+let label_name_of_string str = CUName.parse_simple_name str
+let code_label = label_name_of_string "_code"
+let fromR r = match r with Error s -> fail s | Core.Ok a -> pure a
+
+let fetch_code ~caddr =
+  let this_id = CUIdentifier.mk_loc_id code_label in
+  let%bind fval, _ =
+    fromR
+    @@ StateService.external_fetch ~caddr ~fname:this_id ~keys:[]
+         ~ignoreval:false
+  in
+  match fval with Some code -> pure code | None -> failwith "Code not found"
+
+(* Checks that _this_address is defined *)
 (* Find (by looking for in StdlibTracker) and parse library named "id.scillib".
  * If "id.json" exists, parse it's extlibs info and provide that also. *)
 let import_lib name sloc =
-  let fname, this_address, initf =
+  print_endline ("Import lib: " ^ name);
+  let caddr =
+    if String.is_prefix name ~prefix:"0x" then
+      GlobalLiteral.Bystrx.parse_hex name
+    else GlobalLiteral.Bystrx.parse_hex "0x00000000"
+  in
+
+  let isFile, fname, this_address, initf =
     match StdlibTracker.find_lib_dir name with
-    | None ->
-        let errmsg = sprintf "Failed to import library (not found)" in
-        fatal_error @@ mk_error1 ~kind:errmsg ~inst:name sloc
+    | None -> (
+        match fetch_code ~caddr with
+        | Ok v -> (
+            match v with
+            | Literal.GlobalLiteral.StringLit x -> (false, x, name, [])
+            | _ -> failwith "khar")
+        | Error e ->
+            print_endline ("FAILED #1" ^ sprint_scilla_error_list e);
+            let errmsg = sprintf "Failed to import library (not found)" in
+            fatal_error @@ mk_error1 ~kind:errmsg ~inst:name sloc)
     | Some d ->
         let libf = d ^/ name ^. StdlibTracker.file_extn_library in
         let initf = d ^/ name ^. "json" in
@@ -99,12 +133,19 @@ let import_lib name sloc =
         in
         (* If this_address is unspecified in the init file, then use the base filename without extension as the address *)
         let this_address = Option.value init_this_address ~default:name in
-        (libf, this_address, extlibs)
+        (true, libf, this_address, extlibs)
   in
-  match RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname with
+  print_endline
+    ("  imported: " ^ (if isFile then "FILE " else "STRING ") ^ fname);
+  match
+    if isFile then
+      RULocalFEParser.parse_file RULocalParser.Incremental.lmodule fname
+    else RULocalFEParser.parse_string RULocalParser.Incremental.lmodule fname
+  with
   | Error s ->
       fatal_error (s @ (mk_error1 ~kind:"Failed to parse" ?inst:None) sloc)
   | Ok lmod ->
+      print_endline (sprintf "Successfully imported external library %s\n" name);
       plog (sprintf "Successfully imported external library %s\n" name);
       (lmod, this_address, initf)
 
@@ -223,6 +264,7 @@ type runner_cli = {
   disable_analy_warn : bool;
   dump_callgraph : bool;
   dump_callgraph_stdout : bool;
+  ipc_address : string;
 }
 
 let parse_cli args ~exe_name =
@@ -240,6 +282,7 @@ let parse_cli args ~exe_name =
   let r_disable_analy_warn = ref false in
   let r_dump_callgraph = ref false in
   let r_dump_callgraph_stdout = ref false in
+  let r_ipc_address = ref "" in
 
   let speclist =
     [
@@ -263,13 +306,17 @@ let parse_cli args ~exe_name =
             let g = try Some (Stdint.Uint64.of_string i) with _ -> None in
             r_gas_limit := g),
         "Gas limit" );
+      ( "-ipcaddress",
+        Arg.String (fun x -> r_ipc_address := x),
+        "Socket address for IPC communication with blockchain for state access"
+      );
       ( "-gua",
         Arg.Unit (fun () -> r_gua := true),
         "Run gas use analysis and print use polynomial." );
-      ( "-init",
-        Arg.String (fun x -> r_init := Some x),
-        "Initialization json" );
-      ( "-islibrary", Arg.Unit (fun () -> r_is_library := true), "Is the contract a library?");
+      ("-init", Arg.String (fun x -> r_init := Some x), "Initialization json");
+      ( "-islibrary",
+        Arg.Unit (fun () -> r_is_library := true),
+        "Is the contract a library?" );
       ( "-cf",
         Arg.Unit (fun () -> r_cf := true),
         "Run cashflow checker and print results" );
@@ -351,4 +398,5 @@ let parse_cli args ~exe_name =
     disable_analy_warn = !r_disable_analy_warn;
     dump_callgraph = !r_dump_callgraph;
     dump_callgraph_stdout = !r_dump_callgraph_stdout;
+    ipc_address = !r_ipc_address;
   }

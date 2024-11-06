@@ -13,17 +13,47 @@
  (action
   (with-stdout-to
    ParserFaults.ml
-   (run %{bin:menhir} --compile-errors ParserFaults.messages ScillaParser.mly))))
+   (run
+    %{bin:menhir}
+    --compile-errors
+    ParserFaults.messages
+    ScillaParser.mly))))
 
 (library
  (name scilla_base)
  (modes byte native)
  (public_name scilla.base)
  (wrapped true)
- (libraries core core_unix core_unix.sys_unix num hex stdint angstrom
-   polynomials cryptokit vcpkg-secp256k1 bitstring yojson fileutils scilla_crypto
-   menhirLib ocamlgraph)
+ (libraries
+  core
+  core_unix
+  core_unix.sys_unix
+  num
+  lwt
+  hex
+  stdint
+  angstrom
+  polynomials
+  cryptokit
+  vcpkg-secp256k1
+  bitstring
+  yojson
+  fileutils
+  scilla_crypto
+  rpclib
+  ocaml-protoc
+  rpclib.json
+  menhirLib
+  ezcurl
+  ocamlgraph)
  (preprocess
-  (pps ppx_sexp_conv ppx_deriving_yojson ppx_let ppx_deriving.show ppx_compare bisect_ppx
-    --conditional))
+  (pps
+   ppx_sexp_conv
+   ppx_deriving_yojson
+   ppx_let
+   ppx_deriving.show
+   ppx_compare
+   ppx_deriving_rpc
+   bisect_ppx
+   --conditional))
  (synopsis "Scilla workbench implementation."))

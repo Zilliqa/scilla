@@ -564,7 +564,6 @@ module EvalTypecheck = struct
   open MonadUtil
   open Result.Let_syntax
 
-  (* Checks that _this_address is defined *)
   let is_contract_addr ~caddr =
     let this_id = EvalIdentifier.mk_loc_id this_address_label in
     let%bind _, this_typ_opt =

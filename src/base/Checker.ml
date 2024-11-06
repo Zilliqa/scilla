@@ -243,8 +243,7 @@ let check_lmodule cli =
         ~default:(None, [])
     in
     (* this_address is mandatory *)
-    let this_address = Option.value_exn this_address_opt
-    in
+    let this_address = Option.value_exn this_address_opt in
     let elibs = import_libs lmod.elibs init_address_map in
     let%bind dis_lmod =
       wrap_error_with_gas initial_gas
@@ -315,8 +314,7 @@ let check_cmodule cli =
         ~default:(None, [])
     in
     (* this_address is mandatory *)
-    let this_address = Option.value_exn this_address_opt
-    in
+    let this_address = Option.value_exn this_address_opt in
     let elibs = import_libs cmod.elibs init_address_map in
     let%bind dis_cmod =
       wrap_error_with_gas initial_gas
@@ -342,7 +340,7 @@ let check_cmodule cli =
      CG.dump_callgraph stdout cg;
      exit 0)
     else if cli.dump_callgraph then
-      let out = Out_channel.create ("callgraph.dot") ~binary:true in
+      let out = Out_channel.create "callgraph.dot" ~binary:true in
       CG.dump_callgraph out cg);
     let%bind () =
       if cli.disable_analy_warn then pure ()
@@ -429,6 +427,13 @@ let init_checker args ~exe_name =
   StdlibTracker.add_stdlib_dirs cli.stdlib_dirs;
   (* Get list of stdlib dirs. *)
   let lib_dirs = StdlibTracker.get_stdlib_dirs () in
+  let is_ipc = not @@ String.is_empty cli.ipc_address in
+  (if is_ipc then
+   let open StateService in
+   let open MonadUtil in
+   let open Result.Let_syntax in
+   let sm = IPC cli.ipc_address in
+   initialize ~sm ~fields:[] ~ext_states:[] ~bcinfo:(Caml.Hashtbl.create 0));
   if List.is_empty lib_dirs then stdlib_not_found_err ~exe_name ();
   cli
 
@@ -442,6 +447,5 @@ let run args ~exe_name =
   if cli.is_library then
     (* Check library modules. *)
     check_lmodule cli |> fun (out, _) -> out
-  else
-    (* Check contract modules. *)
+  else (* Check contract modules. *)
     check_cmodule cli |> fun (out, _) -> out
