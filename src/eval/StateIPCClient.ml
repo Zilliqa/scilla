@@ -54,15 +54,25 @@ let ipcclient_exn_wrapper thunk =
   | e ->
       let e = Exn.to_string e in
       DebugMessage.plog (Printf.sprintf "error making JSON-RPC call: %s" e);
-      fail0 ~kind:"StateIPCClient: Unexpected error making JSON-RPC call"
+      fail0 ~kind:(Printf.sprintf "StateIPCClient: Unexpected error making JSON-RPC call: %s" e)
         ?inst:None
 
+type state = { mutable client : Ezcurl.t option };;
+let current_state = { client = None };;
+
 let http_rpc ~socket_addr (call : Rpc.call) : Rpc.response M.t =
+  let client = match current_state.client with
+    | Some c -> c
+    | None ->
+      let c = Ezcurl.make () in
+      current_state.client <- Some c;
+      c
+  in
   let msg_buf = Jsonrpc.string_of_call ~version:Jsonrpc.V2 call in
   DebugMessage.plog (Printf.sprintf "Sending: %s\n" msg_buf);
   let exception Http_error of string in
   let response =
-    match Ezcurl.post ~headers:["content-type", "application/json"] ~content:(`String msg_buf) ~params:[] ~url:socket_addr () with
+    match Ezcurl.post ~client ~headers:["content-type", "application/json"] ~content:(`String msg_buf) ~params:[] ~url:socket_addr () with
     | Ok response -> response
     | Error (_, err) -> (
       DebugMessage.plog (Printf.sprintf "error calling RPC: %s" err);
