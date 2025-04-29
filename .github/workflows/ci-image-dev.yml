@@ -17,7 +17,7 @@ jobs:
       id-token: write
       contents: write
     name: build
-    runs-on: docker
+    runs-on: ubuntu-latest
     env:
       GCP_REGISTRY_DOMAIN: asia-docker.pkg.dev
       GCP_REGISTRY: asia-docker.pkg.dev/${{ secrets.GCP_STG_REGISTRY_PROJECT_ID }}/zilliqa-private
