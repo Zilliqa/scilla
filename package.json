@@ -50,7 +50,8 @@
     "@opam/stdint": ">=0.5.1 <0.8.0",
     "@opam/yojson": ">=1.7.0 <2.1.0",
     "@opam/opium": ">=0.20.0 <1.0.0",
-    "@opam/ezcurl": ">=0.2.4 <0.3.0"
+    "@opam/ezcurl": ">=0.2.4 <0.3.0",
+    "@opam/memtrace": ">=0.2.3 <0.3.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",

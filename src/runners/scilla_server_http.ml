@@ -66,6 +66,7 @@ let run_handler req =
 ;;
 
 let _ =
+  Memtrace.trace_if_requested ~context:"scilla-server" ();
   App.empty
   |> App.post "/run" (Error_checking_mutex.synchronize run_handler)
   |> App.run_command
