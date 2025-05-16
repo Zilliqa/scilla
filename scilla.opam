@@ -51,6 +51,7 @@ depends: [
   "yojson" {>= "1.7.0" & < "2.1~"}
   "opium"  {>= "0.20.0" & < "1.0.0"}
   "ezcurl" {>= "0.2.4" & < "0.3.0"}
+  "memtrace" {>= "0.2.3" & < "0.3.0"}
 ]
 build: [
   [ "./scripts/build_deps.sh" ]
