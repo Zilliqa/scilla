@@ -28,12 +28,6 @@ module MkLexer (S : ParserUtil.Syn) = struct
   open Parser
 
   exception Error of string
-
-  let comments = ref []
-  let add_comment start_p s =
-    let loc = ErrorUtils.toLoc start_p in
-    comments := (loc, s) :: !comments
-  let get_comments () = List.rev !comments
 }
 
 let digit = ['0'-'9']
@@ -157,8 +151,7 @@ and comment buf braces =
   parse
   | "(*"      { comment buf (lexbuf.lex_curr_p::braces) lexbuf }
   | "*)"      { match braces with
-                  p::[] -> add_comment p (Buffer.contents buf);
-                           read lexbuf
+                  p::[] -> read lexbuf
                 | _ -> comment buf (List.tl_exn braces) lexbuf }
   | newline   { new_line lexbuf;
                 Buffer.add_char buf '\n';

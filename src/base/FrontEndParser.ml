@@ -147,6 +147,4 @@ module ScillaFrontEndParser (Literal : ScillaLiteral) = struct
     let open Result.Let_syntax in
     let%bind cmod = parse_string Parser.Incremental.cmodule s in
     pure @@ disambiguate_calls cmod
-
-  let get_comments () = Lexer.get_comments ()
 end
